@@ -53,28 +53,95 @@
   };
   // CHAOS events: now and then, something happens to you before a spin (seeded, so a challenge gets the same chaos)
   const EVENTS = {
-    redcard: { icon: '🟥', name: 'Red card', w: 1, desc: st => `Your next signing’s ${st.label} count half.` },
-    injury: { icon: '🚑', name: 'Injury crisis', w: 1, desc: st => `One of your players picks up a knock: his ${st.label} are halved.` },
-    taxman: { icon: '🧾', name: 'The taxman', w: 0.8, desc: () => 'Takes a wildcard from your bag.' },
-    windfall: { icon: '💰', name: 'TV money', w: 1, desc: () => 'A windfall: bonus points!' },
-    derby: { icon: '🔥', name: 'Derby day', w: 1, desc: st => `Your next signing’s ${st.label} count double.` },
-    golden: { icon: '⚽', name: 'Golden goal', w: 0.7, desc: st => `Your next signing’s ${st.label} count TRIPLE.` },
-    var: { icon: '📺', name: 'VAR check', w: 0.9, desc: () => 'VAR reviews your last signing…' },
-    box: { icon: '🎁', name: 'Mystery box', w: 0.9, desc: () => 'A free CHAOS wildcard for your bag.' },
-    masked: { icon: '🎭', name: 'Masked men', w: 0.8, desc: () => 'This spin’s players wear masks: no names until you sign one.' },
+    redcard: { rar: 'c', icon: '🟥', name: 'Red card', w: 1, desc: st => `Your next signing’s ${st.label} count half.` },
+    injury: { rar: 'c', icon: '🚑', name: 'Injury crisis', w: 1, desc: st => `One of your players picks up a knock: his ${st.label} are halved.` },
+    taxman: { rar: 'u', icon: '🧾', name: 'The taxman', w: 0.8, desc: () => 'Takes a wildcard from your bag.' },
+    windfall: { rar: 'c', icon: '💰', name: 'TV money', w: 1, desc: () => 'A windfall: bonus points!' },
+    derby: { rar: 'c', icon: '🔥', name: 'Derby day', w: 1, desc: st => `Your next signing’s ${st.label} count double.` },
+    golden: { rar: 'u', icon: '⚽', name: 'Golden goal', w: 0.7, desc: st => `Your next signing’s ${st.label} count TRIPLE.` },
+    var: { rar: 'u', icon: '📺', name: 'VAR check', w: 0.9, desc: () => 'VAR reviews your last signing…' },
+    box: { rar: 'u', icon: '🎁', name: 'Mystery box', w: 0.9, desc: () => 'A free CHAOS wildcard for your bag.' },
+    masked: { rar: 'u', icon: '🎭', name: 'Masked men', w: 0.8, desc: () => 'This spin’s players wear masks: no names until you sign one.' },
   };
+  // how rare things are: common, uncommon, rare, legendary (the badge on the card, and how often they come up)
+  const RAR = { c: 1, u: 0.45, r: 0.15, l: 0.045 };
+  const RAR_NAME = { u: 'Uncommon', r: 'Rare', l: 'Legendary' };
+  // more match-day nonsense. go(r) changes the game and returns { note, run }; look = [scene, sound]
+  const XEV = {
+    pigeon: { rar: 'c', icon: '🐦', name: 'Pitch invader', tone: 'weird', look: ['kickoff', 'wild'], go: () => { S.bonus.push(['🐦 A pigeon', 1]); return { note: 'A pigeon lands on the centre spot. It’s just a pigeon. <b>+1</b> bonus point, for the pigeon.' }; } },
+    chant: { rar: 'c', icon: '📣', name: 'Terrace anthem', tone: 'good', look: ['party', 'cheer'], go: () => { const p = pts(10); S.bonus.push(['📣 Terrace anthem', p]); return { note: `The away end sing your name for 90 minutes: <b>+${p}</b> bonus points.` }; } },
+    pies: { rar: 'c', icon: '🥧', name: 'Who ate all the pies?', tone: 'good', look: ['gold', 'cheer'], go: () => {
+      const i = S.xi.findIndex(x => x.p != null && x.pos === 'GK');
+      if (i < 0) return { note: 'Your keeper hasn’t signed yet, so the pies go to waste.' };
+      scale(S.xi[i], 2, 'boosted'); return { note: `${nm(i)} has eaten all the pies and now fills the whole goal: his numbers <b>double</b>.`, run: c => c.visit(i, '🥧') }; } },
+    dog: { rar: 'c', icon: '🐕', name: 'Dog on the pitch', tone: 'good', look: ['kickoff', 'box'], go: r => {
+      if (S.inv.length >= 3) return { note: 'A dog runs on, looks at your full wildcard bag and runs off again.' };
+      const cards = Object.keys(WILDCARDS).filter(k => !WILDCARDS[k].chaos && !S.rules.noWild.includes(k)), w = cards[Math.floor(r() * cards.length)];
+      S.inv.push(w); return { note: `A dog runs on and fetches you a wildcard: ${WILDCARDS[w].icon} <b>${WILDCARDS[w].name}</b>!`, run: c => c.bag('🐕') }; } },
+    vuvuzela: { rar: 'c', icon: '🎺', name: 'Vuvuzelas', tone: 'weird', look: ['fire', 'horn'], go: () => { charge(); return { note: 'Nothing happens, very loudly. The CHAOS meter goes up one.' }; } },
+    hamstring: { rar: 'c', icon: '🦵', name: 'Hamstring twang', tone: 'bad', look: ['red', 'bad'], go: r => {
+      const f = filledIdx(); if (!f.length) return { note: 'Nobody to pull a hamstring yet.' };
+      const i = f[Math.floor(r() * f.length)]; scale(S.xi[i], 0.7, 'injured'); return { note: `${nm(i)} stretches for a ball he was never getting: <b>−30%</b>.`, run: c => c.visit(i, '🦵') }; } },
+    interview: { rar: 'c', icon: '🎤', name: 'Post-match interview', tone: 'bad', look: ['news', 'boo'], go: () => {
+      const p = pts(5); S.bonus.push(['🎤 That interview', -p]); const m = S.manager && MANAGERS[S.manager];
+      return { note: `${m ? m.name : 'Your chairman'} blames the ball, the grass and the moon. <b>−${p}</b> bonus points.` }; } },
+    handofgod: { rar: 'u', icon: '🤚', name: 'Hand of God', tone: 'good', look: ['tv', 'whistle'], go: () => {
+      const i = S.xi.findIndex(y => y.p === S.last && y.p != null); if (i < 0) return { note: 'Nobody to handle it yet.' };
+      scale(S.xi[i], 1.5, 'boosted'); return { note: `${nm(i)} punches it in. Nobody saw it: <b>×1.5</b>.`, run: c => c.visit(i, '🤚') }; } },
+    sponge: { rar: 'u', icon: '🧽', name: 'The magic sponge', tone: 'good', look: ['kickoff', 'good'], go: () => {
+      const f = filledIdx(); if (!f.length) return { note: 'The physio has nobody to sponge.' };
+      const i = f.slice().sort((a, b) => S.xi[a].g - S.xi[b].g)[0]; scale(S.xi[i], 2, 'boosted');
+      return { note: `The physio runs on with a cold sponge and ${nm(i)} is a new man: <b>×2</b>.`, run: c => c.visit(i, '🧽') }; } },
+    stoke: { rar: 'u', icon: '🌧️', name: 'A cold wet night in Stoke', tone: 'weird', look: ['storm', 'rain'], go: () => {
+      S.xi.forEach(x => { if (x.p == null) return; const g = GM.GROUP[x.pos]; if (g === 'D' || g === 'G') scale(x, 1.5, 'boosted'); else if (g === 'F') scale(x, 0.8, 'halved'); });
+      return { note: 'Can they do it here? Defenders and keeper <b>+50%</b>, strikers <b>−20%</b>.', run: c => c.sweep('🌧️') }; } },
+    swapdeal: { rar: 'u', icon: '🔀', name: 'Swap deal', tone: 'weird', look: ['casino', 'swoosh'], go: r => {
+      const f = filledIdx(); if (f.length < 2) return { note: 'Nobody to swap yet.' };
+      const a = f[Math.floor(r() * f.length)], rest = f.filter(i => i !== a), b2 = rest[Math.floor(r() * rest.length)];
+      const va = S.xi[a].v; S.xi[a].v = S.xi[b2].v; S.xi[b2].v = va; S.xi[a].g = S.xi[a].v[S.stat]; S.xi[b2].g = S.xi[b2].v[S.stat];
+      return { note: `A clerical error: ${nm(a)} and ${nm(b2)} swap numbers.`, run: c => { c.visit(a, '🔀'); c.visit(b2, '🔀', 'pop', 300); } }; } },
+    retro: { rar: 'u', icon: '📼', name: 'Retro kit launch', tone: 'good', look: ['gold', 'sting'], go: () => { S.forceSpecial = 'throwback'; return { note: 'Everyone’s in 90s shirts: this spin is <b>all 90s players</b>.' }; } },
+    testimonial: { rar: 'u', icon: '❤️', name: 'Testimonial match', tone: 'good', look: ['gold', 'sting'], go: () => { S.forceSpecial = 'oneclub'; return { note: 'A night for the loyal: this spin is <b>one-club men</b> only.' }; } },
+    loanarmy: { rar: 'u', icon: '🧳', name: 'The loan army', tone: 'good', look: ['gold', 'sting'], go: () => { S.forceSpecial = 'journeyman'; return { note: 'They’re back from loan: this spin is <b>journeymen</b> with 4+ clubs.' }; } },
+    helicopter: { rar: 'r', icon: '🚁', name: 'Helicopter on the lawn', tone: 'good', look: ['money', 'wind'], go: () => { S.forceSpecial = 'centurion'; return { note: 'A billionaire lands with a chequebook: this spin is <b>100+ goal</b> players only.' }; } },
+    aliens: { rar: 'r', icon: '🛸', name: 'Alien abduction', tone: 'weird', look: ['lightning', 'spooky'], go: r => {
+      const f = filledIdx(); if (!f.length) return { note: 'The aliens look around, find nobody worth taking, and leave.' };
+      const fw = f.filter(i => GM.GROUP[S.xi[i].pos] === 'F'), pool = fw.length ? fw : f, i = pool[Math.floor(r() * pool.length)], p = pts(40);
+      scale(S.xi[i], 0, 'halved'); S.bonus.push(['🛸 Documentary rights', p]);
+      return { note: `${nm(i)} is beamed up mid-warm-up: he counts for <b>nothing</b>. The documentary rights pay <b>+${p}</b> bonus.`, run: c => c.visit(i, '🛸', 'strike') }; } },
+    royal: { rar: 'r', icon: '👑', name: 'Royal visit', tone: 'good', look: ['gold', 'fanfare'], go: () => { const p = pts(50); S.bonus.push(['👑 Royal visit', p]); return { note: `Everyone’s on their best behaviour: <b>+${p}</b> bonus points.`, run: c => c.rain('👑') }; } },
+    oligarch: { rar: 'r', icon: '💸', name: 'Takeover!', tone: 'good', look: ['money', 'cash'], go: r => {
+      const cards = Object.keys(WILDCARDS).filter(k => WILDCARDS[k].chaos), got = [];
+      while (S.inv.length < 3) { const w = cards[Math.floor(r() * cards.length)]; S.inv.push(w); got.push(WILDCARDS[w].icon); }
+      return { note: got.length ? `New owners, new money: your bag fills up with CHAOS cards ${got.join(' ')}` : 'New owners, but your bag is already full. They buy a yacht instead.', run: c => c.bag('💸') }; } },
+    fairytale: { rar: 'r', icon: '🦊', name: '5000–1', tone: 'good', look: ['party', 'fanfare'], go: () => {
+      const f = filledIdx(); if (!f.length) return { note: 'A fairytale needs a hero. Sign someone first.' };
+      const i = f.slice().sort((a, b) => S.xi[a].g - S.xi[b].g)[0]; scale(S.xi[i], 5, 'boosted');
+      return { note: `Nobody gave ${nm(i)} a chance. <b>×5</b>!`, run: c => c.visit(i, '🦊', 'strike') }; } },
+    slip: { rar: 'r', icon: '🍌', name: 'The slip', tone: 'bad', look: ['red', 'boo'], go: () => {
+      const f = filledIdx(); if (!f.length) return { note: 'Nobody to slip yet.' };
+      const i = f.slice().sort((a, b) => S.xi[b].g - S.xi[a].g)[0]; scale(S.xi[i], 0.5, 'halved');
+      return { note: `${nm(i)} slips at the worst possible moment: <b>halved</b>.`, run: c => c.visit(i, '🍌', 'drive') }; } },
+    lastminute: { rar: 'l', icon: '⏱️', name: '93:20', tone: 'good', look: ['unleash', ['horn', 'cheer']], go: () => {
+      filledIdx().forEach(i => scale(S.xi[i], 1.5, 'boosted'));
+      return { note: 'Last-minute madness! The whole ground goes up: your <b>whole XI ×1.5</b>!', run: c => c.sweep('🎉') }; } },
+  };
+  const pts = n => Math.round(n * CHAOS_UNIT[S.stat]);
   // the CHAOS meter: taking or playing a wildcard (and every storm) charges it; full, the next spin opens with a big
   // CHAOS moment. Now and then a smaller match-day event (above) strikes too. Only ever one thing at a time.
   const METER = 4;
   const HURT = ['rotation', 'zero', 'injured', 'halved'];
   // the big moments the meter sets off (need: filled slots, empty slots)
   const MOMENTS = {
-    unleash: { icon: '💥', name: 'CHAOS UNLEASHED', w: 1.1, tone: 'unleash' },
-    tornado: { icon: '🌪️', name: 'Tornado!', w: 1, tone: 'bad', need: n => n >= 3 },
-    lightning: { icon: '⚡', name: 'Lightning strike', w: 0.9, tone: 'weird', need: n => n >= 2 },
-    parade: { icon: '🚌', name: 'Open-top bus parade', w: 0.8, tone: 'good', need: n => n >= 1 },
-    deadline: { icon: '⏰', name: 'Deadline day', w: 0.9, tone: 'good', need: (n, left) => left >= 1 },
-    sacked: { icon: '📰', name: 'Manager sacked!', w: 0.8, tone: 'weird', need: () => !!(S && S.manager) },
+    unleash: { icon: '💥', name: 'CHAOS UNLEASHED', rar: 'c', tone: 'unleash' },
+    tornado: { icon: '🌪️', name: 'Tornado!', rar: 'c', tone: 'bad', need: n => n >= 3 },
+    lightning: { icon: '⚡', name: 'Lightning strike', rar: 'c', tone: 'weird', need: n => n >= 2 },
+    parade: { icon: '🚌', name: 'Open-top bus parade', rar: 'u', tone: 'good', need: n => n >= 1 },
+    deadline: { icon: '⏰', name: 'Deadline day', rar: 'u', tone: 'good', need: (n, left) => left >= 1 },
+    sacked: { icon: '📰', name: 'Manager sacked!', rar: 'u', tone: 'weird', need: () => !!(S && S.manager) },
+    blackhole: { icon: '🕳️', name: 'Black hole', rar: 'r', tone: 'weird', need: n => n >= 2 },
+    relegation: { icon: '🪂', name: 'The great escape', rar: 'r', tone: 'weird', need: n => n >= 3 },
+    title: { icon: '🏆', name: 'Champions!', rar: 'l', tone: 'good' },
   };
   // CHAOS managers: you appoint one at kick-off. Each brings a perk and a catch, worked out on your XI as bonus points
   // (per-player amounts are in goals and scale to the stat; percentages are of your XI's own numbers)
@@ -154,7 +221,7 @@
   let S = null; // game state
   let root = null;
 
-  GM.draft = { start, RULES, WILDCARDS, TARGETS, state: () => S, total: st => scoreFor(st).t, score: st => scoreFor(st), render: () => render(), modeKey: (m, s, h, c) => keyFor(m, s, h, c) };
+  GM.draft = { events: () => Object.keys(EVENTS).concat(Object.keys(XEV), Object.keys(MOMENTS)), start, RULES, WILDCARDS, TARGETS, state: () => S, total: st => scoreFor(st).t, score: st => scoreFor(st), render: () => render(), modeKey: (m, s, h, c) => keyFor(m, s, h, c) };
 
   const statSuffix = s => ({ goals: '', assists: 'ast', apps: 'apps' }[s] || '');
   function keyFor(mode, stat, hard, club) {
@@ -377,6 +444,7 @@
   // before a spin: a big moment if the meter's full, otherwise (now and then) a match-day event; never both, and
   // never on the spin straight after a big one
   async function chaosTurn() {
+    if (S.forceEv) { const f = S.forceEv; S.forceEv = null; S.momentSpin = S.spin; return MOMENTS[f] ? bigMoment(f) : chaosEvent(GM.rng(`${S.seed}|chaos|${S.spin}`), f); }  // tests
     if (S.chaosDue) { S.chaosDue = false; S.momentSpin = S.spin; return bigMoment(); }
     if (S.lastBig === S.spin - 1) return;
     const r = GM.rng(`${S.seed}|chaos|${S.spin}`);
@@ -388,8 +456,16 @@
   const scale = (x, f, mod) => { STAT_KEYS.forEach(k => { x.v[k] = Math.floor(x.v[k] * f); }); x.g = x.v[S.stat]; if (mod) x.mod = mod; };
   const nm = i => GM.esc(byId(S.xi[i].p).name);
 
-  function chaosEvent(r) {
-    let e = r.weighted(Object.keys(EVENTS), k => EVENTS[k].w); const ev = EVENTS[e];
+  function chaosEvent(r, forced) {
+    const all = Object.keys(EVENTS).concat(Object.keys(XEV)), fresh = all.filter(k => !(S.evSeen || []).includes(k));
+    let e = forced || r.weighted(fresh.length ? fresh : all, k => RAR[(EVENTS[k] || XEV[k]).rar]);
+    S.evSeen = (S.evSeen || []).concat(e);
+    if (XEV[e]) {
+      const x = XEV[e], before = snap(), out = x.go(r) || {};
+      S.log.push(x.icon); S.chaosCount = (S.chaosCount || 0) + 1;
+      return moment({ icon: x.icon, name: x.name, text: out.note, tone: x.tone, before, run: out.run, small: true, scene: x.look[0], sound: x.look[1], rarity: x.rar });
+    }
+    const ev = EVENTS[e];
     const before = snap();
     let note = ev.desc(wst()), run = null, reveal = null, tone = null;
     if (e === 'redcard' || e === 'derby') {
@@ -440,14 +516,15 @@
     const look = { redcard: ['red', ['whistle', 'boo']], injury: ['red', 'ambulance'], taxman: ['dark', 'taxman'], golden: ['gold', 'fanfare'], box: ['gold', 'box'],
       masked: ['dark', 'spooky'], windfall: ['money', 'cash'], derby: ['fire', ['drumroll', 'cheer']], 'var+': ['tv', 'var'], 'var-': ['tv', 'var'] }[e] || ['dark', 'boom'];
     if (reveal) reveal.sound = reveal.tone === 'good' ? 'cheer' : 'boo';
-    return moment({ icon: ev.icon, name: ev.name, text: note, tone, before, run, reveal, small: true, scene: look[0], sound: look[1] });
+    return moment({ icon: ev.icon, name: ev.name, text: note, tone, before, run, reveal, small: true, scene: look[0], sound: look[1], rarity: ev.rar });
   }
 
-  async function bigMoment() {
+  async function bigMoment(forced) {
     const r = GM.rng(`${S.seed}|moment|${S.spin}`), filled = filledIdx(), left = emptySlots();
-    const keys = Object.keys(MOMENTS).filter(k => !MOMENTS[k].need || MOMENTS[k].need(filled.length, left));
-    const k = r.weighted(keys, x => MOMENTS[x].w), m = MOMENTS[k], before = snap();
-    const o = { icon: m.icon, name: m.name, tone: m.tone, before, big: true, ...{ unleash: { scene: 'unleash', sound: ['meterfull', 'horn'] }, tornado: { scene: 'storm', sound: 'wind', actSound: 'wind' },
+    const keys = Object.keys(MOMENTS).filter(k => !MOMENTS[k].need || MOMENTS[k].need(filled.length, left)), fresh = keys.filter(k => !(S.bigSeen || []).includes(k));
+    const k = forced || r.weighted(fresh.length ? fresh : keys, x => RAR[MOMENTS[x].rar]), m = MOMENTS[k], before = snap();
+    S.bigSeen = (S.bigSeen || []).concat(k);
+    const o = { icon: m.icon, name: m.name, tone: m.tone, before, big: true, rarity: m.rar, ...{ blackhole: { scene: 'lightning', sound: 'spooky' }, relegation: { scene: 'red', sound: 'drumroll', actSound: 'cheer' }, title: { scene: 'party', sound: ['fanfare', 'cheer'] }, unleash: { scene: 'unleash', sound: ['meterfull', 'horn'] }, tornado: { scene: 'storm', sound: 'wind', actSound: 'wind' },
       lightning: { scene: 'lightning', sound: 'thunder' }, parade: { scene: 'party', sound: 'fanfare', actSound: 'cheer' }, deadline: { scene: 'clock', sound: 'tick3' }, sacked: { scene: 'news', sound: 'sacked' } }[k] };
     S.lastBig = S.spin;
     S.chaosCount = (S.chaosCount || 0) + 1; S.log.push(m.icon);
@@ -471,6 +548,19 @@
       S.bonus.push([`🚌 Bus parade (spin ${S.spin + 1})`, pts]);
       o.text = `The fans are out: <b>+${pts}</b> bonus points${medals ? ` for your ${medals} title medal${medals === 1 ? '' : 's'}` : ''}.`;
       o.run = c => c.sweep('🚌');
+    } else if (k === 'blackhole') {
+      const by = filled.slice().sort((a, b) => S.xi[b].g - S.xi[a].g), top = by[0], low = by[by.length - 1];
+      const v = S.xi[top].v; S.xi[top].v = S.xi[low].v; S.xi[low].v = v; S.xi[top].g = S.xi[top].v[S.stat]; S.xi[low].g = S.xi[low].v[S.stat];
+      o.text = `A hole opens in the space-time continuum: ${nm(top)} and ${nm(low)} <b>swap numbers</b>.`;
+      o.run = c => { c.visit(top, '🕳️', 'strike'); c.visit(low, '🕳️', 'strike', 700); };
+    } else if (k === 'relegation') {
+      const p = pts(60); filled.forEach(i => scale(S.xi[i], 0.75, 'halved')); S.bonus.push(['🪂 The great escape', p]);
+      o.text = `Bottom of the table at Christmas. Everyone’s numbers <b>−25%</b>… but the great escape is worth <b>+${p}</b> bonus.`;
+      o.run = c => c.sweep('🪂');
+    } else if (k === 'title') {
+      const p = pts(100); S.bonus.push(['🏆 Champions!', p]);
+      o.text = `Somehow, you’ve won the league. <b>+${p}</b> bonus points!`;
+      o.run = c => c.rain('🏆');
     } else if (k === 'deadline') {
       S.forceSpecial = 'deadline';
       o.text = 'The window’s about to slam shut: this spin has <b>FIVE</b> players to choose from.';
@@ -570,11 +660,11 @@
       const flashApp = () => { const f = document.createElement('div'); f.className = 'chaos-flash lightning'; document.body.appendChild(f); setTimeout(() => f.remove(), 700); };
       const el = document.createElement('div');
       el.className = `cm intro cm-${o.tone || 'weird'} ${o.big ? 'cm-big' : ''} ${o.pick ? 'cm-pick' : ''}`;
-      el.innerHTML = `<div class="cm-card"><div class="cm-icon">${o.icon}</div><div class="cm-name">${o.name}</div><div class="cm-text">${o.text || ''}</div>
+      el.innerHTML = `<div class="cm-card ${o.rarity ? 'rar-' + o.rarity : ''}">${RAR_NAME[o.rarity] ? `<div class="cm-rar">${o.rarity === 'l' ? '✨ ' : ''}${RAR_NAME[o.rarity]}${o.rarity === 'l' ? ' ✨' : ''}</div>` : ''}<div class="cm-icon">${o.icon}</div><div class="cm-name">${o.name}</div><div class="cm-text">${o.text || ''}</div>
         ${o.coin != null ? coinHtml(o.coin) : ''}${o.pick ? `<div class="mgr-list">${o.pick.map(mgrCard).join('')}</div>` : '<small class="cm-skip">Tap to carry on</small>'}</div>`;
       document.body.appendChild(el);
       scene(el, o.scene, timers);
-      if (o.sound) [].concat(o.sound).forEach((snd, k) => later(k * 450, () => GM.sound.play(snd)));
+      if (o.sound) [].concat(o.rarity === 'l' || o.rarity === 'r' ? ['wild'] : [], o.sound).forEach((snd, k) => later(k * 450, () => GM.sound.play(snd)));
       if (o.tone === 'bad' || o.tone === 'unleash') { const app = document.getElementById('app'); app.classList.remove('shake'); void app.offsetWidth; app.classList.add('shake'); }
       GM.buzz(o.tone === 'bad' ? 120 : 40);
       const card = GM.$('.cm-card', el), setText = (html, tone) => { const t = GM.$('.cm-text', el); if (t) t.innerHTML = html; if (tone) el.className = el.className.replace(/cm-(good|bad|weird|unleash)\b/, 'cm-' + tone); };

@@ -13,6 +13,8 @@
       items: [
         '🪙 You flip the coin yourself now: tap it and watch it land',
         '🎬 CHAOS moments take over the whole screen first (a storm with rain and lightning for the tornado, confetti for the parade, coins for TV money), then play out on your pitch, with time to read what happened',
+        '🎲 Loads more going on: 20 new match-day events (a pigeon on the pitch, who ate all the pies, alien abduction, the magic sponge, a cold wet night in Stoke…) and three new big moments (a black hole, the great escape, Champions!)',
+        '💎 Moments come in rarities (common, uncommon, rare and legendary) and nothing repeats in a game until you’ve seen the lot',
         '🔊 New sounds for everything: the meter filling up, wind, thunder, the ambulance, VAR, the till, the boos…',
         '🧹 Tidier bottom of the screen: the tips only show on your first go',
       ],

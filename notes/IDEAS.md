@@ -50,6 +50,9 @@ formations, and badges round 2.
   triggers a big moment (unleash, tornado, lightning, parade, deadline day, sacked); match-day events at 22% with no
   event straight after a big one; storms never share a spin with a moment; coin toss; full-time story.
   Test: `tools/test/chaos.js`.
+- **5.4.1 (owner: "TV money twice in one game… add variation, funny things, the more the better, at different
+  rarities"):** 20 more match-day events and 3 more big moments, each common / uncommon / rare / legendary (weights
+  1 / 0.45 / 0.15 / 0.045, badge on the card), no repeats in a game until all are seen. The test forces every one.
 - **Old questions:** Is about 2 s a moment right (tap to skip)? Keep the same number of events, or also stop two big
   moments landing on back-to-back spins? Any other moments you'd like (e.g. a 🌪️ tornado event that swaps players'
   positions)?

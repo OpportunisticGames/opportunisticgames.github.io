@@ -1490,3 +1490,11 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
 .cm.act .coin-wrap { display: none; }
 /* the line under the reels: one line at most */
 .m-top { display: block; white-space: nowrap; text-overflow: ellipsis; }
+/* how rare a moment is */
+.cm-rar { display: inline-block; margin-bottom: 4px; padding: 2px 10px; border-radius: 999px; font: 800 .68rem Inter, sans-serif; letter-spacing: .12em; text-transform: uppercase; background: rgba(255, 255, 255, .18); }
+.rar-u .cm-rar { background: #00c2d1; color: #002a2e; }
+.rar-r .cm-rar { background: #b44dff; color: #fff; box-shadow: 0 0 12px rgba(180, 77, 255, .8); }
+.rar-l .cm-rar { background: linear-gradient(90deg, #ffe600, #ff9a00, #ffe600); background-size: 200% 100%; color: #3a2000; animation: rar-shine 1.2s linear infinite; box-shadow: 0 0 16px rgba(255, 214, 0, .9); }
+.cm-card.rar-r { border-color: #b44dff; box-shadow: 0 0 30px rgba(180, 77, 255, .55), 0 10px 40px rgba(0, 0, 0, .5); }
+.cm-card.rar-l { border-color: #ffd400; box-shadow: 0 0 40px rgba(255, 214, 0, .7), 0 10px 40px rgba(0, 0, 0, .5); }
+@keyframes rar-shine { to { background-position: -200% 0; } }
