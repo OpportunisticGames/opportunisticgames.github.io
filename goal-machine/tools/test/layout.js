@@ -31,7 +31,7 @@ const sizes = (process.argv[3] || '390x844').split(',').map(x => x.split('x').ma
         if (d.clip || d.slotClip) clipped.push(tag + ':' + d.clip + '/' + d.slotClip);
       };
       const act = f => pg.evaluate(f).catch(() => null);
-      for (let step = 0; step < 60; step++) {
+      for (let step = 0; step < 150; step++) {
         await snap('s' + step);
         if (await act(() => !!document.querySelector('.result-total'))) break;
         await act(() => document.querySelectorAll('.modal-wrap').forEach(m => m.remove()));

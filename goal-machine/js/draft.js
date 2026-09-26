@@ -53,28 +53,97 @@
   };
   // CHAOS events: now and then, something happens to you before a spin (seeded, so a challenge gets the same chaos)
   const EVENTS = {
-    redcard: { icon: '🟥', name: 'Red card', w: 1, desc: st => `Your next signing’s ${st.label} count half.` },
-    injury: { icon: '🚑', name: 'Injury crisis', w: 1, desc: st => `One of your players picks up a knock: his ${st.label} are halved.` },
-    taxman: { icon: '🧾', name: 'The taxman', w: 0.8, desc: () => 'Takes a wildcard from your bag.' },
-    windfall: { icon: '💰', name: 'TV money', w: 1, desc: () => 'A windfall: bonus points!' },
-    derby: { icon: '🔥', name: 'Derby day', w: 1, desc: st => `Your next signing’s ${st.label} count double.` },
-    golden: { icon: '⚽', name: 'Golden goal', w: 0.7, desc: st => `Your next signing’s ${st.label} count TRIPLE.` },
-    var: { icon: '📺', name: 'VAR check', w: 0.9, desc: () => 'VAR reviews your last signing…' },
-    box: { icon: '🎁', name: 'Mystery box', w: 0.9, desc: () => 'A free CHAOS wildcard for your bag.' },
-    masked: { icon: '🎭', name: 'Masked men', w: 0.8, desc: () => 'This spin’s players wear masks: no names until you sign one.' },
+    redcard: { rar: 'c', icon: '🟥', name: 'Red card', w: 1, desc: st => `Your next signing’s ${st.label} count half.` },
+    injury: { rar: 'c', icon: '🚑', name: 'Injury crisis', w: 1, desc: st => `One of your players picks up a knock: his ${st.label} are halved.` },
+    taxman: { rar: 'u', icon: '🧾', name: 'The taxman', w: 0.8, desc: () => 'Takes a wildcard from your bag.' },
+    windfall: { rar: 'c', icon: '💰', name: 'TV money', w: 1, desc: () => 'A windfall: bonus points!' },
+    derby: { rar: 'c', icon: '🔥', name: 'Derby day', w: 1, desc: st => `Your next signing’s ${st.label} count double.` },
+    golden: { rar: 'u', icon: '⚽', name: 'Golden goal', w: 0.7, desc: st => `Your next signing’s ${st.label} count TRIPLE.` },
+    var: { rar: 'u', icon: '📺', name: 'VAR check', w: 0.9, desc: () => 'VAR reviews your last signing…' },
+    box: { rar: 'u', icon: '🎁', name: 'Mystery box', w: 0.9, desc: () => 'A free CHAOS wildcard for your bag.' },
+    masked: { rar: 'u', icon: '🎭', name: 'Masked men', w: 0.8, desc: () => 'This spin’s players wear masks: no names until you sign one.' },
   };
+  // how rare things are: common, uncommon, rare, legendary (the badge on the card, and how often they come up)
+  const RAR = { c: 1, u: 0.45, r: 0.15, l: 0.045 };
+  const RAR_NAME = { u: 'Uncommon', r: 'Rare', l: 'Legendary' };
+  // more match-day nonsense. go(r) changes the game and returns { note, run }; look = [scene, sound]
+  const XEV = {
+    pigeon: { rar: 'c', icon: '🐦', name: 'Pitch invader', tone: 'weird', look: ['kickoff', 'wild'], go: () => { S.bonus.push(['🐦 A pigeon', 1]); return { note: 'A pigeon lands on the centre spot. It’s just a pigeon. <b>+1</b> bonus point, for the pigeon.' }; } },
+    chant: { rar: 'c', icon: '📣', name: 'Terrace anthem', tone: 'good', look: ['party', 'cheer'], go: () => { const p = pts(10); S.bonus.push(['📣 Terrace anthem', p]); return { note: `The away end sing your name for 90 minutes: <b>+${p}</b> bonus points.` }; } },
+    pies: { rar: 'c', icon: '🥧', name: 'Who ate all the pies?', tone: 'good', look: ['gold', 'cheer'], go: () => {
+      const i = S.xi.findIndex(x => x.p != null && x.pos === 'GK');
+      if (i < 0) return { note: 'Your keeper hasn’t signed yet, so the pies go to waste.' };
+      scale(S.xi[i], 2, 'boosted'); return { note: `${nm(i)} has eaten all the pies and now fills the whole goal: his numbers <b>double</b>.`, run: c => c.visit(i, '🥧') }; } },
+    dog: { rar: 'c', icon: '🐕', name: 'Dog on the pitch', tone: 'good', look: ['kickoff', 'box'], go: r => {
+      if (S.inv.length >= 3) return { note: 'A dog runs on, looks at your full wildcard bag and runs off again.' };
+      const cards = Object.keys(WILDCARDS).filter(k => !WILDCARDS[k].chaos && !S.rules.noWild.includes(k)), w = cards[Math.floor(r() * cards.length)];
+      S.inv.push(w); return { note: `A dog runs on and fetches you a wildcard: ${WILDCARDS[w].icon} <b>${WILDCARDS[w].name}</b>!`, run: c => c.bag('🐕') }; } },
+    vuvuzela: { rar: 'c', icon: '🎺', name: 'Vuvuzelas', tone: 'weird', look: ['fire', 'horn'], go: () => { charge(); return { note: 'Nothing happens, very loudly. The CHAOS meter goes up one.' }; } },
+    hamstring: { rar: 'c', icon: '🦵', name: 'Hamstring twang', tone: 'bad', look: ['red', 'bad'], go: r => {
+      const f = filledIdx(); if (!f.length) return { note: 'Nobody to pull a hamstring yet.' };
+      const i = f[Math.floor(r() * f.length)]; scale(S.xi[i], 0.7, 'injured'); return { note: `${nm(i)} stretches for a ball he was never getting: <b>−30%</b>.`, run: c => c.visit(i, '🦵') }; } },
+    interview: { rar: 'c', icon: '🎤', name: 'Post-match interview', tone: 'bad', look: ['news', 'boo'], go: () => {
+      const p = pts(5); S.bonus.push(['🎤 That interview', -p]); const m = S.manager && MANAGERS[S.manager];
+      return { note: `${m ? m.name : 'Your chairman'} blames the ball, the grass and the moon. <b>−${p}</b> bonus points.` }; } },
+    handofgod: { rar: 'u', icon: '🤚', name: 'Hand of God', tone: 'good', look: ['tv', 'whistle'], go: () => {
+      const i = S.xi.findIndex(y => y.p === S.last && y.p != null); if (i < 0) return { note: 'Nobody to handle it yet.' };
+      scale(S.xi[i], 1.5, 'boosted'); return { note: `${nm(i)} punches it in. Nobody saw it: <b>×1.5</b>.`, run: c => c.visit(i, '🤚') }; } },
+    sponge: { rar: 'u', icon: '🧽', name: 'The magic sponge', tone: 'good', look: ['kickoff', 'good'], go: () => {
+      const f = filledIdx(); if (!f.length) return { note: 'The physio has nobody to sponge.' };
+      const i = f.slice().sort((a, b) => S.xi[a].g - S.xi[b].g)[0]; scale(S.xi[i], 2, 'boosted');
+      return { note: `The physio runs on with a cold sponge and ${nm(i)} is a new man: <b>×2</b>.`, run: c => c.visit(i, '🧽') }; } },
+    stoke: { rar: 'u', icon: '🌧️', name: 'A cold wet night in Stoke', tone: 'weird', look: ['storm', 'rain'], go: () => {
+      S.xi.forEach(x => { if (x.p == null) return; const g = GM.GROUP[x.pos]; if (g === 'D' || g === 'G') scale(x, 1.5, 'boosted'); else if (g === 'F') scale(x, 0.8, 'halved'); });
+      return { note: 'Can they do it here? Defenders and keeper <b>+50%</b>, strikers <b>−20%</b>.', run: c => c.sweep('🌧️') }; } },
+    swapdeal: { rar: 'u', icon: '🔀', name: 'Swap deal', tone: 'weird', look: ['casino', 'swoosh'], go: r => {
+      const f = filledIdx(); if (f.length < 2) return { note: 'Nobody to swap yet.' };
+      const a = f[Math.floor(r() * f.length)], rest = f.filter(i => i !== a), b2 = rest[Math.floor(r() * rest.length)];
+      const va = S.xi[a].v; S.xi[a].v = S.xi[b2].v; S.xi[b2].v = va; S.xi[a].g = S.xi[a].v[S.stat]; S.xi[b2].g = S.xi[b2].v[S.stat];
+      return { note: `A clerical error: ${nm(a)} and ${nm(b2)} swap numbers.`, run: c => { c.visit(a, '🔀'); c.visit(b2, '🔀', 'pop', 300); } }; } },
+    retro: { rar: 'u', icon: '📼', name: 'Retro kit launch', tone: 'good', look: ['gold', 'sting'], go: () => { S.forceSpecial = 'throwback'; return { note: 'Everyone’s in 90s shirts: this spin is <b>all 90s players</b>.' }; } },
+    testimonial: { rar: 'u', icon: '❤️', name: 'Testimonial match', tone: 'good', look: ['gold', 'sting'], go: () => { S.forceSpecial = 'oneclub'; return { note: 'A night for the loyal: this spin is <b>one-club men</b> only.' }; } },
+    loanarmy: { rar: 'u', icon: '🧳', name: 'The loan army', tone: 'good', look: ['gold', 'sting'], go: () => { S.forceSpecial = 'journeyman'; return { note: 'They’re back from loan: this spin is <b>journeymen</b> with 4+ clubs.' }; } },
+    helicopter: { rar: 'r', icon: '🚁', name: 'Helicopter on the lawn', tone: 'good', look: ['money', 'wind'], go: () => { S.forceSpecial = 'centurion'; return { note: 'A billionaire lands with a chequebook: this spin is <b>100+ goal</b> players only.' }; } },
+    aliens: { rar: 'r', icon: '🛸', name: 'Alien abduction', tone: 'weird', look: ['lightning', 'spooky'], go: r => {
+      const f = filledIdx(); if (!f.length) return { note: 'The aliens look around, find nobody worth taking, and leave.' };
+      const fw = f.filter(i => GM.GROUP[S.xi[i].pos] === 'F'), pool = fw.length ? fw : f, i = pool[Math.floor(r() * pool.length)], p = pts(40);
+      scale(S.xi[i], 0, 'halved'); S.bonus.push(['🛸 Documentary rights', p]);
+      return { note: `${nm(i)} is beamed up mid-warm-up: he counts for <b>nothing</b>. The documentary rights pay <b>+${p}</b> bonus.`, run: c => c.visit(i, '🛸', 'strike') }; } },
+    royal: { rar: 'r', icon: '👑', name: 'Royal visit', tone: 'good', look: ['gold', 'fanfare'], go: () => { const p = pts(50); S.bonus.push(['👑 Royal visit', p]); return { note: `Everyone’s on their best behaviour: <b>+${p}</b> bonus points.`, run: c => c.rain('👑') }; } },
+    oligarch: { rar: 'r', icon: '💸', name: 'Takeover!', tone: 'good', look: ['money', 'cash'], go: r => {
+      const cards = Object.keys(WILDCARDS).filter(k => WILDCARDS[k].chaos), got = [];
+      while (S.inv.length < 3) { const w = cards[Math.floor(r() * cards.length)]; S.inv.push(w); got.push(WILDCARDS[w].icon); }
+      return { note: got.length ? `New owners, new money: your bag fills up with CHAOS cards ${got.join(' ')}` : 'New owners, but your bag is already full. They buy a yacht instead.', run: c => c.bag('💸') }; } },
+    fairytale: { rar: 'r', icon: '🦊', name: '5000–1', tone: 'good', look: ['party', 'fanfare'], go: () => {
+      const f = filledIdx(); if (!f.length) return { note: 'A fairytale needs a hero. Sign someone first.' };
+      const i = f.slice().sort((a, b) => S.xi[a].g - S.xi[b].g)[0]; scale(S.xi[i], 5, 'boosted');
+      return { note: `Nobody gave ${nm(i)} a chance. <b>×5</b>!`, run: c => c.visit(i, '🦊', 'strike') }; } },
+    slip: { rar: 'r', icon: '🍌', name: 'The slip', tone: 'bad', look: ['red', 'boo'], go: () => {
+      const f = filledIdx(); if (!f.length) return { note: 'Nobody to slip yet.' };
+      const i = f.slice().sort((a, b) => S.xi[b].g - S.xi[a].g)[0]; scale(S.xi[i], 0.5, 'halved');
+      return { note: `${nm(i)} slips at the worst possible moment: <b>halved</b>.`, run: c => c.visit(i, '🍌', 'drive') }; } },
+    lastminute: { rar: 'l', icon: '⏱️', name: '93:20', tone: 'good', look: ['unleash', ['horn', 'cheer']], go: () => {
+      filledIdx().forEach(i => scale(S.xi[i], 1.5, 'boosted'));
+      return { note: 'Last-minute madness! The whole ground goes up: your <b>whole XI ×1.5</b>!', run: c => c.sweep('🎉') }; } },
+  };
+  const pts = n => Math.round(n * CHAOS_UNIT[S.stat]);
+  // something that's already happened this game can happen again, just less likely each time (a sixth, then a 36th…)
+  const again = (seen, k) => Math.pow(1 / 6, (seen || []).filter(x => x === k).length);
   // the CHAOS meter: taking or playing a wildcard (and every storm) charges it; full, the next spin opens with a big
   // CHAOS moment. Now and then a smaller match-day event (above) strikes too. Only ever one thing at a time.
   const METER = 4;
   const HURT = ['rotation', 'zero', 'injured', 'halved'];
   // the big moments the meter sets off (need: filled slots, empty slots)
   const MOMENTS = {
-    unleash: { icon: '💥', name: 'CHAOS UNLEASHED', w: 1.1, tone: 'unleash' },
-    tornado: { icon: '🌪️', name: 'Tornado!', w: 1, tone: 'bad', need: n => n >= 3 },
-    lightning: { icon: '⚡', name: 'Lightning strike', w: 0.9, tone: 'weird', need: n => n >= 2 },
-    parade: { icon: '🚌', name: 'Open-top bus parade', w: 0.8, tone: 'good', need: n => n >= 1 },
-    deadline: { icon: '⏰', name: 'Deadline day', w: 0.9, tone: 'good', need: (n, left) => left >= 1 },
-    sacked: { icon: '📰', name: 'Manager sacked!', w: 0.8, tone: 'weird', need: () => !!(S && S.manager) },
+    unleash: { icon: '💥', name: 'CHAOS UNLEASHED', rar: 'c', tone: 'unleash' },
+    tornado: { icon: '🌪️', name: 'Tornado!', rar: 'c', tone: 'bad', need: n => n >= 3 },
+    lightning: { icon: '⚡', name: 'Lightning strike', rar: 'c', tone: 'weird', need: n => n >= 2 },
+    parade: { icon: '🚌', name: 'Open-top bus parade', rar: 'u', tone: 'good', need: n => n >= 1 },
+    deadline: { icon: '⏰', name: 'Deadline day', rar: 'u', tone: 'good', need: (n, left) => left >= 1 },
+    sacked: { icon: '📰', name: 'Manager sacked!', rar: 'u', tone: 'weird', need: () => !!(S && S.manager) },
+    blackhole: { icon: '🕳️', name: 'Black hole', rar: 'r', tone: 'weird', need: n => n >= 2 },
+    relegation: { icon: '🪂', name: 'The great escape', rar: 'r', tone: 'weird', need: n => n >= 3 },
+    title: { icon: '🏆', name: 'Champions!', rar: 'l', tone: 'good' },
   };
   // CHAOS managers: you appoint one at kick-off. Each brings a perk and a catch, worked out on your XI as bonus points
   // (per-player amounts are in goals and scale to the stat; percentages are of your XI's own numbers)
@@ -154,7 +223,7 @@
   let S = null; // game state
   let root = null;
 
-  GM.draft = { start, RULES, WILDCARDS, TARGETS, state: () => S, total: st => scoreFor(st).t, score: st => scoreFor(st), render: () => render(), modeKey: (m, s, h, c) => keyFor(m, s, h, c) };
+  GM.draft = { events: () => Object.keys(EVENTS).concat(Object.keys(XEV), Object.keys(MOMENTS)), start, RULES, WILDCARDS, TARGETS, state: () => S, total: st => scoreFor(st).t, score: st => scoreFor(st), render: () => render(), modeKey: (m, s, h, c) => keyFor(m, s, h, c) };
 
   const statSuffix = s => ({ goals: '', assists: 'ast', apps: 'apps' }[s] || '');
   function keyFor(mode, stat, hard, club) {
@@ -377,6 +446,7 @@
   // before a spin: a big moment if the meter's full, otherwise (now and then) a match-day event; never both, and
   // never on the spin straight after a big one
   async function chaosTurn() {
+    if (S.forceEv) { const f = S.forceEv; S.forceEv = null; S.momentSpin = S.spin; return MOMENTS[f] ? bigMoment(f) : chaosEvent(GM.rng(`${S.seed}|chaos|${S.spin}`), f); }  // tests
     if (S.chaosDue) { S.chaosDue = false; S.momentSpin = S.spin; return bigMoment(); }
     if (S.lastBig === S.spin - 1) return;
     const r = GM.rng(`${S.seed}|chaos|${S.spin}`);
@@ -388,8 +458,16 @@
   const scale = (x, f, mod) => { STAT_KEYS.forEach(k => { x.v[k] = Math.floor(x.v[k] * f); }); x.g = x.v[S.stat]; if (mod) x.mod = mod; };
   const nm = i => GM.esc(byId(S.xi[i].p).name);
 
-  function chaosEvent(r) {
-    let e = r.weighted(Object.keys(EVENTS), k => EVENTS[k].w); const ev = EVENTS[e];
+  function chaosEvent(r, forced) {
+    const all = Object.keys(EVENTS).concat(Object.keys(XEV));
+    let e = forced || r.weighted(all, k => RAR[(EVENTS[k] || XEV[k]).rar] * again(S.evSeen, k));
+    S.evSeen = (S.evSeen || []).concat(e);
+    if (XEV[e]) {
+      const x = XEV[e], before = snap(), out = x.go(r) || {};
+      S.log.push(x.icon); S.chaosCount = (S.chaosCount || 0) + 1;
+      return moment({ icon: x.icon, name: x.name, text: out.note, tone: x.tone, before, run: out.run, small: true, scene: x.look[0], sound: x.look[1], rarity: x.rar });
+    }
+    const ev = EVENTS[e];
     const before = snap();
     let note = ev.desc(wst()), run = null, reveal = null, tone = null;
     if (e === 'redcard' || e === 'derby') {
@@ -437,14 +515,19 @@
     S.chaosCount = (S.chaosCount || 0) + 1;
     const good = ['windfall', 'derby', 'golden', 'var+', 'box'].includes(e);
     tone = good ? 'good' : e === 'masked' || e === 'var-' || e === 'var+' ? 'weird' : 'bad';
-    return moment({ icon: ev.icon, name: ev.name, text: note, tone, before, run, reveal, small: true });
+    const look = { redcard: ['red', ['whistle', 'boo']], injury: ['red', 'ambulance'], taxman: ['dark', 'taxman'], golden: ['gold', 'fanfare'], box: ['gold', 'box'],
+      masked: ['dark', 'spooky'], windfall: ['money', 'cash'], derby: ['fire', ['drumroll', 'cheer']], 'var+': ['tv', 'var'], 'var-': ['tv', 'var'] }[e] || ['dark', 'boom'];
+    if (reveal) reveal.sound = reveal.tone === 'good' ? 'cheer' : 'boo';
+    return moment({ icon: ev.icon, name: ev.name, text: note, tone, before, run, reveal, small: true, scene: look[0], sound: look[1], rarity: ev.rar });
   }
 
-  async function bigMoment() {
+  async function bigMoment(forced) {
     const r = GM.rng(`${S.seed}|moment|${S.spin}`), filled = filledIdx(), left = emptySlots();
     const keys = Object.keys(MOMENTS).filter(k => !MOMENTS[k].need || MOMENTS[k].need(filled.length, left));
-    const k = r.weighted(keys, x => MOMENTS[x].w), m = MOMENTS[k], before = snap();
-    const o = { icon: m.icon, name: m.name, tone: m.tone, before, big: true };
+    const k = forced || r.weighted(keys, x => RAR[MOMENTS[x].rar] * again(S.bigSeen, x)), m = MOMENTS[k], before = snap();
+    S.bigSeen = (S.bigSeen || []).concat(k);
+    const o = { icon: m.icon, name: m.name, tone: m.tone, before, big: true, rarity: m.rar, ...{ blackhole: { scene: 'lightning', sound: 'spooky' }, relegation: { scene: 'red', sound: 'drumroll', actSound: 'cheer' }, title: { scene: 'party', sound: ['fanfare', 'cheer'] }, unleash: { scene: 'unleash', sound: ['meterfull', 'horn'] }, tornado: { scene: 'storm', sound: 'wind', actSound: 'wind' },
+      lightning: { scene: 'lightning', sound: 'thunder' }, parade: { scene: 'party', sound: 'fanfare', actSound: 'cheer' }, deadline: { scene: 'clock', sound: 'tick3' }, sacked: { scene: 'news', sound: 'sacked' } }[k] };
     S.lastBig = S.spin;
     S.chaosCount = (S.chaosCount || 0) + 1; S.log.push(m.icon);
     if (k === 'unleash') {
@@ -456,17 +539,30 @@
       hits.forEach(({ i, up }) => scale(S.xi[i], up ? 2 : 0.5, up ? 'boosted' : 'halved'));
       const ups = hits.filter(h => h.up).length;
       o.text = `It rips through your XI: <b>${ups}</b> player${ups === 1 ? '' : 's'} doubled, <b>${hits.length - ups}</b> halved.`;
-      o.run = c => c.sweep('🌪️');
+      o.run = c => c.sweep('🌪️', 2000);
     } else if (k === 'lightning') {
       const by = filled.slice().sort((a, b) => S.xi[b].g - S.xi[a].g), top = by[0], low = by[by.length - 1];
       scale(S.xi[top], 0.5, 'halved'); scale(S.xi[low], 3, 'boosted');
       o.text = `${nm(top)} is struck: <b>halved</b>. ${nm(low)} is charged up: <b>×3</b>!`;
-      o.run = c => { c.visit(top, '⚡', 'strike'); c.visit(low, '✨', 'strike', 900); };
+      o.run = c => { c.visit(top, '⚡', 'strike', 0, 'crack'); c.visit(low, '✨', 'strike', 1100, 'good'); };
     } else if (k === 'parade') {
       const medals = S.xi.reduce((a, x) => a + (x.p != null ? (byId(x.p).hon.P || 0) : 0), 0), pts = Math.round(Math.max(15, 8 * medals) * CHAOS_UNIT[S.stat]);
       S.bonus.push([`🚌 Bus parade (spin ${S.spin + 1})`, pts]);
       o.text = `The fans are out: <b>+${pts}</b> bonus points${medals ? ` for your ${medals} title medal${medals === 1 ? '' : 's'}` : ''}.`;
       o.run = c => c.sweep('🚌');
+    } else if (k === 'blackhole') {
+      const by = filled.slice().sort((a, b) => S.xi[b].g - S.xi[a].g), top = by[0], low = by[by.length - 1];
+      const v = S.xi[top].v; S.xi[top].v = S.xi[low].v; S.xi[low].v = v; S.xi[top].g = S.xi[top].v[S.stat]; S.xi[low].g = S.xi[low].v[S.stat];
+      o.text = `A hole opens in the space-time continuum: ${nm(top)} and ${nm(low)} <b>swap numbers</b>.`;
+      o.run = c => { c.visit(top, '🕳️', 'strike'); c.visit(low, '🕳️', 'strike', 700); };
+    } else if (k === 'relegation') {
+      const p = pts(60); filled.forEach(i => scale(S.xi[i], 0.75, 'halved')); S.bonus.push(['🪂 The great escape', p]);
+      o.text = `Bottom of the table at Christmas. Everyone’s numbers <b>−25%</b>… but the great escape is worth <b>+${p}</b> bonus.`;
+      o.run = c => c.sweep('🪂');
+    } else if (k === 'title') {
+      const p = pts(100); S.bonus.push(['🏆 Champions!', p]);
+      o.text = `Somehow, you’ve won the league. <b>+${p}</b> bonus points!`;
+      o.run = c => c.rain('🏆');
     } else if (k === 'deadline') {
       S.forceSpecial = 'deadline';
       o.text = 'The window’s about to slam shut: this spin has <b>FIVE</b> players to choose from.';
@@ -493,7 +589,7 @@
   }
   function pickManager() {
     const shape = ['D', 'M', 'F'].map(g => S.form.filter(p => GM.GROUP[p] === g).length).join('-');
-    return moment({ icon: '👔', name: 'Kick-off', tone: 'good', before: snap(), text: `Formation <b>${shape}</b>. Appoint your manager: each has a perk and a catch.`, pick: mgrChoices(null), onPick: appoint, quiet: true });
+    return moment({ icon: '👔', name: 'Kick-off', tone: 'good', before: snap(), text: `Formation <b>${shape}</b>. Appoint your manager: each has a perk and a catch.`, pick: mgrChoices(null), onPick: appoint, scene: 'kickoff', sound: 'whistle' });
   }
 
   /* ---------------------------------------------------------------- CHAOS moments: one at a time, on the pitch
@@ -507,8 +603,25 @@
     const step = now => { const f = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - f, 3); el.textContent = fmtFn(Math.round(from + (to - from) * e)); if (f < 1 && el.isConnected) requestAnimationFrame(step); };
     requestAnimationFrame(step);
   }
-  const coinHtml = heads => `<div class="coin" style="--end:${heads ? 1800 : 1980}deg"><div class="coin-f h">⚽<b>HEADS</b></div><div class="coin-f t">🧤<b>TAILS</b></div></div>`;
+  // the backdrop for a moment's big entrance: weather, confetti, coins, a spinning burst…
+  function scene(el, kind, timers) {
+    const sky = document.createElement('div'); sky.className = 'cm-sky sky-' + (kind || 'dark'); el.prepend(sky);
+    const bits = (n, cls, chars) => { for (let k = 0; k < n; k++) { const b = document.createElement('i'); b.className = cls; b.textContent = chars ? chars[k % chars.length] : ''; b.style.left = Math.random() * 100 + '%'; b.style.animationDelay = (Math.random() * 1.6).toFixed(2) + 's'; b.style.animationDuration = (1.4 + Math.random() * 1.4).toFixed(2) + 's'; if (!chars) b.style.background = ['#ff2bd6', '#ffe600', '#39ff88', '#00f0ff', '#fff'][k % 5]; sky.appendChild(b); } };
+    if (kind === 'storm' || kind === 'lightning') {
+      if (kind === 'storm') { sky.insertAdjacentHTML('beforeend', '<div class="cm-rain"></div><div class="cm-rain far"></div>'); GM.sound.play('rain'); }
+      let n = 0;
+      const flash = () => { if (!el.isConnected) return; sky.classList.remove('flash'); void sky.offsetWidth; sky.classList.add('flash'); if (n++ < 2) GM.sound.play('thunder'); timers.push(setTimeout(flash, 900 + Math.random() * 1500)); };
+      timers.push(setTimeout(flash, 250));
+    }
+    if (kind === 'party') bits(40, 'cm-confetti');
+    if (kind === 'money') bits(22, 'cm-coin', ['💰', '🪙', '💷']);
+    if (kind === 'unleash') bits(18, 'cm-coin', ['💥', '⚡', '🔥']);
+  }
+  const coinHtml = heads => `<button class="coin-wrap" aria-label="Flip the coin"><div class="coin" style="--end:${heads ? 1800 : 1980}deg"><div class="coin-f h">⚽<b>HEADS</b></div><div class="coin-f t">🧤<b>TAILS</b></div></div><span class="coin-go">👆 Tap to flip</span></button>`;
   const mgrCard = k => { const m = MANAGERS[k]; return `<button class="mgr" data-mgr="${k}"><span class="mgr-ico">${m.icon}</span><b>${m.name}</b><small class="up">✅ ${m.perk}</small><small class="down">⚠️ ${m.catch}</small></button>`; };
+  /* A moment in three acts. 1: the entrance, full screen with its own scene and sound (you flip the coin here, or pick
+     a manager). 2: the action, as the card drops to the bottom and whatever it is happens on your pitch while the
+     numbers count to their new values. 3: the result, held long enough to read. A tap moves it on a step. */
   function moment(o) {
     return new Promise(done => {
       busy = true;
@@ -526,68 +639,84 @@
         if (hitDone.has(i) || !changed.includes(i)) return; hitDone.add(i);
         const el = slotEl(i); if (!el) return;
         el.classList.add(S.xi[i].g > b.g[i] ? 'hit-up' : 'hit-down');
-        countTo(GM.$('.sg', el), b.g[i], S.xi[i].g, 700);
+        countTo(GM.$('.sg', el), b.g[i], S.xi[i].g, 800);
         GM.sound.play(S.xi[i].g > b.g[i] ? 'good' : 'bad');
       };
-      const totals = () => { countTo(cn, b.t, now.t, 900); countTo(cb, b.b, now.b, 900, signed); };
       const fxEl = (cls, txt, x, y) => { if (!pitch) return null; const e = document.createElement('span'); e.className = 'cm-fx ' + cls; e.textContent = txt; if (x != null) { e.style.left = x + 'px'; e.style.top = y + 'px'; } pitch.appendChild(e); return e; };
       const at = i => { const el = slotEl(i), pr = pitch.getBoundingClientRect(), r = el.getBoundingClientRect(); return [r.left - pr.left + r.width / 2, r.top - pr.top + r.height / 2, (r.left + r.width / 2 - pr.left) / pr.width]; };
       const c = {
         // something crosses the whole pitch, hitting each changed player as it passes
-        sweep(icon, ms = 1500) {
+        sweep(icon, ms = 1800) {
           const e = fxEl('sweep', icon); if (!e) return;
           e.style.animationDuration = ms + 'ms';
           changed.forEach(i => { const [, , f] = at(i); later(ms * (0.08 + 0.84 * f), () => hit(i)); });
         },
         // something arrives at one player
-        visit(i, icon, kind = 'pop', delay = 0) {
-          later(delay, () => { if (!slotEl(i)) return; const [x, y] = at(i); fxEl('visit ' + kind, icon, x, y); });
-          later(delay + (kind === 'frame' ? 1250 : 650), () => hit(i));
+        visit(i, icon, kind = 'pop', delay = 0, sound) {
+          later(delay, () => { if (!slotEl(i)) return; const [x, y] = at(i); fxEl('visit ' + kind, icon, x, y); if (sound) GM.sound.play(sound); if (kind === 'strike') flashApp(); });
+          later(delay + (kind === 'frame' ? 1400 : 700), () => hit(i));
         },
         bag(icon) { const inv = GM.$('.inv', root); if (inv) { inv.classList.remove('robbed'); void inv.offsetWidth; inv.classList.add('robbed'); } fxEl('visit pop', icon, pitch ? pitch.clientWidth / 2 : 0, pitch ? pitch.clientHeight - 30 : 0); },
-        rain(icon) { if (!pitch) return; for (let k = 0; k < 7; k++) { const e = fxEl('rain', icon, Math.random() * pitch.clientWidth, -30); if (e) e.style.animationDelay = (k * 0.08) + 's'; } },
+        rain(icon) { if (!pitch) return; for (let k = 0; k < 9; k++) { const e = fxEl('rain', icon, Math.random() * pitch.clientWidth, -30); if (e) e.style.animationDelay = (k * 0.09) + 's'; } },
       };
+      const flashApp = () => { const f = document.createElement('div'); f.className = 'chaos-flash lightning'; document.body.appendChild(f); setTimeout(() => f.remove(), 700); };
       const el = document.createElement('div');
-      el.className = `cm cm-${o.tone || 'weird'} ${o.big ? 'cm-big' : ''} ${o.pick ? 'cm-pick' : ''}`;
-      el.innerHTML = `<div class="cm-card"><div class="cm-icon">${o.icon}</div><div class="cm-name">${o.name}</div><div class="cm-text">${o.text || ''}</div>
+      el.className = `cm intro cm-${o.tone || 'weird'} ${o.big ? 'cm-big' : ''} ${o.pick ? 'cm-pick' : ''}`;
+      el.innerHTML = `<div class="cm-card ${o.rarity ? 'rar-' + o.rarity : ''}">${RAR_NAME[o.rarity] ? `<div class="cm-rar">${o.rarity === 'l' ? '✨ ' : ''}${RAR_NAME[o.rarity]}${o.rarity === 'l' ? ' ✨' : ''}</div>` : ''}<div class="cm-icon">${o.icon}</div><div class="cm-name">${o.name}</div><div class="cm-text">${o.text || ''}</div>
         ${o.coin != null ? coinHtml(o.coin) : ''}${o.pick ? `<div class="mgr-list">${o.pick.map(mgrCard).join('')}</div>` : '<small class="cm-skip">Tap to carry on</small>'}</div>`;
       document.body.appendChild(el);
-      if (!o.quiet) fx(o.tone === 'unleash' ? 'unleash' : o.tone || 'weird', o.icon);
-      let over = false;
+      scene(el, o.scene, timers);
+      if (o.sound) [].concat(o.rarity === 'l' || o.rarity === 'r' ? ['wild'] : [], o.sound).forEach((snd, k) => later(k * 450, () => GM.sound.play(snd)));
+      if (o.tone === 'bad' || o.tone === 'unleash') { const app = document.getElementById('app'); app.classList.remove('shake'); void app.offsetWidth; app.classList.add('shake'); }
+      GM.buzz(o.tone === 'bad' ? 120 : 40);
+      const card = GM.$('.cm-card', el), setText = (html, tone) => { const t = GM.$('.cm-text', el); if (t) t.innerHTML = html; if (tone) el.className = el.className.replace(/cm-(good|bad|weird|unleash)\b/, 'cm-' + tone); };
+      let stage = 'intro', over = false;
       const finish = () => {
         if (over) return; over = true;
         timers.forEach(clearTimeout); window.removeEventListener('hashchange', finish);
-        el.classList.add('out'); setTimeout(() => el.remove(), 250);
+        el.classList.add('out'); setTimeout(() => el.remove(), 300);
         busy = false;
         if (S.rules.chaos && (o.text || o.reveal)) S.moments = (S.moments || []).concat([{ icon: o.icon, name: o.name, text: (o.after || (o.reveal && o.reveal.text) || o.text).replace(/<[^>]+>/g, '') }]);
         render(); done();
       };
       window.addEventListener('hashchange', finish);
-      if (o.pick) {
-        GM.$$('[data-mgr]', el).forEach(bt => bt.onclick = () => { o.onPick(bt.dataset.mgr); GM.sound.play('whistle'); finish(); });
-        return;
-      }
-      // the action starts once the card is up (after a coin has landed)
-      const start = o.coin != null ? 1650 : 350;
-      if (o.coin != null) {
-        for (let k = 0; k < 8; k++) later(k * 170, () => GM.sound.play('tick'));
-        later(start - 100, () => {
-          const t = GM.$('.cm-text', el); if (t) t.innerHTML = o.after;
-          el.className = el.className.replace(/cm-(good|bad|weird|unleash)/, 'cm-' + (o.coin ? 'good' : 'bad'));
-          fx(o.coin ? 'good' : 'bad', o.coin ? '⚽' : '🧤');
+      if (o.pick) { GM.$$('[data-mgr]', el).forEach(bt => bt.onclick = e => { e.stopPropagation(); o.onPick(bt.dataset.mgr); GM.sound.play('sting'); finish(); }); return; }
+      const onPitch = !!o.run || changed.length > 0;
+      // act 2: the card drops to the bottom (so the pitch and the score show) and it happens
+      const act = () => {
+        if (stage !== 'intro' || over) return;
+        if (!onPitch) { stage = 'result'; later(o.reveal ? 0 : 400, finish); return; }
+        stage = 'act';
+        const r1 = card.getBoundingClientRect();
+        el.classList.remove('intro'); el.classList.add('act');
+        const r2 = card.getBoundingClientRect();
+        if (card.animate) card.animate([{ transform: `translateY(${r1.top - r2.top}px)` }, { transform: 'none' }], { duration: 450, easing: 'cubic-bezier(.2,.8,.2,1)' });
+        const t0 = 450;
+        later(t0, () => { if (o.run) o.run(c); changed.forEach(i => later(o.run ? 2000 : 200, () => hit(i))); countTo(cn, b.t, now.t, 1100); countTo(cb, b.b, now.b, 1100, signed); if (o.actSound) GM.sound.play(o.actSound); });
+        if (o.reveal) later(t0 + 1400, () => { setText(o.reveal.text, o.reveal.tone); if (o.reveal.sound) GM.sound.play(o.reveal.sound); });
+        later(t0 + (o.run ? 2900 : 1300), () => { stage = 'result'; later(1700, finish); });
+      };
+      el.onclick = () => { if (stage === 'intro') { if (o.coin != null && !flipped) return flip(); act(); } else finish(); };
+      // the coin waits for you to flip it
+      let flipped = false;
+      const flip = () => {
+        if (flipped) return; flipped = true;
+        el.classList.add('flipping'); GM.sound.play('coinflip');
+        later(1500, () => {
+          el.classList.add('landed'); GM.sound.play('coinland');
+          later(150, () => { GM.sound.play(o.coin ? 'cheer' : 'boo'); setText(o.after, o.coin ? 'good' : 'bad'); });
+          later(2000, act);
         });
-      }
-      if (o.reveal) later(1150, () => { const t = GM.$('.cm-text', el); if (t) t.innerHTML = o.reveal.text; el.className = el.className.replace(/cm-(good|bad|weird|unleash)/, 'cm-' + o.reveal.tone); fx(o.reveal.tone, o.icon); });
-      later(start, () => { if (o.run) o.run(c); changed.forEach(i => later(o.run ? 1700 : 300, () => hit(i))); totals(); });
-      later(start + (o.small ? 1900 : 2300), finish);
-      el.onclick = finish;
+      };
+      if (o.coin == null) later(onPitch ? (o.small ? 2600 : 3000) : 3600, act);
     });
   }
   // CHAOS meter
   function charge(n = 1) {
     if (!S.rules.chaos) return;
     S.meter = (S.meter || 0) + n;
-    if (S.meter >= METER && !S.chaosDue) { S.meter = 0; S.chaosDue = true; GM.sound.play('siren'); }
+    if (S.meter >= METER && !S.chaosDue) { S.meter = 0; S.chaosDue = true; setTimeout(() => GM.sound.play('meterfull'), 250); }
+    else if (!S.chaosDue) setTimeout(() => GM.sound.play('charge', S.meter), 250);
   }
   function fx(kind, icon, rain = 0) {
     if (!S.rules.chaos) return;
@@ -707,7 +836,7 @@
     // in target modes a blip climbs as the total closes in on the number
     if (S.target && !S.rules.treble) setTimeout(() => GM.sound.play('rise', S.xi.reduce((a, x) => a + x.g, 0) / S.target), 180);
     if (before) {  // Double or Nothing: a real coin toss before he takes his place
-      await moment({ icon: '🎲', name: 'Double or nothing', tone: 'weird', before, coin: heads, text: `${GM.esc(p.name)}: heads he counts double, tails he counts for nothing…`,
+      await moment({ icon: '🎲', name: 'Double or nothing', tone: 'weird', before, coin: heads, scene: 'casino', sound: 'drumroll', text: `${GM.esc(p.name)}: heads he counts double, tails he counts for nothing…`,
         after: heads ? `<b>Heads!</b> ${GM.esc(p.name)} counts double.` : `<b>Tails…</b> ${GM.esc(p.name)} counts for nothing.` });
       if (!onThisGame()) return;
     }
@@ -764,8 +893,8 @@
         filled.forEach(x => scale(x, heads ? 2 : 0.5, heads ? 'boosted' : 'halved'));
         if (heads) S.coinWin = true;
         consume();
-        moment({ icon: '🎰', name: 'ALL IN', tone: 'weird', before, coin: heads, text: 'Heads, your whole XI doubles. Tails, it’s halved…',
-          after: heads ? '<b>Heads!</b> It pays off: your whole XI doubles.' : '<b>Tails…</b> It’s gone wrong: your whole XI is halved.', run: c => c.sweep(heads ? '💰' : '💸'), big: true });
+        moment({ icon: '🎰', name: 'ALL IN', tone: 'weird', before, coin: heads, scene: 'casino', sound: 'drumroll', text: 'Heads, your whole XI doubles. Tails, it’s halved…',
+          after: heads ? '<b>Heads!</b> It pays off: your whole XI doubles.' : '<b>Tails…</b> It’s gone wrong: your whole XI is halved.', run: c => c.sweep(heads ? '💰' : '💸'), actSound: heads ? 'cash' : 'taxman', big: true });
         return;
       }
       case 'hot':
@@ -1062,11 +1191,12 @@
 
   // one line for what's happening (a CHAOS event, a storm, an active wildcard) and one for what to do next
   function msgHtml(sp) {
-    const top = S.storm ? '<span class="m-ev">🌪️ <b>Wildcard storm!</b> No players this spin – grab a card</span>'
-      : S.event ? `<span class="m-ev">${S.event.icon} <b>${GM.esc(S.event.name)}</b> – ${GM.esc(S.event.note)}</span>`
+    const top = S.storm ? '<span class="m-ev">🌪️ <b>Wildcard storm!</b> Grab a card</span>'
       : sp && S.phase !== 'spin' ? `<span class="m-sp">${sp.icon} ${sp.name}</span>` : '';
+    const first = S.spin === 0;  // tips only on the first go: after that you know what to do
     const pend = S.pending != null && S.reels[S.pending] && !S.reels[S.pending].wild && byId(S.reels[S.pending].id);
     const next = S.subbing !== false ? '🔁 Tap a player on the pitch to release him <button class="btn small ghost" id="cancel-sub">Cancel</button>'
+      : !first ? ''
       : S.phase === 'spin' ? 'Spin for three new players'
       : S.phase !== 'pick' ? ''
       : pend ? `📍 Tap a glowing slot for <b>${GM.esc(pend.name)}</b>`

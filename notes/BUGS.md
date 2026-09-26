@@ -12,6 +12,7 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 2026-09-26 | CHAOS: the coin flipped itself (should be yours to flip); moments too quick to read; the event line under the reels overflowed ("ugly"); few sounds | 5.4.1: tap-to-flip coin; three-act moments (full-screen entrance with its own scene, action on the pitch, result); new sounds; tips only on the first go. A CSS filter on the landed coin also flattened its 3D so tails showed a mirrored HEADS: fixed |
 | 2026-09-26 | Results spread charts topped out at 800+ (fixed bands), and CHAOS charted goals, not its points (often 800+) | 5.4: every score kept per mode, eight round-sized bands fitted to your range; CHAOS charts points |
 | 2026-09-26 | Owner: dailies not refreshing (25th not lit, streak stuck at 1, Moneyball/CHAOS not replayable) | Not a bug: the server shows Daily Moneyball, CHAOS and Ultimate all played on the 26th and nothing on the 25th (last before that the 24th) |
 | 2026-09-26 | A friend's phone said "Instant notifications: waiting for Google Play services" and got ~15 notifications at once from the 15-minute check. Only one phone had ever registered for instant pushes; the Firebase token request fails silently and was only retried when the app opened | 5.4 (needs the new app build): the failure reason is saved and shown in Settings, the background check keeps retrying, and more than 3 at once arrive as one summary |

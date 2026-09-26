@@ -9,6 +9,17 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 34, label: '5.4.1', date: '2026-09-26', title: 'CHAOS gets louder',
+      items: [
+        '🪙 You flip the coin yourself now: tap it and watch it land',
+        '🎬 CHAOS moments take over the whole screen first (a storm with rain and lightning for the tornado, confetti for the parade, coins for TV money), then play out on your pitch, with time to read what happened',
+        '🎲 Loads more going on: 20 new match-day events (a pigeon on the pitch, who ate all the pies, alien abduction, the magic sponge, a cold wet night in Stoke…) and three new big moments (a black hole, the great escape, Champions!)',
+        '💎 Moments come in rarities (common, uncommon, rare and legendary) and something that’s already happened is much less likely to happen again',
+        '🔊 New sounds for everything: the meter filling up, wind, thunder, the ambulance, VAR, the till, the boos…',
+        '🧹 Tidier bottom of the screen: the tips only show on your first go',
+      ],
+    },
+    {
       v: 33, label: '5.4', date: '2026-09-26', title: '🌪️ CHAOS, rebuilt',
       items: [
         '👔 Appoint a manager at kick-off: Fergie, Wenger, Mourinho, Pep, Klopp, Ranieri, Keegan and more. Each brings a perk and a catch, and 👍 / 👎 on the reels show who he’d want. He might get the sack…',
