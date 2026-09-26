@@ -127,6 +127,8 @@
       return { note: 'Last-minute madness! The whole ground goes up: your <b>whole XI ×1.5</b>!', run: c => c.sweep('🎉') }; } },
   };
   const pts = n => Math.round(n * CHAOS_UNIT[S.stat]);
+  // something that's already happened this game can happen again, just less likely each time (a sixth, then a 36th…)
+  const again = (seen, k) => Math.pow(1 / 6, (seen || []).filter(x => x === k).length);
   // the CHAOS meter: taking or playing a wildcard (and every storm) charges it; full, the next spin opens with a big
   // CHAOS moment. Now and then a smaller match-day event (above) strikes too. Only ever one thing at a time.
   const METER = 4;
@@ -457,8 +459,8 @@
   const nm = i => GM.esc(byId(S.xi[i].p).name);
 
   function chaosEvent(r, forced) {
-    const all = Object.keys(EVENTS).concat(Object.keys(XEV)), fresh = all.filter(k => !(S.evSeen || []).includes(k));
-    let e = forced || r.weighted(fresh.length ? fresh : all, k => RAR[(EVENTS[k] || XEV[k]).rar]);
+    const all = Object.keys(EVENTS).concat(Object.keys(XEV));
+    let e = forced || r.weighted(all, k => RAR[(EVENTS[k] || XEV[k]).rar] * again(S.evSeen, k));
     S.evSeen = (S.evSeen || []).concat(e);
     if (XEV[e]) {
       const x = XEV[e], before = snap(), out = x.go(r) || {};
@@ -521,8 +523,8 @@
 
   async function bigMoment(forced) {
     const r = GM.rng(`${S.seed}|moment|${S.spin}`), filled = filledIdx(), left = emptySlots();
-    const keys = Object.keys(MOMENTS).filter(k => !MOMENTS[k].need || MOMENTS[k].need(filled.length, left)), fresh = keys.filter(k => !(S.bigSeen || []).includes(k));
-    const k = forced || r.weighted(fresh.length ? fresh : keys, x => RAR[MOMENTS[x].rar]), m = MOMENTS[k], before = snap();
+    const keys = Object.keys(MOMENTS).filter(k => !MOMENTS[k].need || MOMENTS[k].need(filled.length, left));
+    const k = forced || r.weighted(keys, x => RAR[MOMENTS[x].rar] * again(S.bigSeen, x)), m = MOMENTS[k], before = snap();
     S.bigSeen = (S.bigSeen || []).concat(k);
     const o = { icon: m.icon, name: m.name, tone: m.tone, before, big: true, rarity: m.rar, ...{ blackhole: { scene: 'lightning', sound: 'spooky' }, relegation: { scene: 'red', sound: 'drumroll', actSound: 'cheer' }, title: { scene: 'party', sound: ['fanfare', 'cheer'] }, unleash: { scene: 'unleash', sound: ['meterfull', 'horn'] }, tornado: { scene: 'storm', sound: 'wind', actSound: 'wind' },
       lightning: { scene: 'lightning', sound: 'thunder' }, parade: { scene: 'party', sound: 'fanfare', actSound: 'cheer' }, deadline: { scene: 'clock', sound: 'tick3' }, sacked: { scene: 'news', sound: 'sacked' } }[k] };
