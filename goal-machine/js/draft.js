@@ -437,14 +437,18 @@
     S.chaosCount = (S.chaosCount || 0) + 1;
     const good = ['windfall', 'derby', 'golden', 'var+', 'box'].includes(e);
     tone = good ? 'good' : e === 'masked' || e === 'var-' || e === 'var+' ? 'weird' : 'bad';
-    return moment({ icon: ev.icon, name: ev.name, text: note, tone, before, run, reveal, small: true });
+    const look = { redcard: ['red', ['whistle', 'boo']], injury: ['red', 'ambulance'], taxman: ['dark', 'taxman'], golden: ['gold', 'fanfare'], box: ['gold', 'box'],
+      masked: ['dark', 'spooky'], windfall: ['money', 'cash'], derby: ['fire', ['drumroll', 'cheer']], 'var+': ['tv', 'var'], 'var-': ['tv', 'var'] }[e] || ['dark', 'boom'];
+    if (reveal) reveal.sound = reveal.tone === 'good' ? 'cheer' : 'boo';
+    return moment({ icon: ev.icon, name: ev.name, text: note, tone, before, run, reveal, small: true, scene: look[0], sound: look[1] });
   }
 
   async function bigMoment() {
     const r = GM.rng(`${S.seed}|moment|${S.spin}`), filled = filledIdx(), left = emptySlots();
     const keys = Object.keys(MOMENTS).filter(k => !MOMENTS[k].need || MOMENTS[k].need(filled.length, left));
     const k = r.weighted(keys, x => MOMENTS[x].w), m = MOMENTS[k], before = snap();
-    const o = { icon: m.icon, name: m.name, tone: m.tone, before, big: true };
+    const o = { icon: m.icon, name: m.name, tone: m.tone, before, big: true, ...{ unleash: { scene: 'unleash', sound: ['meterfull', 'horn'] }, tornado: { scene: 'storm', sound: 'wind', actSound: 'wind' },
+      lightning: { scene: 'lightning', sound: 'thunder' }, parade: { scene: 'party', sound: 'fanfare', actSound: 'cheer' }, deadline: { scene: 'clock', sound: 'tick3' }, sacked: { scene: 'news', sound: 'sacked' } }[k] };
     S.lastBig = S.spin;
     S.chaosCount = (S.chaosCount || 0) + 1; S.log.push(m.icon);
     if (k === 'unleash') {
@@ -456,12 +460,12 @@
       hits.forEach(({ i, up }) => scale(S.xi[i], up ? 2 : 0.5, up ? 'boosted' : 'halved'));
       const ups = hits.filter(h => h.up).length;
       o.text = `It rips through your XI: <b>${ups}</b> player${ups === 1 ? '' : 's'} doubled, <b>${hits.length - ups}</b> halved.`;
-      o.run = c => c.sweep('🌪️');
+      o.run = c => c.sweep('🌪️', 2000);
     } else if (k === 'lightning') {
       const by = filled.slice().sort((a, b) => S.xi[b].g - S.xi[a].g), top = by[0], low = by[by.length - 1];
       scale(S.xi[top], 0.5, 'halved'); scale(S.xi[low], 3, 'boosted');
       o.text = `${nm(top)} is struck: <b>halved</b>. ${nm(low)} is charged up: <b>×3</b>!`;
-      o.run = c => { c.visit(top, '⚡', 'strike'); c.visit(low, '✨', 'strike', 900); };
+      o.run = c => { c.visit(top, '⚡', 'strike', 0, 'crack'); c.visit(low, '✨', 'strike', 1100, 'good'); };
     } else if (k === 'parade') {
       const medals = S.xi.reduce((a, x) => a + (x.p != null ? (byId(x.p).hon.P || 0) : 0), 0), pts = Math.round(Math.max(15, 8 * medals) * CHAOS_UNIT[S.stat]);
       S.bonus.push([`🚌 Bus parade (spin ${S.spin + 1})`, pts]);
@@ -493,7 +497,7 @@
   }
   function pickManager() {
     const shape = ['D', 'M', 'F'].map(g => S.form.filter(p => GM.GROUP[p] === g).length).join('-');
-    return moment({ icon: '👔', name: 'Kick-off', tone: 'good', before: snap(), text: `Formation <b>${shape}</b>. Appoint your manager: each has a perk and a catch.`, pick: mgrChoices(null), onPick: appoint, quiet: true });
+    return moment({ icon: '👔', name: 'Kick-off', tone: 'good', before: snap(), text: `Formation <b>${shape}</b>. Appoint your manager: each has a perk and a catch.`, pick: mgrChoices(null), onPick: appoint, scene: 'kickoff', sound: 'whistle' });
   }
 
   /* ---------------------------------------------------------------- CHAOS moments: one at a time, on the pitch
@@ -507,8 +511,25 @@
     const step = now => { const f = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - f, 3); el.textContent = fmtFn(Math.round(from + (to - from) * e)); if (f < 1 && el.isConnected) requestAnimationFrame(step); };
     requestAnimationFrame(step);
   }
-  const coinHtml = heads => `<div class="coin" style="--end:${heads ? 1800 : 1980}deg"><div class="coin-f h">⚽<b>HEADS</b></div><div class="coin-f t">🧤<b>TAILS</b></div></div>`;
+  // the backdrop for a moment's big entrance: weather, confetti, coins, a spinning burst…
+  function scene(el, kind, timers) {
+    const sky = document.createElement('div'); sky.className = 'cm-sky sky-' + (kind || 'dark'); el.prepend(sky);
+    const bits = (n, cls, chars) => { for (let k = 0; k < n; k++) { const b = document.createElement('i'); b.className = cls; b.textContent = chars ? chars[k % chars.length] : ''; b.style.left = Math.random() * 100 + '%'; b.style.animationDelay = (Math.random() * 1.6).toFixed(2) + 's'; b.style.animationDuration = (1.4 + Math.random() * 1.4).toFixed(2) + 's'; if (!chars) b.style.background = ['#ff2bd6', '#ffe600', '#39ff88', '#00f0ff', '#fff'][k % 5]; sky.appendChild(b); } };
+    if (kind === 'storm' || kind === 'lightning') {
+      if (kind === 'storm') { sky.insertAdjacentHTML('beforeend', '<div class="cm-rain"></div><div class="cm-rain far"></div>'); GM.sound.play('rain'); }
+      let n = 0;
+      const flash = () => { if (!el.isConnected) return; sky.classList.remove('flash'); void sky.offsetWidth; sky.classList.add('flash'); if (n++ < 2) GM.sound.play('thunder'); timers.push(setTimeout(flash, 900 + Math.random() * 1500)); };
+      timers.push(setTimeout(flash, 250));
+    }
+    if (kind === 'party') bits(40, 'cm-confetti');
+    if (kind === 'money') bits(22, 'cm-coin', ['💰', '🪙', '💷']);
+    if (kind === 'unleash') bits(18, 'cm-coin', ['💥', '⚡', '🔥']);
+  }
+  const coinHtml = heads => `<button class="coin-wrap" aria-label="Flip the coin"><div class="coin" style="--end:${heads ? 1800 : 1980}deg"><div class="coin-f h">⚽<b>HEADS</b></div><div class="coin-f t">🧤<b>TAILS</b></div></div><span class="coin-go">👆 Tap to flip</span></button>`;
   const mgrCard = k => { const m = MANAGERS[k]; return `<button class="mgr" data-mgr="${k}"><span class="mgr-ico">${m.icon}</span><b>${m.name}</b><small class="up">✅ ${m.perk}</small><small class="down">⚠️ ${m.catch}</small></button>`; };
+  /* A moment in three acts. 1: the entrance, full screen with its own scene and sound (you flip the coin here, or pick
+     a manager). 2: the action, as the card drops to the bottom and whatever it is happens on your pitch while the
+     numbers count to their new values. 3: the result, held long enough to read. A tap moves it on a step. */
   function moment(o) {
     return new Promise(done => {
       busy = true;
@@ -526,68 +547,84 @@
         if (hitDone.has(i) || !changed.includes(i)) return; hitDone.add(i);
         const el = slotEl(i); if (!el) return;
         el.classList.add(S.xi[i].g > b.g[i] ? 'hit-up' : 'hit-down');
-        countTo(GM.$('.sg', el), b.g[i], S.xi[i].g, 700);
+        countTo(GM.$('.sg', el), b.g[i], S.xi[i].g, 800);
         GM.sound.play(S.xi[i].g > b.g[i] ? 'good' : 'bad');
       };
-      const totals = () => { countTo(cn, b.t, now.t, 900); countTo(cb, b.b, now.b, 900, signed); };
       const fxEl = (cls, txt, x, y) => { if (!pitch) return null; const e = document.createElement('span'); e.className = 'cm-fx ' + cls; e.textContent = txt; if (x != null) { e.style.left = x + 'px'; e.style.top = y + 'px'; } pitch.appendChild(e); return e; };
       const at = i => { const el = slotEl(i), pr = pitch.getBoundingClientRect(), r = el.getBoundingClientRect(); return [r.left - pr.left + r.width / 2, r.top - pr.top + r.height / 2, (r.left + r.width / 2 - pr.left) / pr.width]; };
       const c = {
         // something crosses the whole pitch, hitting each changed player as it passes
-        sweep(icon, ms = 1500) {
+        sweep(icon, ms = 1800) {
           const e = fxEl('sweep', icon); if (!e) return;
           e.style.animationDuration = ms + 'ms';
           changed.forEach(i => { const [, , f] = at(i); later(ms * (0.08 + 0.84 * f), () => hit(i)); });
         },
         // something arrives at one player
-        visit(i, icon, kind = 'pop', delay = 0) {
-          later(delay, () => { if (!slotEl(i)) return; const [x, y] = at(i); fxEl('visit ' + kind, icon, x, y); });
-          later(delay + (kind === 'frame' ? 1250 : 650), () => hit(i));
+        visit(i, icon, kind = 'pop', delay = 0, sound) {
+          later(delay, () => { if (!slotEl(i)) return; const [x, y] = at(i); fxEl('visit ' + kind, icon, x, y); if (sound) GM.sound.play(sound); if (kind === 'strike') flashApp(); });
+          later(delay + (kind === 'frame' ? 1400 : 700), () => hit(i));
         },
         bag(icon) { const inv = GM.$('.inv', root); if (inv) { inv.classList.remove('robbed'); void inv.offsetWidth; inv.classList.add('robbed'); } fxEl('visit pop', icon, pitch ? pitch.clientWidth / 2 : 0, pitch ? pitch.clientHeight - 30 : 0); },
-        rain(icon) { if (!pitch) return; for (let k = 0; k < 7; k++) { const e = fxEl('rain', icon, Math.random() * pitch.clientWidth, -30); if (e) e.style.animationDelay = (k * 0.08) + 's'; } },
+        rain(icon) { if (!pitch) return; for (let k = 0; k < 9; k++) { const e = fxEl('rain', icon, Math.random() * pitch.clientWidth, -30); if (e) e.style.animationDelay = (k * 0.09) + 's'; } },
       };
+      const flashApp = () => { const f = document.createElement('div'); f.className = 'chaos-flash lightning'; document.body.appendChild(f); setTimeout(() => f.remove(), 700); };
       const el = document.createElement('div');
-      el.className = `cm cm-${o.tone || 'weird'} ${o.big ? 'cm-big' : ''} ${o.pick ? 'cm-pick' : ''}`;
+      el.className = `cm intro cm-${o.tone || 'weird'} ${o.big ? 'cm-big' : ''} ${o.pick ? 'cm-pick' : ''}`;
       el.innerHTML = `<div class="cm-card"><div class="cm-icon">${o.icon}</div><div class="cm-name">${o.name}</div><div class="cm-text">${o.text || ''}</div>
         ${o.coin != null ? coinHtml(o.coin) : ''}${o.pick ? `<div class="mgr-list">${o.pick.map(mgrCard).join('')}</div>` : '<small class="cm-skip">Tap to carry on</small>'}</div>`;
       document.body.appendChild(el);
-      if (!o.quiet) fx(o.tone === 'unleash' ? 'unleash' : o.tone || 'weird', o.icon);
-      let over = false;
+      scene(el, o.scene, timers);
+      if (o.sound) [].concat(o.sound).forEach((snd, k) => later(k * 450, () => GM.sound.play(snd)));
+      if (o.tone === 'bad' || o.tone === 'unleash') { const app = document.getElementById('app'); app.classList.remove('shake'); void app.offsetWidth; app.classList.add('shake'); }
+      GM.buzz(o.tone === 'bad' ? 120 : 40);
+      const card = GM.$('.cm-card', el), setText = (html, tone) => { const t = GM.$('.cm-text', el); if (t) t.innerHTML = html; if (tone) el.className = el.className.replace(/cm-(good|bad|weird|unleash)\b/, 'cm-' + tone); };
+      let stage = 'intro', over = false;
       const finish = () => {
         if (over) return; over = true;
         timers.forEach(clearTimeout); window.removeEventListener('hashchange', finish);
-        el.classList.add('out'); setTimeout(() => el.remove(), 250);
+        el.classList.add('out'); setTimeout(() => el.remove(), 300);
         busy = false;
         if (S.rules.chaos && (o.text || o.reveal)) S.moments = (S.moments || []).concat([{ icon: o.icon, name: o.name, text: (o.after || (o.reveal && o.reveal.text) || o.text).replace(/<[^>]+>/g, '') }]);
         render(); done();
       };
       window.addEventListener('hashchange', finish);
-      if (o.pick) {
-        GM.$$('[data-mgr]', el).forEach(bt => bt.onclick = () => { o.onPick(bt.dataset.mgr); GM.sound.play('whistle'); finish(); });
-        return;
-      }
-      // the action starts once the card is up (after a coin has landed)
-      const start = o.coin != null ? 1650 : 350;
-      if (o.coin != null) {
-        for (let k = 0; k < 8; k++) later(k * 170, () => GM.sound.play('tick'));
-        later(start - 100, () => {
-          const t = GM.$('.cm-text', el); if (t) t.innerHTML = o.after;
-          el.className = el.className.replace(/cm-(good|bad|weird|unleash)/, 'cm-' + (o.coin ? 'good' : 'bad'));
-          fx(o.coin ? 'good' : 'bad', o.coin ? '⚽' : '🧤');
+      if (o.pick) { GM.$$('[data-mgr]', el).forEach(bt => bt.onclick = e => { e.stopPropagation(); o.onPick(bt.dataset.mgr); GM.sound.play('sting'); finish(); }); return; }
+      const onPitch = !!o.run || changed.length > 0;
+      // act 2: the card drops to the bottom (so the pitch and the score show) and it happens
+      const act = () => {
+        if (stage !== 'intro' || over) return;
+        if (!onPitch) { stage = 'result'; later(o.reveal ? 0 : 400, finish); return; }
+        stage = 'act';
+        const r1 = card.getBoundingClientRect();
+        el.classList.remove('intro'); el.classList.add('act');
+        const r2 = card.getBoundingClientRect();
+        if (card.animate) card.animate([{ transform: `translateY(${r1.top - r2.top}px)` }, { transform: 'none' }], { duration: 450, easing: 'cubic-bezier(.2,.8,.2,1)' });
+        const t0 = 450;
+        later(t0, () => { if (o.run) o.run(c); changed.forEach(i => later(o.run ? 2000 : 200, () => hit(i))); countTo(cn, b.t, now.t, 1100); countTo(cb, b.b, now.b, 1100, signed); if (o.actSound) GM.sound.play(o.actSound); });
+        if (o.reveal) later(t0 + 1400, () => { setText(o.reveal.text, o.reveal.tone); if (o.reveal.sound) GM.sound.play(o.reveal.sound); });
+        later(t0 + (o.run ? 2900 : 1300), () => { stage = 'result'; later(1700, finish); });
+      };
+      el.onclick = () => { if (stage === 'intro') { if (o.coin != null && !flipped) return flip(); act(); } else finish(); };
+      // the coin waits for you to flip it
+      let flipped = false;
+      const flip = () => {
+        if (flipped) return; flipped = true;
+        el.classList.add('flipping'); GM.sound.play('coinflip');
+        later(1500, () => {
+          el.classList.add('landed'); GM.sound.play('coinland');
+          later(150, () => { GM.sound.play(o.coin ? 'cheer' : 'boo'); setText(o.after, o.coin ? 'good' : 'bad'); });
+          later(2000, act);
         });
-      }
-      if (o.reveal) later(1150, () => { const t = GM.$('.cm-text', el); if (t) t.innerHTML = o.reveal.text; el.className = el.className.replace(/cm-(good|bad|weird|unleash)/, 'cm-' + o.reveal.tone); fx(o.reveal.tone, o.icon); });
-      later(start, () => { if (o.run) o.run(c); changed.forEach(i => later(o.run ? 1700 : 300, () => hit(i))); totals(); });
-      later(start + (o.small ? 1900 : 2300), finish);
-      el.onclick = finish;
+      };
+      if (o.coin == null) later(onPitch ? (o.small ? 2600 : 3000) : 3600, act);
     });
   }
   // CHAOS meter
   function charge(n = 1) {
     if (!S.rules.chaos) return;
     S.meter = (S.meter || 0) + n;
-    if (S.meter >= METER && !S.chaosDue) { S.meter = 0; S.chaosDue = true; GM.sound.play('siren'); }
+    if (S.meter >= METER && !S.chaosDue) { S.meter = 0; S.chaosDue = true; setTimeout(() => GM.sound.play('meterfull'), 250); }
+    else if (!S.chaosDue) setTimeout(() => GM.sound.play('charge', S.meter), 250);
   }
   function fx(kind, icon, rain = 0) {
     if (!S.rules.chaos) return;
@@ -707,7 +744,7 @@
     // in target modes a blip climbs as the total closes in on the number
     if (S.target && !S.rules.treble) setTimeout(() => GM.sound.play('rise', S.xi.reduce((a, x) => a + x.g, 0) / S.target), 180);
     if (before) {  // Double or Nothing: a real coin toss before he takes his place
-      await moment({ icon: '🎲', name: 'Double or nothing', tone: 'weird', before, coin: heads, text: `${GM.esc(p.name)}: heads he counts double, tails he counts for nothing…`,
+      await moment({ icon: '🎲', name: 'Double or nothing', tone: 'weird', before, coin: heads, scene: 'casino', sound: 'drumroll', text: `${GM.esc(p.name)}: heads he counts double, tails he counts for nothing…`,
         after: heads ? `<b>Heads!</b> ${GM.esc(p.name)} counts double.` : `<b>Tails…</b> ${GM.esc(p.name)} counts for nothing.` });
       if (!onThisGame()) return;
     }
@@ -764,8 +801,8 @@
         filled.forEach(x => scale(x, heads ? 2 : 0.5, heads ? 'boosted' : 'halved'));
         if (heads) S.coinWin = true;
         consume();
-        moment({ icon: '🎰', name: 'ALL IN', tone: 'weird', before, coin: heads, text: 'Heads, your whole XI doubles. Tails, it’s halved…',
-          after: heads ? '<b>Heads!</b> It pays off: your whole XI doubles.' : '<b>Tails…</b> It’s gone wrong: your whole XI is halved.', run: c => c.sweep(heads ? '💰' : '💸'), big: true });
+        moment({ icon: '🎰', name: 'ALL IN', tone: 'weird', before, coin: heads, scene: 'casino', sound: 'drumroll', text: 'Heads, your whole XI doubles. Tails, it’s halved…',
+          after: heads ? '<b>Heads!</b> It pays off: your whole XI doubles.' : '<b>Tails…</b> It’s gone wrong: your whole XI is halved.', run: c => c.sweep(heads ? '💰' : '💸'), actSound: heads ? 'cash' : 'taxman', big: true });
         return;
       }
       case 'hot':
@@ -1062,11 +1099,12 @@
 
   // one line for what's happening (a CHAOS event, a storm, an active wildcard) and one for what to do next
   function msgHtml(sp) {
-    const top = S.storm ? '<span class="m-ev">🌪️ <b>Wildcard storm!</b> No players this spin – grab a card</span>'
-      : S.event ? `<span class="m-ev">${S.event.icon} <b>${GM.esc(S.event.name)}</b> – ${GM.esc(S.event.note)}</span>`
+    const top = S.storm ? '<span class="m-ev">🌪️ <b>Wildcard storm!</b> Grab a card</span>'
       : sp && S.phase !== 'spin' ? `<span class="m-sp">${sp.icon} ${sp.name}</span>` : '';
+    const first = S.spin === 0;  // tips only on the first go: after that you know what to do
     const pend = S.pending != null && S.reels[S.pending] && !S.reels[S.pending].wild && byId(S.reels[S.pending].id);
     const next = S.subbing !== false ? '🔁 Tap a player on the pitch to release him <button class="btn small ghost" id="cancel-sub">Cancel</button>'
+      : !first ? ''
       : S.phase === 'spin' ? 'Spin for three new players'
       : S.phase !== 'pick' ? ''
       : pend ? `📍 Tap a glowing slot for <b>${GM.esc(pend.name)}</b>`

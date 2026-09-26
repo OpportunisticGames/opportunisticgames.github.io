@@ -9,6 +9,15 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 34, label: '5.4.1', date: '2026-09-26', title: 'CHAOS gets louder',
+      items: [
+        '🪙 You flip the coin yourself now: tap it and watch it land',
+        '🎬 CHAOS moments take over the whole screen first (a storm with rain and lightning for the tornado, confetti for the parade, coins for TV money), then play out on your pitch, with time to read what happened',
+        '🔊 New sounds for everything: the meter filling up, wind, thunder, the ambulance, VAR, the till, the boos…',
+        '🧹 Tidier bottom of the screen: the tips only show on your first go',
+      ],
+    },
+    {
       v: 33, label: '5.4', date: '2026-09-26', title: '🌪️ CHAOS, rebuilt',
       items: [
         '👔 Appoint a manager at kick-off: Fergie, Wenger, Mourinho, Pep, Klopp, Ranieri, Keegan and more. Each brings a perk and a catch, and 👍 / 👎 on the reels show who he’d want. He might get the sack…',

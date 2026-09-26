@@ -18,12 +18,12 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(!!mgr && !!(await pg.$('#dugout')), `appointed ${mgr}; he sits in the dugout by the meter`);
   // play it through: take every wildcard (fills the meter), play them, and let moments finish on their own
   const seen = [], maxAtOnce = [];
-  let forced = 0, allin = false;
+  let forced = 0, allin = false; const shots = new Set();
   for (let step = 0; step < 400; step++) {
     const st = await pg.evaluate(() => {
       document.querySelectorAll('.modal-wrap').forEach(m => m.remove());
       const cms = document.querySelectorAll('.cm:not(.out)');
-      if (cms.length) { const n = cms[0].querySelector('.cm-name').textContent; const pick = cms[0].querySelector('[data-mgr]'); if (pick) pick.click(); return 'moment:' + n + ':' + cms.length; }
+      if (cms.length) { const n = cms[0].querySelector('.cm-name').textContent; const pick = cms[0].querySelector('[data-mgr]'); if (pick) pick.click(); const coin = cms[0].querySelector('.coin-wrap'); if (coin && !cms[0].classList.contains('flipping')) coin.click(); return 'moment:' + n + ':' + cms.length; }
       if (document.querySelector('.result-total')) return 'done';
       const S = GM.draft.state();
       const sub = document.querySelector('.pitch.subbing .slot.filled'); if (sub) { sub.click(); return 'sub'; }
@@ -35,7 +35,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     }).catch(e => 'err ' + e.message);
     if (st.startsWith('moment:')) {
       const [, name, n] = st.split(':'); if (seen[seen.length - 1] !== name) seen.push(name); maxAtOnce.push(+n);
-      if (name === 'Tornado!' || name === 'ALL IN') await pg.screenshot({ path: `lay/chaos_${name.replace(/\W/g, '')}.png` });
+      if (['Tornado!', 'Lightning strike', 'Open-top bus parade', 'CHAOS UNLEASHED'].includes(name) && !shots.has(name)) shots.add(name), await pg.screenshot({ path: `lay/chaos_${name.replace(/\W/g, '')}.png` });
       await pg.waitForTimeout(400); continue;
     }
     if (st === 'done') break;
@@ -47,11 +47,13 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     if (!allin && await pg.evaluate(() => { const S = GM.draft.state(); return S.phase === 'pick' && !document.querySelector('.cm') && S.xi.filter(x => x.p != null).length >= 5; })) {
       allin = true;
       await pg.evaluate(() => { const S = GM.draft.state(); S.inv = S.inv.slice(0, 2).concat(['allin']); GM.draft.render(); });
-      await pg.click('.wild-btn:last-child'); await pg.waitForTimeout(700);
-      ok(!!(await pg.$('.cm .coin')), 'All In tosses a real coin');
+      await pg.click('.wild-btn:last-child'); await pg.waitForTimeout(1500);
+      ok(!!(await pg.$('.cm .coin')) && !(await pg.$('.cm.flipping')), 'All In brings out a coin, and waits for you to flip it');
       await pg.screenshot({ path: 'lay/chaos_coin.png' });
-      await pg.waitForTimeout(1300);
+      await pg.click('.coin-wrap'); await pg.waitForTimeout(1900);
+      ok(!!(await pg.$('.cm.landed')), 'tap it: it flips and lands');
       await pg.screenshot({ path: 'lay/chaos_coin_landed.png' });
+      await pg.waitForTimeout(2600); await pg.screenshot({ path: 'lay/chaos_coin_act.png' });
     }
     await pg.waitForTimeout(st === 'spin' ? 1500 : 450);
   }

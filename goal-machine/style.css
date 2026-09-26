@@ -1432,3 +1432,61 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
   .cm-card, .cm-icon, .coin, .cm-fx, .slot.hit-up .slot-goals, .slot.hit-down .slot-goals, .slot.hit-down { animation-duration: .01s !important; }
 }
 .chaos-meter span { white-space: nowrap; flex: none; }
+/* CHAOS moments, in three acts: a full-screen entrance, then the card drops to the bottom while it happens on the pitch */
+.cm { top: 0; flex-direction: column; justify-content: flex-end; align-items: center; }
+.cm.intro { justify-content: center; padding-top: 16px; }
+.cm.intro::before { background: rgba(5, 0, 20, .7); }
+.cm.act::before { background: linear-gradient(180deg, transparent 50%, rgba(5, 0, 20, .45)); }
+.cm-sky { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; transition: opacity .6s; }
+.cm.act .cm-sky { opacity: .3; }
+.cm.act .cm-sky.sky-storm { opacity: .55; }
+.cm.intro .cm-card { max-width: 460px; padding: 22px 18px 16px; }
+.cm.intro .cm-icon { font-size: 4.6rem; }
+.cm.intro.cm-big .cm-icon { font-size: 6.2rem; animation: cm-icon-big 1.1s cubic-bezier(.2, 1.3, .4, 1); }
+.cm.intro .cm-name { font-size: 2.2rem; } .cm.intro.cm-big .cm-name { font-size: 2.7rem; }
+.cm.intro .cm-text { font-size: 1.08rem; }
+.cm.act .cm-card { padding: 10px 14px 8px; } .cm.act .cm-icon { font-size: 2rem; animation: none; } .cm.act .cm-name { font-size: 1.3rem; }
+.cm.act .cm-skip { margin-top: 4px; }
+@keyframes cm-icon-big { 0% { transform: scale(0) rotate(-200deg); } 70% { transform: scale(1.25) rotate(10deg); } 100% { transform: none; } }
+/* the skies */
+.sky-dark { background: radial-gradient(circle at 50% 40%, #3a1068, #07000f 75%); }
+.sky-kickoff { background: radial-gradient(circle at 50% 40%, #1c9b5c, #03210f 75%); }
+.sky-red { background: radial-gradient(circle at 50% 45%, #c0122e, #1a0005 75%); animation: sky-pulse 1s ease-in-out infinite alternate; }
+.sky-gold { background: repeating-conic-gradient(from 0deg, rgba(255, 214, 0, .35) 0 10deg, rgba(255, 140, 0, .08) 10deg 20deg), radial-gradient(circle, #7a5200, #150c00 75%); animation: sky-spin 12s linear infinite; }
+.sky-fire { background: radial-gradient(circle at 50% 100%, #ff7a00, #b3172f 45%, #1a0005 85%); animation: sky-pulse .45s ease-in-out infinite alternate; }
+.sky-tv { background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .06) 0 2px, transparent 2px 5px), radial-gradient(circle, #1b3d8f, #020816 75%); }
+.sky-money { background: radial-gradient(circle at 50% 40%, #1c9b5c, #021a0c 75%); }
+.sky-party { background: radial-gradient(circle at 50% 40%, #7a00ff, #12002a 75%); }
+.sky-casino { background: radial-gradient(circle at 50% 45%, #106b3f, #02170c 70%); }
+.sky-clock { background: radial-gradient(circle at 50% 40%, #0b2a6e, #020816 75%); }
+.sky-news { background: repeating-linear-gradient(90deg, rgba(0, 0, 0, .05) 0 30px, transparent 30px 60px), radial-gradient(circle, #6b6b6b, #121212 80%); }
+.sky-unleash { background: conic-gradient(from 0deg, #ff2bd6, #ffe600, #00f0ff, #7a00ff, #ff2bd6); animation: sky-spin 3s linear infinite; }
+.sky-unleash, .sky-gold { inset: -50%; }
+.sky-storm { background: linear-gradient(180deg, #05070f, #1a2440 60%, #0a0f1c); }
+.sky-lightning { background: linear-gradient(180deg, #0a0418, #2a1450 70%, #0a0418); }
+.cm-sky.flash::after { content: ''; position: absolute; inset: 0; background: #eaf2ff; animation: sky-flash .55s ease-out forwards; }
+@keyframes sky-flash { 0% { opacity: .95; } 12% { opacity: .15; } 22% { opacity: .8; } 100% { opacity: 0; } }
+@keyframes sky-pulse { to { filter: brightness(1.35); } }
+@keyframes sky-spin { to { transform: rotate(360deg); } }
+.cm-rain { position: absolute; inset: -30% -30%; background: repeating-linear-gradient(100deg, rgba(190, 210, 255, .45) 0 1.5px, transparent 1.5px 16px); animation: rain-fall .28s linear infinite; }
+.cm-rain.far { opacity: .45; background-size: 60% 60%; animation-duration: .5s; }
+@keyframes rain-fall { from { transform: translate(0, -60px); } to { transform: translate(-14px, 0); } }
+.cm-confetti { position: absolute; top: -20px; width: 8px; height: 14px; border-radius: 2px; animation: fall linear infinite; }
+.cm-coin { position: absolute; top: -50px; font-size: 1.9rem; font-style: normal; animation: fall linear infinite; }
+@keyframes fall { to { transform: translateY(110vh) rotate(540deg); } }
+.chaos-flash.lightning { background: rgba(235, 242, 255, .85); }
+/* the coin you flip yourself */
+.coin-wrap { display: block; margin: 12px auto 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+.coin { width: 128px; height: 128px; margin: 6px auto 8px; animation: coin-bob 1.4s ease-in-out infinite; }
+.coin-f { font-size: 2.6rem; }
+.coin-f b { font-size: .75rem; }
+.cm.flipping .coin { animation: coin-flip 1.5s cubic-bezier(.25, .8, .35, 1) forwards; }
+.coin-go { display: inline-block; font: 700 1rem Oswald, sans-serif; letter-spacing: .05em; padding: 6px 14px; border-radius: 999px; background: #ffe600; color: #2a1a00; animation: pop 1s ease-in-out infinite alternate; }
+.cm.flipping .coin-go { visibility: hidden; }
+.cm.intro .coin-wrap + .cm-skip, .cm.flipping .cm-skip { display: none; }
+@keyframes coin-bob { 0%, 100% { transform: translateY(0) rotateY(-12deg); } 50% { transform: translateY(-8px) rotateY(12deg); } }
+@keyframes coin-flip { 0% { transform: translateY(0) rotateY(0); } 45% { transform: translateY(-90px) scale(1.2) rotateY(calc(var(--end) * .55)); } 100% { transform: translateY(0) rotateY(var(--end)); } }
+.cm.landed .coin-f { box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .35), 0 0 26px rgba(255, 230, 0, .8); }  /* not a filter: that flattens the 3D and shows the wrong face */
+.cm.act .coin-wrap { display: none; }
+/* the line under the reels: one line at most */
+.m-top { display: block; white-space: nowrap; text-overflow: ellipsis; }

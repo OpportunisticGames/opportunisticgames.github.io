@@ -128,6 +128,29 @@
       roar(t + 0.1, 1.4, 0.3);
     },
     cheer: t => roar(t, 1.1, 0.28),
+    /* CHAOS moments */
+    // the meter: a note climbing with every charge (level 1-4), and an alarm building when it's full
+    charge: (t, lv = 1) => { const n = [67, 71, 74, 79][Math.max(0, Math.min(3, lv - 1))]; tone(midi(n), { t, dur: 0.16, type: 'square', lp: 2400, vol: 0.06 }); tone(midi(n + 12), { t: t + 0.07, dur: 0.22, type: 'triangle', vol: 0.07 }); },
+    meterfull: t => { for (let i = 0; i < 6; i++) tone(midi(64 + i * 3), { t: t + i * 0.07, dur: 0.14, type: 'square', lp: 3000, vol: 0.06 }); tone(300, { t: t + 0.4, to: 1500, glide: 0.6, dur: 0.65, type: 'sawtooth', lp: 3200, vol: 0.06 }); },
+    // weather: wind that howls up and away, rain, a thunder rumble, and the crack of a strike
+    wind: t => { noise({ t, dur: 2.6, freq: 280, to: 1100, q: 3, vol: 0.26, attack: 0.6 }); noise({ t: t + 0.3, dur: 2.2, freq: 600, to: 250, q: 5, vol: 0.14, attack: 0.5 }); },
+    rain: t => noise({ t, dur: 3.2, type: 'highpass', freq: 3500, vol: 0.07, attack: 0.4 }),
+    thunder: t => { noise({ t, dur: 2.4, type: 'lowpass', freq: 380, to: 90, vol: 0.5, attack: 0.03 }); tone(55, { t, to: 30, dur: 1.4, vol: 0.2, attack: 0.02 }); },
+    crack: t => { noise({ t, dur: 0.12, type: 'highpass', freq: 2500, vol: 0.45, attack: 0.001 }); noise({ t: t + 0.05, dur: 1.6, type: 'lowpass', freq: 500, to: 80, vol: 0.4 }); },
+    // match day: the ambulance, VAR's beeps, TV money, the taxman, the mystery box, the masks, a boo, a drum roll
+    ambulance: t => { for (let i = 0; i < 4; i++) { tone(960, { t: t + i * 0.44, dur: 0.21, type: 'square', lp: 2200, vol: 0.05 }); tone(760, { t: t + i * 0.44 + 0.22, dur: 0.21, type: 'square', lp: 2200, vol: 0.05 }); } },
+    var: t => { [0, 0.28, 0.56].forEach(d => tone(1320, { t: t + d, dur: 0.12, type: 'square', lp: 3000, vol: 0.05 })); tone(660, { t: t + 0.9, dur: 0.4, type: 'triangle', vol: 0.08 }); },
+    cash: t => { noise({ t, dur: 0.08, type: 'lowpass', freq: 1200, vol: 0.2 }); [2637, 3136].forEach((f, i) => tone(f, { t: t + 0.08 + i * 0.09, dur: 0.6, type: 'triangle', vol: 0.08 })); for (let i = 0; i < 6; i++) tone(3000 + Math.random() * 1500, { t: t + 0.3 + i * 0.06, dur: 0.08, type: 'triangle', vol: 0.03 }); },
+    taxman: t => [79, 76, 72, 67, 60].forEach((n, i) => tone(midi(n), { t: t + i * 0.1, dur: 0.18, type: 'square', lp: 1800, vol: 0.05 })),
+    box: t => { noise({ t, dur: 0.1, freq: 900, q: 2, vol: 0.25 }); tone(300, { t, to: 900, dur: 0.15, type: 'triangle', vol: 0.1 }); [84, 88, 91, 96].forEach((n, i) => tone(midi(n), { t: t + 0.15 + i * 0.06, dur: 0.3, type: 'triangle', vol: 0.07 })); },
+    spooky: t => { [57, 60, 63].forEach(n => { const o = tone(midi(n), { t, dur: 1.5, type: 'triangle', attack: 0.3, vol: 0.06 }); o.detune.setValueAtTime(0, t); o.detune.linearRampToValueAtTime(-60, t + 1.5); }); },
+    boo: t => { [220, 330, 480].forEach(f => noise({ t, dur: 1.4, freq: f, to: f * 0.7, q: 3, vol: 0.2, attack: 0.2 })); },
+    drumroll: t => { for (let i = 0; i < 18; i++) noise({ t: t + i * 0.045, dur: 0.05, freq: 1800, q: 0.8, vol: 0.12 + i * 0.008 }); tone(80, { t: t + 0.82, to: 45, dur: 0.4, vol: 0.35 }); },
+    // the coin: spinning pings that slow down, then the clink as it lands
+    coinflip: t => { let d = 0; for (let i = 0; i < 12; i++) { tone(2800 + (i % 2) * 500, { t: t + d, dur: 0.05, type: 'triangle', vol: 0.05 }); d += 0.06 + i * 0.011; } },
+    coinland: t => { tone(3100, { t, dur: 0.35, type: 'triangle', vol: 0.1 }); tone(4150, { t: t + 0.02, dur: 0.25, type: 'triangle', vol: 0.06 }); tone(3100, { t: t + 0.14, dur: 0.2, type: 'triangle', vol: 0.05 }); },
+    sacked: t => { noise({ t, dur: 0.35, freq: 2500, to: 500, q: 1.2, vol: 0.2 }); roar(t + 0.2, 0.6, 0.2); tone(midi(50), { t: t + 0.3, dur: 0.8, type: 'sawtooth', lp: 900, vol: 0.06 }); },
+    tick3: t => { for (let i = 0; i < 6; i++) tone(i % 2 ? 1180 : 1750, { t: t + i * 0.25, type: 'triangle', dur: 0.05, vol: 0.1 }); },
     fanfare: t => {
       brass([60, 64, 67], t, 0.16); brass([60, 64, 67], t + 0.2, 0.16); brass([60, 65, 69], t + 0.4, 0.16);
       brass([64, 67, 72], t + 0.6, 1.2, 0.08); roar(t + 0.5, 1.6, 0.3);
@@ -428,7 +451,7 @@
       if (!live || !store.get('sfx', true) || document.hidden) return;
       if (live.ctx.state !== 'running') return;
       X = live;
-      try { name === 'rise' ? rise(now(), arg) : SOUNDS[name] && SOUNDS[name](now()); } catch (e) { }
+      try { name === 'rise' ? rise(now(), arg) : SOUNDS[name] && SOUNDS[name](now(), arg); } catch (e) { }
     },
     // Renders every sound (and a few seconds of each background) to a WAV, for checking them without a speaker
     async renderDemo(names = Object.keys(SOUNDS), gap = 1.6, bgSeconds = 0) {
