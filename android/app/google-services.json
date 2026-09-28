@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:518524300267:android:23bfc29de709d4cb5287ae",
+        "android_client_info": {
+          "package_name": "goal.machine"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCS9t__W-bAPCsjFkK3mWAheqcya-nzmP4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:518524300267:android:c64da4414ed318175287ae",
         "android_client_info": {
           "package_name": "io.github.opportunisticgames.goalmachine"
