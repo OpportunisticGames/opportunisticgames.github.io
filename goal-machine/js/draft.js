@@ -90,7 +90,8 @@
       scale(S.xi[i], 1.5, 'boosted'); return { note: `${nm(i)} punches it in. Nobody saw it: <b>×1.5</b>.`, run: c => c.visit(i, '🤚') }; } },
     sponge: { rar: 'u', icon: '🧽', name: 'The magic sponge', tone: 'good', look: ['kickoff', 'good'], go: () => {
       const f = filledIdx(); if (!f.length) return { note: 'The physio has nobody to sponge.' };
-      const i = f.slice().sort((a, b) => S.xi[a].g - S.xi[b].g)[0]; scale(S.xi[i], 2, 'boosted');
+      const i = underdog(f); if (i < 0) { const p = pts(15); S.bonus.push(['🧽 The magic sponge', p]); return { note: `The physio’s sponge works wonders on morale: <b>+${p}</b> bonus.` }; }
+      scale(S.xi[i], 2, 'boosted');
       return { note: `The physio runs on with a cold sponge and ${nm(i)} is a new man: <b>×2</b>.`, run: c => c.visit(i, '🧽') }; } },
     stoke: { rar: 'u', icon: '🌧️', name: 'A cold wet night in Stoke', tone: 'weird', look: ['storm', 'rain'], go: () => {
       S.xi.forEach(x => { if (x.p == null) return; const g = GM.GROUP[x.pos]; if (g === 'D' || g === 'G') scale(x, 1.5, 'boosted'); else if (g === 'F') scale(x, 0.8, 'halved'); });
@@ -116,7 +117,8 @@
       return { note: got.length ? `New owners, new money: your bag fills up with CHAOS cards ${got.join(' ')}` : 'New owners, but your bag is already full. They buy a yacht instead.', run: c => c.bag('💸') }; } },
     fairytale: { rar: 'r', icon: '🦊', name: '5000–1', tone: 'good', look: ['party', 'fanfare'], go: () => {
       const f = filledIdx(); if (!f.length) return { note: 'A fairytale needs a hero. Sign someone first.' };
-      const i = f.slice().sort((a, b) => S.xi[a].g - S.xi[b].g)[0]; scale(S.xi[i], 5, 'boosted');
+      const i = underdog(f); if (i < 0) { const p = pts(40); S.bonus.push(['🦊 5000–1', p]); return { note: `Nobody gave your lot a chance: <b>+${p}</b> bonus!`, run: c => c.rain('🦊') }; }
+      scale(S.xi[i], 5, 'boosted');
       return { note: `Nobody gave ${nm(i)} a chance. <b>×5</b>!`, run: c => c.visit(i, '🦊', 'strike') }; } },
     slip: { rar: 'r', icon: '🍌', name: 'The slip', tone: 'bad', look: ['red', 'boo'], go: () => {
       const f = filledIdx(); if (!f.length) return { note: 'Nobody to slip yet.' };
@@ -127,6 +129,8 @@
       return { note: 'Last-minute madness! The whole ground goes up: your <b>whole XI ×1.5</b>!', run: c => c.sweep('🎉') }; } },
   };
   const pts = n => Math.round(n * CHAOS_UNIT[S.stat]);
+  // your lowest scorer who's actually scored (a boost on 0 would do nothing); -1 if nobody has
+  const underdog = f => { const s0 = f.filter(i => S.xi[i].g > 0).sort((a, b) => S.xi[a].g - S.xi[b].g); return s0.length ? s0[0] : -1; };
   // something that's already happened this game can happen again, just less likely each time (a sixth, then a 36th…)
   const again = (seen, k) => Math.pow(1 / 6, (seen || []).filter(x => x === k).length);
   // the CHAOS meter: taking or playing a wildcard (and every storm) charges it; full, the next spin opens with a big
@@ -541,10 +545,18 @@
       o.text = `It rips through your XI: <b>${ups}</b> player${ups === 1 ? '' : 's'} doubled, <b>${hits.length - ups}</b> halved.`;
       o.run = c => c.sweep('🌪️', 2000);
     } else if (k === 'lightning') {
-      const by = filled.slice().sort((a, b) => S.xi[b].g - S.xi[a].g), top = by[0], low = by[by.length - 1];
-      scale(S.xi[top], 0.5, 'halved'); scale(S.xi[low], 3, 'boosted');
-      o.text = `${nm(top)} is struck: <b>halved</b>. ${nm(low)} is charged up: <b>×3</b>!`;
-      o.run = c => { c.visit(top, '⚡', 'strike', 0, 'crack'); c.visit(low, '✨', 'strike', 1100, 'good'); };
+      // two random players: one is struck (halved), another who's scored is charged up (×3), so it can go either way
+      const top = filled[Math.floor(r() * filled.length)], rest = filled.filter(i => i !== top && S.xi[i].g > 0);
+      scale(S.xi[top], 0.5, 'halved');
+      if (rest.length) {
+        const low = rest[Math.floor(r() * rest.length)]; scale(S.xi[low], 3, 'boosted');
+        o.text = `${nm(top)} is struck: <b>halved</b>. ${nm(low)} is charged up: <b>×3</b>!`;
+        o.run = c => { c.visit(top, '⚡', 'strike', 0, 'crack'); c.visit(low, '✨', 'strike', 1100, 'good'); };
+      } else {
+        const p = pts(25); S.bonus.push(['⚡ Lightning', p]);
+        o.text = `${nm(top)} is struck: <b>halved</b>. The rest of the power goes to the floodlights: <b>+${p}</b> bonus.`;
+        o.run = c => c.visit(top, '⚡', 'strike', 0, 'crack');
+      }
     } else if (k === 'parade') {
       const medals = S.xi.reduce((a, x) => a + (x.p != null ? (byId(x.p).hon.P || 0) : 0), 0), pts = Math.round(Math.max(15, 8 * medals) * CHAOS_UNIT[S.stat]);
       S.bonus.push([`🚌 Bus parade (spin ${S.spin + 1})`, pts]);

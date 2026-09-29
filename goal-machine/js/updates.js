@@ -9,6 +9,13 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 35, label: '5.4.2', date: '2026-09-27', title: 'Fairer lightning',
+      items: [
+        '⚡ Lightning strike hits two random players now: one halved, another (who’s scored) ×3. It used to always halve your best and triple your worst, which was usually a 0',
+        '🧽 The magic sponge and 🦊 5000–1 boost your lowest scorer who’s actually scored (or give you bonus points if nobody has)',
+      ],
+    },
+    {
       v: 34, label: '5.4.1', date: '2026-09-26', title: 'CHAOS gets louder',
       items: [
         '🪙 You flip the coin yourself now: tap it and watch it land',

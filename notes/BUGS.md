@@ -12,6 +12,7 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 2026-09-27 | CHAOS Lightning strike always halved your top scorer and tripled your lowest, usually a 0, so it was nearly always a pure loss (the sponge and 5000–1 also boosted a 0) | 5.4.2: two random players (the ×3 one has scored); sponge and 5000–1 pick the lowest who has scored, or give bonus points |
 | 2026-09-26 | CHAOS: the coin flipped itself (should be yours to flip); moments too quick to read; the event line under the reels overflowed ("ugly"); few sounds | 5.4.1: tap-to-flip coin; three-act moments (full-screen entrance with its own scene, action on the pitch, result); new sounds; tips only on the first go. A CSS filter on the landed coin also flattened its 3D so tails showed a mirrored HEADS: fixed |
 | 2026-09-26 | Results spread charts topped out at 800+ (fixed bands), and CHAOS charted goals, not its points (often 800+) | 5.4: every score kept per mode, eight round-sized bands fitted to your range; CHAOS charts points |
 | 2026-09-26 | Owner: dailies not refreshing (25th not lit, streak stuck at 1, Moneyball/CHAOS not replayable) | Not a bug: the server shows Daily Moneyball, CHAOS and Ultimate all played on the 26th and nothing on the 25th (last before that the 24th) |

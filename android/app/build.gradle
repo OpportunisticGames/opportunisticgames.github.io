@@ -50,6 +50,7 @@ android {
         }
         play {
             dimension 'channel'
+            applicationId 'goal.machine'  // the package name the Google Play listing was created with (fixed for good)
             buildConfigField 'String', 'CHANNEL', '"play"'
             signingConfig signingConfigs.upload
         }
