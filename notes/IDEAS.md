@@ -149,7 +149,23 @@ formations, and badges round 2.
      players in.
 - **Questions:** which first? (Claude suggests 1, then 2 and 3.)
 
-### Money games need more depth (Moneyball, Transfer Window, Auction)
+### Money games need more depth ✅ Moneyball reworked in 5.8
+- **Owner (1 Oct 2026):** "the perfect time to rework the money games… make these fun and engaging, can use things
+  different to goals/apps/assists… across the three difficulty levels."
+- **Shipped (js/moneyball.js):** chairman for a season. £100m, a squad of 5, 8 weeks. The market prices reputation
+  (GM.market.price); a player's worth is his reputation scaled by his output against players of a similar reputation
+  (so every price band is fair on average and the bargains are the over-performers). Each week: news (a bid for your
+  star with a sell/keep choice, injury, takeover +15%, FFP −12%, agent's tip for £2m, Player of the Month, TV money,
+  taxman, international duty), a market of four, then the matchweek at each player's real PL rates (goals, assists,
+  clean sheets earn prize money and move value; values drift 10% a week towards worth). Week 8 is Deadline Day
+  (asking prices −30%). Sell any time less a 10% agent's fee. Score = net worth (£m). Normal shows clubs/era/apps,
+  Hard names and positions only, Extreme every PL player. The Daily is the same season for everyone. The Transfer
+  Window folded into it. Balance (tools/test/moneyball.js): random buying ~+10%, stars ~+7% (swingy), spotting real
+  bargains ~+45%.
+- **Maybe next:** the Auction reworked on the same economy (bid for players, then a season of matchweeks to see who
+  was the better chairman); an online "Chairmen's league" on the Daily; loans; wages.
+
+### (Before 5.8) Money games need more depth (Moneyball, Transfer Window, Auction)
 - **Owner's take:** there's something there, but it isn't satisfying. By two-thirds of the way through you're often
   left with one affordable option (a free transfer), and it boils down to "longest career for the cost". It lacks the
   tension of the spin games. It probably needs an opponent (the computer, or a person online) and more depth.

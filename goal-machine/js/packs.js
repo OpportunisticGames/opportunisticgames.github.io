@@ -72,7 +72,7 @@
     const c = load();
     if (type === 'standard') c.packs += n; else for (let i = 0; i < n; i++) c.extra.push(type);
     save(c);
-    if (why) setTimeout(() => GM.toast(`🎁 <b>+${n} ${type === 'standard' ? 'pack' : PACKS[type].name}${n > 1 ? 's' : ''}</b> · ${why}`, 2600), 900);
+    if (why) setTimeout(() => { GM.toast(`🎁 <b>+${n} ${type === 'standard' ? 'pack' : PACKS[type].name}${n > 1 ? 's' : ''}</b> · ${why}`, 2600); GM.sound.play('packget'); }, 900);
     GM.packDots();
   };
   GM.packDots = () => GM.$$('.pack-count').forEach(el => { const n = GM.packsWaiting(); el.textContent = n; el.hidden = !n; });
@@ -254,16 +254,20 @@
       const box = el.querySelector('.po-cards');
       box.innerHTML = res.cards.map((x, i) => GM.cardHtml(x, { fresh: true, attr: ` style="--i:${i}"` })).join('');
       const cards = [...box.children];
-      GM.sound.play('card');
+      GM.sound.play('deal', cards.length);
       // the backs of the good ones glow before they turn
-      later(700, () => res.cards.forEach((x, i) => { if (x.wild) cards[i].classList.add('hint-w'); else if (x.t === 'g' || x.t === 'l') cards[i].classList.add('hint-' + x.t); }));
+      later(700, () => {
+        res.cards.forEach((x, i) => { if (x.wild) cards[i].classList.add('hint-w'); else if (x.t === 'g' || x.t === 'l') cards[i].classList.add('hint-' + x.t); });
+        if (res.cards.some(x => x.wild || x.t === 'g' || x.t === 'l')) GM.sound.play('shimmer', res.cards.some(x => x.t === 'l' && !x.wild));
+      });
       later(1300, () => flip(0));
       function flip(i) {
         if (i >= cards.length) return finish();
         const x = res.cards[i];
         const go = () => {
           cards[i].classList.add('flipped');
-          GM.sound.play(x.wild ? 'wild' : x.t === 'l' ? 'cheer' : x.t === 'g' ? 'jackpot' : x.finished ? 'good' : 'card');
+          GM.sound.play(x.wild ? 'wild' : x.t === 'l' ? 'fanfare' : x.t === 'g' ? 'jackpot' : x.t === 's' ? 'silver' : 'card');
+          if (x.finished && !x.wild && !x.spare && x.t !== 'b') later(x.t === 'l' ? 900 : 350, () => GM.sound.play('snap'));
           if (x.t === 'g' || x.t === 'l') burst(cards[i], x.t);
           if (x.wild) return later(700, () => choose(x, i, () => later(500, () => flip(i + 1))));
           later(fast ? 180 : x.t === 'l' ? 1500 : x.t === 'g' ? 1000 : 600, () => flip(i + 1));
@@ -275,7 +279,7 @@
         const W = WILDS[x.wild.kind], box2 = el.querySelector('.po-choice'), c = load();
         box2.innerHTML = `<div class="pch-head"><span>${W.icon}</span><b>${W.name}</b><small>${W.text}</small></div>
           <div class="pch-cards">${x.wild.options.map((p, k) => GM.cardHtml({ p, t: GM.cardTier(p), have: c.p[p.pk] || 0 }, { back: false, attr: ` data-pick="${k}"` })).join('')}</div>`;
-        el.classList.add('choosing');
+        el.classList.add('choosing'); GM.sound.play('box');
         GM.$$('[data-pick]', box2).forEach(b => b.onclick = () => {
           const p = x.wild.options[+b.dataset.pick];
           b.classList.add('picked'); GM.sound.play('good');
@@ -298,7 +302,7 @@
       el.classList.add('walking'); GM.sound.play('drumroll');
       const steps = [`<span class="pw-big">${GM.flag(p.nat)}</span><small>${GM.esc(p.nat || '')}</small>`, `<span class="pw-big">${p.poss[0]}</span><small>${GM.POS_NAME[p.poss[0]] || ''}</small>`,
         `<span class="pw-club">${GM.clubChip(p.clubs[0], true)}</span>`, '<span class="pw-big">🟣</span><small>LEGEND</small>'];
-      steps.forEach((s, i) => later(i * step, () => { w.innerHTML = `<div class="pw-step">${s}</div>`; GM.sound.play('place'); }));
+      steps.forEach((s, i) => later(i * step, () => { w.innerHTML = `<div class="pw-step">${s}</div>`; GM.sound.play('walkstep', i); GM.buzz(20); }));
       later(steps.length * step, () => { el.classList.remove('walking'); w.innerHTML = ''; then(); });
     }
     // sparks for Gold, confetti for a Legend
@@ -314,6 +318,7 @@
     function finish() {
       const left = GM.packsWaiting(), fin = res.cards.filter(x => x.finished).length;
       el.classList.add('over');
+      if (res.better) GM.sound.play('sting'); else if (fin) GM.sound.play('good');
       el.querySelector('.po-actions').innerHTML = `<p class="po-better">${fin ? `🧩 ${fin} card${fin > 1 ? 's' : ''} finished` : '🧩 Pieces added'}${res.better ? ` · 🃏 Packed XI up to <b>${res.better.toLocaleString()}</b> goals` : ''}</p>
         ${left ? `<button class="btn big" data-again>🎁 Open another (${left} left)</button>` : ''}<button class="btn ${left ? 'ghost' : 'big'}" data-done>Done</button>`;
       el.querySelector('[data-done]').onclick = () => { el.remove(); if (onClose) onClose(); };

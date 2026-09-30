@@ -21,7 +21,8 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   server.fns.claim_name({ p_username: 'Bob', p_key: 'b'.repeat(28) });
   let pg = await open(false);
   await pg.goto(U + '#/settings?s=account'); await pg.waitForTimeout(600);
-  await pg.click('#s-name'); await pg.fill('.claim input', 'shithead'); await pg.click('.claim .btn:not(.ghost)'); await pg.waitForTimeout(300);
+  await pg.click('#s-name'); await pg.fill('.claim input', 'shithead'); await pg.click('.claim .btn:not(.ghost)');
+  await pg.waitForFunction(() => /isn’t allowed/.test((document.querySelector('.claim-msg') || {}).textContent || ''), null, { timeout: 3000 }).catch(() => {});
   ok((await pg.textContent('.claim-msg')).includes('isn’t allowed'), 'rude name refused');
   await pg.fill('.claim input', 'Dani'); await pg.click('.claim .btn:not(.ghost)'); await pg.waitForTimeout(300);
   ok(JSON.parse(await pg.evaluate(() => localStorage.getItem('gm:account'))).name === 'Dani', 'claimed Dani');

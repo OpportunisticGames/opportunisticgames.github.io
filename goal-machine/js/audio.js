@@ -155,6 +155,36 @@
       brass([60, 64, 67], t, 0.16); brass([60, 64, 67], t + 0.2, 0.16); brass([60, 65, 69], t + 0.4, 0.16);
       brass([64, 67, 72], t + 0.6, 1.2, 0.08); roar(t + 0.5, 1.6, 0.3);
     },
+    /* Packs and levels */
+    // a pack for you: a ribbon being pulled and a sparkle
+    packget: t => { noise({ t, dur: 0.25, freq: 1800, to: 4200, q: 1.5, vol: 0.12 }); [84, 88, 91, 96].forEach((n, i) => tone(midi(n), { t: t + 0.18 + i * 0.07, dur: 0.4, type: 'triangle', vol: 0.1 })); },
+    // the cards dealt into a fan: a quick run of flicks
+    deal: (t, n = 5) => { for (let i = 0; i < n; i++) { noise({ t: t + i * 0.08, dur: 0.05, freq: 2600, to: 1000, q: 1.2, vol: 0.1 }); tone(300 - i * 10, { t: t + i * 0.08, to: 220, dur: 0.05, type: 'triangle', vol: 0.04 }); } },
+    // a card back starting to glow: a shimmer rising (bigger and longer for a Legend)
+    shimmer: (t, big) => { const n = big ? 9 : 5; for (let i = 0; i < n; i++) tone(midi(84 + i * 2 + (big ? 3 : 0)), { t: t + i * 0.05, dur: 0.5, type: 'sine', vol: 0.055 }); if (big) tone(midi(60), { t, to: midi(72), glide: 0.6, dur: 0.9, type: 'sawtooth', lp: 1200, attack: 0.2, vol: 0.04 }); },
+    // a Silver card turning over: the flick and a bright ping
+    silver: t => { noise({ t, dur: 0.06, freq: 2400, to: 900, q: 1.2, vol: 0.12 }); tone(midi(88), { t: t + 0.04, dur: 0.35, type: 'triangle', vol: 0.07 }); tone(midi(95), { t: t + 0.08, dur: 0.25, type: 'sine', vol: 0.04 }); },
+    // the last piece of a card clicking in: a snap, then a two-note "done"
+    snap: t => { noise({ t, dur: 0.04, type: 'highpass', freq: 2000, vol: 0.14, attack: 0.001 }); tone(midi(76), { t: t + 0.08, dur: 0.25, type: 'triangle', vol: 0.1 }); tone(midi(83), { t: t + 0.2, dur: 0.5, type: 'triangle', vol: 0.1 }); },
+    // the Legend walkout: floodlights clunking on, one bank at a time, the crowd building (step 0-3)
+    walkstep: (t, i = 0) => { tone(90, { t, to: 40, dur: 0.35, vol: 0.4 }); noise({ t, dur: 0.12, type: 'lowpass', freq: 900, vol: 0.2, attack: 0.002 }); tone(midi(45 + i * 5), { t, dur: 0.8, type: 'sawtooth', lp: 700, vol: 0.05 }); roar(t + 0.05, 0.3, 0.05 + i * 0.04); },
+    // levelling up: a quick climbing arpeggio with a sparkle on top
+    levelup: t => { [60, 64, 67, 72, 76, 79, 84].forEach((n, i) => tone(midi(n), { t: t + i * 0.055, dur: 0.16, type: 'square', lp: 3200, vol: 0.07 })); tone(midi(96), { t: t + 0.4, dur: 0.6, type: 'triangle', vol: 0.06 }); tone(midi(91), { t: t + 0.4, dur: 0.6, type: 'triangle', vol: 0.05 }); },
+    /* Moneyball */
+    // the TV news sting (two stabs and a big chord on a drum hit), then the teleprinter chattering
+    newsflash: t => {
+      brass([62, 65, 69], t, 0.09, 0.06); brass([62, 65, 69], t + 0.13, 0.09, 0.06); brass([67, 70, 74, 79], t + 0.28, 0.6, 0.07);
+      tone(110, { t: t + 0.28, to: 50, dur: 0.5, vol: 0.35 }); noise({ t: t + 0.28, dur: 0.3, type: 'lowpass', freq: 800, vol: 0.2 });
+      for (let i = 0; i < 14; i++) tone(2600 + (i % 3) * 350, { t: t + 0.95 + i * 0.055 + (i % 4 ? 0 : 0.03), dur: 0.02, type: 'square', lp: 5000, vol: 0.03 });
+    },
+    // the net worth counter rolling over: ticks that speed up and climb, for dur seconds
+    count: (t, dur = 1) => { let d = 0, i = 0; while (d < dur) { tone(1400 + i * 45, { t: t + d, dur: 0.03, type: 'triangle', vol: 0.1 }); d += Math.max(0.03, 0.09 - i * 0.004); i++; } },
+    // a rubber stamp coming down: a thud and a slap of paper
+    stamp: t => { tone(120, { t, to: 45, dur: 0.18, vol: 0.45 }); noise({ t, dur: 0.09, type: 'lowpass', freq: 1400, vol: 0.3 }); noise({ t: t + 0.02, dur: 0.12, freq: 3000, q: 0.7, vol: 0.08 }); },
+    // the window slamming shut: a heavy door and a low boom
+    slam: t => { noise({ t, dur: 0.5, type: 'lowpass', freq: 600, to: 120, vol: 0.5, attack: 0.002 }); tone(80, { t, to: 35, dur: 0.6, vol: 0.4 }); tone(midi(40), { t: t + 0.05, dur: 1.2, type: 'sawtooth', lp: 300, vol: 0.06 }); },
+    // the stock exchange bell: three rings of a bright, clangy bell
+    bell: t => [0, 0.22, 0.44].forEach(d => [1, 2.76, 5.4].forEach((m, i) => tone(740 * m, { t: t + d, dur: 1.2 - i * 0.3, type: 'sine', vol: [0.13, 0.05, 0.025][i] }))),
   };
   // a blip that climbs as you close in on a target (frac 0..1)
   const rise = (t, frac) => tone(380 + 900 * Math.min(1, Math.max(0, frac)), { t, dur: 0.12, type: 'triangle', vol: 0.1 });
@@ -242,6 +272,21 @@
       ],
     },
   };
+  // Moneyball: 'Boardroom', 112 bpm in F minor - slick and busy, with a stock ticker chattering away over the top
+  TRACKS.boardroom = {
+    bpm: 112, inst: { swing: 0.08, keys: 1, kickVol: 0.42, bassType: 'square', bassLp: 600, arpType: 'triangle', arpVol: 0.018, hatVol: 0.03 },
+    tunes: {
+      deal: [[72, _, _, 75, _, 72, _, 68], [70, _, _, _, 68, _, 65, _], [67, _, 70, _, 75, _, 72, _], [72, _, _, _, _, _, _, _],
+        [77, _, 75, _, 72, _, 75, _], [73, _, 72, _, 70, _, 68, _], [70, _, 72, _, 75, _, 79, _], [75, _, _, _, 72, _, _, _]],
+    },
+    song: [
+      { bars: 4, chords: ['Fm', 'Db', 'Eb', 'Cm'], pad: 1, hats: 8, bass: 'long', ticker: 1, intro: 1 },
+      { bars: 8, chords: ['Fm', 'Db', 'Eb', 'Cm'], pad: 1, kick: 1, clap: 1, hats: 16, bass: 'bounce', stab: 1, ticker: 1 },
+      { bars: 8, chords: ['Fm', 'Db', 'Eb', 'Cm'], pad: 1, kick: 1, clap: 1, hats: 16, open: 1, bass: 'bounce', stab: 1, arp: 1, tune: 'deal' },
+      { bars: 8, chords: ['Db', 'Eb', 'Cm', 'Fm'], pad: 1, bass: 'long', arp: 1, ticker: 1, roll: 1 },
+      { bars: 8, chords: ['Fm', 'Db', 'Eb', 'Cm'], pad: 1, kick: 1, clap: 1, hats: 16, open: 1, bass: 'bounce', stab: 1, arp: 1, tune: 'deal', ticker: 1, fill: 1 },
+    ],
+  };
   // Ultimate Wildcard CHAOS: 'Mayhem', 150 bpm in C minor - a wobbling bass, police sirens, a cheeky chromatic hook
   TRACKS.chaos = {
     bpm: 150, inst: { bassType: 'sawtooth', bassLp: 600, stabVol: 0.03, arpVol: 0.022, arpType: 'sawtooth', leadSaw: 1 },
@@ -261,7 +306,8 @@
   // which track plays where
   const SCENES = {
     anthem: ['', 'today', 'leaderboard', 'album', 'players', 'updates', 'settings', 'about', 'credits'],
-    matchday: ['draft', 'daily', 'moneyball', 'window'],
+    matchday: ['draft', 'daily'],
+    boardroom: ['moneyball', 'window'],
     puzzle: ['footle', 'clubfootle', 'grid', 'dailygrid', 'whoami', 'tally', 'hattrick'],
     derby: ['h2h', 'h2hplay', 'hilo', 'hopper', 'online', 'auction'],
     chaos: ['chaos'],
@@ -326,6 +372,8 @@
         if (sec.bass === 'wobble') tone(midi(b % 8 === 6 ? root + 12 : root), { t, dur: step * 0.95, type: 'sawtooth', lp: [260, 700, 1600, 700][b % 4] * (b >= 8 ? 1.3 : 1), vol: 0.13, dest: out });
         // a police siren sweeping up every other bar
         if (sec.siren && b === 0 && bar % 2 === 0) tone(midi(79), { t, to: midi(91), glide: step * 6, dur: step * 7, type: 'sawtooth', lp: 3200, vol: 0.016, dest: out });
+        // the stock ticker: faint, fast blips that skip about
+        if (sec.ticker && r() < 0.5) tone(3000 + (b % 3) * 420, { t, dur: 0.018, type: 'square', lp: 6000, vol: 0.007, dest: out });
         if (sec.stab && (I.keys ? b === 0 || b === 10 : b === 2 || b === 6 || b === 10 || b === 13)) inst.stab(t, ch);
         if (sec.arp && !sec.intro) {
           const pat = ARPS[(pass + Math.floor(barAll / 4)) % ARPS.length], notes = ch.concat(ch[0] + 12);
@@ -437,8 +485,9 @@
   }
 
   GM.sound = {
-    // the Play version has no Soundtrack (its licence covers the website only), so it falls back to the game's own music
-    settings: () => { const bg = store.get('bg', 'off'); return { sfx: store.get('sfx', true), sfxVol: store.get('sfxVol', 0.7), bg: bg === 'tunes' && GM.playSafe ? 'music' : ['music', 'tunes'].includes(bg) ? bg : 'off', bgVol: store.get('bgVol', 0.5) }; },
+    // the Play version has no Soundtrack (its licence covers the website only), so it falls back to the game's own music,
+    // and starts with that music on (elsewhere music starts off). Sound effects start on everywhere.
+    settings: () => { const bg = store.get('bg', GM.playSafe ? 'music' : 'off'); return { sfx: store.get('sfx', true), sfxVol: store.get('sfxVol', 0.7), bg: bg === 'tunes' && GM.playSafe ? 'music' : ['music', 'tunes'].includes(bg) ? bg : 'off', bgVol: store.get('bgVol', 0.5) }; },
     set(k, v) { store.set(k, v); applyVolumes(); syncBg(); },
     // the router calls this on every page change; the music follows the game area
     scene(path) { const t = trackFor(path); if (t !== scene) { scene = t; syncBg(); } },

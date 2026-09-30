@@ -9,6 +9,26 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 40, label: '5.8', date: '2026-10-01', title: '💼 The new Moneyball, and Extreme everywhere',
+      items: [
+        '💼 Moneyball is brand new: you’re chairman for a season with £100m and room for five players. The market prices reputation; your players earn money and value by what they actually do on the pitch. Buy low, sell high, and finish the season as rich as you can',
+        '📰 Every week brings news: a big bid for your star (sell or keep?), injuries, takeovers, an agent’s tip… and week 8 is Deadline Day',
+        '📺 It looks the part: a boardroom with your net worth ticking up and a chart of your season, squad cards like stock tickers, full-screen BREAKING NEWS, and each matchweek playing out live, minute by minute',
+        '⏰ Deadline Day has a clock counting down, bargains slashed in red, and the window slamming shut',
+        '🧾 Full time is the chairman’s report: your verdict (from Moneyball Genius to Into Administration), your deal of the season, one to forget, and the headlines',
+        '🎵 Moneyball has its own music, Boardroom, and new sounds: the news sting, the counter rolling, the SOLD stamp and the window slamming shut',
+        '📅 The Daily Moneyball is the same season for everyone, one go. The Transfer Window is now part of Moneyball',
+        '⚡ Extreme in more games: every one of the 5,000+ PL players in the Target games, Moneyball, Higher or Lower and Guess the Tally, each with its own leaderboard',
+        '⌨️ Where you type names (Who Am I?, the Club Grid, Club Hopper) any PL player now counts, and on Extreme there are no suggestions: type the whole name',
+        '🥵 Moneyball has a Hard mode too: names and positions only',
+        '📅 The daily games stay the same for everyone, whatever your difficulty',
+        '🏆 The leaderboards’ difficulty is Normal, Hard or Extreme, like the switch on Home',
+        '🔊 Packs sound the part too: a jingle when you earn one, the cards dealt out, a shimmer when a Gold or Legend is hiding in the pack, a floodlit walkout for Legends, and a snap when a card’s finished. Levelling up has its own jingle',
+        '🎹 On the Google Play app, the game’s own music now starts switched on (you can turn it off in Settings)',
+        '🎏 The international break bunting no longer clashes with your club’s stripe',
+      ],
+    },
+    {
       v: 38, label: '5.7', date: '2026-09-30', title: '🃏 Wildcards in packs, new cards, and a tidier Album',
       items: [
         '🎴 New-look player cards: Bronze, Silver, Gold and a shimmering Legend, with the goals, position, flag and stats on each',

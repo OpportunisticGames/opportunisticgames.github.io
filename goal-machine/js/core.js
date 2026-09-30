@@ -530,7 +530,7 @@ GM.toast = function (msg, ms = 2200) {
 GM.lbButton = key => (key ? `<button class="icon-btn lb-btn" data-lb="${GM.esc(key)}" title="Leaderboard" aria-label="Leaderboard">🏆</button>` : '<span></span>');
 // the 🏆 in a game: that game's leaderboard in a pop-up, so you never leave the game
 GM.lbModal = async function (key) {
-  const DATED = { daily: '📅 Daily Ultimate', footle: '🟩 Footle', grid: '#️⃣ Daily Club Grid', mbdaily: '💰 Daily Moneyball', dchaos: '🌪️ Daily CHAOS' };
+  const DATED = { daily: '📅 Daily Ultimate', footle: '🟩 Footle', grid: '#️⃣ Daily Club Grid', mbdaily: '💰 Daily Moneyball', dmoney: '💰 Daily Moneyball', dchaos: '🌪️ Daily CHAOS' };
   const [pre, date] = key.split(':'), hard = /h$/.test(key) && GM.HARD_MODES.includes(key.slice(0, -1));
   const md = GM.MODES[hard ? key.slice(0, -1) : key] || GM.MODES[key] || {};
   const title = pre === 'match' ? `🏟️ ${GM.esc(GM.matchTitle(key))}` : date ? `${DATED[pre] || pre} · today` : `${md.icon || ''} ${(md.name || key).replace(/ \(Hard\)$/, '')}${hard ? ' · Hard' : ''}`;
@@ -547,7 +547,7 @@ GM.lbModal = async function (key) {
   try {
     const rows = await GM.lb.top(key), el = GM.$('#lbpop', m.el);
     if (!el) return;
-    el.innerHTML = rows.length ? rows.slice(0, 25).map((r, i) => `<div ${GM.lbRow(r.name, me)}><span>${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span><span>${GM.esc(r.name)}${GM.lbLevel(r)}${GM.pctTag(key, r.meta)}</span><b>${r.score.toLocaleString()}${pts}</b></div>`).join('')
+    el.innerHTML = rows.length ? rows.slice(0, 25).map((r, i) => `<div ${GM.lbRow(r.name, me)}><span>${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span><span>${GM.esc(r.name)}${GM.lbLevel(r)}${GM.pctTag(key, r.meta)}</span><b>${GM.scoreText(key, r.score)}${pts}</b></div>`).join('')
       : '<div class="muted">No scores yet – be the first!</div>';
     if (rows.some(r => r.name !== me)) el.insertAdjacentHTML('beforeend', GM.lbReportHint);
     const mine = GM.$('.lb-row.me', el); if (mine) mine.scrollIntoView({ block: 'nearest' });
@@ -569,7 +569,7 @@ GM.lbYou = async function (key, el) {
   const pts = /^d?chaos/.test(key) ? '<small> pts</small>' : '', name = GM.getName();
   const localTop = GM.store.get('hist:' + key, [])[0] || {}, localBest = localTop.s;
   const show = (html) => { if (el.isConnected) el.innerHTML = html; };
-  const row = (rank, label, score) => `<div class="lb-row me"><span>${rank}</span><span>${label}</span><b>${score.toLocaleString()}${pts}</b></div>`;
+  const row = (rank, label, score) => `<div class="lb-row me"><span>${rank}</span><span>${label}</span><b>${GM.scoreText(key, score)}${pts}</b></div>`;
   show('<div class="muted">Loading…</div>');
   let mine = null;
   if (GM.lb.enabled && name) { try { mine = await GM.lb.mine(key, name); } catch (e) { } }
@@ -721,7 +721,31 @@ GM.search = function (q, limit = 8, pool = GM.players) {
 };
 
 // plain: names only (no flag, positions or years) so the suggestions don't give clues away
-GM.autocomplete = function (input, box, onPick, { exclude, plain } = {}) {
+// Typing a player's name in the guessing games: suggestions as you type, or (typed: Extreme) none at all: type the whole
+// name and press Go. Accents, capitals and punctuation don't matter. When several players share the name, choose(list)
+// picks (the game knows which one fits).
+GM.nameEntry = function (input, box, onPick, { exclude, plain, pool, typed, choose } = {}) {
+  if (!typed) return GM.autocomplete(input, box, onPick, { exclude, plain, pool });
+  box.hidden = true;
+  input.placeholder = 'Type the full name…';
+  input.setAttribute('enterkeyhint', 'go');
+  const btn = document.createElement('button');
+  btn.type = 'button'; btn.className = 'btn small name-go'; btn.textContent = 'Go';
+  input.insertAdjacentElement('afterend', btn);
+  input.parentElement.classList.add('typed');
+  const go = () => {
+    const q = GM.fold(input.value);
+    if (q.length < 2) return;
+    const all = (pool || GM.players).filter(p => p.key === q), free = all.filter(p => !(exclude && exclude(p)));
+    if (!all.length) { GM.toast(`🤔 No PL player called “${GM.esc(input.value.trim())}”. Check the spelling`); GM.sound.play('bad'); return; }
+    if (!free.length) { GM.toast('You’ve already had him'); return; }
+    input.value = '';
+    onPick(choose ? choose(free) : free[0]);
+  };
+  btn.onclick = go;
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+};
+GM.autocomplete = function (input, box, onPick, { exclude, plain, pool } = {}) {
   let items = [], active = 0;
   const render = () => {
     box.innerHTML = items.map((p, i) => `<button type="button" class="ac-item ${i === active ? 'active' : ''}" data-i="${i}">
@@ -729,7 +753,7 @@ GM.autocomplete = function (input, box, onPick, { exclude, plain } = {}) {
     box.hidden = !items.length;
   };
   input.addEventListener('input', () => {
-    items = GM.search(input.value, 8).filter(p => !(exclude && exclude(p)));
+    items = GM.search(input.value, 8, pool).filter(p => !(exclude && exclude(p)));
     active = 0; render();
   });
   input.addEventListener('keydown', e => {
@@ -777,6 +801,7 @@ GM.MODES = {
   match: { name: 'Matchday XI', icon: '🏟️' },
   nation: { name: 'International XI', icon: '🌍' },
   packedxi: { name: 'Packed XI', icon: '🃏' },
+  money: { name: 'Moneyball', icon: '💰' },
   chaosx: { name: 'CHAOS Extreme', icon: '🌪️' }, chaosxast: { name: 'CHAOS Extreme – Assists', icon: '🌪️' }, chaosxapps: { name: 'CHAOS Extreme – Apps', icon: '🌪️' },
   moneyball: { name: 'Moneyball', icon: '💰' }, moneyballast: { name: 'Moneyball – Assists', icon: '💰' }, moneyballapps: { name: 'Moneyball – Apps', icon: '💰' },
   window: { name: 'Transfer Window', icon: '🔄' }, windowast: { name: 'Transfer Window – Assists', icon: '🔄' }, windowapps: { name: 'Transfer Window – Apps', icon: '🔄' },
@@ -786,8 +811,9 @@ GM.MODES = {
 // clubs for the last clue. Scores go to "<mode>h".
 GM.HARD_MODES = ['ultimate', 'ultimateast', 'ultimateapps', 'chaos', 'chaosast', 'chaosapps', 'chaosx', 'chaosxast', 'chaosxapps', 'target', 'targetast', 'targetapps', 'classic', 'classicast', 'classicapps',
   'classicwild', 'classicwildast', 'classicwildapps', 'ultimatepure', 'ultimatepureast', 'ultimatepureapps',
-  'extreme', 'extremeast', 'extremeapps', 'purist', 'puristast', 'puristapps', 'treble', 'mystery', 'hopper', 'grid', 'hilo', 'whoami', 'tally', 'hattrick'];
-// Difficulty, one switch: Normal, Hard (names and positions only) or Extreme (the Main event and CHAOS use every one
+  'extreme', 'extremeast', 'extremeapps', 'purist', 'puristast', 'puristapps', 'treble', 'mystery', 'hopper', 'grid', 'hilo', 'whoami', 'tally', 'hattrick',
+  'money'];
+// Difficulty, one switch: Normal, Hard (names and positions only) or Extreme (see GM.EXTREME_GAMES; the Main event and CHAOS use every one
 // of the 5,000+ PL players instead of the 50+ app ones). Before 5.5 Hard was on its own and Extreme was a pool switch.
 GM.LEVELS = { normal: ['🙂', 'Normal', '50+ apps · clues shown'], hard: ['🥵', 'Hard', 'names & positions only'], extreme: ['⚡', 'Extreme', 'every player, 5,000+'] };
 GM.level = () => {
@@ -841,6 +867,21 @@ GM.applyTheme();
 GM.buzz = (ms = 15) => { try { if (GM.store.get('buzz', true) && navigator.vibrate) navigator.vibrate(ms); } catch (e) { } };
 Object.keys(GM.MODES).filter(k => GM.HARD_MODES.includes(k)).forEach(k => {
   GM.MODES[k + 'h'] = { name: GM.MODES[k].name + ' (Hard)', icon: GM.MODES[k].icon };
+});
+// Extreme in the other games. Where the game shows you players (the Target games, Higher or Lower, Guess the Tally, the
+// money games) it deals from every PL player. Where you type names (Who Am I?, the Club Grid, Club Hopper) every PL
+// player counts at every level, and Extreme turns the suggestions off: you type the whole name. Their boards are the
+// key with an x after the game (targetxast, hilox, moneyx…); the Main event and CHAOS have their own (extreme,
+// purist, chaosx). The dailies stay the same for everyone.
+GM.EXTREME_GAMES = ['target', 'treble', 'mystery', 'hilo', 'whoami', 'tally', 'grid', 'hopper', 'money'];
+GM.extremeKey = k => { const m = String(k).match(/^(target|treble|mystery|hilo|whoami|tally|grid|hopper|money)(ast|apps)?$/); return m ? m[1] + 'x' + (m[2] || '') : null; };
+// a score as the board shows it: Moneyball's are net worth in £m
+GM.scoreText = (key, n) => (/^d?money/.test(key) ? '£' + Number(n).toLocaleString() + 'm' : Number(n).toLocaleString());
+// every PL player by key (loaded with GM.loadAll)
+let allByPk = null;
+GM.anyByPk = k => GM.byPk.get(k) || (GM.allPlayers ? (allByPk || (allByPk = new Map(GM.allPlayers.map(p => [p.pk, p])))).get(k) : undefined);
+Object.keys(GM.MODES).filter(k => GM.extremeKey(k)).forEach(k => {
+  GM.MODES[GM.extremeKey(k)] = { name: GM.MODES[k].name.replace(/( – .*)?$/, ' (Extreme)$1'), icon: GM.MODES[k].icon };
 });
 
 GM.best = mode => GM.store.get('best:' + mode, 0);

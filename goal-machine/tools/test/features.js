@@ -43,5 +43,14 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(await pg.$$eval('.ach.got b', e => e.map(x => x.textContent).join()).then(s => /Kick-off/.test(s) && /Away Win/.test(s) && /Chaos Merchant/.test(s)), 'online badges from a won CHAOS Race');
   for (const [v, want] of [['xi', '#/album'], ['cards', 'v=cards'], ['signed', 'v=signed'], ['sets', 'v=signed'], ['stats', 'v=signed']]) { await pg.goto(U + '#/album?v=' + v); await pg.waitForTimeout(300); ok(await pg.$eval('.album-views a.on', e => e.getAttribute('href')).then(h => v === 'xi' ? h === want : h.includes(want)), 'album section ' + v + (v === 'sets' || v === 'stats' ? ' (now under Signed)' : '')); }
   await pg.screenshot({ path: 'lay/badges.png', fullPage: true });
+  // sound defaults: effects on everywhere; the Play version (no Soundtrack) starts with the game's own music on
+  const snd = async play => {
+    const c = await b.newContext(); if (play) await c.addInitScript(() => { window.AndroidApp = { channel: () => 'play' }; });
+    const p = await c.newPage(); await p.route(/wikimedia|premierleague|transfermarkt|supabase/, r => r.abort());
+    await p.goto(U); await p.waitForTimeout(500);
+    const r = await p.evaluate(() => ({ play: GM.playSafe, s: GM.sound.settings() })); await c.close(); return r;
+  };
+  const web = await snd(false), play = await snd(true);
+  ok(!web.play && web.s.sfx && web.s.bg === 'off' && play.play && play.s.sfx && play.s.bg === 'music', `sound defaults: effects on everywhere, and the Play version starts with the game's music on (web: ${web.s.bg}, Play: ${play.s.bg})`);
   console.log(errs.join('\n') || 'no page errors'); await b.close();
 })();

@@ -1,10 +1,7 @@
-/* Goal Machine – the transfer market: games with a budget.
+/* Goal Machine – the transfer market: prices, and the Auction.
    Every player gets a price from his REPUTATION (honours, big clubs, how recently he played, and only partly his real
-   output), nudged ±20% by the market's mood in each game. Tallies stay hidden until the end, so the skill is spotting
-   who's overpriced and who's a bargain.
-   - 💰 Moneyball (solo, and a Daily Moneyball): £200m, four players a round, build the biggest total.
-   - 🔄 Transfer Window (solo): three windows. The market reacts to your buys, and each window closes with a report on
-     how your signings have done, so you can sell a flop (at a loss) in the next one.
+   output), nudged ±20% by the market's mood in each game, so the skill is spotting who's overpriced and who's a
+   bargain. 💰 Moneyball (js/moneyball.js) uses these prices too.
    - 🔨 Auction (pass the phone, or online): £200m each, one player per lot, secret bids, the higher bid signs him.
      Online, the server keeps bids hidden until both are in (online_bid). */
 'use strict';
@@ -15,10 +12,8 @@
   const BIG = new Set(['Manchester United', 'Liverpool', 'Arsenal', 'Chelsea', 'Manchester City', 'Tottenham Hotspur']);
   const esc = GM.esc, fmt = n => Math.round(n).toLocaleString();
   const money = m => '£' + (Math.round(m * 10) / 10).toLocaleString() + 'm';
-  const statSuffix = s => ({ goals: '', assists: 'ast', apps: 'apps' }[s] || '');
   const other = s => (s === 'host' ? 'guest' : 'host');
-  const byPk = k => GM.byPk.get(k);
-
+  const byPk = k => GM.anyByPk(k);
   /* ================================================================ prices */
   function reputation(p) {
     const h = p.hon || {}, big = p.clubs.filter(c => BIG.has(c)).length;
@@ -73,184 +68,8 @@
     return `<div class="verdict good">💎 Bargain: ${esc(best.p.name)} – ${fmt(best.v)} ${lbl} for ${money(best.paid)}</div>
       <div class="verdict bad">💸 Flop: ${esc(worst.p.name)} – ${fmt(worst.v)} ${lbl} for ${money(worst.paid)}</div>`;
   }
-  const boardKey = () => {
-    const [path, qs] = location.hash.replace(/^#\/?/, '').split('?'), q = new URLSearchParams(qs || '');
-    if (path === 'moneyball' && q.get('daily') === '1') return 'mbdaily:' + GM.today();
-    return ['moneyball', 'window'].includes(path) ? path + statSuffix(q.get('s') || 'goals') : null;
-  };
-  const top = (icon, title, back = '#/') => `<div class="topbar"><a href="${back}" class="back">‹</a><h2>${icon} ${title}</h2>${GM.lbButton(boardKey())}</div>`;
-  function statPicker(root, icon, title, blurb, go) {
-    root.innerHTML = `${top(icon, title)}<div class="h2h-hero"><div class="h2h-trophy">${icon}</div><h3>${title}</h3><p>${blurb}</p></div>
-      <div class="stat-row">${Object.entries(GM.STATS).map(([k, s]) => `<button class="stat-btn" data-s="${k}"><i class="sb-ico">${s.icon}</i>${s.name}</button>`).join('')}</div>`;
-    GM.$$('[data-s]', root).forEach(b => b.onclick = () => go(b.dataset.s));
-  }
-  async function finishSolo(root, { mode, xi, stat, title, icon, lines, again, share }) {
-    const total = xi.reduce((a, s) => a + val(byPk(s.k), stat), 0);
-    const spent = xi.reduce((a, s) => a + s.paid, 0);
-    const { isBest } = await GM.recordScore(mode, total, { t: total });
-    GM.sound.play('fulltime');
-    if (isBest) setTimeout(() => GM.sound.play('cheer'), 1500);
-    const st = GM.STATS[stat];
-    root.innerHTML = `${top(icon, title)}
-      <div class="result"><div class="result-score">${fmt(total)}<small>PL ${st.label}</small></div>
-        <div class="muted">${money(spent)} spent${lines ? ' · ' + lines : ''}</div>
-        ${isBest ? '<div class="banner">🏆 New personal best!</div>' : `<div class="muted">Personal best: ${fmt(GM.best(mode))}</div>`}</div>
-      ${verdicts(xi, stat)}
-      <h3 class="section-title">Your XI</h3>${squad(xi, stat, true)}
-      <div class="actions col">${again ? '<button class="btn big" id="mkagain">🔁 Play again</button>' : ''}
-        <button class="btn ghost" id="mkshare">📤 Share</button><button class="btn ghost" id="mkpic">🖼️ Share a picture of your XI</button>
-        <a class="btn ghost" href="#/leaderboard?m=${encodeURIComponent(mode)}">🏆 Leaderboard</a></div>`;
-    const text = `⚽ Goal Machine – ${title}: ${fmt(total)} PL ${st.label} for ${money(spent)}. ${share || 'Can you find better bargains?'}`;
-    if (again) GM.$('#mkagain', root).onclick = again;
-    GM.$('#mkshare', root).onclick = () => GM.share(text, GM.baseUrl() + '#/' + (mode.startsWith('mbdaily') ? 'moneyball?daily=1' : mode.replace(/(ast|apps)$/, '')));
-    GM.$('#mkpic', root).onclick = () => GM.shareImage(GM.teamPicture(xi.map(s => ({ pos: s.pos, p: byPk(s.k), v: val(byPk(s.k), stat) })),
-      { title, sub: `${money(spent)} spent`, total, totalLabel: st.label }), text);
-    return total;
-  }
 
-  /* ================================================================ 💰 Moneyball */
-  const MB_BUDGET = 200, MB_RESERVE = 8;
-  GM.moneyball = function (root, q = {}) {
-    const daily = q.daily === '1', day = GM.today();
-    if (daily && GM.store.get('mbd:' + day)) {
-      const d = GM.store.get('mbd:' + day);
-      root.innerHTML = `${top('💰', 'Daily Moneyball')}<div class="result"><div class="result-score">${fmt(d.total)}<small>PL goals</small></div>
-        <div class="muted">Today's done – a new market opens tomorrow (${GM.untilTomorrow ? GM.untilTomorrow() : 'midnight'})</div></div>
-        ${verdicts(d.xi, 'goals')}<h3 class="section-title">Your XI</h3>${squad(d.xi, 'goals', true)}
-        <div class="actions col"><a class="btn" href="#/leaderboard?m=${encodeURIComponent('mbdaily:' + day)}">🏆 Today's leaderboard</a></div>`;
-      return;
-    }
-    if (!daily && !GM.STATS[q.s]) return statPicker(root, '💰', 'Moneyball', `${money(MB_BUDGET)} to build an XI. Prices come from reputation, not output, and tallies stay hidden until full time. Find the bargains.`, s => { location.hash = '#/moneyball?s=' + s; });
-    const stat = daily ? 'goals' : q.s, seed = daily ? 'mb:' + day : GM.newSeed();
-    const S = { xi: newXi(), budget: MB_BUDGET, round: 0, used: new Set() };
-    const title = daily ? 'Daily Moneyball' : 'Moneyball';
-    GM.leaveGuard = () => location.hash.startsWith('#/moneyball') && S.round > 0 && openPos(S.xi).length > 0;
-    function offers() {
-      const rng = GM.rng(`${seed}|mb|${S.round}`), poss = openPos(S.xi), left = poss.length;
-      const cap = S.budget - (left - 1) * MB_RESERVE, out = [];
-      const add = p => { if (p && !out.includes(p)) out.push(p); };
-      for (let i = 0; i < 3; i++) add(draw(rng, poss, S.used, p => !out.includes(p)));
-      // always something you can afford: a cheap one, or if the money's nearly gone, a free agent on whatever's left
-      const cheap = draw(rng, poss, S.used, p => !out.includes(p) && price(p, seed) <= cap);
-      const list = out.map(p => ({ p, pr: price(p, seed) }));
-      if (cheap) list.push({ p: cheap, pr: price(cheap, seed) });
-      else { const fa = draw(rng, poss, S.used, p => !out.includes(p)); if (fa) list.push({ p: fa, pr: Math.max(0, Math.floor(cap)), free: true }); }
-      return { list, cap };
-    }
-    function render() {
-      const { list, cap } = offers(), left = openPos(S.xi).length;
-      root.innerHTML = `${top('💰', title)}
-        <div class="mk-budget"><div><small>Budget</small><b>${money(S.budget)}</b></div><div><small>To sign</small><b>${left}</b></div><div><small>Max on one player</small><b>${money(Math.max(0, cap))}</b></div></div>
-        <p class="muted center">Keep ${money(MB_RESERVE)} for each empty place after this one. ${GM.STATS[stat].icon} ${GM.STATS[stat].name} stay hidden until full time.</p>
-        <div class="duel-cards mk4">${list.map(({ p, pr, free }) => card(p, pr, `data-buy="${esc(p.pk)}" ${pr > cap ? 'disabled' : ''}`, free ? '🆓 Free agent' : pr > cap ? 'Too dear' : '')).join('')}</div>
-        <h3 class="section-title">Your XI</h3>${squad(S.xi, stat, false)}`;
-      GM.$$('[data-buy]:not([disabled])', root).forEach(b => b.onclick = () => {
-        const o = list.find(x => x.p.pk === b.dataset.buy);
-        place(S.xi, o.p, i => {
-          Object.assign(S.xi[i], { k: o.p.pk, paid: o.pr });
-          S.budget = Math.round((S.budget - o.pr) * 10) / 10; S.used.add(o.p.pk); S.round++;
-          GM.sound.play('place'); GM.buzz();
-          if (openPos(S.xi).length) render(); else end();
-        });
-      });
-    }
-    async function end() {
-      const mode = daily ? 'mbdaily:' + day : 'moneyball' + statSuffix(stat);
-      const total = await finishSolo(root, { mode, xi: S.xi, stat, title, icon: '💰', lines: `${money(S.budget)} left`,
-        again: daily ? null : () => GM.moneyball(root, { s: stat }) });
-      if (daily) { GM.store.set('mbd:' + day, { total, xi: S.xi }); GM.markDaily('moneyball', total); }
-    }
-    render();
-  };
-
-  /* ================================================================ 🔄 Transfer Window */
-  const TW_BUDGET = 180, TW_RESERVE = 6, TW_SELL = 0.75;
-  const WINDOWS = [
-    { name: '☀️ Summer window', buys: 5, sells: 0, blurb: 'Sign up to five players. Buying pushes up the price of others in that position.' },
-    { name: '❄️ January window', buys: 3, sells: 1, blurb: 'The half-season report is in. Sell one flop for 75% of what you paid, and sign up to three.' },
-    { name: '📅 Deadline day', buys: 11, sells: 1, blurb: 'Last chance: sell one more if you like, then finish your XI.' },
-  ];
-  GM.transferWindow = function (root, q = {}) {
-    if (!GM.STATS[q.s]) return statPicker(root, '🔄', 'Transfer Window', `${money(TW_BUDGET)} and three transfer windows. The market reacts to your buys, and after each window you find out how your signings have done, so you can sell the flops.`, s => { location.hash = '#/window?s=' + s; });
-    const stat = q.s, seed = GM.newSeed();
-    const S = { xi: newXi(), budget: TW_BUDGET, w: 0, bought: 0, sold: 0, used: new Set(), seen: new Set(), market: [], history: [] };
-    const lbl = GM.STATS[stat].label;
-    GM.leaveGuard = () => location.hash.startsWith('#/window') && S.xi.some(x => x.k) && !S.finished;
-    function openWindow() {
-      const rng = GM.rng(`${seed}|tw|${S.w}`), poss = openPos(S.xi), all = FORMATION.slice(), m = [];
-      const add = p => { if (p && !m.some(x => x.p === p)) m.push({ p, pr: price(p, seed) }); };
-      // mostly players for your gaps, a few for anywhere (in case you sell), and on deadline day a cheap option per gap
-      for (let i = 0; i < 9; i++) add(draw(rng, poss.length ? poss : all, S.used, p => !m.some(x => x.p === p)));
-      for (let i = 0; i < 3; i++) add(draw(rng, all, S.used, p => !m.some(x => x.p === p)));
-      if (S.w === 2) [...new Set(poss)].forEach(pos => add(draw(rng, [pos], S.used, p => !m.some(x => x.p === p) && price(p, seed) <= 12)));
-      S.market = m; S.bought = 0; S.sold = 0;
-    }
-    const W = () => WINDOWS[S.w];
-    const cap = () => S.budget - (openPos(S.xi).length - 1) * TW_RESERVE;
-    function render() {
-      const w = W(), left = openPos(S.xi).length, buysLeft = Math.min(w.buys - S.bought, left), c = cap();
-      // deadline day: if nothing affordable fits a gap, a free agent turns up for whatever you can spend
-      if (S.w === 2 && left && !S.market.some(x => x.pr <= c && fits(x.p, openPos(S.xi)))) {
-        const fa = draw(GM.rng(`${seed}|fa|${left}`), openPos(S.xi), S.used, p => !S.market.some(x => x.p === p));
-        if (fa) S.market.push({ p: fa, pr: Math.max(0, Math.floor(c)), free: true });
-      }
-      const canClose = S.w < 2 || left === 0;
-      root.innerHTML = `${top('🔄', 'Transfer Window')}
-        <div class="duel-turn mine">${w.name}<small>${w.blurb}</small></div>
-        <div class="mk-budget"><div><small>Budget</small><b>${money(S.budget)}</b></div><div><small>Signings left</small><b>${buysLeft}</b></div><div><small>Max on one player</small><b>${money(Math.max(0, c))}</b></div></div>
-        <div class="duel-cards mk4">${S.market.map(({ p, pr, free }) => {
-          const ok = buysLeft > 0 && pr <= c && fits(p, openPos(S.xi));
-          return card(p, pr, `data-buy="${esc(p.pk)}" ${ok ? '' : 'disabled'}`, !fits(p, openPos(S.xi)) ? 'No space' : pr > c ? 'Too dear' : free ? '🆓 Free agent' : '');
-        }).join('')}</div>
-        <h3 class="section-title">Your squad</h3>
-        ${squad(S.xi, stat, S.seen, s => (w.sells > S.sold && S.seen.has(s.k) ? `<button class="btn ghost small" data-sell="${esc(s.k)}">Sell ${money(Math.round(s.paid * TW_SELL * 2) / 2)}</button>` : ''))}
-        ${S.history.length ? `<details class="set"><summary><span>📰 Transfer news</span><span>${S.history.length}</span></summary><div class="mk-news">${S.history.map(h => `<div>${h}</div>`).join('')}</div></details>` : ''}
-        <div class="actions col"><button class="btn big" id="twclose" ${canClose ? '' : 'disabled'}>${S.w < 2 ? '🔒 Close the window' : left ? `Sign ${left} more to finish` : '🏁 Full time'}</button></div>`;
-      GM.$$('[data-buy]:not([disabled])', root).forEach(b => b.onclick = () => buy(b.dataset.buy));
-      GM.$$('[data-sell]', root).forEach(b => b.onclick = () => sell(b.dataset.sell));
-      GM.$('#twclose', root).onclick = closeWindow;
-    }
-    function buy(k) {
-      const o = S.market.find(x => x.p.pk === k);
-      place(S.xi, o.p, i => {
-        Object.assign(S.xi[i], { k, paid: o.pr });
-        S.budget = Math.round((S.budget - o.pr) * 10) / 10; S.used.add(k); S.bought++;
-        S.market = S.market.filter(x => x !== o);
-        // the market reacts: others who play that position get 10% dearer
-        const g = GM.GROUP[S.xi[i].pos];
-        let n = 0;
-        S.market.forEach(x => { if (x.p.poss.some(pp => GM.GROUP[pp] === g)) { x.pr = Math.round(x.pr * 1.1 * 2) / 2; n++; } });
-        S.history.unshift(`✍️ Signed ${esc(o.p.name)} for ${money(o.pr)}${n ? ` – ${GM.POS_NAME[g] || g} prices up 10%` : ''}`);
-        GM.sound.play('place'); GM.buzz();
-        render();
-      });
-    }
-    function sell(k) {
-      const s = S.xi.find(x => x.k === k), p = byPk(k), back = Math.round(s.paid * TW_SELL * 2) / 2;
-      GM.confirm(`Sell ${esc(p.name)} (${fmt(val(p, stat))} ${lbl}) for ${money(back)}?`, 'Sell', 'Keep').then(ok => {
-        if (!ok) return;
-        S.budget = Math.round((S.budget + back) * 10) / 10; S.sold++;
-        S.history.unshift(`👋 Sold ${esc(p.name)} for ${money(back)}`);
-        s.k = null; s.paid = 0;
-        GM.sound.play('swoosh'); render();
-      });
-    }
-    function closeWindow() {
-      if (S.w === 2) S.finished = true;
-      if (S.w === 2) return finishSolo(root, { mode: 'window' + statSuffix(stat), xi: S.xi, stat, title: 'Transfer Window', icon: '🔄', lines: `${money(S.budget)} left`, again: () => GM.transferWindow(root, { s: stat }) });
-      // the report on how your signings have done
-      const fresh = S.xi.filter(s => s.k && !S.seen.has(s.k));
-      fresh.forEach(s => S.seen.add(s.k));
-      const m = GM.modal(`<h3>📋 ${S.w === 0 ? 'Half-season' : 'End of season'} report</h3>
-        ${fresh.length ? `<p class="muted">Here's what your new signings are worth:</p>${fresh.map(s => { const p = byPk(s.k); return `<div class="mk-row"><span class="pos pos-${GM.GROUP[s.pos]}">${s.pos}</span><b>${esc(p.name)}</b><span class="mk-paid">${money(s.paid)}</span><i>${fmt(val(p, stat))} ${GM.STATS[stat].icon}</i></div>`; }).join('')}`
-          : '<p class="muted">No new signings this window.</p>'}
-        <div class="row"><button class="btn" data-close>On to the ${S.w === 0 ? 'January window' : 'deadline'} ➜</button></div>`, { onClose: () => { S.w++; openWindow(); render(); } });
-      GM.sound.play('whistle');
-      return m;
-    }
-    openWindow(); render();
-  };
-
+  const top = (icon, title, back = '#/') => `<div class="topbar"><a href="${back}" class="back">‹</a><h2>${icon} ${title}</h2><span></span></div>`;
   /* ================================================================ 🔨 Auction (the engine both versions share) */
   const AU_BUDGET = 200;
   // Replays an auction from its sold lots. Each lot's player is seeded by the game and lot number and fits someone's gap;
