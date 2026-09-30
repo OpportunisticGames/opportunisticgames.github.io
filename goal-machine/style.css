@@ -1779,3 +1779,5 @@ html.intl-break body::after { content: ''; position: fixed; top: 0; left: 0; rig
 #lbyou:not(:empty) { margin-bottom: 4px; }
 .lbx-spread { margin-top: 12px; }
 .lbx-games { -webkit-mask: linear-gradient(90deg, #000 85%, transparent); mask: linear-gradient(90deg, #000 85%, transparent); }
+/* during an international break the bunting takes over the top edge (the club stripe would show through it) */
+html.intl-break.has-club body::before { display: none; }

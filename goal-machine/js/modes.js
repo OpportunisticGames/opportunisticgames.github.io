@@ -10,10 +10,24 @@
     if (backTo !== '#/') return null;
     const path = location.hash.replace(/^#\/?/, '').split('?')[0];
     if (path === 'dailygrid') return 'grid:' + GM.today();
-    return GM.MODES[path] ? path + (GM.isHard() && GM.HARD_MODES.includes(path) ? 'h' : '') : null;
+    return GM.MODES[path] ? (GM.isHard() && GM.HARD_MODES.includes(path) ? path + 'h' : GM.isExtreme() && GM.extremeKey(path) || path) : null;
   };
   const top = (label, icon) => `<div class="topbar"><a href="${backTo}" class="back">‹</a><h2>${icon} ${label}</h2>${GM.lbButton(boardKey())}</div>`;
-  const setup = opts => { backTo = opts.back || '#/'; return { r: GM.rng(opts.seed || GM.newSeed()), hard: opts.hard != null ? opts.hard : GM.isHard() }; };
+  // Extreme (only when you're playing on your own, not in Head to Head): every PL player, and the less well known turn up
+  // far more (weights flattened to fame^¼: about 43% of those dealt have under 50 apps)
+  const setup = opts => {
+    backTo = opts.back || '#/';
+    const hard = opts.hard != null ? opts.hard : GM.isHard(), extreme = !opts.back && !hard && GM.isExtreme() && !!GM.allPlayers;
+    return { r: GM.rng(opts.seed || GM.newSeed()), hard, extreme, PP: extreme ? GM.allPlayers : P, W: extreme ? (p => Math.pow(p.fame, 0.25)) : (p => p.fame) };
+  };
+  // Extreme needs every player loaded first
+  const needAll = (root, opts, again) => {
+    if (opts.back || GM.isHard() || !GM.isExtreme() || GM.allPlayers) return false;
+    root.innerHTML = `<div class="loading-all"><div class="splash-bar"><i></i></div><p class="muted">Loading every Premier League player…</p></div>`;
+    GM.loadAll().then(again).catch(() => { root.innerHTML += '<p class="center">Couldn’t load the player list. Check your connection and try again.</p>'; });
+    return true;
+  };
+  const tag = (hard, extreme) => (hard ? ' · Hard' : extreme ? ' · Extreme' : '');
 
   async function gameOver(root, mode, score, lines, again, shareText, extra, done) {
     if (done) {  // Head to Head: no saving, just hand the score back
@@ -42,17 +56,18 @@
     box.scrollIntoView({ behavior: 'smooth' });
     box.querySelector('[data-again]').onclick = again;
     box.querySelector('[data-share]').onclick = () =>
-      GM.share(shareText || `⚽ Goal Machine – ${GM.MODES[mode].name}: ${score} pts. Think you know the Premier League better?`, GM.baseUrl() + '#/' + mode);
+      GM.share(shareText || `⚽ Goal Machine – ${GM.MODES[mode].name}: ${score} pts. Think you know the Premier League better?`, GM.baseUrl() + '#/' + mode.replace(/[hx]$/, ''));
   }
 
   /* =============================================================== HIGHER OR LOWER */
   GM.hilo = function (root, opts = {}) {
-    const { r, hard } = setup(opts), key = hard ? 'hiloh' : 'hilo';
+    if (needAll(root, opts, () => GM.hilo(root, opts))) return;
+    const { r, hard, extreme, PP, W } = setup(opts), key = hard ? 'hiloh' : extreme ? 'hilox' : 'hilo';
     let streak = 0, a, b, stat, busy = false;
     const pickStat = () => (r() < 0.55 ? 'goals' : 'apps');
     const draw = (exclude) => {
-      const pool = P.filter(p => p !== exclude && (stat === 'apps' || p.pos !== 'G'));
-      return r.weighted(pool, p => p.fame);
+      const pool = PP.filter(p => p !== exclude && (stat === 'apps' || p.pos !== 'G'));
+      return r.weighted(pool, W);
     };
     stat = pickStat();
     a = draw(); b = draw(a);
@@ -65,7 +80,7 @@
         <div class="hl-val">${show ? `<b>${p[stat]}</b>` : '<b>?</b>'}<small>${label(stat)}</small></div></div>`;
     }
     function render() {
-      root.innerHTML = `${top('Higher or Lower' + (hard ? ' · Hard' : ''), '↕️')}
+      root.innerHTML = `${top('Higher or Lower' + tag(hard, extreme), '↕️')}
         <div class="hl-head">Streak <b>${streak}</b>${opts.done ? '' : ` · Best ${GM.best(key)}`}</div>
         <div class="hl">${card(a, true, 'hla')}<div class="vs">VS</div>${card(b, false, 'hlb')}</div>
         <div class="hl-q">Does <b>${GM.esc(b.name)}</b> have more or fewer ${label(stat)} than ${GM.esc(a.name.split(' ').slice(-1)[0])}?</div>
@@ -100,12 +115,13 @@
 
   /* =============================================================== WHO AM I */
   GM.whoami = function (root, opts = {}) {
-    const { r, hard } = setup(opts);
+    if (needAll(root, opts, () => GM.whoami(root, opts))) return;
+    const { r, hard, extreme, PP } = setup(opts);
     const ROUNDS = opts.rounds || 10, PTS = [500, 400, 300, 200, 100];
-    const key = hard ? 'whoamih' : 'whoami';
+    const key = hard ? 'whoamih' : extreme ? 'whoamix' : 'whoami';
     let round = 0, score = 0, target, clue, results = [], wrong = [];
-    const pool = P.filter(p => p.apps >= 100 || p.goals >= 25);
-    const next = () => { target = r.weighted(pool, p => Math.pow(p.fame, 1.15)); clue = 0; wrong = []; };
+    const pool = extreme ? PP.filter(p => p.apps >= 10) : P.filter(p => p.apps >= 100 || p.goals >= 25);
+    const next = () => { target = r.weighted(pool, extreme ? (p => Math.pow(p.fame, 0.25)) : (p => Math.pow(p.fame, 1.15))); clue = 0; wrong = []; };
     next();
     const clues = () => {
       const clubs = `<div class="clue"><b>Clubs</b><div class="path">${target.clubs.map(c => GM.clubChip(c, true)).join('<span class="arrow">→</span>')}</div>${hard ? '' : `<small>PL career ${GM.era(target)}</small>`}</div>`;
@@ -121,14 +137,14 @@
       (p.clubs.join() === target.clubs.join() && p.first === target.first && p.last === target.last && p.poss.join() === target.poss.join());
 
     function render() {
-      root.innerHTML = `${top('Who Am I?' + (hard ? ' · Hard' : ''), '🕵️')}
+      root.innerHTML = `${top('Who Am I?' + tag(hard, extreme), '🕵️')}
         <div class="hl-head">Round <b>${round + 1}</b>/${ROUNDS} · Score <b>${score}</b> · worth ${PTS[clue] || 0}</div>
         <div class="clues">${clues().slice(0, clue + 1).join('')}</div>
         ${wrong.length ? `<div class="wrong">${wrong.map(p => `<span>✗ ${GM.esc(p.name)}</span>`).join('')}</div>` : ''}
         <div class="guess-box"><input class="input" id="wg" placeholder="Type a player…" autocomplete="off"><div class="ac" id="wac" hidden></div></div>
         <div class="actions row2"><button class="btn ghost" id="wclue">${clue < 4 ? '💡 Another clue' : '🏳️ Give up'}</button></div>
         <div id="wover"></div>`;
-      GM.autocomplete(GM.$('#wg', root), GM.$('#wac', root), guess, { exclude: p => wrong.includes(p), plain: hard });
+      GM.autocomplete(GM.$('#wg', root), GM.$('#wac', root), guess, { exclude: p => wrong.includes(p), plain: hard, pool: extreme ? PP : undefined });
       GM.$('#wclue', root).onclick = () => (clue < 4 ? (clue++, render()) : endRound(false));
       setTimeout(() => GM.$('#wg', root) && GM.$('#wg', root).focus(), 30);
     }
@@ -285,14 +301,15 @@
 
   /* =============================================================== GUESS THE TALLY */
   GM.tally = function (root, opts = {}) {
-    const { r, hard } = setup(opts), key = hard ? 'tallyh' : 'tally';
+    if (needAll(root, opts, () => GM.tally(root, opts))) return;
+    const { r, hard, extreme, PP, W } = setup(opts), key = hard ? 'tallyh' : extreme ? 'tallyx' : 'tally';
     const ROUNDS = opts.rounds || 10;
     let round = 0, score = 0, p;
-    const pool = P.filter(x => x.pos !== 'G');
-    const next = () => { p = r.weighted(pool, x => x.fame); };
+    const pool = PP.filter(x => x.pos !== 'G');
+    const next = () => { p = r.weighted(pool, W); };
     next();
     function render() {
-      root.innerHTML = `${top('Guess the Tally' + (hard ? ' · Hard' : ''), '🎯')}
+      root.innerHTML = `${top('Guess the Tally' + tag(hard, extreme), '🎯')}
         <div class="hl-head">Round <b>${round + 1}</b>/${ROUNDS} · Score <b>${score}</b></div>
         <div class="hl-card solo">${GM.avatar(p, 'lg', hard)}<div class="reel-name">${GM.esc(p.name)}</div>
           <div class="reel-meta">${GM.posBadges(p)}${hard ? '' : ` ${GM.flag(p.nat)} ${GM.era(p)} · ${p.apps} apps`}</div>

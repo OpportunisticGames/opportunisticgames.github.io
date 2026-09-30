@@ -721,7 +721,7 @@ GM.search = function (q, limit = 8, pool = GM.players) {
 };
 
 // plain: names only (no flag, positions or years) so the suggestions don't give clues away
-GM.autocomplete = function (input, box, onPick, { exclude, plain } = {}) {
+GM.autocomplete = function (input, box, onPick, { exclude, plain, pool } = {}) {
   let items = [], active = 0;
   const render = () => {
     box.innerHTML = items.map((p, i) => `<button type="button" class="ac-item ${i === active ? 'active' : ''}" data-i="${i}">
@@ -729,7 +729,7 @@ GM.autocomplete = function (input, box, onPick, { exclude, plain } = {}) {
     box.hidden = !items.length;
   };
   input.addEventListener('input', () => {
-    items = GM.search(input.value, 8).filter(p => !(exclude && exclude(p)));
+    items = GM.search(input.value, 8, pool).filter(p => !(exclude && exclude(p)));
     active = 0; render();
   });
   input.addEventListener('keydown', e => {
@@ -787,7 +787,7 @@ GM.MODES = {
 GM.HARD_MODES = ['ultimate', 'ultimateast', 'ultimateapps', 'chaos', 'chaosast', 'chaosapps', 'chaosx', 'chaosxast', 'chaosxapps', 'target', 'targetast', 'targetapps', 'classic', 'classicast', 'classicapps',
   'classicwild', 'classicwildast', 'classicwildapps', 'ultimatepure', 'ultimatepureast', 'ultimatepureapps',
   'extreme', 'extremeast', 'extremeapps', 'purist', 'puristast', 'puristapps', 'treble', 'mystery', 'hopper', 'grid', 'hilo', 'whoami', 'tally', 'hattrick'];
-// Difficulty, one switch: Normal, Hard (names and positions only) or Extreme (the Main event and CHAOS use every one
+// Difficulty, one switch: Normal, Hard (names and positions only) or Extreme (see GM.EXTREME_GAMES; the Main event and CHAOS use every one
 // of the 5,000+ PL players instead of the 50+ app ones). Before 5.5 Hard was on its own and Extreme was a pool switch.
 GM.LEVELS = { normal: ['🙂', 'Normal', '50+ apps · clues shown'], hard: ['🥵', 'Hard', 'names & positions only'], extreme: ['⚡', 'Extreme', 'every player, 5,000+'] };
 GM.level = () => {
@@ -841,6 +841,15 @@ GM.applyTheme();
 GM.buzz = (ms = 15) => { try { if (GM.store.get('buzz', true) && navigator.vibrate) navigator.vibrate(ms); } catch (e) { } };
 Object.keys(GM.MODES).filter(k => GM.HARD_MODES.includes(k)).forEach(k => {
   GM.MODES[k + 'h'] = { name: GM.MODES[k].name + ' (Hard)', icon: GM.MODES[k].icon };
+});
+// Extreme (every PL player) in the other games that show you players: the Target games and three quick games. Their
+// boards are the key with an x after the game (targetxast, treblex, hilox…). The Main event and CHAOS have their own
+// (extreme, purist, chaosx). Club Hopper and the Club Grid are left out: you name the players there, so every player
+// would make them easier. The dailies stay the same for everyone.
+GM.EXTREME_GAMES = ['target', 'treble', 'mystery', 'hilo', 'whoami', 'tally'];
+GM.extremeKey = k => { const m = String(k).match(/^(target|treble|mystery|hilo|whoami|tally)(ast|apps)?$/); return m ? m[1] + 'x' + (m[2] || '') : null; };
+Object.keys(GM.MODES).filter(k => GM.extremeKey(k)).forEach(k => {
+  GM.MODES[GM.extremeKey(k)] = { name: GM.MODES[k].name.replace(/( – .*)?$/, ' (Extreme)$1'), icon: GM.MODES[k].icon };
 });
 
 GM.best = mode => GM.store.get('best:' + mode, 0);

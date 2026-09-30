@@ -9,6 +9,14 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 39, label: '5.7.1', date: '2026-10-01', title: '⚡ Extreme in more games',
+      items: [
+        '⚡ Extreme now works in the Target games, Higher or Lower, Who Am I? and Guess the Tally too: every one of the 5,000+ PL players, with their own leaderboards. The daily games stay the same for everyone',
+        '🏆 The leaderboards’ difficulty is Normal, Hard or Extreme, like the switch on Home',
+        '🎏 The international break bunting no longer clashes with your club’s stripe',
+      ],
+    },
+    {
       v: 38, label: '5.7', date: '2026-09-30', title: '🃏 Wildcards in packs, new cards, and a tidier Album',
       items: [
         '🎴 New-look player cards: Bronze, Silver, Gold and a shimmering Legend, with the goals, position, flag and stats on each',

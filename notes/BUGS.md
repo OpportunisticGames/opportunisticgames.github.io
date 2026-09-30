@@ -12,6 +12,9 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 2026-10-01 | In an international break the flag bunting sat on top of your club's stripe along the top edge, and the stripe showed through between the flags | 5.7.1: the bunting takes over the top edge for the break |
+| 2026-10-01 | The leaderboards' difficulty only had Normal and Hard; Extreme boards were hidden in the version list | 5.7.1: the drop-down is Normal / Hard / Extreme, like Home |
+| 2026-10-01 | Extreme only changed the Main event and CHAOS; the other games ignored it | 5.7.1: the Target games, Higher or Lower, Who Am I? and Guess the Tally use every player on Extreme (own boards). Club Hopper and the Club Grid stay as they are (you name the players, so every player would make them easier), and the dailies stay the same for everyone |
 | 2026-09-30 | The Leaderboards menu had got too complicated: four rows of category buttons, a row of modes and three toggles before any scores | 5.7: one scrolling row of games, one line of drop-downs (version, stat, Normal/Hard, month), your position first; Club v club and Daily stars moved inside |
 | 2026-09-30 | Pack cards weren't even: each card centred its contents, so a one-line name sat lower than a two-line one, and the last row wasn't centred | 5.7: new cards with a fixed layout (the same size and rows on every card), and the pack's cards centred in rows |
 | 2026-09-30 | The Album didn't make sense after packs: the Packed XI had quietly replaced the Dream XI in a page that still said it was "players you've signed" | 5.7: the Album reworked into one hub (level and packs, My XI, Cards, Badges, Signed); it says the Packed XI replaced the Dream XI |
