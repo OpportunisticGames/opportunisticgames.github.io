@@ -245,8 +245,8 @@
       </div>
       <div data-hpanel="market">
       <div class="tiles">
-        ${dtile('moneyball', 't-gold', 'Same season for everyone · one go')}
         ${tile('#/moneyball', 't-green wide', '💼', 'Moneyball', 'Chairman for a season: buy low, sell high, and get rich. Bids, injuries, takeovers and Deadline Day.', pb('money') ? '£' + pb('money') + 'm' : 0)}
+        ${dtile('moneyball', 't-gold', 'Same season for everyone · one go')}
         ${tile('#/auction', 't-magenta', '🔨', 'Auction', 'Secret bids against a mate', 0)}
       </div>
       </div>

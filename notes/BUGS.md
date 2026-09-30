@@ -12,6 +12,9 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 2026-10-01 | Moneyball: signing a player after the week's matches had played (the market was still open) stuck the season: the screen went back to "Play matchweek", which did nothing, so week 8 never played | 5.9: the market and selling shut once the matchweek's played, and the button moves on to next week |
+| 2026-10-01 | Moneyball: the Deadline Day clock took over six minutes to run down | 5.9: it runs down in about 40 seconds |
+| 2026-10-01 | The Market tab's tiles were ragged: Daily Moneyball and the Auction each sat alone in half a row (should have been caught) | 5.9: Moneyball full width, the two small tiles side by side; a test now fails if any Home tab leaves a half-width tile alone |
 | 2026-10-01 | Tapping Moneyball turned Home dark (Moneyball's boardroom look and music) without Moneyball appearing. Couldn't reproduce in testing: likely the Moneyball page failing to draw on that phone after the router had already switched the look | 5.9: a page that fails to draw now shows a "Something went wrong" screen with Reload, in the normal look; Home always resets the look and music whenever it draws |
 | 2026-10-01 | In an international break the flag bunting sat on top of your club's stripe along the top edge, and the stripe showed through between the flags | 5.7.1: the bunting takes over the top edge for the break |
 | 2026-10-01 | The leaderboards' difficulty only had Normal and Hard; Extreme boards were hidden in the version list | 5.7.1: the drop-down is Normal / Hard / Extreme, like Home |

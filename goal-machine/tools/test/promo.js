@@ -30,6 +30,20 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.goto(U + '#/settings'); await pg.goto(U + '#/'); await pg.waitForTimeout(600);
   ok(a0 >= 1 && asked === a0, 'the news is fetched at most every half hour');
 
+  // Home's tabs: no half-width tile left on its own in a row
+  const lone = await pg.evaluate(async () => {
+    const out = [];
+    for (const b of document.querySelectorAll('#htabs button')) {
+      b.click(); await new Promise(r => setTimeout(r, 50));
+      document.querySelectorAll('[data-hpanel]:not([hidden]) .tiles').forEach(g => {
+        const rows = {}; [...g.children].forEach(t => { const y = Math.round(t.getBoundingClientRect().top); (rows[y] = rows[y] || []).push(t); });
+        Object.values(rows).forEach(r => { if (r.length === 1 && r[0].getBoundingClientRect().width < g.clientWidth * 0.7) out.push(b.dataset.t + ': ' + r[0].textContent.trim().slice(0, 20)); });
+      });
+    }
+    return out;
+  });
+  ok(!lone.length, 'every Home tab’s tiles sit neatly, no half-width tile alone in a row' + (lone.length ? ' — ' + lone.join(', ') : ''));
+  await pg.evaluate(() => document.querySelector('#htabs [data-t="market"]').click());
   // tags
   ok(/UPDATED/.test(await pg.textContent('a.tile[href="#/moneyball"]')) && !!(await pg.$('#htabs [data-t="market"] .new-dot')), 'an updated game gets an UPDATED tag, and its tab a dot');
   await pg.click('a.tile[href="#/moneyball"]'); await pg.waitForTimeout(400); await pg.goto(U + '#/'); await pg.waitForTimeout(500);

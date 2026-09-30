@@ -13,6 +13,8 @@
       items: [
         '🎠 Home has a rotating banner: matchday, the international break, new games and news, turning over by itself. Swipe it or tap the dots',
         '🏷️ Games get a NEW or UPDATED tag until you’ve had a go',
+        '🛠️ Moneyball: signing a player after the week’s matches could stop the season going on (the market now shuts once the games are played), and the Deadline Day clock is much quicker',
+        '🧹 The Market tab is tidier',
         '🛠️ Fixed: tapping Moneyball could turn Home dark without opening the game. If a page ever fails to load, you now get a Reload button instead',
       ],
     },
