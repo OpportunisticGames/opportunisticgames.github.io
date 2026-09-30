@@ -1378,12 +1378,11 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
 @keyframes cm-out { to { transform: translateY(60%) scale(.95); opacity: 0; } }
 @keyframes cm-icon { 0% { transform: scale(.2) rotate(-30deg); } 60% { transform: scale(1.3) rotate(8deg); } 100% { transform: none; } }
 /* a real coin toss */
-.coin { position: relative; width: 92px; height: 92px; margin: 12px auto 4px; transform-style: preserve-3d; animation: coin-flip 1.5s cubic-bezier(.25, .8, .35, 1) forwards; }
+.coin { position: relative; width: 92px; height: 92px; margin: 12px auto 4px; transform-style: preserve-3d; }
 .coin-f { position: absolute; inset: 0; border-radius: 50%; display: grid; place-content: center; font-size: 1.9rem; line-height: 1; backface-visibility: hidden; -webkit-backface-visibility: hidden;
   background: radial-gradient(circle at 35% 30%, #fff6b0, #f2c230 45%, #b98a0c); border: 4px solid #8a6406; box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .35); color: #3a2a00; }
 .coin-f b { font: 800 .62rem Inter, sans-serif; letter-spacing: .08em; margin-top: 2px; }
-.coin-f.t { transform: rotateY(180deg); background: radial-gradient(circle at 35% 30%, #fff, #c9d2dc 45%, #7d8a99); border-color: #56606c; color: #1d2530; }
-@keyframes coin-flip { 0% { transform: translateY(0) rotateY(0); } 45% { transform: translateY(-34px) scale(1.15) rotateY(calc(var(--end) * .55)); } 100% { transform: translateY(0) rotateY(var(--end)); } }
+.coin-f.t { transform: rotateX(180deg); background: radial-gradient(circle at 35% 30%, #fff, #c9d2dc 45%, #7d8a99); border-color: #56606c; color: #1d2530; }
 /* pick a manager */
 .cm-pick .cm-card { max-width: 480px; }
 .mgr-list { display: grid; gap: 8px; margin-top: 10px; }
@@ -1476,16 +1475,16 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
 @keyframes fall { to { transform: translateY(110vh) rotate(540deg); } }
 .chaos-flash.lightning { background: rgba(235, 242, 255, .85); }
 /* the coin you flip yourself */
-.coin-wrap { display: block; margin: 12px auto 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+.coin-wrap { display: block; margin: 12px auto 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; perspective: 700px; -webkit-tap-highlight-color: transparent; }
+.coin-shadow { display: block; width: 96px; height: 12px; margin: -2px auto 8px; border-radius: 50%; background: radial-gradient(rgba(0, 0, 0, .45), transparent 70%); }
 .coin { width: 128px; height: 128px; margin: 6px auto 8px; animation: coin-bob 1.4s ease-in-out infinite; }
 .coin-f { font-size: 2.6rem; }
 .coin-f b { font-size: .75rem; }
-.cm.flipping .coin { animation: coin-flip 1.5s cubic-bezier(.25, .8, .35, 1) forwards; }
+.cm.flipping .coin { animation: none; will-change: transform; }
 .coin-go { display: inline-block; font: 700 1rem Oswald, sans-serif; letter-spacing: .05em; padding: 6px 14px; border-radius: 999px; background: #ffe600; color: #2a1a00; animation: pop 1s ease-in-out infinite alternate; }
 .cm.flipping .coin-go { visibility: hidden; }
 .cm.intro .coin-wrap + .cm-skip, .cm.flipping .cm-skip { display: none; }
-@keyframes coin-bob { 0%, 100% { transform: translateY(0) rotateY(-12deg); } 50% { transform: translateY(-8px) rotateY(12deg); } }
-@keyframes coin-flip { 0% { transform: translateY(0) rotateY(0); } 45% { transform: translateY(-90px) scale(1.2) rotateY(calc(var(--end) * .55)); } 100% { transform: translateY(0) rotateY(var(--end)); } }
+@keyframes coin-bob { 0%, 100% { transform: translateY(0) rotateX(0deg); } 50% { transform: translateY(-8px) rotateX(14deg); } }
 .cm.landed .coin-f { box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .35), 0 0 26px rgba(255, 230, 0, .8); }  /* not a filter: that flattens the 3D and shows the wrong face */
 .cm.act .coin-wrap { display: none; }
 /* the line under the reels: one line at most */
@@ -1498,3 +1497,42 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
 .cm-card.rar-r { border-color: #b44dff; box-shadow: 0 0 30px rgba(180, 77, 255, .55), 0 10px 40px rgba(0, 0, 0, .5); }
 .cm-card.rar-l { border-color: #ffd400; box-shadow: 0 0 40px rgba(255, 214, 0, .7), 0 10px 40px rgba(0, 0, 0, .5); }
 @keyframes rar-shine { to { background-position: -200% 0; } }
+.share-day { display: block; width: 100%; margin: 12px 0 4px; }
+/* home: CHAOS is the headline event (first on the Main tab); the banter line under the logo */
+.chaos-card:first-child { margin-top: 4px; }
+.chaos-head .kicker { display: block; font: 800 .62rem Inter, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #ffe600; opacity: .95; }
+.hero .banter { font-style: italic; }
+.chaos-card .chaos-pool { display: flex; gap: 6px; margin-top: 10px; } .chaos-card .chaos-pool button { flex: 1; padding: 7px 6px; border-radius: 12px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1); color: #fff; font: 700 .76rem Inter, sans-serif; cursor: pointer; } .chaos-card .chaos-pool button.on { background: #ffe600; color: #2a1a00; border-color: #ffe600; }
+
+/* Matchday: banner on Home/Today, the hub, and the "played for both" reel tag */
+.match-banner { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; margin: 10px 0 4px; padding: 12px 16px; border-radius: 20px; text-decoration: none; color: #fff; text-align: center;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--club-main, #0b3d2e) 80%, #000), #1d7a57); box-shadow: 0 5px 0 rgba(0,0,0,.3); animation: md-pulse 2.4s ease-in-out infinite; }
+.match-banner.done { animation: none; }
+.match-banner:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,.3); }
+.match-banner > span:first-child, .match-banner > span:last-child { font-size: 1.8rem; }
+.match-banner b { display: block; font: 700 1.4rem Oswald, sans-serif; letter-spacing: 2px; color: #c8ff3d; text-shadow: 0 2px 0 rgba(0,0,0,.3); }
+.match-banner small { display: block; font-size: .85rem; font-weight: 700; }
+.match-banner small.mb-sub { font-weight: 400; opacity: .85; font-size: .75rem; }
+@keyframes md-pulse { 50% { box-shadow: 0 5px 0 rgba(0,0,0,.3), 0 0 0 4px rgba(200,255,61,.35); } }
+.next-match { display: block; margin-top: 8px; font-size: .8rem; color: inherit; opacity: .85; text-decoration: none; }
+.md-card { margin: 12px 0; padding: 16px; border-radius: 20px; text-align: center; background: var(--card); border: 2px solid var(--line); }
+.md-card.today { background: linear-gradient(135deg, color-mix(in srgb, var(--club-main, #0b3d2e) 80%, #000), #1d7a57); color: #fff; border-color: transparent; }
+.md-card .kicker { font: 700 .8rem Oswald, sans-serif; letter-spacing: 3px; opacity: .8; }
+.md-card.today .kicker { color: #c8ff3d; opacity: 1; font-size: 1.1rem; }
+.md-teams { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 10px 0 6px; }
+.md-teams b { font: 700 1.2rem Oswald, sans-serif; }
+.md-clock { margin: 0; font-weight: 700; }
+.md-tile { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; align-items: center; margin-top: 10px; padding: 14px 16px; border-radius: 20px; text-decoration: none; color: #fff;
+  background: linear-gradient(135deg, #1d7a57, #0f4a35); box-shadow: 0 5px 0 rgba(0,0,0,.3); }
+.md-tile:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,.3); }
+.md-tile + .md-tile { background: linear-gradient(135deg, #2f7d3a, #1b5226); }
+.md-tile .md-ico { grid-row: span 2; font-size: 2rem; }
+.md-tile b { font: 700 1.25rem Oswald, sans-serif; text-transform: uppercase; letter-spacing: 1px; }
+.md-tile small { font-size: .82rem; opacity: .92; line-height: 1.35; }
+.md-tile strong { color: #c8ff3d; }
+.md-tile.done { background: linear-gradient(135deg, #35554a, #22392f); }
+.md-tile.locked { opacity: .6; background: var(--card); color: var(--text); box-shadow: none; border: 2px dashed var(--line); }
+.md-list > div { display: flex; justify-content: space-between; padding: 8px 4px; border-bottom: 1px solid var(--line); }
+.md-list small { opacity: .75; }
+.mate.both { background: #c8ff3d; color: #0a2a1f; font-weight: 700; }
+.stage .reel.fit2 .mate.both { display: block; }

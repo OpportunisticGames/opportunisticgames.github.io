@@ -41,7 +41,12 @@ It's doable, but a few things need you (accounts and keys) and there are two rea
 - ✅ First bundle uploaded to Internal testing (build 31). The Play **app signing key** SHA-256 (`AC:CE:05:…:9D:A6`, found
   under Protected with Play → Play Store protection → Play app signing) is in `/.well-known/assetlinks.json` for
   `goal.machine`, so game links open in the Play app.
-- ⏳ Switch the app category from App to **Game** (Store settings).
+- ✅ Category Game → Trivia; tags Casual, Soccer, Sports, Trivia, Minigames. Store listing, Data safety, content rating,
+  target audience (13+), app access and ads forms all done. Publisher: the **Opportunistic Games organisation
+  account**, so the 12-tester / 14-day closed test does **not** apply.
+- ⏳ First review submitted 30 Sep 2026 (internal + closed testing releases, build with the AD_ID removal). Game
+  changes (the web code) can carry on meanwhile: the app loads the live site. Hold native Android changes.
+- Next: once approved, check the internal test install, then Production → new release (same bundle) → review.
 
 ## What you need to do
 

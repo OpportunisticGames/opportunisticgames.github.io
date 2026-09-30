@@ -12,6 +12,7 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 2026-09-30 | CHAOS: the Double or Nothing / All In coin did a weird shaky glitch instead of flipping. Its keyframes used different transform lists (a scale() only in the middle), so the browser blended them as matrices and the big spin came out as a wobble | 5.5: flipped frame by frame (up, end over end, back down on the right face) with 3D perspective and a shadow |
 | 2026-09-27 | CHAOS Lightning strike always halved your top scorer and tripled your lowest, usually a 0, so it was nearly always a pure loss (the sponge and 5000–1 also boosted a 0) | 5.4.2: two random players (the ×3 one has scored); sponge and 5000–1 pick the lowest who has scored, or give bonus points |
 | 2026-09-26 | CHAOS: the coin flipped itself (should be yours to flip); moments too quick to read; the event line under the reels overflowed ("ugly"); few sounds | 5.4.1: tap-to-flip coin; three-act moments (full-screen entrance with its own scene, action on the pitch, result); new sounds; tips only on the first go. A CSS filter on the landed coin also flattened its 3D so tails showed a mirrored HEADS: fixed |
 | 2026-09-26 | Results spread charts topped out at 800+ (fixed bands), and CHAOS charted goals, not its points (often 800+) | 5.4: every score kept per mode, eight round-sized bands fitted to your range; CHAOS charts points |

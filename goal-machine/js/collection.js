@@ -30,10 +30,11 @@
   // ev: { type: 'draft', mode, stat, total, hard, xi: [players], rating, pairs, wildUsed, coinWin, bull, closeness }
   //  or { type: 'game', mode, score, extra }
   // badge categories, in the order the Album shows them
-  const CATS = [['draft', '🎯 Scores'], ['squad', '🧩 Squads'], ['daily', '📅 Dailies'], ['games', '⚡ Quick games'], ['online', '🌐 Online'], ['collect', '📒 Collecting'], ['secret', '🤫 Secret']];
-  const CAT_OF = (id, secret) => secret ? 'secret' : /^daily/.test(id) ? 'daily' : /^on/.test(id) ? 'online'
+  const CATS = [['draft', '🎯 Scores'], ['squad', '🧩 Squads'], ['chaos', '🌪️ CHAOS'], ['daily', '📅 Dailies'], ['games', '⚡ Quick games'], ['online', '🌐 Online'], ['collect', '📒 Collecting'], ['secret', '🤫 Secret']];
+  // CHAOS has its own challenges, some of them secret (shown as ??? in the CHAOS list until found)
+  const CAT_OF = (id, secret) => /^(cx|chaos$)/.test(id) ? 'chaos' : secret ? 'secret' : /^daily/.test(id) ? 'daily' : /^on/.test(id) ? 'online'
     : /^(col|hofall|gball)/.test(id) ? 'collect' : /^(hop|hilo|who|grid|tally|ht)/.test(id) ? 'games'
-    : /^(first|contenders|invincible|relegated|chem5|hof3|wc2|club5|wild5|coin|hard)$/.test(id) ? 'squad' : 'draft';
+    : /^(first|contenders|invincible|relegated|chem5|hof3|wc2|club5|wild5|coin|hard|fan6|lifers|down5)$/.test(id) ? 'squad' : 'draft';
   const A = [
     // drafts
     ['first', '🥅', 'First XI', 'Finish your first draft.', e => e.type === 'draft'],
@@ -55,8 +56,17 @@
     ['club5', '🏟️', 'Club Legends', 'Have 5+ players from the same club in one XI.', e => e.type === 'draft' && maxSameClub(e.xi) >= 5],
     ['wild5', '🃏', 'Wildcard Wizard', 'Use 5 wildcards in one game.', e => e.type === 'draft' && e.wildUsed >= 5],
     ['coin', '🎲', 'Fortune Favours', 'Win a Double or Nothing coin toss.', e => e.type === 'draft' && e.coinWin],
-    ['chaos', '🌪️', 'Agent of Chaos', 'Score 500+ points in Ultimate Wildcard CHAOS (goals).', e => e.type === 'draft' && e.mode === 'chaos' && e.stat === 'goals' && e.points >= 500],
+    ['chaos', '🌪️', 'Agent of Chaos', 'Score 500+ points in Ultimate Wildcard CHAOS (goals).', e => chaos(e) && e.stat === 'goals' && e.points >= 500],
     ['hard', '🥵', 'No Clues', 'Finish a draft in Hard mode.', e => e.type === 'draft' && e.hard],
+    ['fan6', '🧣', 'Proper Fan', 'Have 6+ players who played for your club in one XI (not in a Club or Matchday XI).', e => e.type === 'draft' && e.mode !== 'club' && e.mode !== 'match' && GM.favClub() && e.xi.filter(p => p.clubs.includes(GM.favClub())).length >= 6],
+    ['lifers', '🗓️', 'Lifers', 'Every player in your XI had a PL career spanning 10+ seasons.', e => e.type === 'draft' && e.xi.length === 11 && e.xi.every(p => plSeasons(p) >= 10)],
+    ['down5', '📉', 'Going Down', 'Have 5+ players who were relegated from the PL in one XI.', e => e.type === 'draft' && e.xi.filter(relegated).length >= 5],
+    // CHAOS challenges
+    ['cx1000', '💥', 'Total Anarchy', 'Score 1,000+ points in CHAOS (goals).', e => chaos(e) && e.stat === 'goals' && e.points >= 1000],
+    ['cxsack', '📰', 'Vote of No Confidence', 'Get your manager sacked in CHAOS.', e => chaos(e) && (e.moments || []).includes('Manager sacked!')],
+    ['cxleg', '✨', 'Once in a Lifetime', 'See a legendary CHAOS moment.', e => chaos(e) && (e.rars || []).includes('l')],
+    ['cxmeter', '⚡', 'Meltdown', 'Fill the CHAOS meter 3 times in one game.', e => chaos(e) && e.bigs >= 3],
+    ['cxgaffer', '👍', 'Gaffer’s Favourites', 'Sign 6+ players your manager likes in one CHAOS XI.', e => chaos(e) && e.liked >= 6],
     ['daily3', '📅', 'Regular', 'Play the Daily Ultimate 3 days in a row.', (e, a) => streak(a.days) >= 3],
     ['daily7', '🗓️', 'Season Ticket', 'Play the Daily Ultimate 7 days in a row.', (e, a) => streak(a.days) >= 7],
     // other games
@@ -91,8 +101,42 @@
     ['sbus', '🚌', 'Parked the Bus', 'Finish a goals draft with under 40 goals.', e => e.type === 'draft' && e.stat === 'goals' && e.total < 40, true],
     ['sloyal', '💙', 'Club Till I Die', 'Have 8+ players from the same club in one XI.', e => e.type === 'draft' && maxSameClub(e.xi) >= 8, true],
     ['sowl', '🦉', 'Night Owl', 'Finish a draft between midnight and 4am.', e => e.type === 'draft' && new Date().getHours() < 4, true],
+    ['sdown', '🪂', 'Yo-Yo Club', 'Every player in your XI was relegated from the PL at some point.', e => e.type === 'draft' && e.xi.length === 11 && e.xi.every(relegated), true],
+    ['sonce', '☄️', 'One-Season Wonders', 'Have 3+ players who only had one PL season in one XI.', e => e.type === 'draft' && e.xi.filter(p => plSeasons(p) === 1).length >= 3, true],
+    ['cxslip', '🍌', 'The Slip', 'Steven Gerrard finishes a CHAOS game on 0.', e => chaos(e) && (e.slots || []).some(x => x.name === 'Steven Gerrard' && x.g === 0), true],
+    ['cxdilly', '🦊', 'Dilly Ding, Dilly Dong', 'Ranieri in the dugout with 3+ Leicester players.', e => chaos(e) && e.manager === 'ranieri' && e.xi.filter(p => p.clubs.includes('Leicester City')).length >= 3, true],
+    ['cxfergie', '⌚', 'Fergie Time', 'Fergie in the dugout with 5+ Man Utd players.', e => chaos(e) && e.manager === 'fergie' && e.xi.filter(p => p.clubs.includes('Manchester United')).length >= 5, true],
+    ['cxaliens', '🛸', 'We Are Not Alone', 'Witness an alien abduction in CHAOS.', e => chaos(e) && (e.moments || []).includes('Alien abduction'), true],
+    ['cxpigeon', '🐦', 'Pigeon Fancier', 'A pigeon lands on your pitch in CHAOS.', e => chaos(e) && (e.moments || []).includes('Pitch invader'), true],
   ].map(([id, icon, name, desc, test, secret]) => ({ id, icon, name, desc, test, secret: !!secret, cat: CAT_OF(id, secret) }));
 
+  const chaos = e => e.type === 'draft' && (e.mode === 'chaos' || e.mode === 'chaosx');
+  // PL seasons a player's career spanned (first to last season, as the CHAOS veteran bonus counts them)
+  const plSeasons = p => Math.min(p.last, GM.currentSeason) - p.first + 1;
+  // Clubs relegated from the PL, by the season they went down in (1992 = 1992/93). A player "went down" if his club
+  // spells include that club in that season. The spells come from Transfermarkt and have gaps (Kevin Phillips has no
+  // Sunderland spell), so a few relegations are missed, but none are made up.
+  const DOWN = {
+    1992: ['Crystal Palace', 'Middlesbrough', 'Nottingham Forest'], 1993: ['Sheffield United', 'Oldham Athletic', 'Swindon Town'],
+    1994: ['Crystal Palace', 'Norwich City', 'Leicester City', 'Ipswich Town'], 1995: ['Manchester City', 'Queens Park Rangers', 'Bolton Wanderers'],
+    1996: ['Sunderland', 'Middlesbrough', 'Nottingham Forest'], 1997: ['Bolton Wanderers', 'Barnsley', 'Crystal Palace'],
+    1998: ['Charlton Athletic', 'Blackburn Rovers', 'Nottingham Forest'], 1999: ['Wimbledon', 'Sheffield Wednesday', 'Watford'],
+    2000: ['Manchester City', 'Coventry City', 'Bradford City'], 2001: ['Ipswich Town', 'Derby County', 'Leicester City'],
+    2002: ['West Ham United', 'West Bromwich Albion', 'Sunderland'], 2003: ['Leicester City', 'Leeds United', 'Wolverhampton Wanderers'],
+    2004: ['Crystal Palace', 'Norwich City', 'Southampton'], 2005: ['Birmingham City', 'West Bromwich Albion', 'Sunderland'],
+    2006: ['Sheffield United', 'Charlton Athletic', 'Watford'], 2007: ['Reading', 'Birmingham City', 'Derby County'],
+    2008: ['Newcastle United', 'Middlesbrough', 'West Bromwich Albion'], 2009: ['Burnley', 'Hull City', 'Portsmouth'],
+    2010: ['Birmingham City', 'Blackpool', 'West Ham United'], 2011: ['Bolton Wanderers', 'Blackburn Rovers', 'Wolverhampton Wanderers'],
+    2012: ['Wigan Athletic', 'Reading', 'Queens Park Rangers'], 2013: ['Norwich City', 'Fulham', 'Cardiff City'],
+    2014: ['Hull City', 'Burnley', 'Queens Park Rangers'], 2015: ['Newcastle United', 'Norwich City', 'Aston Villa'],
+    2016: ['Hull City', 'Middlesbrough', 'Sunderland'], 2017: ['Swansea City', 'Stoke City', 'West Bromwich Albion'],
+    2018: ['Cardiff City', 'Fulham', 'Huddersfield Town'], 2019: ['AFC Bournemouth', 'Watford', 'Norwich City'],
+    2020: ['Fulham', 'West Bromwich Albion', 'Sheffield United'], 2021: ['Burnley', 'Watford', 'Norwich City'],
+    2022: ['Leicester City', 'Leeds United', 'Southampton'], 2023: ['Luton Town', 'Burnley', 'Sheffield United'],
+    2024: ['Leicester City', 'Ipswich Town', 'Southampton'],
+  };
+  const relegated = p => Object.entries(p.stints || {}).some(([c, ys]) => [...ys].some(y => (DOWN[y] || []).includes(c)));
+  GM.relegated = relegated; GM.plSeasons = plSeasons;
   const ult = (e, stat) => e.type === 'draft' && (e.mode === 'ultimate' || e.mode === 'daily') && e.stat === stat;
   const game = (e, m) => e.type === 'game' && e.mode.replace(/h$/, '').replace(/:.*/, '') === m;
   function maxSameClub(xi) {

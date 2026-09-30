@@ -96,13 +96,15 @@
       b.textContent = n; b.hidden = !n;
       if (GM.online && GM.online.check) GM.online.check();
     }
-    GM.sound.scene(path === 'draft' && q.m === 'chaos' ? 'chaos' : path);  // each game area has its own music (CHAOS has Mayhem)
-    GM.chaosLook(path === 'draft' && q.m === 'chaos');
+    GM.sound.scene(path === 'draft' && /^chaos/.test(q.m || '') ? 'chaos' : path);  // each game area has its own music (CHAOS has Mayhem)
+    GM.chaosLook(path === 'draft' && /^chaos/.test(q.m || ''));
     GM.$('.cal-slot', tabbar).innerHTML = GM.calIcon();  // stays right past midnight
     switch (path) {
-      case 'draft': return GM.draft.start(app, ['target', 'treble', 'mystery', 'club', 'classic', 'classicwild', 'ultimatepure', 'extreme', 'purist', 'chaos'].includes(q.m) ? q.m : 'ultimate',
-        { stat: q.s, seed: q.seed, vs: q.vs, vss: q.vss ? +q.vss : undefined, hard: q.seed ? q.h === '1' : GM.isHard(), club: q.c, daily: q.daily === '1' });
+      case 'draft': return GM.draft.start(app, ['target', 'treble', 'mystery', 'club', 'classic', 'classicwild', 'ultimatepure', 'extreme', 'purist', 'chaos', 'chaosx', 'match'].includes(q.m) ? q.m : 'ultimate',
+        { fx: q.fx, stat: q.s, seed: q.seed, vs: q.vs, vss: q.vss ? +q.vss : undefined, hard: q.seed ? q.h === '1' : GM.isHard(), club: q.c, daily: q.daily === '1' });
       case 'today': return GM.todayPage(app);
+      case 'matchday': return GM.matchday(app);
+      case 'matchfootle': return GM.footle(app, false, q.fx);
       case 'online': return GM.onlinePage(app, q);
       case 'footle': return GM.footle(app, false);
       case 'clubfootle': return GM.footle(app, true);
@@ -163,6 +165,7 @@
     const pool = POOLS[GM.store.get('ultPool', 'ultimate')] ? GM.store.get('ultPool', 'ultimate') : 'ultimate';
     const wild = GM.store.get('ultWild', true) !== false;
     const ult = POOLS[pool][wild ? 'on' : 'off'];
+    const cpool = GM.store.get('chaosPool', 'chaos') === 'chaosx' ? 'chaosx' : 'chaos';  // CHAOS: 50+ apps, or everyone
     const ultName = GM.MODES[ult].name;
     const ultSub = `${POOLS[pool].about}. ${wild ? 'Wildcards on.' : 'No wildcards: just the reels and your knowledge.'}${ult === 'purist' ? ' Fills your 💎 Purist collection.' : ''}`;
     const streak = GM.streak();
@@ -180,18 +183,23 @@
         <div class="logo small">GOAL<span>MACHINE</span></div>
         <a class="icon-btn" href="#/updates" aria-label="Updates">📰${GM.hasUnseenUpdate() ? '<i class="new-dot"></i>' : ''}</a></div>
       <header class="hero">
-        <p>${club ? `<span class="fan-chip">${GM.clubChip(club, true)}</span> ` : ''}${GM.allPlayers ? GM.allPlayers.length.toLocaleString() : "5,000+"} Premier League players · 1992 to today</p>
+        <p>${club ? `<span class="fan-chip">${GM.clubChip(club, true)}</span> <span class="banter">${GM.esc(GM.clubBanter(club))}</span>` : `${GM.allPlayers ? GM.allPlayers.length.toLocaleString() : '5,000+'} Premier League players · 1992 to today`}</p>
         ${installHidden() || hasNativeApp ? '' : `<div class="install-bar">
           ${isAndroid ? `<a class="btn small" id="getapk" href="${GM.APK_URL}">🤖 Get the Android app</a>` : `<button class="btn small" id="install" hidden>📲 Install app</button>`}
           <button class="install-x" id="install-x" title="I already have it" aria-label="Hide">✕</button></div>`}
         ${GM.appOutdated() ? `<div class="install-bar"><a class="btn small" href="${GM.APK_URL}">📲 New version of the app – tap to update</a></div>` : ''}
       </header>
+      ${GM.matchBanner()}
       <div class="hard-toggle" role="group" aria-label="Difficulty">
         <button class="${hard ? '' : 'on'}" data-hard="0">🙂 Normal<small>clubs, years &amp; apps shown</small></button>
         <button class="${hard ? 'on' : ''}" data-hard="1">🥵 Hard<small>names &amp; positions only</small></button>
       </div>
       <div class="seg home-tabs" id="htabs">${HTABS.map(([k, l, modes]) => `<button data-t="${k}">${l}${modes.some(m => newTag(m)) ? '<i class="new-dot"></i>' : ''}</button>`).join('')}</div>
       <div data-hpanel="main">
+      <div class="chaos-card">${newTag('chaos')}<div class="chaos-head"><span>🌪️</span><div><span class="kicker">Headline event</span><b>Ultimate Wildcard CHAOS</b><small>Appoint a manager, fill the CHAOS meter and survive tornadoes, VAR and last-minute madness. Your XI’s total plus bonus points.</small></div></div>
+        <span class="variant chaos-pool" role="group" aria-label="Players"><button data-cpool="chaos" class="${cpool === 'chaos' ? 'on' : ''}">👑 50+ apps</button><button data-cpool="chaosx" class="${cpool === 'chaosx' ? 'on' : ''}">⚡ Every player (5,000+)</button></span>
+        <div class="stat-row">${Object.keys(GM.STATS).map(s => statBtn(cpool, s)).join('')}</div>
+        <a class="chaos-daily" href="#/draft?m=chaos&daily=1">${GM.calIcon()} <b>Daily CHAOS</b><span>${GM.dailyStatus('chaos').text || 'Same chaos for everyone today · one go'}</span>${GM.streak('chaos') ? `<i>🔥 ${GM.streak('chaos')}</i>` : ''}</a></div>
       <div class="mode-card featured ultimate big-card">
         <span class="mode-icon">${GM.MODES[ult].icon}</span>
         <span class="mode-text"><span class="kicker">Main event</span><b>${ultName}</b><small>${ultSub}</small>
@@ -199,12 +207,9 @@
           <span class="variant wild-switch" role="group" aria-label="Wildcards"><button data-wild="1" class="${wild ? 'on' : ''}">🃏 Wildcards on</button><button data-wild="0" class="${wild ? '' : 'on'}">🚫 No wildcards</button></span>
           <span class="stat-pick">${statBtn(ult, 'goals')}${statBtn(ult, 'assists')}${statBtn(ult, 'apps')}</span></span>
       </div>
-      <div class="chaos-card">${newTag('chaos')}<div class="chaos-head"><span>🌪️</span><div><b>Ultimate Wildcard CHAOS</b><small>Your XI’s total plus bonus points for chemistry, squad rating, PL titles, legends and loyalty. Wildcard storms, red cards, VAR, golden goals, All In… anything can happen.</small></div></div>
-        <div class="stat-row">${Object.keys(GM.STATS).map(s => statBtn('chaos', s)).join('')}</div>
-        <a class="chaos-daily" href="#/draft?m=chaos&daily=1">${GM.calIcon()} <b>Daily CHAOS</b><span>${GM.dailyStatus('chaos').text || 'Same chaos for everyone today · one go'}</span>${GM.streak('chaos') ? `<i>🔥 ${GM.streak('chaos')}</i>` : ''}</a></div>
       <a class="ht-banner" href="#/hattrick"><span>🃏</span><span><b>Hat-Trick <small class="beta-pill">BETA</small></b><small>${GM.store.get('ht:save', null) ? 'Your game’s waiting – tap to carry on' : 'Football Spades: you and a partner against two rivals'}</small></span><span>›</span></a>
       <a class="h2h-banner" href="${waiting ? '#/online' : '#/h2h'}"><span>⚔️</span><span><b>Head to Head</b><small>${waiting ? `🌐 ${waiting} online game${waiting > 1 ? 's' : ''} waiting for your move` : h2h ? `${GM.esc(h2h.names[0])} v ${GM.esc(h2h.names[1])}: tap to carry on` : 'Pass the phone, or play your mates online'}</small></span><span>🏆</span><i class="online-badge" ${waiting ? '' : 'hidden'}>${waiting}</i></a>
-      ${club ? `<div class="tile club-tile wide target-tile"><span class="tile-icon">🏟️</span><b>${GM.esc(club)} XI</b><small>Ultimate Wildcard with only ${GM.esc(club)} players. Their whole PL careers count.</small>
+      ${club ? `<div class="tile club-tile wide target-tile"><span class="tile-icon">🏟️</span><b>${GM.esc(club)} XI</b><small>Ultimate Wildcard with only ${GM.esc(club)} players. Their whole PL careers count.</small>${GM.nextMatchLine()}
         <span class="stat-pick">${statBtn('club', 'goals')}${statBtn('club', 'assists')}${statBtn('club', 'apps')}</span></div>` : ''}
       </div>
       <div data-hpanel="targets">
@@ -253,6 +258,7 @@
       if (sm && n !== waiting && location.hash.replace(/^#\/?/, '') === '') home();
     });
     GM.$$('[data-pool]').forEach(b => b.onclick = () => { GM.store.set('ultPool', b.dataset.pool); home(); });
+    GM.$$('[data-cpool]').forEach(b => b.onclick = () => { GM.store.set('chaosPool', b.dataset.cpool); home(); });
     GM.$$('[data-wild]').forEach(b => b.onclick = () => { GM.store.set('ultWild', b.dataset.wild === '1'); home(); });
     const ib = GM.$('#install');
     if (ib) {
@@ -460,12 +466,12 @@
     const club = GM.favClub(), today = GM.today();
     const CATS = [
       ['⚽ Main event', ['classicwild', 'classic', 'ultimate', 'ultimatepure', 'extreme', 'purist']],
-      ['🌪️ CHAOS', ['chaos', 'dchaos:' + today]],
+      ['🌪️ CHAOS', ['chaos', 'chaosx', 'dchaos:' + today]],
       [GM.calIcon() + ' Daily', ['daily:' + today, 'footle:' + today, 'grid:' + today, 'mbdaily:' + today, 'dailies']],
       ['🎯 Targets', ['target', 'treble', 'mystery']],
       ['💰 Market', ['moneyball', 'window']],
       ['⚡ Quick', ['hopper', 'hilo', 'whoami', 'grid', 'tally']],
-    ].concat(club ? [['🏟️ Your club', ['club' + GM.slug(club)]]] : []);
+    ].concat(club ? [['🏟️ Your club', ['club' + GM.slug(club)].concat(GM.nextMatch(club) ? ['match:' + GM.nextMatch(club).id] : [])]] : []);
     const SHORT = { classicwild: '⭐ Classic Wildcard', classic: '⭐ Classic', ultimate: '👑 Ultimate Wildcard', ultimatepure: '👑 Ultimate', extreme: '⚡ Extreme Wildcard',
       purist: '💎 Extreme Purist', chaos: '🌪️ CHAOS', target: '🎯 Target', treble: '🏆 The Treble', mystery: '🎲 Mystery Target', moneyball: '💰 Moneyball', window: '🔄 Transfer Window', dailies: '📊 Daily stars' };
     const SUFFIX = { goals: '', assists: 'ast', apps: 'apps' };
@@ -478,7 +484,7 @@
     let cat = CATS.findIndex(c => c[1].includes(base));
     if (cat < 0) { cat = 0; base = 'ultimate'; }
     m = keyFor(base);
-    const label = k => k.startsWith('daily:') ? GM.calIcon() + ' Daily Ultimate' : k.startsWith('grid:') ? '#️⃣ Grid today' : k.startsWith('footle:') ? '🟩 Footle today' : k.startsWith('mbdaily:') ? '💰 Moneyball today' : k.startsWith('dchaos:') ? GM.calIcon() + ' Daily CHAOS'
+    const label = k => k.startsWith('daily:') ? GM.calIcon() + ' Daily Ultimate' : k.startsWith('grid:') ? '#️⃣ Grid today' : k.startsWith('footle:') ? '🟩 Footle today' : k.startsWith('mbdaily:') ? '💰 Moneyball today' : k.startsWith('dchaos:') ? GM.calIcon() + ' Daily CHAOS' : k.startsWith('match:') ? '🏟️ ' + GM.esc(GM.matchTitle(k))
       : SHORT[k] || `${(GM.MODES[k] || {}).icon || ''} ${((GM.MODES[k] || {}).name || k).replace(/ \(Hard\)| – .*$/g, '')}`;
     const link = k => `#/leaderboard?m=${encodeURIComponent(k)}`;
     const canHard = GM.HARD_MODES.includes(keyFor(base, stat, false));

@@ -9,6 +9,19 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 36, label: '5.5', date: '2026-09-30', title: '🏟️ Matchdays, sharing your day, and secrets to find',
+      items: [
+        '🏟️ Matchdays! When your club plays, there’s a Matchday XI (players from either side, double points for anyone who played for both, and the same spins for every fan) and a pre-match Footle. On the Android app you get a nudge at 9am too',
+        '📤 Share my day: one tap on Today posts all your daily results and your streak, with no spoilers. Perfect for the group chat',
+        '🌪️ CHAOS is now the headline event, and has its own challenges in the Album (some of them secret)',
+        '⚡ CHAOS Extreme: all the madness with every one of the 5,000+ PL players. Switch it on the CHAOS card',
+        '🤫 New secret badges to hunt down, plus new squad badges: Proper Fan (6+ from your club), Lifers and Going Down',
+        '🏟️ Picked a club? The home page now winds you up every day: your club’s memes, your rivals’ and a few everyone gets',
+        '🍌 And a couple of easter eggs. We’re not saying where',
+        '🪙 The CHAOS coin actually flips now, end over end, instead of glitching',
+      ],
+    },
+    {
       v: 35, label: '5.4.2', date: '2026-09-27', title: 'Fairer lightning',
       items: [
         '⚡ Lightning strike hits two random players now: one halved, another (who’s scored) ×3. It used to always halve your best and triple your worst, which was usually a 0',
