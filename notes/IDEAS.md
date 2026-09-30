@@ -57,6 +57,27 @@ formations, and badges round 2.
   moments landing on back-to-back spins? Any other moments you'd like (e.g. a 🌪️ tornado event that swaps players'
   positions)?
 
+### More from the FPL API 💬
+- **Context (30 Sep 2026):** the fixtures now come from the FPL API (`fantasy.premierleague.com/api/`, no login, the
+  weekly data job can reach it; this sandbox can't). The owner asked what else it could give us. Claude's ideas,
+  best fit first:
+  1. **Results and scorers** (`/fixtures/`: score, scorers, assists, cards, bonus once played): the result on the
+     matchday hub, a full-time notification ("FT: Everton 2–1 Liverpool"), and a post-match quiz ("Who scored
+     Everton's winner?"). Recommended first: it finishes the matchday loop.
+  2. **Team of the Week** (`/dream-team/{gw}/`): a weekly game when the Tuesday data lands: guess the Team of the Week,
+     or a Footle whose answer is the weekend's star.
+  3. **Fresher numbers** (`bootstrap-static` elements): current-season goals/assists/minutes straight from source,
+     instead of the vaastav repo that can lag a few days; new signings show up as soon as they play.
+  4. **Injury news** (`news`, `chance_of_playing_next_round`): a CHAOS moment ("🚑 Real news: he's out this weekend"),
+     or a flag on reels for injured current players.
+  5. **FPL prices and ownership** (`now_cost`, `selected_by_percent`): a Higher or Lower round ("who's in more FPL
+     teams?"), or real prices as a Moneyball option for current players.
+  6. **Fixture difficulty** (`team_h_difficulty` / `team_a_difficulty`, 1–5): shown on the matchday hub's list.
+  7. **Link your FPL team** (`/entry/{id}/`, `/leagues-classic/{id}/`): type in your FPL ID, pull your real squad;
+     a "Your FPL XI" draft, or compare Goal Machine scores with your FPL mini-league. Big, but could bring FPL
+     players in.
+- **Questions:** which first? (Claude suggests 1, then 2 and 3.)
+
 ### Money games need more depth (Moneyball, Transfer Window, Auction)
 - **Owner's take:** there's something there, but it isn't satisfying. By two-thirds of the way through you're often
   left with one affordable option (a free transfer), and it boils down to "longest career for the cost". It lacks the
