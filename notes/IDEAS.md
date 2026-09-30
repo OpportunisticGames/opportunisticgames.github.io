@@ -57,6 +57,43 @@ formations, and badges round 2.
   moments landing on back-to-back spins? Any other moments you'd like (e.g. a 🌪️ tornado event that swaps players'
   positions)?
 
+### Packs and the Packed XI ✅ shipped in 5.6
+- **Owner (30 Sep 2026):** liked packs, but "the rare players aren't actually hard to get… maybe for your dream XI you
+  need to sign them x amount of times? Like signing them adds a jigsaw piece to the player? Maybe a packed team?"
+- **Shipped:** every 50+ app player is a card by fame: 🟫 Bronze (1 piece, ~1,300), ⚪ Silver (2, ~500), 🟡 Gold (3,
+  ~190), 🟣 Legend (5, ~40, all Hall of Famers). Pieces from packs (5 pieces, odds 55/30/12/3, the last Silver or
+  better, prefers cards you haven't finished) and from signings (one piece per player per day, so a star you keep
+  seeing still takes days). Packs: one free a day, +1 for three dailies in a day, +1 per new badge. The Packed XI
+  (best XI of finished cards) replaces the Album's Dream XI and has a leaderboard (`packedxi`). Opening: pack bursts,
+  cards deal and flip (best last), a Legend gets a walkout (flag, position, club). Five badges in Collecting.
+- **Maybe next:** spare pieces for finished cards turn into something (a "pick your own piece" token?); a weekly
+  special pack (Team of the Week, see the FPL API ideas); trading pieces with friends.
+
+### First game: a guided first XI 💬 *(Claude's idea, owner keen)*
+- The home screen throws a lot at a new player (Normal/Hard/Extreme, four tabs, CHAOS, Ultimate, lots of tiles).
+- **Idea:** on first launch one big "▶ Play your first XI" button: a short guided game ("Spin… pick one… put him in the
+  slot…"), then the full home screen. Where testers would bounce if anywhere.
+- **Questions:** skip button for people who know it? Which mode (Ultimate goals, wildcards off for the first go)?
+
+### Club v club: fans playing for their club 💬 *(Claude's idea, owner keen)*
+- A weekly table of clubs, each scoring from its fans' results ("Everton fans 4th this week, Liverpool fans 11th").
+  Fits the banter and matchdays, and gives a reason to recruit mates.
+- **Notes:** everyone already picks a club and scores already go to Supabase, so it's a view plus a page. Needs the
+  club saved with the account (it's only on the phone now). Average per active fan, or total (big clubs win)? Probably
+  an average over fans with 3+ games that week, so small clubs can top it.
+
+### Levels: a rank to climb 💬 *(Claude's idea, owner keen)*
+- Everything you do earns XP towards a rank: Sunday League → Non-League → Championship → Premier League → Ballon d'Or.
+  Badges are the only long-term progress now.
+- **Questions:** what earns XP (games, dailies, badges, packs)? Unlocks along the way (pitch styles, card designs,
+  CHAOS managers) or just the title? Show the rank next to your name on leaderboards?
+
+### Monthly leaderboards 💬 *(Claude's idea, owner keen)*
+- All-time boards go stale (once someone has 600 on Ultimate a newcomer can't catch them). Monthly boards (keeping
+  all-time) give a fresh race each month and an "End of season: you finished 7th" moment, maybe with a pack prize.
+- **Notes:** the scores table has created_at, so a monthly view per mode is cheap; the boards need a This month / All
+  time switch.
+
 ### More from the FPL API 💬
 - **Context (30 Sep 2026):** the fixtures now come from the FPL API (`fantasy.premierleague.com/api/`, no login, the
   weekly data job can reach it; this sandbox can't). The owner asked what else it could give us. Claude's ideas,

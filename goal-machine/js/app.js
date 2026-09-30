@@ -106,6 +106,7 @@
       case 'today': return GM.todayPage(app);
       case 'matchday': return GM.matchday(app);
       case 'nations': return GM.nationsPage(app);
+      case 'packs': return GM.packsPage(app, ['cards', 'how'].includes(q.v) ? q.v : 'xi', GM.TIERS[q.t] ? q.t : '');
       case 'matchfootle': return GM.footle(app, false, q.fx);
       case 'online': return GM.onlinePage(app, q);
       case 'footle': return GM.footle(app, false);
@@ -192,6 +193,7 @@
         ${GM.appOutdated() ? `<div class="install-bar"><a class="btn small" href="${GM.APK_URL}">📲 New version of the app – tap to update</a></div>` : ''}
       </header>
       ${GM.matchBanner()}${GM.intlBanner()}
+      ${GM.packsWaiting() ? `<a class="pack-bar" href="#/packs"><span>🎁</span><span><b>${GM.packsWaiting()} pack${GM.packsWaiting() > 1 ? 's' : ''} to open</b><small>${GM.esc(GM.packedXI().n < 11 ? 'Build your Packed XI' : 'Improve your Packed XI')}</small></span><span>›</span></a>` : ''}
       <div class="hard-toggle three" role="group" aria-label="Difficulty">${Object.entries(GM.LEVELS).map(([k, [i, n, sub]]) => `<button class="${k === level ? 'on' : ''}" data-level="${k}">${i} ${n}<small>${sub}</small></button>`).join('')}</div>
       <div class="seg home-tabs" id="htabs">${HTABS.map(([k, l, modes]) => `<button data-t="${k}">${l}${modes.some(m => newTag(m)) ? '<i class="new-dot"></i>' : ''}</button>`).join('')}</div>
       <div data-hpanel="main">
@@ -471,7 +473,7 @@
       [GM.calIcon() + ' Daily', ['daily:' + today, 'footle:' + today, 'grid:' + today, 'mbdaily:' + today, 'dailies']],
       ['🎯 Targets', ['target', 'treble', 'mystery']],
       ['💰 Market', ['moneyball', 'window']],
-      ['⚡ Quick', ['hopper', 'hilo', 'whoami', 'grid', 'tally']],
+      ['⚡ Quick', ['hopper', 'hilo', 'whoami', 'grid', 'tally', 'packedxi']],
     ].concat(GM.intlBreak() || GM.store.get('nationsPlayed', []).length ? [['🌍 International', [...new Set([GM.store.get('nation', 'England')].concat(GM.store.get('nationsPlayed', [])))].slice(0, 8).map(n => 'nation' + GM.slug(n))]] : [])
       .concat(club ? [['🏟️ Your club', ['club' + GM.slug(club)].concat(GM.nextMatch(club) ? ['match:' + GM.nextMatch(club).id] : [])]] : []);
     const SHORT = { classicwild: '⭐ Classic Wildcard', classic: '⭐ Classic', ultimate: '👑 Ultimate Wildcard', ultimatepure: '👑 Ultimate', extreme: '⚡ Extreme Wildcard',

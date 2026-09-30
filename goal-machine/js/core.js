@@ -771,6 +771,7 @@ GM.MODES = {
   chaos: { name: 'Ultimate Wildcard CHAOS', icon: '🌪️' }, chaosast: { name: 'CHAOS – Assists', icon: '🌪️' }, chaosapps: { name: 'CHAOS – Apps', icon: '🌪️' },
   match: { name: 'Matchday XI', icon: '🏟️' },
   nation: { name: 'International XI', icon: '🌍' },
+  packedxi: { name: 'Packed XI', icon: '🃏' },
   chaosx: { name: 'CHAOS Extreme', icon: '🌪️' }, chaosxast: { name: 'CHAOS Extreme – Assists', icon: '🌪️' }, chaosxapps: { name: 'CHAOS Extreme – Apps', icon: '🌪️' },
   moneyball: { name: 'Moneyball', icon: '💰' }, moneyballast: { name: 'Moneyball – Assists', icon: '💰' }, moneyballapps: { name: 'Moneyball – Apps', icon: '💰' },
   window: { name: 'Transfer Window', icon: '🔄' }, windowast: { name: 'Transfer Window – Assists', icon: '🔄' }, windowapps: { name: 'Transfer Window – Apps', icon: '🔄' },

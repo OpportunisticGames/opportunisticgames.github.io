@@ -119,6 +119,12 @@
     ['ib250', '🌟', 'Golden Generation', 'Score 250+ goals in an International XI.', e => intl(e) && e.stat === 'goals' && e.total >= 250],
     ['ibtour', '🧳', 'World Tour', 'Build International XIs for 5 different countries.', (e, a) => intl(e) && (a.nations || []).length >= 5],
     ['ibclub', '⚔️', 'Club v Country', 'Have 3+ players from your club in an International XI.', e => intl(e) && GM.favClub() && e.xi.filter(p => p.clubs.includes(GM.favClub())).length >= 3, true],
+    // packs (the collect list)
+    ['colpack', '🎁', 'Pack Opener', 'Open your first pack.', e => game(e, 'pack')],
+    ['colwalk', '🚶', 'Walkout', 'Pull a Legend in a pack.', e => game(e, 'pack') && e.extra && e.extra.legend],
+    ['colgold', '🟡', 'Gold Standard', 'Finish a Gold card.', () => GM.cardsDone('g') >= 1],
+    ['collegend', '🟣', 'Legendary', 'Finish a Legend card.', () => GM.cardsDone('l') >= 1],
+    ['colxi', '🃏', 'Fully Packed', 'Fill all 11 places in your Packed XI.', () => GM.packedXI().n === 11],
     ['ibhome', '🏴', 'Home Nations', 'Build International XIs for England, Scotland, Wales and Northern Ireland.', (e, a) => intl(e) && HOME.every(n => (a.nations || []).includes(n)), true],
   ].map(([id, icon, name, desc, test, secret]) => ({ id, icon, name, desc, test, secret: !!secret, cat: CAT_OF(id, secret) }));
 
@@ -197,6 +203,7 @@
 
   function celebrate(fresh, newPlayers) {
     let delay = 600;
+    if (fresh.length && GM.givePack) GM.givePack(fresh.length, fresh.length > 1 ? 'new badges' : 'new badge');
     fresh.forEach(x => { setTimeout(() => GM.toast(`🏅 Badge unlocked: ${x.icon} <b>${x.name}</b>`, 2600), delay); delay += 2800; });
     const stars = newPlayers.filter(p => p.hon.H || p.hon.B || p.goals >= 100);
     if (stars.length) setTimeout(() => GM.toast(`📒 Collected ${stars.slice(0, 2).map(p => GM.esc(p.name)).join(' & ')}${stars.length > 2 ? ` +${stars.length - 2}` : ''}!`, 2600), delay);
@@ -218,6 +225,7 @@
     if (ev.mode === 'match' && ev.fx && !(a.md || []).includes(ev.fx)) a.md = (a.md || []).concat(ev.fx).slice(-100);
     if (ev.mode === 'nation' && ev.nat && !(a.nations || []).includes(ev.nat)) a.nations = (a.nations || []).concat(ev.nat);
     if (ev.mode === 'nation') GM.store.set('nationsPlayed', a.nations);
+    if (!purist && GM.cardsFromDraft) GM.cardsFromDraft(ev.xi);  // a piece of each signing's card (once a day each)
     const fresh = check({ type: 'draft', ...ev }, a);
     save(a);
     if (purist) save(book, 'purist');
@@ -302,6 +310,7 @@
     });
     return xi;
   }
+  GM.dreamXI = dreamXI;
 
   /* ---------------------------------------------------------------- album page */
   // The Album in four sections (?v=xi|badges|sets|stats), and the badges one category at a time (?c=draft …)
@@ -334,7 +343,7 @@
     const bar = (have, all) => `<div class="bar"><i style="width:${all ? have / all * 100 : 0}%"></i></div>`;
     const recent = Object.entries(a.players).sort((x, y) => (y[1] > x[1] ? 1 : -1)).slice(0, 18).map(([k]) => index.get(k)).filter(Boolean);
     const main = load();
-    const VIEWS = purist ? [['xi', '⭐ Dream XI'], ['sets', '🗂️ Sets']] : [['xi', '⭐ Dream XI'], ['badges', '🏅 Badges'], ['sets', '🗂️ Sets'], ['stats', '📊 Stats']];
+    const VIEWS = purist ? [['xi', '⭐ Dream XI'], ['sets', '🗂️ Sets']] : [['xi', '🃏 Packed XI'], ['badges', '🏅 Badges'], ['sets', '🗂️ Sets'], ['stats', '📊 Stats']];
     if (!VIEWS.some(v => v[0] === view)) view = 'xi';
     const link = (o = {}) => { const q = { s: statId !== 'goals' ? statId : '', b: purist ? 'purist' : '', v: view !== 'xi' ? view : '', c: cat, ...o };
       const qs = Object.entries(q).filter(([, v]) => v).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&'); return '#/album' + (qs ? '?' + qs : ''); };
@@ -353,7 +362,10 @@
 
       <div class="seg album-views">${VIEWS.map(([k, l]) => `<a class="${k === view ? 'on' : ''}" href="${link({ v: k === 'xi' ? '' : k, c: '' })}">${l}</a>`).join('')}</div>
 
-      ${view === 'xi' ? `<p class="muted">Your best player in every position, from players you've signed in ${st.name.toLowerCase()} games (×2, ×3… is how many times you've signed him). ${fmt(Object.keys(got).length)} players in your ${st.name.toLowerCase()} book.</p>
+      ${view === 'xi' && !purist ? `<p class="muted">Your best XI from <b>finished</b> player cards. Finish cards by opening packs and signing players (a piece a day each).</p>
+      ${GM.packedPitch(GM.packedXI())}<a class="btn big" href="#/packs">🎁 Packs${GM.packsWaiting() ? ` · ${GM.packsWaiting()} to open` : ''}</a>
+      ${recent.length ? `<h3 class="section-title">🆕 Recently signed</h3><div class="team-badges">${recent.map(p => `<span>${GM.esc(p.name)}</span>`).join('')}</div>` : ''}` : ''}
+      ${view === 'xi' && purist ? `<p class="muted">Your best player in every position, from players you've signed in ${st.name.toLowerCase()} games (×2, ×3… is how many times you've signed him). ${fmt(Object.keys(got).length)} players in your ${st.name.toLowerCase()} book.</p>
       <div class="hard-toggle small three">${Object.entries(GM.STATS).map(([k, s]) => `<a class="${k === statId ? 'on' : ''}" href="${link({ s: k === 'goals' ? '' : k })}"><i class="sb-ico">${s.icon}</i>${s.name}</a>`).join('')}</div>
       <div class="pitch"><div class="pitch-lines"></div><div class="shape">${fmt(tot)} ${st.label}</div>
         ${lines.map(l => `<div class="pitch-row">${l.map(([s]) => slot(s)).join('')}</div>`).join('')}</div>
