@@ -15,7 +15,7 @@
         '🌪️ CHAOS is now the headline event, and has its own challenges in the Album (some of them secret)',
         '⚡ CHAOS Extreme: all the madness with every one of the 5,000+ PL players. Switch it on the CHAOS card',
         '🤫 New secret badges to hunt down, plus new squad badges: Proper Fan (6+ from your club), Lifers and Going Down',
-        '🏟️ Picked a club? The home page now has a daily line of banter about them',
+        '🏟️ Picked a club? The home page now winds you up every day: your club’s memes, your rivals’ and a few everyone gets',
         '🍌 And a couple of easter eggs. We’re not saying where',
       ],
     },
