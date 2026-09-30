@@ -391,7 +391,7 @@ GM.accountModal = function (note = '', rename = false) {
   return new Promise(res => {
     const m = GM.modal(`<h3>${rename ? '✏️ Change your name' : '🔒 Claim your leaderboard name'}</h3>
       <p class="muted">${note ? GM.esc(note) : 'Names are unique: once you claim one, only you can post scores with it.'}</p>
-      <form class="claim"><input class="input" maxlength="20" placeholder="e.g. Joel" value="${rename ? '' : GM.esc(GM.store.get('name', ''))}" autocomplete="off">
+      <form class="claim"><input class="input" maxlength="20" placeholder="e.g. SuperSub" value="${rename ? '' : GM.esc(GM.store.get('name', ''))}" autocomplete="off">
         <small class="claim-msg muted">3–20 letters, numbers, spaces, dots, dashes or underscores</small>
         <div class="row"><button type="button" class="btn ghost" data-close>Not now</button><button class="btn">${rename ? 'Change' : 'Claim'}</button></div></form>
       ${rename ? '' : '<p class="muted center"><a href="#/settings?s=account" data-close>Moving from another phone? Use a transfer code in ⚙️ Settings</a></p>'}`, { onClose: () => res(null) });
