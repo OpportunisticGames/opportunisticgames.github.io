@@ -24,11 +24,11 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.selectOption('#lbv', 'ultimatepure'); await pg.waitForTimeout(500);
   ok(/m=purist$/.test(await hash()), 'Ultimate (no wildcards) on Extreme → Extreme Purist');
   const boards = {};
-  for (const [label, want] of [['CHAOS', /m=chaosx$/], ['Targets', /m=targetx$/], ['Quick', /m=hopperx$/], ['Market', /m=moneyballx$/]]) {
+  for (const [label, want] of [['CHAOS', /m=chaosx$/], ['Targets', /m=targetx$/], ['Quick', /m=hopperx$/], ['Moneyball', /m=moneyx$/]]) {
     await pg.evaluate(l => [...document.querySelectorAll('.lbx-games a')].find(a => a.textContent.includes(l)).click(), label); await pg.waitForTimeout(500);
     boards[label] = await hash(); ok(want.test(boards[label]), `${label} keeps Extreme where it has one (${boards[label].split('m=')[1]})`);
   }
-  ok(await pg.$$eval('#lbh option', l => l.length) === 3, 'the money games have Normal / Hard / Extreme');
+  ok(await pg.$$eval('#lbh option', l => l.length) === 3, 'Moneyball has Normal / Hard / Extreme');
   await pg.evaluate(() => [...document.querySelectorAll('.lbx-games a')].find(a => a.textContent.includes('Quick')).click()); await pg.waitForTimeout(500);
   await pg.selectOption('#lbv', 'hilo'); await pg.waitForTimeout(500);
   await pg.selectOption('#lbh', 'extreme'); await pg.waitForTimeout(500);
@@ -70,16 +70,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.goto(U + '#/'); await pg.goto(U + '#/dailygrid'); await pg.waitForTimeout(700);
   ok(!/Extreme/.test(await pg.textContent('.topbar h2')), 'the Daily Club Grid is the same for everyone');
 
-  // the money games
-  await pg.goto(U + '#/moneyball?s=goals'); await pg.waitForTimeout(1200);
-  const mb = await pg.evaluate(() => ({ title: document.querySelector('.topbar h2').textContent, lb: document.querySelector('.lb-btn').dataset.lb, names: [...document.querySelectorAll('.mk-card b')].map(b => b.textContent) }));
-  ok(/Extreme/.test(mb.title) && mb.lb === 'moneyballx', 'Moneyball on Extreme, with its own board');
-  let mbObscure = await inPL50(mb.names);
-  for (let i = 0; i < 4 && !mbObscure; i++) { await pg.goto(U + '#/'); await pg.goto(U + '#/moneyball?s=goals'); await pg.waitForTimeout(500); mbObscure = await inPL50(await pg.$$eval('.mk-card b', l => l.map(b => b.textContent))); }
-  ok(mbObscure > 0, 'Extreme puts players from outside the 50+ list on the market');
-  await pg.evaluate(() => GM.setLevel('hard'));
-  await pg.goto(U + '#/'); await pg.goto(U + '#/window?s=apps'); await pg.waitForTimeout(700);
-  ok(/Hard/.test(await pg.textContent('.topbar h2')) && !(await pg.$('.mk-card .chips')) && await pg.$eval('.lb-btn', e => e.dataset.lb) === 'windowappsh', 'Transfer Window on Hard: names and positions only, its own board');
+  // Moneyball (tools/test/moneyball.js has the rest)
   await pg.evaluate(() => GM.setLevel('extreme'));
   await pg.goto(U + '#/'); await pg.goto(U + '#/moneyball?daily=1'); await pg.waitForTimeout(700);
   ok(!/Extreme/.test(await pg.textContent('.topbar h2')), 'the Daily Moneyball is the same for everyone');

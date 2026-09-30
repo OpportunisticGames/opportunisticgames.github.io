@@ -120,7 +120,7 @@
       footle: () => (store.get('footle:' + GM.today()) || {}).guesses, chaos: () => store.get('draftp:dchaos:' + GM.today()), club: () => (store.get('cfootle:' + GM.today() + ':' + GM.slug(GM.favClub())) || {}).guesses,
     }[game];
     if (v != null) {
-      const txt = game === 'daily' || game === 'moneyball' ? `✓ ${v} goals` : game === 'chaos' ? `✓ ${v} points` : game === 'grid' ? `✓ ${v} pts` : v > 0 ? `✓ Got it in ${v}` : '✗ Missed';
+      const txt = game === 'moneyball' ? `✓ £${v}m` : game === 'daily' ? `✓ ${v} goals` : game === 'chaos' ? `✓ ${v} points` : game === 'grid' ? `✓ ${v} pts` : v > 0 ? `✓ Got it in ${v}` : '✗ Missed';
       return { done: true, text: txt };
     }
     if (inProgress && inProgress()) return { done: false, text: '▶ In progress' };
@@ -135,7 +135,7 @@
       footle: v => `${v > 0 ? '🟩' : '🟥'} Footle: ${v > 0 ? v : 'X'}/8`,
       grid: v => `#️⃣ Club Grid: ${fmt(v)} pts`,
       club: v => `🏟️ ${club} Footle: ${v > 0 ? v : 'X'}/8`,
-      moneyball: v => `💰 Daily Moneyball: ${fmt(v)} goals`,
+      moneyball: v => `💰 Daily Moneyball: £${fmt(v)}m`,
       chaos: v => `🌪️ Daily CHAOS: ${fmt(v)} pts`,
     };
     const rows = Object.keys(line).filter(g => e[g] != null && (g !== 'club' || club)).map(g => line[g](e[g]));
@@ -163,7 +163,7 @@
         const G = GAMES[g], st = GM.dailyStatus(g), gs = GM.streak(g);
         const name = g === 'club' ? `${esc(club)} Footle` : G.name;
         return `<a class="daily-row ${st.done ? 'done' : ''}" href="${G.href}"><span class="dr-icon">${G.icon}</span>
-          <span class="dr-text"><b>${name}</b><small>${st.text || (g === 'footle' ? 'Guess the player in 8' : g === 'daily' ? 'Same spins for everyone. One shot.' : g === 'grid' ? 'Played for both? Fill the grid.' : g === 'moneyball' ? 'Same market for everyone' : g === 'chaos' ? 'Same chaos for everyone · one go' : 'Mystery player from your club')}</small></span>
+          <span class="dr-text"><b>${name}</b><small>${st.text || (g === 'footle' ? 'Guess the player in 8' : g === 'daily' ? 'Same spins for everyone. One shot.' : g === 'grid' ? 'Played for both? Fill the grid.' : g === 'moneyball' ? 'Same season for everyone · one go' : g === 'chaos' ? 'Same chaos for everyone · one go' : 'Mystery player from your club')}</small></span>
           <span class="dr-streak">${gs ? `🔥${gs}` : ''}</span><span class="dr-go">${st.done ? 'View' : st.text ? 'Continue' : 'Play'}</span></a>`;
       }).join('')}</div>
       ${GM.shareDayText() ? '<button class="btn big share-day" id="shareday">📤 Share my day</button>' : ''}

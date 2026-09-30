@@ -18,7 +18,7 @@
   const other = s => (s === 'host' ? 'guest' : 'host');
   const esc = GM.esc, fmt = n => Math.round(n).toLocaleString();
   // modes in the weekly friends league
-  const LEAGUE = [['ultimate', '👑 Ultimate'], ['chaos', '🌪️ CHAOS'], ['dchaos', '📅 Daily CHAOS'], ['daily', '📅 Daily Ultimate'], ['mbdaily', '💰 Daily Moneyball'], ['moneyball', '💰 Moneyball']];
+  const LEAGUE = [['ultimate', '👑 Ultimate'], ['chaos', '🌪️ CHAOS'], ['dchaos', '📅 Daily CHAOS'], ['daily', '📅 Daily Ultimate'], ['dmoney', '💰 Daily Moneyball'], ['money', '💰 Moneyball']];
   const KIND = { duel: { icon: '🤝', name: 'Draft Duel' }, scout: { icon: '🕵️', name: 'Scout Duel' }, race: { icon: '🏁', name: 'Live Race' },
     target: { icon: '🎯', name: 'Target Race' }, chaos: { icon: '🌪️', name: 'CHAOS Race' }, auction: { icon: '🔨', name: 'Auction' }, hattrick: { icon: '🃏', name: 'Hat-Trick' } };
   // a Scout Duel is a Draft Duel with hidden names; Target and CHAOS Races are Live Races played in those modes
@@ -104,7 +104,7 @@
       let rows;
       try { rows = await rpc('friends_week', { ...auth(), p_mode: mode }); } catch (e) { if (el) el.innerHTML = '<p class="muted center">Couldn’t load the league</p>'; return; }
       if (!el) return;
-      const daily = ['daily', 'dchaos', 'mbdaily'].includes(mode);
+      const daily = ['daily', 'dchaos', 'dmoney'].includes(mode);
       el.innerHTML = (rows || []).length > 1 ? `<ol>${rows.map((r, i) => `<li class="${r.me ? 'me' : ''} ${r.score ? '' : 'none'}"><span class="lg-pos">${r.score ? ['🥇', '🥈', '🥉'][i] || i + 1 : '–'}</span>
           <b>${GM.userPic(r.name)} ${esc(r.name)}${r.me ? ' (you)' : ''}</b><span class="lg-score">${r.score ? fmt(r.score) : 'not played'}${daily && r.games ? `<small>${r.games} day${r.games > 1 ? 's' : ''}</small>` : ''}</span></li>`).join('')}</ol>`
         : '<p class="muted center">Add some friends and the league fills up with their best scores this week.</p>';

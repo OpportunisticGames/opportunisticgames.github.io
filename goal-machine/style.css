@@ -1785,3 +1785,39 @@ html.intl-break.has-club body::before { display: none; }
 .guess-box.typed { display: flex; gap: 6px; align-items: stretch; }
 .guess-box.typed .input { flex: 1; min-width: 0; }
 .name-go { flex: none; padding: 0 16px; }
+
+/* 💰 Moneyball: the chairman's season */
+.mb-intro { text-align: center; padding: 8px 4px; }
+.mb-hero { font-size: 3.6rem; }
+.mb-intro .how-list { text-align: left; margin: 10px 0 14px; }
+.mb-top { display: grid; grid-template-columns: .7fr 1fr 1.2fr; gap: 6px; margin: 8px 0 6px; }
+.mb-top > div { display: flex; flex-direction: column; align-items: center; padding: 8px 4px; border-radius: 14px; background: var(--card); border: 2px solid var(--line); }
+.mb-top small { font-size: .68rem; color: var(--muted); } .mb-top b { font: 700 1.2rem Oswald, sans-serif; }
+.up { color: #16a34a; } .down { color: #dc2626; }
+.mb-chart { display: flex; align-items: flex-end; gap: 4px; height: 64px; padding: 4px 8px; border-radius: 12px; background: var(--inset); margin-bottom: 8px; }
+.mb-chart i { flex: 1; max-width: 26px; border-radius: 4px 4px 0 0; background: var(--accent); opacity: .75; }
+.mb-chart i.now { opacity: 1; background: #f5b700; }
+.mb-chart.big { height: 90px; margin: 10px 0; }
+.mb-deadline { margin: 6px 0; padding: 8px; border-radius: 12px; text-align: center; font: 700 1rem Oswald, sans-serif; letter-spacing: 1px; color: #fff; background: linear-gradient(90deg, #b91c1c, #f97316); animation: md-pulse 1.6s ease-in-out infinite; }
+.section-title small { font: 600 .75rem Inter, sans-serif; color: var(--muted); margin-left: 6px; }
+.mb-squad { display: flex; flex-direction: column; gap: 6px; }
+.mb-row { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: 'pic name val' 'pic name sell'; align-items: center; column-gap: 10px; padding: 8px 10px; border-radius: 14px; background: var(--card); border: 2px solid var(--line); }
+.mb-row .avatar { grid-area: pic; }
+.mbr-name { grid-area: name; min-width: 0; } .mbr-name b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .mbr-name small { font-size: .72rem; color: var(--muted); }
+.mbr-val { grid-area: val; text-align: right; } .mbr-val b { font: 700 1.05rem Oswald, sans-serif; } .mbr-val small { display: block; font-size: .66rem; }
+.mb-row [data-sell] { grid-area: sell; justify-self: end; padding: 3px 10px; font-size: .72rem; }
+.mb-tip { display: block; margin-top: 2px; font-weight: 700; color: #7c3aed; }
+.mbw-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 8px 10px; margin-bottom: 6px; border-radius: 14px; background: var(--card); border: 2px solid var(--line);
+  animation: mbw-in .45s cubic-bezier(.2, 1.3, .4, 1) backwards; animation-delay: calc(var(--i) * .45s + .2s); }
+@keyframes mbw-in { from { transform: translateX(-30px); opacity: 0; } }
+.mbw-row b { display: block; } .mbw-row small { font-size: .78rem; }
+.mbw-money { text-align: right; font: 700 1rem Oswald, sans-serif; color: #16a34a; } .mbw-money small { display: block; font: 700 .72rem Inter, sans-serif; }
+.mb-news { text-align: center; }
+.mbn-icon { font-size: 3rem; line-height: 1.1; animation: pop .8s ease-in-out infinite alternate; }
+.mb-news .kicker { font: 700 .72rem Oswald, sans-serif; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+.mb-news h3 { margin: 4px 0 6px; }
+.mbn-agent { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-bottom: 6px; }
+.mbn-agent .btn { font-size: .8rem; padding: 8px 6px; }
+.mb-news .row { flex-wrap: wrap; }
+.mb-log ul { margin: 6px 0 0; padding-left: 18px; font-size: .85rem; line-height: 1.5; }
+.mb-result .result-score.up { color: #16a34a; } .mb-result .result-score.down { color: #dc2626; }

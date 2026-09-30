@@ -33,7 +33,7 @@
   const CATS = [['draft', '🎯 Scores'], ['squad', '🧩 Squads'], ['chaos', '🌪️ CHAOS'], ['events', '🏟️ Matchdays & breaks'], ['daily', '📅 Dailies'], ['games', '⚡ Quick games'], ['online', '🌐 Online'], ['collect', '📒 Collecting'], ['secret', '🤫 Secret']];
   // CHAOS has its own challenges, some of them secret (shown as ??? in the CHAOS list until found)
   const CAT_OF = (id, secret) => /^(cx|chaos$)/.test(id) ? 'chaos' : /^(md|ib)/.test(id) ? 'events' : secret ? 'secret' : /^daily/.test(id) ? 'daily' : /^on/.test(id) ? 'online'
-    : /^(col|hofall|gball)/.test(id) ? 'collect' : /^(hop|hilo|who|grid|tally|ht)/.test(id) ? 'games'
+    : /^(col|hofall|gball)/.test(id) ? 'collect' : /^(hop|hilo|who|grid|tally|ht|mb)/.test(id) ? 'games'
     : /^(first|contenders|invincible|relegated|chem5|hof3|wc2|club5|wild5|coin|hard|fan6|lifers|down5)$/.test(id) ? 'squad' : 'draft';
   const A = [
     // drafts
@@ -119,6 +119,10 @@
     ['ib250', '🌟', 'Golden Generation', 'Score 250+ goals in an International XI.', e => intl(e) && e.stat === 'goals' && e.total >= 250],
     ['ibtour', '🧳', 'World Tour', 'Build International XIs for 5 different countries.', (e, a) => intl(e) && (a.nations || []).length >= 5],
     ['ibclub', '⚔️', 'Club v Country', 'Have 3+ players from your club in an International XI.', e => intl(e) && GM.favClub() && e.xi.filter(p => p.clubs.includes(GM.favClub())).length >= 3, true],
+    // Moneyball (the quick games list)
+    ['mbprofit', '📈', 'In the Black', 'Finish a Moneyball season worth £150m or more.', e => game(e, 'money') && e.score >= 150],
+    ['mbflip', '💎', 'Buy Low, Sell High', 'Sell a player for double what you paid in Moneyball.', e => game(e, 'money') && e.extra && e.extra.flip >= 2],
+    ['mbmadrid', '📨', 'Sold to Madrid', 'Accept a big-money bid for one of your stars.', e => game(e, 'money') && e.extra && e.extra.bid],
     // packs (the collect list)
     ['colpack', '🎁', 'Pack Opener', 'Open your first pack.', e => game(e, 'pack')],
     ['colwalk', '🚶', 'Walkout', 'Pull a Legend in a pack.', e => game(e, 'pack') && e.extra && e.extra.legend],

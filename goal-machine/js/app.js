@@ -74,7 +74,7 @@
     GM.confirm('Leave this game? Your signings so far will be lost.', 'Leave', 'Keep playing').then(ok => { if (ok) { GM.leaveGuard = null; location.hash = a.getAttribute('href'); } });
   }, true);
 
-  GM.NEW_MODES = ['chaos', 'moneyball', 'window', 'auction'];
+  GM.NEW_MODES = ['chaos', 'auction'];
   function route() {
     const { path, q } = parseHash();
     const tried = path === 'draft' ? q.m : path;
@@ -122,7 +122,7 @@
       case 'dailygrid': return GM.grid(app, true);
       case 'tally': return GM.tally(app);
       case 'moneyball': return GM.moneyball(app, q);
-      case 'window': return GM.transferWindow(app, q);
+      case 'window': location.replace('#/moneyball'); return;  // the Transfer Window is part of the new Moneyball
       case 'auction': return GM.auction(app, q);
       case 'leaderboard': return leaderboard(q.m);
       case 'players': return playerIndex();
@@ -181,7 +181,7 @@
     };
     const h2h = GM.store.get('h2h', null);
     // sub-tabs keep Home short: the main event up front, everything else a tap away (the dailies live in the Today tab)
-    const HTABS = [['main', '⚽ Main', ['chaos']], ['targets', '🎯 Targets', []], ['market', '💰 Market', ['moneyball', 'window', 'auction']], ['quick', '⚡ Quick & more', []]];
+    const HTABS = [['main', '⚽ Main', ['chaos']], ['targets', '🎯 Targets', []], ['market', '💰 Market', ['auction']], ['quick', '⚡ Quick & more', []]];
     const htab = HTABS.some(t => t[0] === GM.store.get('homeTab')) ? GM.store.get('homeTab') : 'main';
     app.innerHTML = `
       <div class="appbar"><a class="icon-btn" href="#/settings" aria-label="Settings">⚙️</a>
@@ -225,9 +225,8 @@
       </div>
       <div data-hpanel="market">
       <div class="tiles">
-        ${dtile('moneyball', 't-gold', 'Same market for everyone')}
-        ${tile('#/moneyball', 't-green', '💰', 'Moneyball', '£200m, prices by reputation. Find the bargains.', pb('moneyball'))}
-        ${tile('#/window', 't-blue', '🔄', 'Transfer Window', 'Buy, see who flops, sell, go again', pb('window'))}
+        ${dtile('moneyball', 't-gold', 'Same season for everyone · one go')}
+        ${tile('#/moneyball', 't-green wide', '💼', 'Moneyball', 'Chairman for a season: buy low, sell high, and get rich. Bids, injuries, takeovers and Deadline Day.', pb('money') ? '£' + pb('money') + 'm' : 0)}
         ${tile('#/auction', 't-magenta', '🔨', 'Auction', 'Secret bids against a mate', 0)}
       </div>
       </div>
@@ -474,12 +473,12 @@
     const GAMES = [
       ['⚽ Main event', ['ultimate', 'ultimatepure', 'classicwild', 'classic']],
       ['🌪️ CHAOS', ['chaos', 'dchaos:' + today]],
-      [GM.calIcon() + ' Daily', ['daily:' + today, 'footle:' + today, 'grid:' + today, 'mbdaily:' + today, 'dailies']],
+      [GM.calIcon() + ' Daily', ['daily:' + today, 'footle:' + today, 'grid:' + today, 'dmoney:' + today, 'dailies']],
     ].concat(club ? [['🏟️ Your club', ['clubs', 'club' + GM.slug(club)].concat(GM.nextMatch(club) ? ['match:' + GM.nextMatch(club).id] : [])]] : [])
       .concat(GM.intlBreak() || GM.store.get('nationsPlayed', []).length ? [['🌍 International', nations]] : [])
-      .concat([['🃏 Packed XI', ['packedxi']], ['🎯 Targets', ['target', 'treble', 'mystery']], ['💰 Market', ['moneyball', 'window']], ['⚡ Quick', ['hopper', 'hilo', 'whoami', 'grid', 'tally']]]);
+      .concat([['🃏 Packed XI', ['packedxi']], ['🎯 Targets', ['target', 'treble', 'mystery']], ['💰 Moneyball', ['money']], ['⚡ Quick', ['hopper', 'hilo', 'whoami', 'grid', 'tally']]]);
     const NAMES = { classicwild: 'Classic Wildcard', classic: 'Classic', ultimate: 'Ultimate Wildcard', ultimatepure: 'Ultimate', extreme: 'Extreme Wildcard', purist: 'Extreme Purist',
-      chaos: 'CHAOS', chaosx: 'CHAOS Extreme', target: 'Target', treble: 'The Treble', mystery: 'Mystery Target', moneyball: 'Moneyball', window: 'Transfer Window', dailies: 'Daily stars', clubs: 'Club v club', packedxi: 'Packed XI' };
+      chaos: 'CHAOS', chaosx: 'CHAOS Extreme', target: 'Target', treble: 'The Treble', mystery: 'Mystery Target', money: 'Moneyball', dailies: 'Daily stars', clubs: 'Club v club', packedxi: 'Packed XI' };
     const SUFFIX = { goals: '', assists: 'ast', apps: 'apps' };
     const hasStats = b => !!GM.MODES[b + 'ast'];
     // m → base board, stat, level (Normal / Hard / Extreme), and the option for Club v club (week) or Daily stars (sort)
@@ -503,7 +502,7 @@
     };
     const levels = special ? [] : ['normal'].concat(GM.HARD_MODES.includes(keyFor(base, stat, 'normal')) ? ['hard'] : [], keyFor(base, stat, 'extreme') !== keyFor(base, stat, 'normal') ? ['extreme'] : []);
     m = special ? base : keyFor(base);
-    const name = k => k.startsWith('daily:') ? 'Daily Ultimate' : k.startsWith('grid:') ? 'Club Grid' : k.startsWith('footle:') ? 'Footle' : k.startsWith('mbdaily:') ? 'Daily Moneyball'
+    const name = k => k.startsWith('daily:') ? 'Daily Ultimate' : k.startsWith('grid:') ? 'Club Grid' : k.startsWith('footle:') ? 'Footle' : /^(mbdaily|dmoney):/.test(k) ? 'Daily Moneyball'
       : k.startsWith('dchaos:') ? 'Daily CHAOS' : k.startsWith('match:') ? GM.matchTitle(k) : NAMES[k] || ((GM.MODES[k] || {}).name || k).replace(/ \(Hard\)| – .*$/g, '');
     const link = k => `#/leaderboard?m=${encodeURIComponent(k)}`;
     const variants = GAMES[g][1];
@@ -551,7 +550,7 @@
       const rows = await GM.lb.top(m), pts = /^d?chaos/.test(m), me = GM.getName(), el = GM.$('#global');
       if (!el) return;
       el.innerHTML = rows.length ? rows.map((r, i) =>
-        `<div ${GM.lbRow(r.name, me)}><span>${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span><span>${GM.esc(r.name)}${GM.lbLevel(r)}${GM.pctTag(m, r.meta)}</span><b>${r.score.toLocaleString()}${pts ? '<small> pts</small>' : ''}</b></div>`).join('')
+        `<div ${GM.lbRow(r.name, me)}><span>${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span><span>${GM.esc(r.name)}${GM.lbLevel(r)}${GM.pctTag(m, r.meta)}</span><b>${GM.scoreText(m, r.score)}${pts ? '<small> pts</small>' : ''}</b></div>`).join('')
         + (rows.some(r => r.name !== me) ? GM.lbReportHint : '')
         : '<div class="muted">No scores yet – be the first!</div>';
     } catch (e) { const el = GM.$('#global'); if (el) el.innerHTML = '<div class="muted">Couldn’t load the board.</div>'; }
