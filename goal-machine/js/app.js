@@ -255,7 +255,7 @@
     GM.$$('#htabs button').forEach(b => b.onclick = () => showTab(b.dataset.t));
     showTab(htab);
     GM.$$('[data-level]').forEach(b => b.onclick = () => {
-      if (b.dataset.level === 'extreme' && GM.level() !== 'extreme') GM.toast('⚡ <b>Extreme:</b> every one of the 5,000+ PL players, in the Main event, CHAOS, the Target games and the guessing games', 3400);
+      if (b.dataset.level === 'extreme' && GM.level() !== 'extreme') GM.toast('⚡ <b>Extreme:</b> all 5,000+ PL players on the reels and markets, and no name suggestions when you type', 3400);
       GM.setLevel(b.dataset.level); home();
     });
     GM.$('#share-game').onclick = () => GM.shareGame();
@@ -329,7 +329,7 @@
             <label><span><b>📅 Daily reminder</b><small>A nudge to play the daily games, if you haven't yet</small></span><select class="input" id="s-ndaily"><option value="">Off</option>${Array.from({ length: 31 }, (_, i) => { const t = String(7 + Math.floor(i / 2)).padStart(2, '0') + (i % 2 ? ':30' : ':00'); return `<option ${GM.notify.prefs().daily === t ? 'selected' : ''}>${t}</option>`; }).join('')}</select></label></div>
           <div id="s-nstatus" class="nstatus"></div>
           <div class="setting-btns"><button class="btn ghost small" id="s-ntest">🔔 Send a test</button><button class="btn ghost small" id="s-ncheck">🔄 Check now</button><button class="btn ghost small" id="s-notif">⚙️ Phone settings</button></div></div>`) : ''}
-        ${grp('play', `<div class="setting"><b>Difficulty</b><small>Hard hides clubs, years and appearances: names and positions only, and in the Target games big-name players turn up less often. Extreme brings in every one of the 5,000+ PL players, not just the 50+ app ones: in the Main event, CHAOS, the Target games, Higher or Lower, Who Am I? and Guess the Tally (the daily games stay the same for everyone). Each has its own leaderboards</small>${seg('s-level', Object.fromEntries(Object.entries(GM.LEVELS).map(([k, [i, n]]) => [k, i + ' ' + n])), GM.level())}</div>`)}
+        ${grp('play', `<div class="setting"><b>Difficulty</b><small>Hard hides clubs, years and appearances: names and positions only, and in the Target games big-name players turn up less often. Extreme brings in every one of the 5,000+ PL players, not just the 50+ app ones, in the Main event, CHAOS, the Target and money games, Higher or Lower and Guess the Tally. Where you type names (Who Am I?, the Club Grid, Club Hopper) every PL player always counts, and Extreme turns the suggestions off: type the whole name. The daily games stay the same for everyone. Each level has its own leaderboards</small>${seg('s-level', Object.fromEntries(Object.entries(GM.LEVELS).map(([k, [i, n]]) => [k, i + ' ' + n])), GM.level())}</div>`)}
       </section>
       <section class="settings links" ${sub ? 'hidden' : ''}>
         <a href="#" id="s-share">📣 Share Goal Machine with a friend<span>›</span></a>

@@ -17,7 +17,19 @@
   const money = m => '£' + (Math.round(m * 10) / 10).toLocaleString() + 'm';
   const statSuffix = s => ({ goals: '', assists: 'ast', apps: 'apps' }[s] || '');
   const other = s => (s === 'host' ? 'guest' : 'host');
-  const byPk = k => GM.byPk.get(k);
+  const byPk = k => GM.anyByPk(k);
+  // the solo games' difficulty (Moneyball and the Transfer Window; the Daily Moneyball and the Auction are Normal):
+  // Hard shows names and positions only, Extreme puts every PL player on the market
+  let LV = 'normal';
+  const levelKey = base => (LV === 'hard' ? base + 'h' : LV === 'extreme' ? GM.extremeKey(base) : base);
+  const lvTag = () => (LV === 'hard' ? ' · Hard' : LV === 'extreme' ? ' · Extreme' : '');
+  function startLevel(root, again, solo) {
+    LV = solo ? GM.level() : 'normal';
+    if (LV !== 'extreme' || GM.allPlayers) return false;
+    root.innerHTML = `<div class="loading-all"><div class="splash-bar"><i></i></div><p class="muted">Loading every Premier League player…</p></div>`;
+    GM.loadAll().then(again).catch(() => { root.innerHTML += '<p class="center">Couldn’t load the player list. Check your connection and try again.</p>'; });
+    return true;
+  }
 
   /* ================================================================ prices */
   function reputation(p) {
@@ -35,8 +47,9 @@
   const fits = (p, poss) => p.poss.some(x => poss.includes(x));
   // a random player who fits, isn't taken and passes the filter (seeded)
   function draw(rng, poss, used, ok = () => true) {
+    const pool = LV === 'extreme' && GM.allPlayers ? GM.allPlayers : GM.players;
     for (let t = 0; t < 8000; t++) {
-      const p = GM.players[Math.floor(rng() * GM.players.length)];
+      const p = pool[Math.floor(rng() * pool.length)];
       if (!used.has(p.pk) && fits(p, poss) && ok(p)) return p;
     }
     return null;
@@ -52,9 +65,10 @@
   const autoSlot = (xi, p) => { for (const pos of p.poss) { const i = xi.findIndex(s => !s.k && s.pos === pos); if (i >= 0) return i; } return -1; };
   function card(p, pr, attrs = '', tag = '') {
     const clubs = p.clubs.slice(0, 3).map(c => GM.clubChip(c)).join('') + (p.clubs.length > 3 ? `<small>+${p.clubs.length - 3}</small>` : '');
+    const hard = LV === 'hard';  // names and positions only
     return `<button class="duel-card mk-card" ${attrs}>${tag ? `<span class="dc-tag">${tag}</span>` : ''}
-      ${GM.avatar(p)}<b>${esc(p.name)}</b><span class="dc-meta">${GM.posBadges(p)}</span><small>${GM.flag(p.nat)} ${GM.era(p)}</small>
-      <span class="chips">${clubs}</span><span class="mk-price">${money(pr)}</span></button>`;
+      ${GM.avatar(p, '', hard)}<b>${esc(p.name)}</b><span class="dc-meta">${GM.posBadges(p)}</span>${hard ? '' : `<small>${GM.flag(p.nat)} ${GM.era(p)}</small>
+      <span class="chips">${clubs}</span>`}<span class="mk-price">${money(pr)}</span></button>`;
   }
   // a squad list: paid price, and the tally once it's out (reveal = true, or a Set of revealed keys)
   function squad(xi, stat, reveal, extra = () => '') {
@@ -76,7 +90,7 @@
   const boardKey = () => {
     const [path, qs] = location.hash.replace(/^#\/?/, '').split('?'), q = new URLSearchParams(qs || '');
     if (path === 'moneyball' && q.get('daily') === '1') return 'mbdaily:' + GM.today();
-    return ['moneyball', 'window'].includes(path) ? path + statSuffix(q.get('s') || 'goals') : null;
+    return ['moneyball', 'window'].includes(path) ? levelKey(path + statSuffix(q.get('s') || 'goals')) : null;
   };
   const top = (icon, title, back = '#/') => `<div class="topbar"><a href="${back}" class="back">‹</a><h2>${icon} ${title}</h2>${GM.lbButton(boardKey())}</div>`;
   function statPicker(root, icon, title, blurb, go) {
@@ -102,7 +116,7 @@
         <a class="btn ghost" href="#/leaderboard?m=${encodeURIComponent(mode)}">🏆 Leaderboard</a></div>`;
     const text = `⚽ Goal Machine – ${title}: ${fmt(total)} PL ${st.label} for ${money(spent)}. ${share || 'Can you find better bargains?'}`;
     if (again) GM.$('#mkagain', root).onclick = again;
-    GM.$('#mkshare', root).onclick = () => GM.share(text, GM.baseUrl() + '#/' + (mode.startsWith('mbdaily') ? 'moneyball?daily=1' : mode.replace(/(ast|apps)$/, '')));
+    GM.$('#mkshare', root).onclick = () => GM.share(text, GM.baseUrl() + '#/' + (mode.startsWith('mbdaily') ? 'moneyball?daily=1' : mode.replace(/x?(ast|apps)?h?$/, '')));
     GM.$('#mkpic', root).onclick = () => GM.shareImage(GM.teamPicture(xi.map(s => ({ pos: s.pos, p: byPk(s.k), v: val(byPk(s.k), stat) })),
       { title, sub: `${money(spent)} spent`, total, totalLabel: st.label }), text);
     return total;
@@ -112,6 +126,7 @@
   const MB_BUDGET = 200, MB_RESERVE = 8;
   GM.moneyball = function (root, q = {}) {
     const daily = q.daily === '1', day = GM.today();
+    LV = daily ? 'normal' : GM.level();
     if (daily && GM.store.get('mbd:' + day)) {
       const d = GM.store.get('mbd:' + day);
       root.innerHTML = `${top('💰', 'Daily Moneyball')}<div class="result"><div class="result-score">${fmt(d.total)}<small>PL goals</small></div>
@@ -121,9 +136,10 @@
       return;
     }
     if (!daily && !GM.STATS[q.s]) return statPicker(root, '💰', 'Moneyball', `${money(MB_BUDGET)} to build an XI. Prices come from reputation, not output, and tallies stay hidden until full time. Find the bargains.`, s => { location.hash = '#/moneyball?s=' + s; });
+    if (startLevel(root, () => GM.moneyball(root, q), !daily)) return;
     const stat = daily ? 'goals' : q.s, seed = daily ? 'mb:' + day : GM.newSeed();
     const S = { xi: newXi(), budget: MB_BUDGET, round: 0, used: new Set() };
-    const title = daily ? 'Daily Moneyball' : 'Moneyball';
+    const title = daily ? 'Daily Moneyball' : 'Moneyball' + lvTag();
     GM.leaveGuard = () => location.hash.startsWith('#/moneyball') && S.round > 0 && openPos(S.xi).length > 0;
     function offers() {
       const rng = GM.rng(`${seed}|mb|${S.round}`), poss = openPos(S.xi), left = poss.length;
@@ -155,7 +171,7 @@
       });
     }
     async function end() {
-      const mode = daily ? 'mbdaily:' + day : 'moneyball' + statSuffix(stat);
+      const mode = daily ? 'mbdaily:' + day : levelKey('moneyball' + statSuffix(stat));
       const total = await finishSolo(root, { mode, xi: S.xi, stat, title, icon: '💰', lines: `${money(S.budget)} left`,
         again: daily ? null : () => GM.moneyball(root, { s: stat }) });
       if (daily) { GM.store.set('mbd:' + day, { total, xi: S.xi }); GM.markDaily('moneyball', total); }
@@ -171,7 +187,9 @@
     { name: '📅 Deadline day', buys: 11, sells: 1, blurb: 'Last chance: sell one more if you like, then finish your XI.' },
   ];
   GM.transferWindow = function (root, q = {}) {
+    LV = GM.level();
     if (!GM.STATS[q.s]) return statPicker(root, '🔄', 'Transfer Window', `${money(TW_BUDGET)} and three transfer windows. The market reacts to your buys, and after each window you find out how your signings have done, so you can sell the flops.`, s => { location.hash = '#/window?s=' + s; });
+    if (startLevel(root, () => GM.transferWindow(root, q), true)) return;
     const stat = q.s, seed = GM.newSeed();
     const S = { xi: newXi(), budget: TW_BUDGET, w: 0, bought: 0, sold: 0, used: new Set(), seen: new Set(), market: [], history: [] };
     const lbl = GM.STATS[stat].label;
@@ -195,7 +213,7 @@
         if (fa) S.market.push({ p: fa, pr: Math.max(0, Math.floor(c)), free: true });
       }
       const canClose = S.w < 2 || left === 0;
-      root.innerHTML = `${top('🔄', 'Transfer Window')}
+      root.innerHTML = `${top('🔄', 'Transfer Window' + lvTag())}
         <div class="duel-turn mine">${w.name}<small>${w.blurb}</small></div>
         <div class="mk-budget"><div><small>Budget</small><b>${money(S.budget)}</b></div><div><small>Signings left</small><b>${buysLeft}</b></div><div><small>Max on one player</small><b>${money(Math.max(0, c))}</b></div></div>
         <div class="duel-cards mk4">${S.market.map(({ p, pr, free }) => {
@@ -237,7 +255,7 @@
     }
     function closeWindow() {
       if (S.w === 2) S.finished = true;
-      if (S.w === 2) return finishSolo(root, { mode: 'window' + statSuffix(stat), xi: S.xi, stat, title: 'Transfer Window', icon: '🔄', lines: `${money(S.budget)} left`, again: () => GM.transferWindow(root, { s: stat }) });
+      if (S.w === 2) return finishSolo(root, { mode: levelKey('window' + statSuffix(stat)), xi: S.xi, stat, title: 'Transfer Window' + lvTag(), icon: '🔄', lines: `${money(S.budget)} left`, again: () => GM.transferWindow(root, { s: stat }) });
       // the report on how your signings have done
       const fresh = S.xi.filter(s => s.k && !S.seen.has(s.k));
       fresh.forEach(s => S.seen.add(s.k));
@@ -256,6 +274,7 @@
   // Replays an auction from its sold lots. Each lot's player is seeded by the game and lot number and fits someone's gap;
   // whoever has a gap he fits can bid (need = 'both', 'host' or 'guest'); the higher bid signs him, a tie is a coin toss.
   function auctionState(seed, moves) {
+    LV = 'normal';  // the Auction is the same for both players
     const st = { xi: { host: newXi(), guest: newXi() }, money: { host: AU_BUDGET, guest: AU_BUDGET }, used: new Set(), history: [], done: false };
     const open = seat => openPos(st.xi[seat]);
     for (let lot = 0; lot < 200; lot++) {
@@ -313,6 +332,7 @@
 
   /* ---------------------------------------------------------------- pass the phone */
   GM.auction = function (root, q = {}) {
+    LV = 'normal';
     let A = GM.store.get('auction:local');
     if (q.new || !A) {
       const n = GM.store.get('h2hNames', ['Player 1', 'Player 2']);

@@ -11,7 +11,10 @@
     {
       v: 39, label: '5.7.1', date: '2026-10-01', title: '⚡ Extreme in more games',
       items: [
-        '⚡ Extreme now works in the Target games, Higher or Lower, Who Am I? and Guess the Tally too: every one of the 5,000+ PL players, with their own leaderboards. The daily games stay the same for everyone',
+        '⚡ Extreme in more games: every one of the 5,000+ PL players in the Target games, Moneyball, the Transfer Window, Higher or Lower and Guess the Tally, each with its own leaderboard',
+        '⌨️ Where you type names (Who Am I?, the Club Grid, Club Hopper) any PL player now counts, and on Extreme there are no suggestions: type the whole name',
+        '🥵 Moneyball and the Transfer Window have a Hard mode too: names and positions only',
+        '📅 The daily games stay the same for everyone, whatever your difficulty',
         '🏆 The leaderboards’ difficulty is Normal, Hard or Extreme, like the switch on Home',
         '🎏 The international break bunting no longer clashes with your club’s stripe',
       ],

@@ -721,6 +721,30 @@ GM.search = function (q, limit = 8, pool = GM.players) {
 };
 
 // plain: names only (no flag, positions or years) so the suggestions don't give clues away
+// Typing a player's name in the guessing games: suggestions as you type, or (typed: Extreme) none at all: type the whole
+// name and press Go. Accents, capitals and punctuation don't matter. When several players share the name, choose(list)
+// picks (the game knows which one fits).
+GM.nameEntry = function (input, box, onPick, { exclude, plain, pool, typed, choose } = {}) {
+  if (!typed) return GM.autocomplete(input, box, onPick, { exclude, plain, pool });
+  box.hidden = true;
+  input.placeholder = 'Type the full name…';
+  input.setAttribute('enterkeyhint', 'go');
+  const btn = document.createElement('button');
+  btn.type = 'button'; btn.className = 'btn small name-go'; btn.textContent = 'Go';
+  input.insertAdjacentElement('afterend', btn);
+  input.parentElement.classList.add('typed');
+  const go = () => {
+    const q = GM.fold(input.value);
+    if (q.length < 2) return;
+    const all = (pool || GM.players).filter(p => p.key === q), free = all.filter(p => !(exclude && exclude(p)));
+    if (!all.length) { GM.toast(`🤔 No PL player called “${GM.esc(input.value.trim())}”. Check the spelling`); GM.sound.play('bad'); return; }
+    if (!free.length) { GM.toast('You’ve already had him'); return; }
+    input.value = '';
+    onPick(choose ? choose(free) : free[0]);
+  };
+  btn.onclick = go;
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+};
 GM.autocomplete = function (input, box, onPick, { exclude, plain, pool } = {}) {
   let items = [], active = 0;
   const render = () => {
@@ -786,7 +810,8 @@ GM.MODES = {
 // clubs for the last clue. Scores go to "<mode>h".
 GM.HARD_MODES = ['ultimate', 'ultimateast', 'ultimateapps', 'chaos', 'chaosast', 'chaosapps', 'chaosx', 'chaosxast', 'chaosxapps', 'target', 'targetast', 'targetapps', 'classic', 'classicast', 'classicapps',
   'classicwild', 'classicwildast', 'classicwildapps', 'ultimatepure', 'ultimatepureast', 'ultimatepureapps',
-  'extreme', 'extremeast', 'extremeapps', 'purist', 'puristast', 'puristapps', 'treble', 'mystery', 'hopper', 'grid', 'hilo', 'whoami', 'tally', 'hattrick'];
+  'extreme', 'extremeast', 'extremeapps', 'purist', 'puristast', 'puristapps', 'treble', 'mystery', 'hopper', 'grid', 'hilo', 'whoami', 'tally', 'hattrick',
+  'moneyball', 'moneyballast', 'moneyballapps', 'window', 'windowast', 'windowapps'];
 // Difficulty, one switch: Normal, Hard (names and positions only) or Extreme (see GM.EXTREME_GAMES; the Main event and CHAOS use every one
 // of the 5,000+ PL players instead of the 50+ app ones). Before 5.5 Hard was on its own and Extreme was a pool switch.
 GM.LEVELS = { normal: ['🙂', 'Normal', '50+ apps · clues shown'], hard: ['🥵', 'Hard', 'names & positions only'], extreme: ['⚡', 'Extreme', 'every player, 5,000+'] };
@@ -842,12 +867,16 @@ GM.buzz = (ms = 15) => { try { if (GM.store.get('buzz', true) && navigator.vibra
 Object.keys(GM.MODES).filter(k => GM.HARD_MODES.includes(k)).forEach(k => {
   GM.MODES[k + 'h'] = { name: GM.MODES[k].name + ' (Hard)', icon: GM.MODES[k].icon };
 });
-// Extreme (every PL player) in the other games that show you players: the Target games and three quick games. Their
-// boards are the key with an x after the game (targetxast, treblex, hilox…). The Main event and CHAOS have their own
-// (extreme, purist, chaosx). Club Hopper and the Club Grid are left out: you name the players there, so every player
-// would make them easier. The dailies stay the same for everyone.
-GM.EXTREME_GAMES = ['target', 'treble', 'mystery', 'hilo', 'whoami', 'tally'];
-GM.extremeKey = k => { const m = String(k).match(/^(target|treble|mystery|hilo|whoami|tally)(ast|apps)?$/); return m ? m[1] + 'x' + (m[2] || '') : null; };
+// Extreme in the other games. Where the game shows you players (the Target games, Higher or Lower, Guess the Tally, the
+// money games) it deals from every PL player. Where you type names (Who Am I?, the Club Grid, Club Hopper) every PL
+// player counts at every level, and Extreme turns the suggestions off: you type the whole name. Their boards are the
+// key with an x after the game (targetxast, hilox, moneyballxapps…); the Main event and CHAOS have their own (extreme,
+// purist, chaosx). The dailies stay the same for everyone.
+GM.EXTREME_GAMES = ['target', 'treble', 'mystery', 'hilo', 'whoami', 'tally', 'grid', 'hopper', 'moneyball', 'window'];
+GM.extremeKey = k => { const m = String(k).match(/^(target|treble|mystery|hilo|whoami|tally|grid|hopper|moneyball|window)(ast|apps)?$/); return m ? m[1] + 'x' + (m[2] || '') : null; };
+// every PL player by key (loaded with GM.loadAll)
+let allByPk = null;
+GM.anyByPk = k => GM.byPk.get(k) || (GM.allPlayers ? (allByPk || (allByPk = new Map(GM.allPlayers.map(p => [p.pk, p])))).get(k) : undefined);
 Object.keys(GM.MODES).filter(k => GM.extremeKey(k)).forEach(k => {
   GM.MODES[GM.extremeKey(k)] = { name: GM.MODES[k].name.replace(/( – .*)?$/, ' (Extreme)$1'), icon: GM.MODES[k].icon };
 });

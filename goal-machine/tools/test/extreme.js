@@ -24,11 +24,12 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.selectOption('#lbv', 'ultimatepure'); await pg.waitForTimeout(500);
   ok(/m=purist$/.test(await hash()), 'Ultimate (no wildcards) on Extreme → Extreme Purist');
   const boards = {};
-  for (const [label, want] of [['CHAOS', /m=chaosx$/], ['Targets', /m=targetx$/], ['Quick', /m=hopper$/]]) {
+  for (const [label, want] of [['CHAOS', /m=chaosx$/], ['Targets', /m=targetx$/], ['Quick', /m=hopperx$/], ['Market', /m=moneyballx$/]]) {
     await pg.evaluate(l => [...document.querySelectorAll('.lbx-games a')].find(a => a.textContent.includes(l)).click(), label); await pg.waitForTimeout(500);
     boards[label] = await hash(); ok(want.test(boards[label]), `${label} keeps Extreme where it has one (${boards[label].split('m=')[1]})`);
   }
-  ok(await pg.$$eval('#lbh option', l => l.length) === 2, 'Club Hopper has Normal / Hard only');
+  ok(await pg.$$eval('#lbh option', l => l.length) === 3, 'the money games have Normal / Hard / Extreme');
+  await pg.evaluate(() => [...document.querySelectorAll('.lbx-games a')].find(a => a.textContent.includes('Quick')).click()); await pg.waitForTimeout(500);
   await pg.selectOption('#lbv', 'hilo'); await pg.waitForTimeout(500);
   await pg.selectOption('#lbh', 'extreme'); await pg.waitForTimeout(500);
   ok(/m=hilox$/.test(await hash()), 'Higher or Lower has an Extreme board');
@@ -44,15 +45,44 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(obscure > 0, `…and deals players from outside the 50+ app list (${obscure} in 6 games)`);
   await pg.goto(U + '#/tally'); await pg.waitForTimeout(600);
   ok(/Extreme/.test(await pg.textContent('.topbar h2')) && await pg.$eval('.lb-btn', e => e.dataset.lb) === 'tallyx', 'Guess the Tally on Extreme');
+  // typing names: every player counts, and Extreme turns the suggestions off
   await pg.goto(U + '#/whoami'); await pg.waitForTimeout(600);
-  await pg.fill('#wg', 'Abou Diaby'); await pg.waitForTimeout(400);
-  const obscureName = await pg.evaluate(() => { const p = GM.allPlayers.find(q => q.apps < 20 && q.apps >= 10); return p && p.name; });
-  await pg.fill('#wg', obscureName); await pg.waitForTimeout(400);
-  ok(/Extreme/.test(await pg.textContent('.topbar h2')) && (await pg.$$eval('#wac .ac-item', l => l.map(e => e.textContent))).some(t => t.includes(obscureName)), `Who Am I? on Extreme: any PL player can be guessed (${obscureName})`);
-  await pg.goto(U + '#/hopper'); await pg.waitForTimeout(500);
-  ok(!/Extreme/.test(await pg.textContent('.topbar h2')), 'Club Hopper stays as it is (you name the players, so every player would make it easier)');
-  await pg.goto(U + '#/grid'); await pg.waitForTimeout(500);
-  ok(!/Extreme/.test(await pg.textContent('.topbar h2')), '…and so does the Club Grid');
+  await pg.fill('#wg', 'Alan Shea'); await pg.waitForTimeout(400);
+  ok(/Extreme/.test(await pg.textContent('.topbar h2')) && !(await pg.$$('#wac .ac-item')).length && !!(await pg.$('.name-go')), 'Who Am I? on Extreme: no suggestions as you type, just a Go button');
+  await pg.fill('#wg', 'Alan Sheerer'); await pg.click('.name-go'); await pg.waitForTimeout(300);
+  ok(/No PL player called/.test(await pg.evaluate(() => [...document.querySelectorAll('.toast')].map(t => t.textContent).join(' '))), 'a misspelt name is flagged, not counted');
+  // the grid on Extreme: type an obscure answer that fits a cell
+  await pg.goto(U + '#/grid'); await pg.waitForTimeout(900);
+  ok(/Extreme/.test(await pg.textContent('.topbar h2')) && /Name any PL player/.test(await pg.textContent('#app')), 'the Club Grid on Extreme, and any PL player counts');
+  await pg.click('[data-cell="0"]'); await pg.waitForTimeout(300);
+  ok(!!(await pg.$('.modal-wrap .name-go')), 'a grid cell asks for the whole name, no suggestions');
+  await pg.evaluate(() => document.querySelectorAll('.modal-wrap').forEach(m => m.remove()));
+  await pg.evaluate(() => GM.setLevel('normal'));
+  await pg.goto(U + '#/'); await pg.goto(U + '#/grid'); await pg.waitForTimeout(700);
+  await pg.click('[data-cell="0"]'); await pg.waitForTimeout(300);
+  const obscure50 = await pg.evaluate(() => { const p = GM.allPlayers.find(q => q.apps < 20 && q.apps >= 5 && q.name.length > 8); return p.name; });
+  await pg.fill('#gg', obscure50); await pg.waitForTimeout(400);
+  ok((await pg.$$eval('#gac .ac-item', l => l.map(e => e.textContent))).some(t => t.includes(obscure50)), `on Normal the suggestions include every PL player (${obscure50})`);
+  await pg.evaluate(() => document.querySelectorAll('.modal-wrap').forEach(m => m.remove()));
+  await pg.evaluate(() => GM.setLevel('extreme'));
+  await pg.goto(U + '#/hopper'); await pg.waitForTimeout(600);
+  ok(/Extreme/.test(await pg.textContent('.topbar h2')) && await pg.$eval('.lb-btn', e => e.dataset.lb) === 'hopperx' && !!(await pg.$('.name-go')), 'Club Hopper on Extreme: type the whole name, its own board');
+  await pg.goto(U + '#/'); await pg.goto(U + '#/dailygrid'); await pg.waitForTimeout(700);
+  ok(!/Extreme/.test(await pg.textContent('.topbar h2')), 'the Daily Club Grid is the same for everyone');
+
+  // the money games
+  await pg.goto(U + '#/moneyball?s=goals'); await pg.waitForTimeout(1200);
+  const mb = await pg.evaluate(() => ({ title: document.querySelector('.topbar h2').textContent, lb: document.querySelector('.lb-btn').dataset.lb, names: [...document.querySelectorAll('.mk-card b')].map(b => b.textContent) }));
+  ok(/Extreme/.test(mb.title) && mb.lb === 'moneyballx', 'Moneyball on Extreme, with its own board');
+  let mbObscure = await inPL50(mb.names);
+  for (let i = 0; i < 4 && !mbObscure; i++) { await pg.goto(U + '#/'); await pg.goto(U + '#/moneyball?s=goals'); await pg.waitForTimeout(500); mbObscure = await inPL50(await pg.$$eval('.mk-card b', l => l.map(b => b.textContent))); }
+  ok(mbObscure > 0, 'Extreme puts players from outside the 50+ list on the market');
+  await pg.evaluate(() => GM.setLevel('hard'));
+  await pg.goto(U + '#/'); await pg.goto(U + '#/window?s=apps'); await pg.waitForTimeout(700);
+  ok(/Hard/.test(await pg.textContent('.topbar h2')) && !(await pg.$('.mk-card .chips')) && await pg.$eval('.lb-btn', e => e.dataset.lb) === 'windowappsh', 'Transfer Window on Hard: names and positions only, its own board');
+  await pg.evaluate(() => GM.setLevel('extreme'));
+  await pg.goto(U + '#/'); await pg.goto(U + '#/moneyball?daily=1'); await pg.waitForTimeout(700);
+  ok(!/Extreme/.test(await pg.textContent('.topbar h2')), 'the Daily Moneyball is the same for everyone');
 
   // the Target games
   await pg.goto(U + '#/draft?m=target&s=assists'); await pg.waitForTimeout(1200);
