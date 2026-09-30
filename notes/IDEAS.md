@@ -106,6 +106,15 @@ formations, and badges round 2.
   strength, manage a budget and transfers between gameweeks? It's a big feature, so a small first version would help
   work out whether it's fun.
 
+### Optional account recovery (email or Google sign-in) 💬
+- **Came up (30 Sep 2026):** filling in Play's Data safety form, the owner asked "we probably should start collecting
+  emails right?"
+- **Notes:** the one strong reason is recovery: an account lives on the phone (a secret key), so a lost phone with no
+  backup loses it. Costs: UK GDPR duties once we hold emails (security, breach reporting, opt-in consent before any
+  newsletter), friction at sign-up, and the policy and Data safety form would need updating. Agreed for launch: don't
+  collect emails. Later, if lost accounts become a problem, an **optional** "link your email / Google account to
+  recover your progress", never required.
+
 ### Share your whole day *(Claude's idea)*
 - Footle and the drafts already have share buttons. This adds one "Share my day" on the Today page: every daily
   result plus your streak in one spoiler-free post, with the link. One post a day in a group chat is how Wordle
