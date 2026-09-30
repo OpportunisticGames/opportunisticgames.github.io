@@ -9,6 +9,16 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 38, label: '5.7', date: '2026-09-30', title: '🃏 Wildcards in packs, new cards, and a tidier Album',
+      items: [
+        '🎴 New-look player cards: Bronze, Silver, Gold and a shimmering Legend, with the goals, position, flag and stats on each',
+        '🎁 Opening a pack is a proper moment now: it charges up, the top tears off, the cards fan out face down, and the good ones glow before they flip',
+        '🃏 Wildcards! Sometimes a card flips to a wildcard and you choose: pick one of three, a scout’s tip for a card that’s nearly done, or (rarely) a Legend of your choice',
+        '🌍 Themed packs: your free pack is a Nations pack in an international break and a Matchday pack when your club plays. Go up a rank for a 🟣 Legends pack',
+        '📒 The Album’s been tidied up: your level and packs at the top, then My XI, Cards, Badges and everyone you’ve Signed',
+      ],
+    },
+    {
       v: 37, label: '5.6', date: '2026-09-30', title: '🎁 Packs, levels, club v club, and international breaks',
       items: [
         '⬆️ Levels! Everything you play earns XP, from 🥾 Sunday League all the way to 🏆 Ballon d’Or, with a free pack every level. Your level shows next to your name on the leaderboards',

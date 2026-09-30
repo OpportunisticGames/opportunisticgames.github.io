@@ -108,7 +108,7 @@
       case 'nations': return GM.nationsPage(app);
       case 'level': return GM.levelPage(app);
       case 'clubs': return GM.clubsPage(app, q.w === '1' ? 1 : 0);
-      case 'packs': return GM.packsPage(app, ['cards', 'how'].includes(q.v) ? q.v : 'xi', GM.TIERS[q.t] ? q.t : '');
+      case 'packs': return GM.album(app, 'goals', 'album', q.v === 'xi' ? 'xi' : 'cards', '', GM.TIERS[q.t] ? q.t : '', q.open === '1');
       case 'matchfootle': return GM.footle(app, false, q.fx);
       case 'online': return GM.onlinePage(app, q);
       case 'footle': return GM.footle(app, false);
@@ -126,7 +126,7 @@
       case 'auction': return GM.auction(app, q);
       case 'leaderboard': return leaderboard(q.m);
       case 'players': return playerIndex();
-      case 'album': return GM.album(app, GM.STATS[q.s] ? q.s : 'goals', q.b === 'purist' ? 'purist' : 'album', q.v, q.c);
+      case 'album': return GM.album(app, GM.STATS[q.s] ? q.s : 'goals', q.b === 'purist' ? 'purist' : 'album', q.v, q.c, GM.TIERS[q.t] ? q.t : '', q.open === '1');
       case 'about': return about();
       case 'credits': return credits();
       case 'h2h': return GM.h2h(app);
@@ -195,7 +195,7 @@
         ${GM.appOutdated() ? `<div class="install-bar"><a class="btn small" href="${GM.APK_URL}">📲 New version of the app – tap to update</a></div>` : ''}
       </header>
       ${GM.firstXICard()}${GM.matchBanner()}${GM.intlBanner()}
-      ${GM.packsWaiting() ? `<a class="pack-bar" href="#/packs"><span>🎁</span><span><b>${GM.packsWaiting()} pack${GM.packsWaiting() > 1 ? 's' : ''} to open</b><small>${GM.esc(GM.packedXI().n < 11 ? 'Build your Packed XI' : 'Improve your Packed XI')}</small></span><span>›</span></a>` : ''}
+      ${GM.packsWaiting() ? `<a class="pack-bar" href="#/packs?open=1"><span>🎁</span><span><b>${GM.packsWaiting()} pack${GM.packsWaiting() > 1 ? 's' : ''} to open</b><small>${GM.esc(GM.packedXI().n < 11 ? 'Build your Packed XI' : 'Improve your Packed XI')}</small></span><span>›</span></a>` : ''}
       <div class="hard-toggle three" role="group" aria-label="Difficulty">${Object.entries(GM.LEVELS).map(([k, [i, n, sub]]) => `<button class="${k === level ? 'on' : ''}" data-level="${k}">${i} ${n}<small>${sub}</small></button>`).join('')}</div>
       <div class="seg home-tabs" id="htabs">${HTABS.map(([k, l, modes]) => `<button data-t="${k}">${l}${modes.some(m => newTag(m)) ? '<i class="new-dot"></i>' : ''}</button>`).join('')}</div>
       <div data-hpanel="main">

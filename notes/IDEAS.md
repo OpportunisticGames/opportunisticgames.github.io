@@ -66,6 +66,11 @@ formations, and badges round 2.
   seeing still takes days). Packs: one free a day, +1 for three dailies in a day, +1 per new badge. The Packed XI
   (best XI of finished cards) replaces the Album's Dream XI and has a leaderboard (`packedxi`). Opening: pack bursts,
   cards deal and flip (best last), a Legend gets a walkout (flag, position, club). Five badges in Collecting.
+- **5.7 (owner: "prettier cards, a whole animation, wildcards… themed packs"):** FUT-style cards (fixed layout,
+  tier finishes, a holo Legend), the full opening (rays, charge-up, the top tears off, cards fan out face down, Gold and
+  Legend backs glow, sparks/confetti), wildcards (3 packs in 10: Pick one 60, Scout's tip 30, Legend's choice 10),
+  themed free packs (Nations in a break, Matchday on your club's matchday) and a Legends pack for each new rank. The
+  Album became the hub for all of it (level, packs, My XI, Cards, Badges, Signed).
 - **Maybe next:** spare pieces for finished cards turn into something (a "pick your own piece" token?); a weekly
   special pack (Team of the Week, see the FPL API ideas); trading pieces with friends.
 

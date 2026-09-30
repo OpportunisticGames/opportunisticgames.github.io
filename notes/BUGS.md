@@ -12,6 +12,8 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 2026-09-30 | Pack cards weren't even: each card centred its contents, so a one-line name sat lower than a two-line one, and the last row wasn't centred | 5.7: new cards with a fixed layout (the same size and rows on every card), and the pack's cards centred in rows |
+| 2026-09-30 | The Album didn't make sense after packs: the Packed XI had quietly replaced the Dream XI in a page that still said it was "players you've signed" | 5.7: the Album reworked into one hub (level and packs, My XI, Cards, Badges, Signed); it says the Packed XI replaced the Dream XI |
 | 2026-09-30 | Found while building levels: a new player's first game asked for a leaderboard name twice (the draft's score, then the Packed XI's) | 5.6: the Packed XI only posts quietly if you already have a name |
 | 2026-09-30 | Northern Ireland players showed the Union Jack: there's no emoji flag for Northern Ireland, so the GB code was used | 5.6: a small drawing of the flag the NI football team plays under (the Ulster Banner), everywhere flags show |
 | 2026-09-30 | CHAOS: the Double or Nothing / All In coin did a weird shaky glitch instead of flipping. Its keyframes used different transform lists (a scale() only in the middle), so the browser blended them as matrices and the big spin came out as a wobble | 5.5: flipped frame by frame (up, end over end, back down on the right face) with 3D perspective and a shadow |

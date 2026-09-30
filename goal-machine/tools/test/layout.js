@@ -49,5 +49,5 @@ const sizes = (process.argv[3] || '390x844').split(',').map(x => x.split('x').ma
     }
     await ctx.close();
   }
-  console.log(errs.join('\n') || 'no page errors'); await b.close();
+  console.log(errs.join('\n') || 'no page errors'); if (errs.length) process.exitCode = 1; await b.close();
 })();
