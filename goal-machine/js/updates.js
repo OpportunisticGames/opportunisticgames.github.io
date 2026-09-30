@@ -9,6 +9,14 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 37, label: '5.6', date: '2026-09-30', title: '🌍 International breaks, and one difficulty switch',
+      items: [
+        '🌍 International breaks! When there’s no PL football, the game puts the bunting up and opens the International XI: pick from 32 countries and build their XI from every PL player they’ve had',
+        '🎚️ One switch for difficulty: 🙂 Normal, 🥵 Hard or ⚡ Extreme. Extreme puts all 5,000+ PL players into the Main event and CHAOS, so the pool buttons on the cards have gone',
+        '🏅 A new badge list, Matchdays & breaks: Split Loyalties, Twelfth Man, Season Ticket, Pundit, World Tour, Golden Generation… and a couple of secrets',
+      ],
+    },
+    {
       v: 36, label: '5.5', date: '2026-09-30', title: '🏟️ Matchdays, sharing your day, and secrets to find',
       items: [
         '🏟️ Matchdays! When your club plays, there’s a Matchday XI (players from either side, double points for anyone who played for both, and the same spins for every fan) and a pre-match Footle. On the Android app you get a nudge at 9am too',

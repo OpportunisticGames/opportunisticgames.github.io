@@ -1536,3 +1536,35 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
 .md-list small { opacity: .75; }
 .mate.both { background: #c8ff3d; color: #0a2a1f; font-weight: 700; }
 .stage .reel.fit2 .mate.both { display: block; }
+
+/* Difficulty: Normal / Hard / Extreme on one switch */
+.hard-toggle.three > * small { white-space: normal; line-height: 1.2; }
+.cx-note { display: inline-block; margin: 2px 0 8px; padding: 4px 10px; border-radius: 999px; background: rgba(0, 0, 0, .25); font-size: .78rem; font-weight: 700; }
+
+/* International break: flag bunting across the top, a banner and the International XI page */
+html.intl-break body::after { content: ''; position: fixed; top: 0; left: 0; right: 0; height: 16px; z-index: 46; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='16'%3E%3Cpath d='M0 1H96' stroke='%23333' stroke-width='1.5'/%3E%3Cpath d='M1 1h22l-11 14z' fill='%23e63946'/%3E%3Cpath d='M25 1h22l-11 14z' fill='%23fff'/%3E%3Cpath d='M49 1h22l-11 14z' fill='%231d4ed8'/%3E%3Cpath d='M73 1h22l-11 14z' fill='%23facc15'/%3E%3C/svg%3E") repeat-x; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .3)); }
+.intl-banner { display: block; margin: 10px 0 4px; border-radius: 20px; overflow: hidden; text-decoration: none; color: #fff;
+  background: linear-gradient(135deg, #102a6b, #1d4ed8 55%, #b91c1c); box-shadow: 0 5px 0 rgba(0, 0, 0, .3); }
+.intl-banner:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0, 0, 0, .3); }
+.ib-flags { display: block; white-space: nowrap; font-size: 1.1rem; padding: 6px 0 0; animation: ib-scroll 18s linear infinite; }
+@keyframes ib-scroll { to { transform: translateX(-50%); } }
+.ib-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 4px 16px 12px; text-align: center; }
+.ib-row > span:first-child, .ib-row > span:last-child { font-size: 1.8rem; }
+.intl-banner b { display: block; font: 700 1.25rem Oswald, sans-serif; letter-spacing: 1.5px; color: #fde047; text-shadow: 0 2px 0 rgba(0, 0, 0, .3); }
+.intl-banner small { display: block; font-size: .8rem; opacity: .92; }
+.md-card.intl { background: linear-gradient(135deg, #102a6b, #1d4ed8 55%, #b91c1c); }
+.md-card.intl .kicker { color: #fde047; }
+.ib-big { font-size: 3.4rem; line-height: 1.1; margin-top: 6px; }
+.ib-name { display: block; font: 700 1.6rem Oswald, sans-serif; letter-spacing: 1px; }
+.md-card .stat-pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
+.md-card .stat-btn { color: #fff; border-color: rgba(255, 255, 255, .45); }
+.nation-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+.nation-grid button { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); color: var(--text); font: 600 .78rem Inter, sans-serif; cursor: pointer; }
+.nation-grid button span { font-size: 1.7rem; line-height: 1.1; }
+.nation-grid button.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.nation-grid button i { position: absolute; top: 4px; right: 6px; font-style: normal; color: var(--accent); font-weight: 800; }
+@media (prefers-reduced-motion: reduce) { .ib-flags, .match-banner { animation: none; } }
+
+/* Northern Ireland's flag (no emoji exists) sized like an emoji flag */
+.flag-svg { display: inline-block; width: 1.25em; height: .85em; vertical-align: -0.08em; border-radius: 2px; }

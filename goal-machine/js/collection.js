@@ -30,9 +30,9 @@
   // ev: { type: 'draft', mode, stat, total, hard, xi: [players], rating, pairs, wildUsed, coinWin, bull, closeness }
   //  or { type: 'game', mode, score, extra }
   // badge categories, in the order the Album shows them
-  const CATS = [['draft', '🎯 Scores'], ['squad', '🧩 Squads'], ['chaos', '🌪️ CHAOS'], ['daily', '📅 Dailies'], ['games', '⚡ Quick games'], ['online', '🌐 Online'], ['collect', '📒 Collecting'], ['secret', '🤫 Secret']];
+  const CATS = [['draft', '🎯 Scores'], ['squad', '🧩 Squads'], ['chaos', '🌪️ CHAOS'], ['events', '🏟️ Matchdays & breaks'], ['daily', '📅 Dailies'], ['games', '⚡ Quick games'], ['online', '🌐 Online'], ['collect', '📒 Collecting'], ['secret', '🤫 Secret']];
   // CHAOS has its own challenges, some of them secret (shown as ??? in the CHAOS list until found)
-  const CAT_OF = (id, secret) => /^(cx|chaos$)/.test(id) ? 'chaos' : secret ? 'secret' : /^daily/.test(id) ? 'daily' : /^on/.test(id) ? 'online'
+  const CAT_OF = (id, secret) => /^(cx|chaos$)/.test(id) ? 'chaos' : /^(md|ib)/.test(id) ? 'events' : secret ? 'secret' : /^daily/.test(id) ? 'daily' : /^on/.test(id) ? 'online'
     : /^(col|hofall|gball)/.test(id) ? 'collect' : /^(hop|hilo|who|grid|tally|ht)/.test(id) ? 'games'
     : /^(first|contenders|invincible|relegated|chem5|hof3|wc2|club5|wild5|coin|hard|fan6|lifers|down5)$/.test(id) ? 'squad' : 'draft';
   const A = [
@@ -108,9 +108,24 @@
     ['cxfergie', '⌚', 'Fergie Time', 'Fergie in the dugout with 5+ Man Utd players.', e => chaos(e) && e.manager === 'fergie' && e.xi.filter(p => p.clubs.includes('Manchester United')).length >= 5, true],
     ['cxaliens', '🛸', 'We Are Not Alone', 'Witness an alien abduction in CHAOS.', e => chaos(e) && (e.moments || []).includes('Alien abduction'), true],
     ['cxpigeon', '🐦', 'Pigeon Fancier', 'A pigeon lands on your pitch in CHAOS.', e => chaos(e) && (e.moments || []).includes('Pitch invader'), true],
+    // matchdays and international breaks (their secrets stay in their own list, as ???)
+    ['mdfirst', '🏟️', 'Matchday', 'Play a Matchday XI when your club’s on.', e => md(e)],
+    ['mdboth', '🤝', 'Split Loyalties', 'Sign 3+ players who played for both sides in one Matchday XI.', e => md(e) && e.clubs && e.xi.filter(p => e.clubs.every(c => p.clubs.includes(c))).length >= 3],
+    ['md150', '📣', 'Twelfth Man', 'Score 150+ goals in a Matchday XI.', e => md(e) && e.total >= 150],
+    ['mdseason', '🎟️', 'Season Ticket', 'Play the Matchday XI on 5 different matchdays.', (e, a) => md(e) && (a.md || []).length >= 5],
+    ['mdpundit', '🔮', 'Pundit', 'Get the pre-match Footle in 3 guesses or fewer.', e => game(e, 'mfootle') && e.score >= 1 && e.score <= 3],
+    ['mdderby', '🔥', 'Derby Day', 'Play a Matchday XI on derby day.', e => md(e) && e.clubs && GM.isDerby(e.clubs[0], e.clubs[1]), true],
+    ['ibfirst', '🌍', 'International Duty', 'Finish an International XI during an international break.', e => intl(e)],
+    ['ib250', '🌟', 'Golden Generation', 'Score 250+ goals in an International XI.', e => intl(e) && e.stat === 'goals' && e.total >= 250],
+    ['ibtour', '🧳', 'World Tour', 'Build International XIs for 5 different countries.', (e, a) => intl(e) && (a.nations || []).length >= 5],
+    ['ibclub', '⚔️', 'Club v Country', 'Have 3+ players from your club in an International XI.', e => intl(e) && GM.favClub() && e.xi.filter(p => p.clubs.includes(GM.favClub())).length >= 3, true],
+    ['ibhome', '🏴', 'Home Nations', 'Build International XIs for England, Scotland, Wales and Northern Ireland.', (e, a) => intl(e) && HOME.every(n => (a.nations || []).includes(n)), true],
   ].map(([id, icon, name, desc, test, secret]) => ({ id, icon, name, desc, test, secret: !!secret, cat: CAT_OF(id, secret) }));
 
   const chaos = e => e.type === 'draft' && (e.mode === 'chaos' || e.mode === 'chaosx');
+  const md = e => e.type === 'draft' && e.mode === 'match';
+  const intl = e => e.type === 'draft' && e.mode === 'nation';
+  const HOME = ['England', 'Scotland', 'Wales', 'Northern Ireland'];
   // PL seasons a player's career spanned (first to last season, as the CHAOS veteran bonus counts them)
   const plSeasons = p => Math.min(p.last, GM.currentSeason) - p.first + 1;
   // Clubs relegated from the PL, by the season they went down in (1992 = 1992/93). A player "went down" if his club
@@ -199,6 +214,10 @@
       statBook[p.pk] = (statBook[p.pk] || 0) + 1;
     });
     if (ev.mode === 'daily' && !a.days.includes(GM.today())) a.days = a.days.concat(GM.today()).slice(-60);
+    // the matchdays and countries you've played (for Season Ticket, World Tour and Home Nations)
+    if (ev.mode === 'match' && ev.fx && !(a.md || []).includes(ev.fx)) a.md = (a.md || []).concat(ev.fx).slice(-100);
+    if (ev.mode === 'nation' && ev.nat && !(a.nations || []).includes(ev.nat)) a.nations = (a.nations || []).concat(ev.nat);
+    if (ev.mode === 'nation') GM.store.set('nationsPlayed', a.nations);
     const fresh = check({ type: 'draft', ...ev }, a);
     save(a);
     if (purist) save(book, 'purist');

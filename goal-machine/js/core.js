@@ -151,8 +151,14 @@ GM.ISO = {
   Togo: 'TG', 'Trinidad and Tobago': 'TT', Tunisia: 'TN', Turkey: 'TR', Ukraine: 'UA', 'United States': 'US', Uruguay: 'UY',
   Venezuela: 'VE', Zambia: 'ZM', Zimbabwe: 'ZW', 'Northern Ireland': 'GB',
 };
+GM.NI_FLAG = '<svg class="flag-svg" viewBox="0 0 24 16" role="img" aria-label="Northern Ireland"><rect width="24" height="16" fill="#fff" stroke="#bbb" stroke-width=".6"/>'
+  + '<path d="M10 0h4v16h-4zM0 6h24v4H0z" fill="#cf142b"/><path d="M12 4.3l3.2 5.55H8.8zM12 11.7L8.8 6.15h6.4z" fill="#fff"/>'
+  + '<circle cx="12" cy="8" r="1.05" fill="#cf142b"/><path d="M10.7 3.9l.35-1.6.95.8.95-.8.35 1.6z" fill="#f5c400"/></svg>';
 GM.flag = function (nat) {
   if (!nat) return '🏳️';
+  // no emoji for Northern Ireland (it would be the Union Jack), so a little drawing of the flag its football team
+  // plays under, the Ulster Banner
+  if (nat === 'Northern Ireland') return GM.NI_FLAG;
   const sub = { England: 'gbeng', Scotland: 'gbsct', Wales: 'gbwls' }[nat];
   if (sub) return '🏴' + [...sub].map(c => String.fromCodePoint(0xE0000 + c.charCodeAt(0))).join('') + '\u{E007F}';
   const iso = GM.ISO[nat];
@@ -764,6 +770,7 @@ GM.MODES = {
   hattrick: { name: 'Hat-Trick', icon: '🃏' },
   chaos: { name: 'Ultimate Wildcard CHAOS', icon: '🌪️' }, chaosast: { name: 'CHAOS – Assists', icon: '🌪️' }, chaosapps: { name: 'CHAOS – Apps', icon: '🌪️' },
   match: { name: 'Matchday XI', icon: '🏟️' },
+  nation: { name: 'International XI', icon: '🌍' },
   chaosx: { name: 'CHAOS Extreme', icon: '🌪️' }, chaosxast: { name: 'CHAOS Extreme – Assists', icon: '🌪️' }, chaosxapps: { name: 'CHAOS Extreme – Apps', icon: '🌪️' },
   moneyball: { name: 'Moneyball', icon: '💰' }, moneyballast: { name: 'Moneyball – Assists', icon: '💰' }, moneyballapps: { name: 'Moneyball – Apps', icon: '💰' },
   window: { name: 'Transfer Window', icon: '🔄' }, windowast: { name: 'Transfer Window – Assists', icon: '🔄' }, windowapps: { name: 'Transfer Window – Apps', icon: '🔄' },
@@ -774,8 +781,17 @@ GM.MODES = {
 GM.HARD_MODES = ['ultimate', 'ultimateast', 'ultimateapps', 'chaos', 'chaosast', 'chaosapps', 'chaosx', 'chaosxast', 'chaosxapps', 'target', 'targetast', 'targetapps', 'classic', 'classicast', 'classicapps',
   'classicwild', 'classicwildast', 'classicwildapps', 'ultimatepure', 'ultimatepureast', 'ultimatepureapps',
   'extreme', 'extremeast', 'extremeapps', 'purist', 'puristast', 'puristapps', 'treble', 'mystery', 'hopper', 'grid', 'hilo', 'whoami', 'tally', 'hattrick'];
-GM.isHard = () => GM.store.get('hard', false);
-GM.setHard = v => GM.store.set('hard', !!v);
+// Difficulty, one switch: Normal, Hard (names and positions only) or Extreme (the Main event and CHAOS use every one
+// of the 5,000+ PL players instead of the 50+ app ones). Before 5.5 Hard was on its own and Extreme was a pool switch.
+GM.LEVELS = { normal: ['🙂', 'Normal', '50+ apps · clues shown'], hard: ['🥵', 'Hard', 'names & positions only'], extreme: ['⚡', 'Extreme', 'every player, 5,000+'] };
+GM.level = () => {
+  const l = GM.store.get('level', null);
+  return GM.LEVELS[l] ? l : GM.store.get('hard', false) ? 'hard' : GM.store.get('ultPool', '') === 'extreme' ? 'extreme' : 'normal';
+};
+GM.setLevel = l => GM.store.set('level', GM.LEVELS[l] ? l : 'normal');
+GM.isHard = () => GM.level() === 'hard';
+GM.isExtreme = () => GM.level() === 'extreme';
+GM.setHard = v => GM.setLevel(v ? 'hard' : 'normal');
 
 // Look: 'light' (default), 'dark', 'auto' to follow the phone, or 'club' (dark, in your favourite club's colours).
 // index.html applies it before first paint too.

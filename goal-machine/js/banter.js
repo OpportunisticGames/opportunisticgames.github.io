@@ -67,6 +67,8 @@
     c => `A ${c} fan? Bold of you to admit that on the home screen.`,
   ];
 
+  GM.isDerby = (a, b) => (RIVALS[a] || []).includes(b) || (RIVALS[b] || []).includes(a);
+
   GM.clubBanter = function (club, dayOffset = 0) {
     const day = Math.floor((Date.now() - new Date().getTimezoneOffset() * 6e4) / 864e5) + dayOffset;
     const salt = [...club].reduce((a, ch) => a + ch.charCodeAt(0), 0);  // clubs don't all get the same kind of line on the same day

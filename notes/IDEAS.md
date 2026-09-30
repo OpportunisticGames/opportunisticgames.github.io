@@ -89,6 +89,21 @@ formations, and badges round 2.
   matches? The data-only version can be automatic; topical questions need someone to write them each week (or a
   weekly data refresh that turns into questions). Leaderboard for the week, streaks across weeks?
 
+### International breaks ✅ shipped in 5.6
+- **Owner's idea (30 Sep 2026):** "an international break thing… some form of extra gamemode/theme that appears when
+  there is an international break", with badges for it and for matchdays.
+- **Shipped:** breaks come from the fixture list (11+ free days between PL matchdays in Sep/Oct/Nov/Mar, worked out by
+  build_fixtures.py). During one: flag bunting, an INTERNATIONAL BREAK banner on Home and Today, and the International
+  XI (#/nations): 32 countries with 10+ PL regulars, drafting from every PL player each has had. New badge list
+  "Matchdays & breaks" (6 matchday, 5 international, 3 of them secret).
+- **Maybe next:** a daily "International Footle" during breaks; a nations leaderboard (which country's fans score most).
+
+### One difficulty switch ✅ shipped in 5.6
+- **Owner (30 Sep 2026):** the "50+ apps / every player" switch on the cards was ugly; fold it into the difficulty.
+- **Shipped:** Normal / Hard / Extreme. Extreme = every player in the Main event and CHAOS (the old Extreme/Purist and
+  CHAOS Extreme boards). The Main event card keeps Classic/Ultimate and wildcards on/off. Old Hard and Extreme-pool
+  settings carry over.
+
 ### Your club's matchdays ✅ shipped in 5.5
 - **Shipped:** real fixtures (data/fixtures.js, from the FPL API or the FPL repo, rebuilt with the Tuesday data job);
   a MATCHDAY banner on Home and Today; a matchday hub (#/matchday) with the next match and what's coming up; the

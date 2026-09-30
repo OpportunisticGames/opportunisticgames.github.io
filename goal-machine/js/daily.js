@@ -155,7 +155,7 @@
     const s = GM.streak();
     root.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>${GM.calIcon()} Today</h2><span></span></div>
       <div class="streak-hero"><div class="flame ${s ? 'lit' : ''}">🔥</div><div><b>${s}</b><span>day streak</span><small>Best ${GM.bestStreak()} · play any daily to keep it going</small></div></div>
-      ${GM.matchBanner ? GM.matchBanner() : ''}
+      ${GM.matchBanner ? GM.matchBanner() + GM.intlBanner() : ''}
       <div class="daily-list">${games.map(g => {
         const G = GAMES[g], st = GM.dailyStatus(g), gs = GM.streak(g);
         const name = g === 'club' ? `${esc(club)} Footle` : G.name;
@@ -247,7 +247,7 @@
       store.set(key, st);
       const won = isAnswer(p, ans);
       GM.sound.play(won ? 'good' : 'place'); GM.buzz();
-      if (fx && (won || st.guesses.length >= MAX)) { st.done = true; st.won = won; store.set(key, st); }
+      if (fx && (won || st.guesses.length >= MAX)) { st.done = true; st.won = won; store.set(key, st); if (won) GM.checkGame('mfootle', st.guesses.length); }
       else if (won || st.guesses.length >= MAX) {
         const n = won ? st.guesses.length : 0;
         GM.markDaily(game, n, day);
