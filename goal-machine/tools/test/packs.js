@@ -20,16 +20,25 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(t.c.l >= 25 && t.c.l <= 60 && t.c.g > 150 && t.c.s > 400 && t.c.b + t.c.s + t.c.g + t.c.l === t.all, `tiers: ${JSON.stringify(t.c)} of ${t.all} players`);
   ok(t.hof && t.shearer === 'l', 'Hall of Famers (Shearer included) are Legends');
   ok(await pg.evaluate(() => GM.packsWaiting() === 1) && /1 pack to open/i.test(await pg.textContent('.pack-bar')), 'a free pack every day, and Home says so');
+  // no break or matchday in this test: a plain Player Pack
+  await pg.evaluate(() => { GM.setFixtures([['2099-01-01T15:00:00Z', 'Everton', 'Chelsea']], []); });
+  ok(await pg.evaluate(() => GM.nextPackType()) === 'standard', 'on a normal day the free pack is a Player Pack');
 
-  // opening
+  // opening (no wildcard in this one; they're tested below)
+  await pg.evaluate(() => { GM.packForce = { wild: 'none' }; });
   await pg.goto(U + '#/packs'); await pg.waitForTimeout(500);
   await pg.click('#openpack'); await pg.waitForTimeout(400);
-  await pg.$eval('.po-pack', e => e.click()); await pg.waitForTimeout(12000);
+  await pg.$eval('.po-pack', e => e.click()); await pg.waitForTimeout(700);
+  ok(await pg.evaluate(() => document.querySelector('.pack-open').classList.contains('charging')), 'tapping the pack charges it up…');
+  await pg.waitForTimeout(600);
+  ok(await pg.evaluate(() => document.querySelector('.pack-open').classList.contains('torn')), '…and the top tears off');
+  await pg.waitForTimeout(11000);
   const op = await pg.evaluate(() => { const c = GM.store.get('cards'); return { cards: document.querySelectorAll('.pack-open .pcard').length, flipped: document.querySelectorAll('.pack-open .pcard.flipped').length,
     pieces: Object.values(c.p).reduce((a, n) => a + n, 0), daily: c.daily === GM.today(), last: [...document.querySelectorAll('.pack-open .pcard')].pop().className, done: !!document.querySelector('[data-done]') }; });
   ok(op.cards === 5 && op.flipped === 5 && op.done, 'a pack bursts into five cards that all flip over');
   ok(op.pieces === 5 && op.daily, 'five pieces saved, and today’s free pack is used');
   ok(!/tier-b/.test(op.last), 'the last card is Silver or better: ' + op.last);
+  ok(await pg.evaluate(() => { const r = [...document.querySelectorAll('.pack-open .pcard')].map(e => e.getBoundingClientRect()); return r.every(x => Math.abs(x.height - r[0].height) < 1 && Math.abs(x.width - r[0].width) < 1); }), 'every card is the same size');
   await pg.click('[data-done]'); await pg.waitForTimeout(300);
   const badges = await pg.evaluate(() => Object.keys(GM.store.get('album').ach));
   ok(badges.includes('colpack'), 'the first pack earns Pack Opener');
@@ -54,11 +63,58 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.evaluate(() => { GM.markDaily('footle', 3); GM.markDaily('daily', 400); GM.markDaily('grid', 7); GM.markDaily('grid', 8); });
   ok(await pg.evaluate(() => GM.store.get('cards').packs) === before + 1, 'three dailies in a day earn one bonus pack (not one per game after that)');
 
-  // the album's XI is the Packed XI now
+  // a wildcard: Pick one — three face up, your choice gets the piece
+  await pg.evaluate(() => { GM.packForce = { wild: 'pick' }; const c = GM.store.get('cards'); c.packs = 1; c.extra = []; GM.store.set('cards', c); });
+  const before2 = await pg.evaluate(() => Object.values(GM.store.get('cards').p).reduce((a, n) => a + n, 0));
+  await pg.goto(U + '#/packs?open=1'); await pg.waitForTimeout(700);
+  await pg.$eval('.po-pack', e => e.click());
+  for (let i = 0; i < 40 && !(await pg.$('.choosing')); i++) await pg.waitForTimeout(300);
+  await pg.waitForTimeout(800);
+  const ch = await pg.evaluate(() => { const b = [...document.querySelectorAll('.po-choice [data-pick]')]; return { n: b.length, visible: b.every(e => e.querySelector('.pc-front').getBoundingClientRect().width > 50), name: b[2] && b[2].querySelector('.pc-name').textContent }; });
+  ok(ch.n === 3 && ch.visible, 'a wildcard flips and offers three cards to choose from');
+  await pg.$eval('[data-pick="2"]', e => e.click()); await pg.waitForTimeout(9000);
+  const after2 = await pg.evaluate(() => ({ sum: Object.values(GM.store.get('cards').p).reduce((a, n) => a + n, 0), chosen: !!document.querySelector('.pack-open .pcard.from-wild'), done: !!document.querySelector('[data-done]') }));
+  ok(after2.chosen && after2.done && after2.sum - before2 >= 4, `the pick (${ch.name}) takes the wildcard’s place and the pack finishes`);
+  await pg.click('[data-done]'); await pg.waitForTimeout(300);
+  await pg.evaluate(() => { GM.packForce = { wild: 'none' }; });
+
+  // themed packs: a Nations pack in an international break, a Matchday pack when your club plays
+  const themed = await pg.evaluate(() => {
+    const d = new Date(), day = GM.today(), iso = x => x.toISOString().slice(0, 10);
+    const c = GM.store.get('cards'); c.daily = ''; GM.store.set('cards', c);
+    GM.setFixtures([[iso(new Date(Date.now() + 8 * 864e5)) + 'T14:00:00Z', 'Everton', 'Chelsea']], [[iso(new Date(Date.now() - 864e5)), iso(new Date(Date.now() + 5 * 864e5))]]);
+    const t1 = GM.nextPackType(), nat = GM.PACKS.nations.nat(), r1 = GM.openPack();
+    const allNat = r1.cards.every(x => x.p.nat === nat);
+    const k = new Date(); k.setHours(23, 0, 0, 0);
+    GM.setFixtures([[k.toISOString().slice(0, 19) + 'Z', 'Everton', 'Liverpool']], []);
+    const c2 = GM.store.get('cards'); c2.daily = ''; GM.store.set('cards', c2);
+    GM.store.set('club', 'Everton');
+    const t2 = GM.nextPackType(), r2 = GM.openPack();
+    const allMd = r2.cards.every(x => x.p.clubs.includes('Everton') || x.p.clubs.includes('Liverpool'));
+    return { t1, nat, allNat, t2, allMd };
+  });
+  ok(themed.t1 === 'nations' && themed.allNat, `in an international break the free pack is a Nations pack, every piece from ${themed.nat}`);
+  ok(themed.t2 === 'matchday' && themed.allMd, 'on your matchday it’s a Matchday pack of players from either side');
+
+  // going up a rank: a Legends pack with a Legend's choice last
+  const lg = await pg.evaluate(() => {
+    GM.setFixtures([['2099-01-01T15:00:00Z', 'Everton', 'Chelsea']], []);
+    const c = GM.store.get('cards'); c.packs = 0; c.extra = []; c.daily = GM.today(); GM.store.set('cards', c);
+    GM.store.set('xp', 0); GM.addXP(560);  // level 1 → 5: Non-League
+    return new Promise(res => setTimeout(() => { const t = GM.nextPackType(), r = GM.openPack(), last = r.cards[r.cards.length - 1];
+      res({ t, wild: last.wild && last.wild.kind, legends: last.wild && last.wild.options.every(p => GM.cardTier(p) === 'l'), rest: r.cards.slice(0, 4).every(x => x.t !== 'b') }); }, 1800));
+  });
+  ok(lg.t === 'legends' && lg.wild === 'legend' && lg.legends, 'going up a rank earns a Legends pack, ending in a choice of three Legends');
+  ok(lg.rest, '…and its other four pieces are Silver or better');
+
+  // the Album: level and packs at the top, then My XI, Cards, Badges, Signed
   await pg.goto(U + '#/album'); await pg.waitForTimeout(500);
-  ok(!!(await pg.$('.pitch.packed')) && /Packed XI/.test(await pg.textContent('.album-views')), 'the Album shows the Packed XI');
+  ok(!!(await pg.$('.pitch.packed')) && /My XI/.test(await pg.textContent('.album-views a.on')) && !!(await pg.$('.alb-level')) && !!(await pg.$('.pack-box')), 'the Album opens on your Packed XI, with your level and packs at the top');
+  ok(/replaced the old Dream XI/.test(await pg.textContent('#app, body')), 'and says what happened to the Dream XI');
   await pg.goto(U + '#/packs?v=cards'); await pg.waitForTimeout(400);
-  ok((await pg.$$('.card-grid .pcard')).length >= 5, 'the Cards list shows what you’ve started');
+  ok((await pg.$$('.card-grid .pcard')).length >= 5 && /Cards/.test(await pg.textContent('.album-views a.on')), 'the Cards section shows what you’ve started');
+  await pg.goto(U + '#/album?v=signed'); await pg.waitForTimeout(400);
+  ok(!!(await pg.$('.sets')) && !!(await pg.$('a[href="#/album?b=purist"]')), 'Signed has your sets, clubs and a way to the Purist collection');
   ok(!errs.length, errs.length ? 'page errors: ' + errs.join(' | ') : 'no page errors');
   await b.close();
 })();

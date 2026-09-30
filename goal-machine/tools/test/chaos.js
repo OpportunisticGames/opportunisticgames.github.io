@@ -3,6 +3,9 @@
 const { chromium } = require(require('child_process').execSync('npm root -g').toString().trim() + '/playwright');
 require('fs').mkdirSync('lay', { recursive: true });
 const U = 'http://localhost:8765/goal-machine/';
+// CHAOS_PART runs one part so the suite can run them side by side (tools/test/run.sh): 'draft' (the full game) or
+// 'ev:1/3' (every third event, from the second). Unset runs everything.
+const PART = process.env.CHAOS_PART || '';
 const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) process.exitCode = 1; };
 (async () => {
   const b = await chromium.launch(), errs = [];
@@ -10,6 +13,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await ctx.route(/wikimedia|premierleague|transfermarkt|supabase/, r => r.abort());
   const pg = await ctx.newPage(); pg.on('pageerror', e => errs.push(e.message));
   await pg.goto(U); await pg.evaluate(() => { localStorage.setItem('gm:seenVersion', '99'); localStorage.setItem('gm:welcomed', '1'); });
+  if (!PART || PART === 'draft') {
   await pg.goto(U + '#/draft?m=chaos&seed=chaostest1'); await pg.waitForTimeout(1200);
   ok((await pg.$$('.cm-pick [data-mgr]')).length === 3, 'kick-off: three managers to choose from');
   await pg.screenshot({ path: 'lay/chaos_mgr.png' });
@@ -66,11 +70,14 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(/Manager/.test(await pg.textContent('.result')) , 'full time names your manager');
   console.log('  breakdown:', lines.slice(0, 400));
   await pg.screenshot({ path: 'lay/chaos_done.png', fullPage: true });
+  }
+  if (!PART || PART.startsWith('ev:')) {
   // every event and moment, forced one per spin across a few games (tapping through each)
-  const keys = await pg.evaluate(() => GM.draft.events()), shown = [];
+  const [pi, pn] = PART ? PART.slice(3).split('/').map(Number) : [0, 1];
+  const keys = (await pg.evaluate(() => GM.draft.events())).filter((k, i) => i % pn === pi), shown = [];
   let ki = 0;
   for (let game = 0; game < 8 && ki < keys.length; game++) {
-    await pg.goto(U + '#/'); await pg.goto(U + '#/draft?m=chaos&seed=every' + game); await pg.waitForTimeout(900);
+    await pg.goto(U + '#/'); await pg.goto(U + '#/draft?m=chaos&seed=every' + (PART ? pi + 'p' : '') + game); await pg.waitForTimeout(900);
     for (let step = 0; step < 300; step++) {
       const st = await pg.evaluate(() => {
         const cm = document.querySelector('.cm:not(.out)');
@@ -95,5 +102,6 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const byRar = shown.reduce((a, x) => { const r = x.slice(x.lastIndexOf(':') + 1); a[r] = (a[r] || 0) + 1; return a; }, {});
   ok(ki === keys.length && shown.length >= keys.length, `every one of the ${keys.length} events and moments plays (${JSON.stringify(byRar)})`);
   console.log('  ' + shown.map(x => x.slice(0, x.lastIndexOf(':'))).join(' · '));
+  }
   console.log(errs.join('\n') || 'no page errors'); if (errs.length) process.exitCode = 1; await b.close();
 })();

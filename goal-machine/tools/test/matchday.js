@@ -105,7 +105,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
 
   // leaderboards
   await pg.goto(U + '#/leaderboard?m=' + encodeURIComponent('match:' + fx.id)); await pg.waitForTimeout(700);
-  ok(/Matchday XI · EVE v LIV/.test(await pg.textContent('.tabs')), 'the Matchday XI has a board under Your club');
+  ok(/Matchday XI · EVE v LIV/.test(await pg.$eval('#lbv', e => e.selectedOptions[0].textContent)) && /Your club/.test(await pg.textContent('.lbx-games a.on')), 'the Matchday XI has a board under Your club');
   ok(!errs.length, errs.length ? 'page errors: ' + errs.join(' | ') : 'no page errors');
   await b.close();
 })();

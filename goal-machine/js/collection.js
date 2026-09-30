@@ -316,10 +316,64 @@
   }
   GM.dreamXI = dreamXI;
 
-  /* ---------------------------------------------------------------- album page */
+  /* ---------------------------------------------------------------- the Album */
+  // One hub for everything you collect: your level and packs at the top, then
+  //   🃏 My XI    the Packed XI, from finished cards (it replaced the old Dream XI of everyone you'd signed)
+  //   🧩 Cards    the cards you've started, by tier, and how cards work
+  //   🏅 Badges
+  //   ✍️ Signed   everyone you've signed in a draft: sets, clubs, who you pick; plus 💎 Purist and 📖 Players
+  function albumHub(root, view, cat, tier, open) {
+    const a = load(), l = GM.myLevel(), px = GM.packedXI(), list = GM.players;
+    const VIEWS = [['xi', '🃏 My XI'], ['cards', '🧩 Cards'], ['badges', '🏅 Badges'], ['signed', '✍️ Signed']];
+    if (view === 'sets' || view === 'stats') view = 'signed';
+    if (!VIEWS.some(v => v[0] === view)) view = 'xi';
+    if (!CATS.some(c => c[0] === cat)) cat = (CATS.find(([c]) => A.some(x => x.cat === c && !a.ach[x.id])) || CATS[0])[0];
+    const has = p => !!a.players[p.pk], signed = Object.keys(a.players).length;
+    const bar = (have, all) => `<div class="bar"><i style="width:${all ? have / all * 100 : 0}%"></i></div>`;
+    const clubSets = GM.clubs.map(c => { const m = list.filter(p => p.clubs.includes(c)); return [c, m.filter(has).length, m.length]; })
+      .sort((x, y) => y[1] / y[2] - x[1] / x[2] || y[2] - x[2]);
+    root.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>📒 Album</h2><span class="top-btns">${GM.lbButton('packedxi')}</span></div>
+      <div class="alb-head">
+        <a class="alb-level" href="#/level"><span class="alb-lv-icon">${l.icon}</span><span><b>Level ${l.n}</b><small>${l.rank} · ${l.into}/${l.need} XP</small>${bar(l.into, l.need)}</span></a>
+        ${GM.packBox()}</div>
+      <div class="alb-stats"><a href="#/album?v=cards"><b>${fmt(GM.cardsFinished())}</b><small>cards finished</small></a><a href="#/album?v=badges"><b>${Object.keys(a.ach).length}/${A.length}</b><small>badges</small></a><a href="#/album?v=signed"><b>${fmt(signed)}</b><small>players signed</small></a></div>
+      <div class="seg album-views">${VIEWS.map(([k, lab]) => `<a class="${k === view ? 'on' : ''}" href="#/album${k === 'xi' ? '' : '?v=' + k}">${lab}</a>`).join('')}</div>
+
+      ${view === 'xi' ? `<p class="muted">Your team, built only from <b>finished cards</b>: the best player you’ve got in every position. Finish cards by opening packs and signing players. It replaced the old Dream XI, which let you use anyone you’d ever signed.</p>
+        ${GM.packedPitch(px)}
+        ${px.n < 11 ? `<p class="muted center small">${11 - px.n} place${11 - px.n > 1 ? 's' : ''} still empty. Finish a card in that position to fill it.</p>` : ''}
+        <a class="btn ghost" href="#/leaderboard?m=packedxi">🏆 Packed XI leaderboard</a>` : ''}
+
+      ${view === 'cards' ? GM.cardsSection(tier) : ''}
+
+      ${view === 'badges' ? `<div class="ach-cats">${CATS.map(([c, label]) => { const lst = A.filter(x => x.cat === c); return `<a class="${c === cat ? 'on' : ''}" href="#/album?v=badges&c=${c}">${label}<small>${lst.filter(x => a.ach[x.id]).length}/${lst.length}</small></a>`; }).join('')}</div>
+      <div class="ach-grid">${A.filter(x => x.cat === cat).map(x => {
+          const hide = x.secret && !a.ach[x.id];
+          return `<div class="ach ${a.ach[x.id] ? 'got' : ''} ${hide ? 'secret' : ''}" title="${hide ? 'A secret badge' : GM.esc(x.desc)}">
+            <span class="ach-icon">${a.ach[x.id] ? x.icon : hide ? '❓' : '🔒'}</span><b>${hide ? '???' : x.name}</b><small>${hide ? 'Secret – keep playing to find it' : x.desc}</small></div>`; }).join('')}</div>` : ''}
+
+      ${view === 'signed' ? `<p class="muted">Everyone you’ve signed in a draft: <b>${fmt(signed)}</b> of ${fmt(list.length)} players with 50+ PL apps. Stored on this device.</p>${bar(signed, list.length)}
+        <div class="alb-links"><a href="#/album?b=purist">💎 Purist collection<small>every PL player, from Purist drafts</small></a><a href="#/players">📖 All players<small>who you have and haven’t signed</small></a></div>
+        <h3 class="section-title">🗂️ Sets</h3>
+        <div class="sets">${SETS.map(st => {
+          const m = setMembers[st.id].map(i => GM.players[i]), got = m.filter(has);
+          return `<details class="set"><summary><span>${st.icon} ${st.name}</span><span>${got.length}/${m.length}</span>${bar(got.length, m.length)}</summary>
+            <div class="set-list">${m.sort((x, y) => y.fame - x.fame).map(p => `<span class="${has(p) ? 'have' : ''}">${has(p) ? '✅' : '▫️'} ${GM.esc(p.name)}</span>`).join('')}</div></details>`;
+        }).join('')}</div>
+        <details class="set clubs-block"><summary><span>🏟️ Clubs</span><span>${clubSets.filter(([, h, n]) => h === n).length}/${clubSets.length} complete</span></summary>
+          <div class="sets">${clubSets.map(([c, h, n]) => `<div class="club-set">${GM.clubChip(c)}<span>${GM.esc(c)}</span><span>${h}/${n}</span>${bar(h, n)}</div>`).join('')}</div></details>
+        <h3 class="section-title">📊 Who you pick</h3>${picksHtml()}` : ''}`;
+    const ob = GM.$('#openpack', root);
+    const reopen = () => albumHub(root, view, cat, tier, false);
+    if (ob) ob.onclick = () => GM.packOpening(reopen);
+    if (open && GM.packsWaiting()) GM.packOpening(reopen);
+  }
+
+  /* ---------------------------------------------------------------- album page (the Purist collection) */
   // The Album in four sections (?v=xi|badges|sets|stats), and the badges one category at a time (?c=draft …)
-  GM.album = function (root, statId = 'goals', book = 'album', view = 'xi', cat = '') {
+  GM.album = function (root, statId = 'goals', book = 'album', view = 'xi', cat = '', tier = '', open = false) {
     const purist = book === 'purist';
+    if (!purist) return albumHub(root, view, cat, tier, open);
     if (purist && !GM.allPlayers) {
       root.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>💎 Purist collection</h2><span></span></div><div class="loading-all"><div class="splash-bar"><i></i></div></div>`;
       GM.loadAll().then(() => { if (location.hash.includes('b=purist')) GM.album(root, statId, book); });
@@ -347,7 +401,7 @@
     const bar = (have, all) => `<div class="bar"><i style="width:${all ? have / all * 100 : 0}%"></i></div>`;
     const recent = Object.entries(a.players).sort((x, y) => (y[1] > x[1] ? 1 : -1)).slice(0, 18).map(([k]) => index.get(k)).filter(Boolean);
     const main = load();
-    const VIEWS = purist ? [['xi', '⭐ Dream XI'], ['sets', '🗂️ Sets']] : [['xi', '🃏 Packed XI'], ['badges', '🏅 Badges'], ['sets', '🗂️ Sets'], ['stats', '📊 Stats']];
+    const VIEWS = [['xi', '⭐ Dream XI'], ['sets', '🗂️ Sets']];  // (the main Album is albumHub)
     if (!VIEWS.some(v => v[0] === view)) view = 'xi';
     const link = (o = {}) => { const q = { s: statId !== 'goals' ? statId : '', b: purist ? 'purist' : '', v: view !== 'xi' ? view : '', c: cat, ...o };
       const qs = Object.entries(q).filter(([, v]) => v).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&'); return '#/album' + (qs ? '?' + qs : ''); };
@@ -366,10 +420,7 @@
 
       <div class="seg album-views">${VIEWS.map(([k, l]) => `<a class="${k === view ? 'on' : ''}" href="${link({ v: k === 'xi' ? '' : k, c: '' })}">${l}</a>`).join('')}</div>
 
-      ${view === 'xi' && !purist ? `<p class="muted">Your best XI from <b>finished</b> player cards. Finish cards by opening packs and signing players (a piece a day each).</p>
-      ${GM.packedPitch(GM.packedXI())}<a class="btn big" href="#/packs">🎁 Packs${GM.packsWaiting() ? ` · ${GM.packsWaiting()} to open` : ''}</a>
-      ${recent.length ? `<h3 class="section-title">🆕 Recently signed</h3><div class="team-badges">${recent.map(p => `<span>${GM.esc(p.name)}</span>`).join('')}</div>` : ''}` : ''}
-      ${view === 'xi' && purist ? `<p class="muted">Your best player in every position, from players you've signed in ${st.name.toLowerCase()} games (×2, ×3… is how many times you've signed him). ${fmt(Object.keys(got).length)} players in your ${st.name.toLowerCase()} book.</p>
+      ${view === 'xi' ? `<p class="muted">Your best player in every position, from players you've signed in ${st.name.toLowerCase()} games (×2, ×3… is how many times you've signed him). ${fmt(Object.keys(got).length)} players in your ${st.name.toLowerCase()} book.</p>
       <div class="hard-toggle small three">${Object.entries(GM.STATS).map(([k, s]) => `<a class="${k === statId ? 'on' : ''}" href="${link({ s: k === 'goals' ? '' : k })}"><i class="sb-ico">${s.icon}</i>${s.name}</a>`).join('')}</div>
       <div class="pitch"><div class="pitch-lines"></div><div class="shape">${fmt(tot)} ${st.label}</div>
         ${lines.map(l => `<div class="pitch-row">${l.map(([s]) => slot(s)).join('')}</div>`).join('')}</div>

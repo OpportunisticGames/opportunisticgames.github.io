@@ -107,8 +107,8 @@
       case 'matchday': return GM.matchday(app);
       case 'nations': return GM.nationsPage(app);
       case 'level': return GM.levelPage(app);
-      case 'clubs': return GM.clubsPage(app, q.w === '1' ? 1 : 0);
-      case 'packs': return GM.packsPage(app, ['cards', 'how'].includes(q.v) ? q.v : 'xi', GM.TIERS[q.t] ? q.t : '');
+      case 'clubs': return leaderboard('clubs' + (q.w === '1' ? ':1' : ''));
+      case 'packs': return GM.album(app, 'goals', 'album', q.v === 'xi' ? 'xi' : 'cards', '', GM.TIERS[q.t] ? q.t : '', q.open === '1');
       case 'matchfootle': return GM.footle(app, false, q.fx);
       case 'online': return GM.onlinePage(app, q);
       case 'footle': return GM.footle(app, false);
@@ -126,7 +126,7 @@
       case 'auction': return GM.auction(app, q);
       case 'leaderboard': return leaderboard(q.m);
       case 'players': return playerIndex();
-      case 'album': return GM.album(app, GM.STATS[q.s] ? q.s : 'goals', q.b === 'purist' ? 'purist' : 'album', q.v, q.c);
+      case 'album': return GM.album(app, GM.STATS[q.s] ? q.s : 'goals', q.b === 'purist' ? 'purist' : 'album', q.v, q.c, GM.TIERS[q.t] ? q.t : '', q.open === '1');
       case 'about': return about();
       case 'credits': return credits();
       case 'h2h': return GM.h2h(app);
@@ -195,7 +195,7 @@
         ${GM.appOutdated() ? `<div class="install-bar"><a class="btn small" href="${GM.APK_URL}">📲 New version of the app – tap to update</a></div>` : ''}
       </header>
       ${GM.firstXICard()}${GM.matchBanner()}${GM.intlBanner()}
-      ${GM.packsWaiting() ? `<a class="pack-bar" href="#/packs"><span>🎁</span><span><b>${GM.packsWaiting()} pack${GM.packsWaiting() > 1 ? 's' : ''} to open</b><small>${GM.esc(GM.packedXI().n < 11 ? 'Build your Packed XI' : 'Improve your Packed XI')}</small></span><span>›</span></a>` : ''}
+      ${GM.packsWaiting() ? `<a class="pack-bar" href="#/packs?open=1"><span>🎁</span><span><b>${GM.packsWaiting()} pack${GM.packsWaiting() > 1 ? 's' : ''} to open</b><small>${GM.esc(GM.packedXI().n < 11 ? 'Build your Packed XI' : 'Improve your Packed XI')}</small></span><span>›</span></a>` : ''}
       <div class="hard-toggle three" role="group" aria-label="Difficulty">${Object.entries(GM.LEVELS).map(([k, [i, n, sub]]) => `<button class="${k === level ? 'on' : ''}" data-level="${k}">${i} ${n}<small>${sub}</small></button>`).join('')}</div>
       <div class="seg home-tabs" id="htabs">${HTABS.map(([k, l, modes]) => `<button data-t="${k}">${l}${modes.some(m => newTag(m)) ? '<i class="new-dot"></i>' : ''}</button>`).join('')}</div>
       <div data-hpanel="main">
@@ -466,92 +466,104 @@
   }
 
   /* ---------------------------------------------------------------- leaderboard */
+  // Leaderboards, simply: one row of games, one line of drop-downs for what applies (version, stat, Normal/Hard, this
+  // month or all time), then you and the board. Club v club and the Daily stars live here too.
   async function leaderboard(m) {
-    if (m && m.startsWith('dailies')) return dailyBoard(m.split(':')[1]);
-    // Boards are grouped: a category, then the mode, then (where it applies) the stat and Normal/Hard
     const club = GM.favClub(), today = GM.today();
-    const CATS = [
-      ['⚽ Main event', ['classicwild', 'classic', 'ultimate', 'ultimatepure', 'extreme', 'purist']],
+    const nations = [...new Set([GM.store.get('nation', 'England')].concat(GM.store.get('nationsPlayed', [])))].slice(0, 8).map(n => 'nation' + GM.slug(n));
+    const GAMES = [
+      ['⚽ Main event', ['ultimate', 'ultimatepure', 'classicwild', 'classic', 'extreme', 'purist']],
       ['🌪️ CHAOS', ['chaos', 'chaosx', 'dchaos:' + today]],
       [GM.calIcon() + ' Daily', ['daily:' + today, 'footle:' + today, 'grid:' + today, 'mbdaily:' + today, 'dailies']],
-      ['🎯 Targets', ['target', 'treble', 'mystery']],
-      ['💰 Market', ['moneyball', 'window']],
-      ['⚡ Quick', ['hopper', 'hilo', 'whoami', 'grid', 'tally', 'packedxi']],
-    ].concat(GM.intlBreak() || GM.store.get('nationsPlayed', []).length ? [['🌍 International', [...new Set([GM.store.get('nation', 'England')].concat(GM.store.get('nationsPlayed', [])))].slice(0, 8).map(n => 'nation' + GM.slug(n))]] : [])
-      .concat(club ? [['🏟️ Your club', ['club' + GM.slug(club)].concat(GM.nextMatch(club) ? ['match:' + GM.nextMatch(club).id] : [])]] : []);
-    const SHORT = { classicwild: '⭐ Classic Wildcard', classic: '⭐ Classic', ultimate: '👑 Ultimate Wildcard', ultimatepure: '👑 Ultimate', extreme: '⚡ Extreme Wildcard',
-      purist: '💎 Extreme Purist', chaos: '🌪️ CHAOS', target: '🎯 Target', treble: '🏆 The Treble', mystery: '🎲 Mystery Target', moneyball: '💰 Moneyball', window: '🔄 Transfer Window', dailies: '📊 Daily stars' };
+    ].concat(club ? [['🏟️ Your club', ['clubs', 'club' + GM.slug(club)].concat(GM.nextMatch(club) ? ['match:' + GM.nextMatch(club).id] : [])]] : [])
+      .concat(GM.intlBreak() || GM.store.get('nationsPlayed', []).length ? [['🌍 International', nations]] : [])
+      .concat([['🃏 Packed XI', ['packedxi']], ['🎯 Targets', ['target', 'treble', 'mystery']], ['💰 Market', ['moneyball', 'window']], ['⚡ Quick', ['hopper', 'hilo', 'whoami', 'grid', 'tally']]]);
+    const NAMES = { classicwild: 'Classic Wildcard', classic: 'Classic', ultimate: 'Ultimate Wildcard', ultimatepure: 'Ultimate', extreme: 'Extreme Wildcard', purist: 'Extreme Purist',
+      chaos: 'CHAOS', chaosx: 'CHAOS Extreme', target: 'Target', treble: 'The Treble', mystery: 'Mystery Target', moneyball: 'Moneyball', window: 'Transfer Window', dailies: 'Daily stars', clubs: 'Club v club', packedxi: 'Packed XI' };
     const SUFFIX = { goals: '', assists: 'ast', apps: 'apps' };
-    const hasStats = base => !!GM.MODES[base + 'ast'];
-    // m → base mode, stat and hard (e.g. 'ultimateasth' → ultimate, assists, hard)
-    let base = m || '', stat = 'goals', hard = m ? false : GM.isHard();
-    if (m && /h$/.test(m) && GM.MODES[m] && GM.HARD_MODES.includes(m.slice(0, -1))) { hard = true; base = m.slice(0, -1); }
-    for (const [st, suf] of [['assists', 'ast'], ['apps', 'apps']]) if (suf && base.endsWith(suf) && GM.MODES[base] && GM.MODES[base.slice(0, -suf.length) + 'ast']) { stat = st; base = base.slice(0, -suf.length); break; }
+    const hasStats = b => !!GM.MODES[b + 'ast'];
+    // m → base board, stat, Normal/Hard, and the option for Club v club (week) or Daily stars (sort)
+    let base = m || '', stat = 'goals', hard = m ? false : GM.isHard(), opt = '';
+    if (/^(dailies|clubs):/.test(base)) { [base, opt] = base.split(':'); }
+    if (base && /h$/.test(base) && GM.MODES[base] && GM.HARD_MODES.includes(base.slice(0, -1))) { hard = true; base = base.slice(0, -1); }
+    for (const [st, suf] of [['assists', 'ast'], ['apps', 'apps']]) if (base.endsWith(suf) && GM.MODES[base] && GM.MODES[base.slice(0, -suf.length) + 'ast']) { stat = st; base = base.slice(0, -suf.length); break; }
+    let g = GAMES.findIndex(x => x[1].includes(base));
+    if (g < 0) { g = 0; base = 'ultimate'; }
     const keyFor = (b, st = stat, h = hard) => { const k = b + (hasStats(b) ? SUFFIX[st] : ''); return h && GM.HARD_MODES.includes(k) ? k + 'h' : k; };
-    let cat = CATS.findIndex(c => c[1].includes(base));
-    if (cat < 0) { cat = 0; base = 'ultimate'; }
-    m = keyFor(base);
-    const label = k => k.startsWith('daily:') ? GM.calIcon() + ' Daily Ultimate' : k.startsWith('grid:') ? '#️⃣ Grid today' : k.startsWith('footle:') ? '🟩 Footle today' : k.startsWith('mbdaily:') ? '💰 Moneyball today' : k.startsWith('dchaos:') ? GM.calIcon() + ' Daily CHAOS' : k.startsWith('match:') ? '🏟️ ' + GM.esc(GM.matchTitle(k))
-      : SHORT[k] || `${(GM.MODES[k] || {}).icon || ''} ${((GM.MODES[k] || {}).name || k).replace(/ \(Hard\)| – .*$/g, '')}`;
+    const special = base === 'clubs' || base === 'dailies';
+    m = special ? base : keyFor(base);
+    const name = k => k.startsWith('daily:') ? 'Daily Ultimate' : k.startsWith('grid:') ? 'Club Grid' : k.startsWith('footle:') ? 'Footle' : k.startsWith('mbdaily:') ? 'Daily Moneyball'
+      : k.startsWith('dchaos:') ? 'Daily CHAOS' : k.startsWith('match:') ? GM.matchTitle(k) : NAMES[k] || ((GM.MODES[k] || {}).name || k).replace(/ \(Hard\)| – .*$/g, '');
     const link = k => `#/leaderboard?m=${encodeURIComponent(k)}`;
-    const canHard = GM.HARD_MODES.includes(keyFor(base, stat, false));
-    const pickers = `<div class="lb-cats">${CATS.map(([name, list], i) => `<a class="${i === cat ? 'on' : ''}" href="${link(keyFor(list[0]))}">${name}</a>`).join('')}<a href="#/clubs">🏟️ Club v club</a></div>
-      <div class="tabs">${CATS[cat][1].map(k => `<a class="tab ${k === base ? 'active' : ''}" href="${link(k === 'dailies' ? 'dailies' : keyFor(k))}">${label(k)}</a>`).join('')}</div>
-      ${hasStats(base) ? `<div class="hard-toggle small three">${Object.entries(GM.STATS).map(([k, st]) => `<a class="${k === stat ? 'on' : ''}" href="${link(keyFor(base, k))}"><i class="sb-ico">${st.icon}</i>${st.name}</a>`).join('')}</div>` : ''}
-      ${canHard ? `<div class="hard-toggle small"><a class="${hard ? '' : 'on'}" href="${link(keyFor(base, stat, false))}">🙂 Normal</a><a class="${hard ? 'on' : ''}" href="${link(keyFor(base, stat, true))}">🥵 Hard</a></div>` : ''}`;
+    const variants = GAMES[g][1];
+    const sel = (id, opts, on) => `<select class="lbx-sel" id="${id}">${opts.map(([v, l]) => `<option value="${GM.esc(v)}" ${v === on ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+    const DSORT = { big_days: '⚽ 450+ days', footle_wins: '🟩 Footle wins', grid_days: '#️⃣ Grids', best_streak: '🔥 Streaks' };
+    const filters = [
+      variants.length > 1 ? sel('lbv', variants.map(k => [k, name(k)]), base) : '',
+      !special && hasStats(base) ? sel('lbs', Object.entries(GM.STATS).map(([k, st]) => [k, `${st.icon} ${st.name}`]), stat) : '',
+      !special && GM.HARD_MODES.includes(keyFor(base, stat, false)) ? sel('lbh', [['0', '🙂 Normal'], ['1', '🥵 Hard']], hard ? '1' : '0') : '',
+      !special && !/:/.test(m) ? sel('lbp', [['1', '📅 This month'], ['0', '🏆 All time']], GM.lbMonth() ? '1' : '0') : '',
+      base === 'clubs' ? sel('lbw', [['0', '📅 This week'], ['1', '⏪ Last week']], opt === '1' ? '1' : '0') : '',
+      base === 'dailies' ? sel('lbd', Object.entries(DSORT), DSORT[opt] ? opt : 'big_days') : '',
+    ].join('');
+    const NOTES = { chaos: '🌪️ Total points: your XI’s tally plus every bonus.', footle: '🟩 8 points for a first-guess win, down to 1 on the last guess.',
+      clubs: 'Every fan’s Daily Ultimate this week counts for their club. Same spins for everyone, so the table is the average; a club needs 3 games to be ranked.',
+      dailies: 'Everyone’s daily results count, and you don’t need a streak.', packedxi: 'Your best XI from finished cards (📒 Album).' };
+    const note = NOTES[/^d?chaos/.test(m) ? 'chaos' : m.split(':')[0]] || '';
     app.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>🏆 Leaderboards</h2><span></span></div>
-      ${pickers}
-      ${GM.lbPeriod(m)}
+      <div class="lbx-games">${GAMES.map(([l, v], i) => `<a class="${i === g ? 'on' : ''}" href="${link(v[0] === 'clubs' || v[0] === 'dailies' ? v[0] : keyFor(v[0]))}">${l}</a>`).join('')}</div>
+      ${filters ? `<div class="lbx-filters">${filters}</div>` : ''}
+      ${note ? `<p class="muted small lbx-note">${note}</p>` : ''}
       <div id="lbhidden"></div>
-      ${/^d?chaos/.test(m) ? '<p class="muted center">🌪️ CHAOS scores are total points: your XI’s tally plus every bonus (chemistry, rating, titles, loyalty…).</p>' : ''}
-      ${m.startsWith('footle:') ? '<p class="muted center">Footle scores: 8 for a first-guess win, down to 1 for getting it on the last guess.</p>' : ''}
-      ${GM.lb.enabled ? `<h3 class="section-title">🌍 ${/:/.test(m) ? 'Global' : GM.lbMonth() ? new Date().toLocaleDateString(undefined, { month: 'long' }) : 'All time'}</h3><div id="global" class="lb"><div class="muted">Loading…</div></div>` :
-        `<div class="banner">Global leaderboard isn’t switched on yet – use <b>⚔️ Challenge a friend</b> after a game to go head-to-head on the same spins.</div>`}
-      ${/^(ultimate|club|classic|extreme|purist)/.test(m) || m.startsWith('daily:') ? `<h3 class="section-title">📊 Your spread</h3>${m.startsWith('daily:') ? GM.distHtml('daily', 'goals')
-        : GM.distHtml(m, /apps(h)?$/.test(m) ? 'apps' : /ast(h)?$/.test(m) ? 'assists' : 'goals')}` : ''}
-      <h3 class="section-title">⭐ You</h3>
-      <div class="lb" id="lbyou"></div>`;
-    GM.lbYou(m, GM.$('#lbyou'));
+      <div id="lbbody"></div>`;
+    const on = GM.$('.lbx-games a.on'); if (on) on.scrollIntoView({ inline: 'center', block: 'nearest' });
+    const go = k => { location.hash = link(k); };
+    const ch = (id, f) => { const e = GM.$('#' + id); if (e) e.onchange = () => f(e.value); };
+    ch('lbv', v => go(v === 'clubs' || v === 'dailies' ? v : keyFor(v)));
+    ch('lbs', v => go(keyFor(base, v)));
+    ch('lbh', v => go(keyFor(base, stat, v === '1')));
+    ch('lbp', v => { GM.store.set('lbMonth', v === '1'); leaderboard(m); });
+    ch('lbw', v => go('clubs' + (v === '1' ? ':1' : '')));
+    ch('lbd', v => go('dailies:' + v));
+    const body = GM.$('#lbbody');
+    if (base === 'clubs') return GM.clubsBody(body, opt === '1' ? 1 : 0);
+    if (base === 'dailies') return dailyBody(body, DSORT[opt] ? opt : 'big_days');
     GM.hiddenNameBanner(GM.$('#lbhidden'));
-    GM.$$('.lb-period [data-per]').forEach(a => a.onclick = () => { GM.store.set('lbMonth', a.dataset.per === '1'); leaderboard(m); });
-    if (GM.lb.enabled) {
-      try {
-        const rows = await GM.lb.top(m), pts = /^d?chaos/.test(m);
-        const me = GM.getName();
-        GM.$('#global').innerHTML = rows.length ? rows.map((r, i) =>
-          `<div ${GM.lbRow(r.name, me)}><span>${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span><span>${GM.esc(r.name)}${GM.lbLevel(r)}${GM.pctTag(m, r.meta)}</span><b>${r.score.toLocaleString()}${pts ? '<small> pts</small>' : ''}</b></div>`).join('')
-          + (rows.some(r => r.name !== me) ? GM.lbReportHint : '')
-          : '<div class="muted">No scores yet – be the first!</div>';
-      } catch (e) { GM.$('#global').innerHTML = '<div class="muted">Couldn’t load the global board.</div>'; }
-    }
-  }
-
-  // Daily stars: who turns up and does well every day (from the daily_board view)
-  async function dailyBoard(sort) {
-    const SORTS = { big_days: ['⚽ 450+ days', 'Daily Ultimates with 450+ goals'], footle_wins: ['🟩 Footle wins', 'Footles solved'],
-      grid_days: ['#️⃣ Grids', 'Daily Club Grids completed'], best_streak: ['🔥 Streaks', 'Longest run of days playing a daily'] };
-    sort = SORTS[sort] ? sort : 'big_days';
-    const me = GM.getName();
-    app.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>📊 Daily stars</h2><span></span></div>
-      <div class="tabs"><a class="tab active" href="#/leaderboard?m=dailies">📊 Daily stars</a><a class="tab" href="#/leaderboard">🏆 Game boards ›</a></div>
-      <div class="seg" id="dsort">${Object.entries(SORTS).map(([k, [l]]) => `<button data-v="${k}" class="${k === sort ? 'on' : ''}">${l}</button>`).join('')}</div>
-      <p class="muted center">${SORTS[sort][1]}. Every player's daily results count, and you don't need a streak.</p>
-      <div id="dboard" class="lb">${GM.lb.enabled ? '<div class="muted">Loading…</div>' : '<div class="muted">The global leaderboard is switched off.</div>'}</div>
-      <h3 class="section-title">📱 You</h3>
-      <div class="dstats">
-        <div><b>${Object.values(GM.dailyLog()).filter(e => e.daily >= 450).length}</b><small>450+ days</small></div>
-        <div><b>${Object.values(GM.dailyLog()).filter(e => e.footle > 0).length}</b><small>Footle wins</small></div>
-        <div><b>${Object.values(GM.dailyLog()).filter(e => e.grid != null).length}</b><small>Grids</small></div>
-        <div><b>${GM.bestStreak()}</b><small>Best streak</small></div></div>`;
-    GM.$$('#dsort [data-v]').forEach(b => b.onclick = () => { location.hash = '#/leaderboard?m=dailies:' + b.dataset.v; });
+    const spread = /^(ultimate|club|classic|extreme|purist)/.test(m) || m.startsWith('daily:');
+    body.innerHTML = `<div class="lb" id="lbyou"></div>
+      ${GM.lb.enabled ? `<h3 class="section-title">🌍 ${/:/.test(m) ? 'Everyone' : GM.lbMonth() ? new Date().toLocaleDateString(undefined, { month: 'long' }) : 'All time'}</h3><div id="global" class="lb"><div class="muted">Loading…</div></div>`
+        : '<div class="banner">The global leaderboard isn’t switched on – use <b>⚔️ Challenge a friend</b> after a game to go head-to-head on the same spins.</div>'}
+      ${spread ? `<details class="set lbx-spread"><summary><span>📊 Your spread</span></summary>${m.startsWith('daily:') ? GM.distHtml('daily', 'goals') : GM.distHtml(m, stat)}</details>` : ''}`;
+    GM.lbYou(m, GM.$('#lbyou'));
     if (!GM.lb.enabled) return;
     try {
-      const rows = await GM.lb.dailyBoard(sort);
-      GM.$('#dboard').innerHTML = rows.length ? rows.map((r, i) => `<div ${GM.lbRow(r.name, me)}><span>${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span>
+      const rows = await GM.lb.top(m), pts = /^d?chaos/.test(m), me = GM.getName(), el = GM.$('#global');
+      if (!el) return;
+      el.innerHTML = rows.length ? rows.map((r, i) =>
+        `<div ${GM.lbRow(r.name, me)}><span>${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span><span>${GM.esc(r.name)}${GM.lbLevel(r)}${GM.pctTag(m, r.meta)}</span><b>${r.score.toLocaleString()}${pts ? '<small> pts</small>' : ''}</b></div>`).join('')
+        + (rows.some(r => r.name !== me) ? GM.lbReportHint : '')
+        : '<div class="muted">No scores yet – be the first!</div>';
+    } catch (e) { const el = GM.$('#global'); if (el) el.innerHTML = '<div class="muted">Couldn’t load the board.</div>'; }
+  }
+
+  // the Daily stars: who's played the dailies best, by a few measures
+  async function dailyBody(el, sort) {
+    const me = GM.getName(), l = GM.dailyLog();
+    el.innerHTML = `<div class="dstats">
+        <div><b>${Object.values(l).filter(e => e.daily >= 450).length}</b><small>your 450+ days</small></div>
+        <div><b>${Object.values(l).filter(e => e.footle > 0).length}</b><small>Footle wins</small></div>
+        <div><b>${Object.values(l).filter(e => e.grid != null).length}</b><small>Grids</small></div>
+        <div><b>${GM.bestStreak()}</b><small>Best streak</small></div></div>
+      <div id="dboard" class="lb">${GM.lb.enabled ? '<div class="muted">Loading…</div>' : '<div class="muted">The global leaderboard is switched off.</div>'}</div>`;
+    if (!GM.lb.enabled) return;
+    try {
+      const rows = await GM.lb.dailyBoard(sort), box = GM.$('#dboard');
+      if (!box) return;
+      box.innerHTML = rows.length ? rows.map((r, i) => `<div ${GM.lbRow(r.name, me)}><span>${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span>
         <span>${GM.esc(r.name)}<small class="muted"> · ${r.days_played} day${r.days_played === 1 ? '' : 's'}${r.current_streak > 1 ? ` · 🔥${r.current_streak}` : ''}</small></span><b>${r[sort]}</b></div>`).join('')
         + (rows.some(r => r.name !== me) ? GM.lbReportHint : '')
         : '<div class="muted">No daily results yet. Be the first!</div>';
-    } catch (e) { GM.$('#dboard').innerHTML = '<div class="muted">Couldn’t load the daily board.</div>'; }
+    } catch (e) { const box = GM.$('#dboard'); if (box) box.innerHTML = '<div class="muted">Couldn’t load the daily board.</div>'; }
   }
 
   /* ---------------------------------------------------------------- player index */

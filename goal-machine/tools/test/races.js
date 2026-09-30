@@ -56,5 +56,5 @@ async function playDraft(pg, tag) {
     await B.goto(U + '#/online'); await B.waitForTimeout(600);
     console.log('  chaos look after leaving:', await B.evaluate(() => document.body.classList.contains('chaos-mode')));
   }
-  console.log(errs.join('\n') || 'no page errors'); await b.close();
+  console.log(errs.join('\n') || 'no page errors'); if (errs.length) process.exitCode = 1; await b.close();
 })();

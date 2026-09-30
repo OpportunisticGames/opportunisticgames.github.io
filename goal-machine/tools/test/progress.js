@@ -60,19 +60,31 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   // boards: This month by default, All time a tap away, levels shown
   calls.length = 0;
   await pg.goto(U + '#/leaderboard?m=ultimate'); await pg.waitForTimeout(900);
-  ok(calls.some(c => /^month_scores\?/.test(c)) && /This month/.test(await pg.textContent('.lb-period .on')), 'boards open on This month');
+  ok(calls.some(c => /^month_scores\?/.test(c)) && await pg.$eval('#lbp', e => e.value) === '1', 'boards open on This month');
+  const lay = await pg.evaluate(() => { const g = document.querySelector('.lbx-games'), r = [...g.children].map(a => a.getBoundingClientRect().top);
+    return { oneRow: r.every(t => Math.abs(t - r[0]) < 2), games: g.children.length, selects: document.querySelectorAll('.lbx-filters select').length, you: document.querySelector('#lbbody').firstElementChild.id }; });
+  ok(lay.oneRow && lay.games >= 8 && lay.selects === 4, `simple layout: ${lay.games} games in one row, then 4 drop-downs (version, stat, Normal/Hard, month)`);
+  ok(lay.you === 'lbyou', 'your own position comes first, above the board');
+  await pg.selectOption('#lbs', 'assists'); await pg.waitForTimeout(600);
+  ok(/m=ultimateast/.test(await pg.evaluate(() => location.hash)), 'choosing Assists switches board');
+  await pg.selectOption('#lbv', 'classic'); await pg.waitForTimeout(600);
+  ok(/m=classicast/.test(await pg.evaluate(() => location.hash)), 'choosing Classic keeps the stat');
+  await pg.goto(U + '#/leaderboard?m=packedxi'); await pg.waitForTimeout(600);
+  ok(await pg.$$eval('.lbx-filters select', l => l.length) === 1, 'a board with nothing to choose shows just the month');
+  await pg.goto(U + '#/leaderboard?m=ultimate'); await pg.waitForTimeout(700);
   ok(/Lv 23/.test(await pg.textContent('#global')), 'players’ levels show next to their names');
   calls.length = 0;
-  await pg.click('.lb-period [data-per="0"]'); await pg.waitForTimeout(900);
-  ok(calls.some(c => /^best_scores\?/.test(c)) && /All time/.test(await pg.textContent('.lb-period .on')), 'All time switches to the all-time boards');
+  await pg.selectOption('#lbp', '0'); await pg.waitForTimeout(900);
+  ok(calls.some(c => /^best_scores\?/.test(c)) && await pg.$eval('#lbp', e => e.value) === '0', 'All time switches to the all-time boards');
   await pg.evaluate(() => GM.store.set('lbMonth', true));
   await pg.goto(U + '#/leaderboard?m=' + encodeURIComponent('daily:2026-09-30')); await pg.waitForTimeout(700);
-  ok(!(await pg.$('.lb-period')), 'a day’s board has no month switch');
+  ok(!(await pg.$('#lbp')), 'a day’s board has no month switch');
 
   // club v club, and your club and level with your account
   await pg.evaluate(() => { GM.store.set('account', { name: 'SuperSub', key: 'k' }); GM.store.set('club', 'Everton'); GM.store.set('profileSent', ''); });
   calls.length = 0;
   await pg.goto(U + '#/clubs'); await pg.waitForTimeout(900);
+  ok(await pg.$eval('.lbx-games a.on', e => /Your club/.test(e.textContent)) && await pg.$eval('#lbv', e => e.value) === 'clubs', 'Club v club lives in the Leaderboards, under Your club');
   const rows = await pg.$$eval('#clubs .lb-row', l => l.map(r => r.textContent.replace(/\s+/g, ' ').trim()));
   ok(rows.length === 3 && /^🥇.*Liverpool/.test(rows[0]) && /^–/.test(rows[2]) && await pg.$eval('#clubs .lb-row.me', r => /Everton/.test(r.textContent)), 'the club table: ranked clubs, the unranked one below, yours highlighted');
   const prof = calls.find(c => /rpc\/set_profile/.test(c));

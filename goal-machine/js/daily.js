@@ -158,7 +158,7 @@
     root.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>${GM.calIcon()} Today</h2><span></span></div>
       <div class="streak-hero"><div class="flame ${s ? 'lit' : ''}">🔥</div><div><b>${s}</b><span>day streak</span><small>Best ${GM.bestStreak()} · play any daily to keep it going</small></div></div>
       ${GM.matchBanner ? GM.matchBanner() + GM.intlBanner() : ''}
-      ${GM.packsWaiting && GM.packsWaiting() ? `<a class="pack-bar" href="#/packs"><span>🎁</span><span><b>${GM.packsWaiting()} pack${GM.packsWaiting() > 1 ? 's' : ''} to open</b><small>A free one every day</small></span><span>›</span></a>` : ''}
+      ${GM.packsWaiting && GM.packsWaiting() ? `<a class="pack-bar" href="#/packs?open=1"><span>🎁</span><span><b>${GM.packsWaiting()} pack${GM.packsWaiting() > 1 ? 's' : ''} to open</b><small>A free one every day</small></span><span>›</span></a>` : ''}
       <div class="daily-list">${games.map(g => {
         const G = GAMES[g], st = GM.dailyStatus(g), gs = GM.streak(g);
         const name = g === 'club' ? `${esc(club)} Footle` : G.name;
