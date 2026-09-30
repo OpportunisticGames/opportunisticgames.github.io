@@ -1498,3 +1498,9 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
 .cm-card.rar-r { border-color: #b44dff; box-shadow: 0 0 30px rgba(180, 77, 255, .55), 0 10px 40px rgba(0, 0, 0, .5); }
 .cm-card.rar-l { border-color: #ffd400; box-shadow: 0 0 40px rgba(255, 214, 0, .7), 0 10px 40px rgba(0, 0, 0, .5); }
 @keyframes rar-shine { to { background-position: -200% 0; } }
+.share-day { display: block; width: 100%; margin: 12px 0 4px; }
+/* home: CHAOS is the headline event (first on the Main tab); the banter line under the logo */
+.chaos-card:first-child { margin-top: 4px; }
+.chaos-head .kicker { display: block; font: 800 .62rem Inter, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #ffe600; opacity: .95; }
+.hero .banter { font-style: italic; }
+.chaos-card .chaos-pool { display: flex; gap: 6px; margin-top: 10px; } .chaos-card .chaos-pool button { flex: 1; padding: 7px 6px; border-radius: 12px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1); color: #fff; font: 700 .76rem Inter, sans-serif; cursor: pointer; } .chaos-card .chaos-pool button.on { background: #ffe600; color: #2a1a00; border-color: #ffe600; }

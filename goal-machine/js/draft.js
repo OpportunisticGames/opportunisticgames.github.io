@@ -122,8 +122,9 @@
       return { note: `Nobody gave ${nm(i)} a chance. <b>×5</b>!`, run: c => c.visit(i, '🦊', 'strike') }; } },
     slip: { rar: 'r', icon: '🍌', name: 'The slip', tone: 'bad', look: ['red', 'boo'], go: () => {
       const f = filledIdx(); if (!f.length) return { note: 'Nobody to slip yet.' };
-      const i = f.slice().sort((a, b) => S.xi[b].g - S.xi[a].g)[0]; scale(S.xi[i], 0.5, 'halved');
-      return { note: `${nm(i)} slips at the worst possible moment: <b>halved</b>.`, run: c => c.visit(i, '🍌', 'drive') }; } },
+      const sg = f.find(k => byId(S.xi[k].p).name === 'Steven Gerrard');  // 🤫 of course it's him
+      const i = sg != null ? sg : f.slice().sort((a, b) => S.xi[b].g - S.xi[a].g)[0]; scale(S.xi[i], 0.5, 'halved');
+      return { note: sg != null ? 'Steven Gerrard slips. Of course he does. <b>Halved</b>.' : `${nm(i)} slips at the worst possible moment: <b>halved</b>.`, run: c => c.visit(i, '🍌', 'drive') }; } },
     lastminute: { rar: 'l', icon: '⏱️', name: '93:20', tone: 'good', look: ['unleash', ['horn', 'cheer']], go: () => {
       filledIdx().forEach(i => scale(S.xi[i], 1.5, 'boosted'));
       return { note: 'Last-minute madness! The whole ground goes up: your <b>whole XI ×1.5</b>!', run: c => c.sweep('🎉') }; } },
@@ -223,6 +224,8 @@
   // Ultimate Wildcard CHAOS: Ultimate plus bonus points (chemistry, rating, titles, loyalty…), extra risky wildcards,
   // wildcard storms and random events
   RULES.chaos = { max: true, weight: () => 1, noWild: ['rotation', 'bus'], chaos: true };
+  // CHAOS Extreme: the same madness with every PL player (5,000+), mostly strangers
+  RULES.chaosx = { ...RULES.chaos, all: true };
 
   let S = null; // game state
   let root = null;
@@ -688,7 +691,7 @@
         timers.forEach(clearTimeout); window.removeEventListener('hashchange', finish);
         el.classList.add('out'); setTimeout(() => el.remove(), 300);
         busy = false;
-        if (S.rules.chaos && (o.text || o.reveal)) S.moments = (S.moments || []).concat([{ icon: o.icon, name: o.name, text: (o.after || (o.reveal && o.reveal.text) || o.text).replace(/<[^>]+>/g, '') }]);
+        if (S.rules.chaos && (o.text || o.reveal)) S.moments = (S.moments || []).concat([{ icon: o.icon, name: o.name, text: (o.after || (o.reveal && o.reveal.text) || o.text).replace(/<[^>]+>/g, ''), rar: o.rarity || '' }]);
         render(); done();
       };
       window.addEventListener('hashchange', finish);
@@ -847,6 +850,9 @@
     GM.sound.play('place'); GM.buzz();
     // in target modes a blip climbs as the total closes in on the number
     if (S.target && !S.rules.treble) setTimeout(() => GM.sound.play('rise', S.xi.reduce((a, x) => a + x.g, 0) / S.target), 180);
+    if (p.name === 'Sergio Agüero' && emptySlots() === 0) {  // 🤫 the last signing of the game
+      setTimeout(() => { GM.toast('🇦🇷 <b>AGÜEROOOOOOOO!</b> Last-minute winner.', 3200); GM.sound.play('cheer'); }, 400);
+    }
     if (before) {  // Double or Nothing: a real coin toss before he takes his place
       await moment({ icon: '🎲', name: 'Double or nothing', tone: 'weird', before, coin: heads, scene: 'casino', sound: 'drumroll', text: `${GM.esc(p.name)}: heads he counts double, tails he counts for nothing…`,
         after: heads ? `<b>Heads!</b> ${GM.esc(p.name)} counts double.` : `<b>Tails…</b> ${GM.esc(p.name)} counts for nothing.` });
@@ -1018,6 +1024,9 @@
         mode: S.mode, stat: S.stat, total: sc.t, points: sc.total, hard: S.hard, xi: xiSlots.map(s => s.player),
         rating: rating.score, pairs: rating.pairs.length, wildUsed: S.wildUsed, coinWin: S.coinWin,
         bull: sc.diff === 0, closeness: sc.closeness != null ? sc.closeness : null, treble: !!(sc.hits && sc.hits.length === 3),
+        slots: xiSlots.map(x => ({ name: x.player.name, g: x.g })), manager: S.manager || null,
+        moments: (S.moments || []).map(m => m.name), rars: (S.moments || []).map(m => m.rar), bigs: (S.bigSeen || []).length,
+        liked: S.manager && MANAGERS[S.manager].likes ? xiSlots.filter(x => MANAGERS[S.manager].likes(x.player)).length : 0,
       });
       S.collected = { n: S.collected.newPlayers.length, total: S.collected.total, badges: S.collected.fresh.map(x => x.icon + ' ' + x.name), book: S.collected.book };
     }

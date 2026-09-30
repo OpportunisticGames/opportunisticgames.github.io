@@ -125,6 +125,24 @@
     return { done: false, text: '' };
   };
 
+  // 📤 Share my day: every daily result so far today, and the streak, in one spoiler-free post (like Wordle's squares)
+  GM.shareDayText = function () {
+    const club = GM.favClub(), e = log()[GM.today()] || {}, fmt = n => Number(n).toLocaleString();
+    const line = {
+      daily: v => `📅 Daily Ultimate: ${fmt(v)} goals`,
+      footle: v => `${v > 0 ? '🟩' : '🟥'} Footle: ${v > 0 ? v : 'X'}/8`,
+      grid: v => `#️⃣ Club Grid: ${fmt(v)} pts`,
+      club: v => `🏟️ ${club} Footle: ${v > 0 ? v : 'X'}/8`,
+      moneyball: v => `💰 Daily Moneyball: ${fmt(v)} goals`,
+      chaos: v => `🌪️ Daily CHAOS: ${fmt(v)} pts`,
+    };
+    const rows = Object.keys(line).filter(g => e[g] != null && (g !== 'club' || club)).map(g => line[g](e[g]));
+    if (!rows.length) return null;
+    const s = GM.streak(), d = new Date();
+    const day = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+    return `⚽ Goal Machine · ${day}\n${s ? `🔥 ${s}-day streak\n` : ''}${rows.join('\n')}\nCan you beat that?`;
+  };
+
   /* ================================================================ Today hub */
   GM.todayPage = function (root) {
     const club = GM.favClub(), games = Object.keys(GAMES).filter(g => g !== 'club' || club);
@@ -144,10 +162,13 @@
           <span class="dr-text"><b>${name}</b><small>${st.text || (g === 'footle' ? 'Guess the player in 8' : g === 'daily' ? 'Same spins for everyone. One shot.' : g === 'grid' ? 'Played for both? Fill the grid.' : g === 'moneyball' ? 'Same market for everyone' : g === 'chaos' ? 'Same chaos for everyone · one go' : 'Mystery player from your club')}</small></span>
           <span class="dr-streak">${gs ? `🔥${gs}` : ''}</span><span class="dr-go">${st.done ? 'View' : st.text ? 'Continue' : 'Play'}</span></a>`;
       }).join('')}</div>
+      ${GM.shareDayText() ? '<button class="btn big share-day" id="shareday">📤 Share my day</button>' : ''}
       ${club ? '' : `<a class="pick-club" href="#/settings?s=look">🏟️ Pick your favourite club to unlock a daily <b>Club Footle</b> and your club's colours</a>`}
       <h3 class="section-title">Last 4 weeks</h3>
       <div class="calendar">${cal.join('')}</div>
       <p class="muted center">New daily games in <b>${GM.untilTomorrow()}</b> · <a href="#/leaderboard?m=dailies">📊 Daily leaderboard</a></p>`;
+    const sb = GM.$('#shareday', root);
+    if (sb) sb.onclick = () => GM.share(GM.shareDayText(), GM.baseUrl() + '#/today');
   };
 
   /* ================================================================ Footle */

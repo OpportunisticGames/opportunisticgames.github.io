@@ -13,7 +13,7 @@ formations, and badges round 2.
 
 **Next: medium (a day or two each), a reason to come back**
 6. Weekly Premier League quiz, generated from our own data, with a weekly leaderboard
-7. Share your whole day *(Claude's idea)*: one post for the group chat with every daily result ("Goal Machine ·
+7. ✅ Share your whole day (5.5) *(Claude's idea)*: one post for the group chat with every daily result ("Goal Machine ·
    26 Sep 🟩 Footle 3/8 · ⚽ Daily Ultimate 512 · #️⃣ Grid 7/9 · 🔥 12"), our best free advertising
 
 **Later: big, design first**
@@ -89,7 +89,15 @@ formations, and badges round 2.
   matches? The data-only version can be automatic; topical questions need someone to write them each week (or a
   weekly data refresh that turns into questions). Leaderboard for the week, streaks across weeks?
 
-### Hidden things: secrets, unlocks, easter eggs
+### Your club's matchdays 💬
+- **Owner's idea (30 Sep 2026):** "it would be cool to have something on your team's matchdays, can't think what
+  though."
+- **Notes:** needs fixture dates for the favourite club (not in our data yet; a weekly fixtures fetch in the data
+  workflow could add them). Ideas to talk through: a matchday banner on home ("🏟️ Everton v Spurs today"); a
+  matchday Club XI with double points for players from both clubs; a pre-match Footle using players who played for
+  both sides; a push notification on the morning of the game.
+
+### Hidden things: secrets, unlocks, easter eggs ✅ first round shipped in 5.5
 - **Owner's idea:** hidden items, unlocks and secrets to keep the game exciting.
 - **Notes:** some directions, from light to heavy:
   - secret badges (hidden in the list as "???" until earned): an all-one-club XI, exactly 442 goals, a 0-goal XI
@@ -99,6 +107,15 @@ formations, and badges round 2.
   - rare "legend" reel cards with a special shine (cosmetic)
 - **Questions:** cosmetic only, or can unlocks change gameplay (a new wildcard)? Should secrets be shareable
   ("I found the hidden mode") to spread word of mouth?
+- **Owner's ideas (30 Sep 2026):** over half the XI from your club; the Gerrard slip (Gerrard on 0 in CHAOS); CHAOS
+  with its own challenges, some secret, and CHAOS as the headline event; an XI of PL lifers; players who got
+  relegated; one-season players; a daily banter line about your club on the home page.
+- **Shipped in 5.5:** Share my day; CHAOS headline + a CHAOS badge category (Total Anarchy, Vote of No Confidence,
+  Once in a Lifetime, Meltdown, Gaffer's Favourites; secret: The Slip, Dilly Ding, Fergie Time, We Are Not Alone,
+  Pigeon Fancier); squad badges Proper Fan, Lifers (career spans 10+ seasons; we don't have careers outside the PL),
+  Going Down (from a relegation table in collection.js + Transfermarkt club spells, which have gaps); secret Yo-Yo
+  Club and One-Season Wonders; the Slip event goes for Gerrard; an AGÜEROOOO moment for signing him last; daily
+  club banter (js/banter.js). Test: `tools/test/secrets.js`.
 
 ### Manager mode
 - **Owner's idea:** some form of manager mode.
