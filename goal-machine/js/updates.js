@@ -16,6 +16,7 @@
         '🃏 Wildcards! Sometimes a card flips to a wildcard and you choose: pick one of three, a scout’s tip for a card that’s nearly done, or (rarely) a Legend of your choice',
         '🌍 Themed packs: your free pack is a Nations pack in an international break and a Matchday pack when your club plays. Go up a rank for a 🟣 Legends pack',
         '📒 The Album’s been tidied up: your level and packs at the top, then My XI, Cards, Badges and everyone you’ve Signed',
+        '🏆 Simpler leaderboards: pick a game, choose from a couple of drop-downs, and your position is right at the top. Club v club is under Your club',
       ],
     },
     {

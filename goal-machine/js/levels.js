@@ -73,25 +73,24 @@
 
   /* ================================================================ club v club */
   GM.clubTable = async (week = 0) => GM.lb.rpc('club_table', { p_week: week });
-  GM.clubsPage = async function (root, week = 0) {
+  // the table, inside the Leaderboards (🏟️ Your club → Club v club)
+  GM.clubsBody = async function (el, week = 0) {
     const club = GM.favClub();
-    root.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>🏟️ Club v club</h2><span></span></div>
-      <div class="seg album-views"><a class="${week ? '' : 'on'}" href="#/clubs">This week</a><a class="${week ? 'on' : ''}" href="#/clubs?w=1">Last week</a></div>
-      <p class="muted">Every fan’s <b>Daily Ultimate</b> this week counts for their club. Everyone gets the same spins each day, so it’s a fair fight: the table is the average, and a club needs 3 games to be ranked.</p>
-      ${club ? '' : '<a class="pick-club" href="#/settings?s=look">🏟️ Pick your club to play for them</a>'}
+    el.innerHTML = `${club ? '' : '<a class="pick-club" href="#/settings?s=look">🏟️ Pick your club to play for them</a>'}
       ${club && !GM.account() ? '<a class="pick-club" href="#/settings?s=account">🔒 Claim a leaderboard name so your games count for your club</a>' : ''}
       <div class="lb club-lb" id="clubs"><div class="muted">Loading…</div></div>
       ${club ? `<a class="btn big" href="#/daily">📅 Play today’s Daily Ultimate for ${GM.esc(GM.clubShort(club))}</a>` : ''}`;
     GM.syncProfile();
-    if (!GM.lb.enabled) { GM.$('#clubs', root).innerHTML = '<div class="muted">The online table is switched off.</div>'; return; }
+    const box = () => GM.$('#clubs', el);
+    if (!GM.lb.enabled) { box().innerHTML = '<div class="muted">The online table is switched off.</div>'; return; }
     try {
-      const rows = await GM.clubTable(week), el = GM.$('#clubs', root);
-      if (!el) return;
+      const rows = await GM.clubTable(week);
+      if (!box()) return;
       let rank = 0;
-      el.innerHTML = rows.length ? rows.map(r => {
+      box().innerHTML = rows.length ? rows.map(r => {
         const pos = r.ranked ? ++rank : '–';
         return `<div class="lb-row ${r.club === club ? 'me' : ''}"><span>${r.ranked && pos <= 3 ? ['🥇', '🥈', '🥉'][pos - 1] : pos}</span><span>${GM.clubChip(r.club)} ${GM.esc(r.club)}<small class="muted"> · ${r.fans} fan${r.fans > 1 ? 's' : ''}, ${r.games} game${r.games > 1 ? 's' : ''}</small></span><b>${r.avg.toLocaleString()}</b></div>`;
       }).join('') : `<div class="muted">No games yet ${week ? 'last' : 'this'} week. Be the first for your club!</div>`;
-    } catch (e) { const el = GM.$('#clubs', root); if (el) el.innerHTML = '<div class="muted">Couldn’t load the table.</div>'; }
+    } catch (e) { if (box()) box().innerHTML = '<div class="muted">Couldn’t load the table.</div>'; }
   };
 })();

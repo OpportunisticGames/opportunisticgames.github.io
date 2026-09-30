@@ -1766,3 +1766,16 @@ html.intl-break body::after { content: ''; position: fixed; top: 0; left: 0; rig
 .dealt:not(.over) .po-actions::before { content: 'Tap to speed up'; font-size: .75rem; opacity: .55; }
 @media (prefers-reduced-motion: reduce) { .po-foil::after, .po-pack, .po-hint, .po-rays, .tier-l .pc-sheen, .tier-g .pc-sheen { animation: none; } }
 .pc-name.long { font-size: 1.1em; }
+
+/* Leaderboards: one row of games, one line of drop-downs */
+.lbx-games { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 6px -16px 8px; padding: 2px 16px 4px; }
+.lbx-games::-webkit-scrollbar { display: none; }
+.lbx-games a { flex: none; padding: 8px 14px; border-radius: 999px; background: var(--inset); color: var(--text); text-decoration: none; font: 700 .88rem Inter, sans-serif; white-space: nowrap; }
+.lbx-games a.on { background: var(--accent); color: #0a2a1f; box-shadow: 0 3px 0 var(--btn-edge, rgba(0, 0, 0, .25)); }
+.lbx-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.lbx-sel { flex: 1 1 auto; min-width: 0; max-width: 100%; padding: 8px 28px 8px 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E") no-repeat right 10px center;
+  color: var(--text); font: 700 .85rem Inter, sans-serif; -webkit-appearance: none; appearance: none; }
+.lbx-note { margin: 0 0 8px; }
+#lbyou:not(:empty) { margin-bottom: 4px; }
+.lbx-spread { margin-top: 12px; }
+.lbx-games { -webkit-mask: linear-gradient(90deg, #000 85%, transparent); mask: linear-gradient(90deg, #000 85%, transparent); }

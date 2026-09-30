@@ -12,6 +12,7 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 2026-09-30 | The Leaderboards menu had got too complicated: four rows of category buttons, a row of modes and three toggles before any scores | 5.7: one scrolling row of games, one line of drop-downs (version, stat, Normal/Hard, month), your position first; Club v club and Daily stars moved inside |
 | 2026-09-30 | Pack cards weren't even: each card centred its contents, so a one-line name sat lower than a two-line one, and the last row wasn't centred | 5.7: new cards with a fixed layout (the same size and rows on every card), and the pack's cards centred in rows |
 | 2026-09-30 | The Album didn't make sense after packs: the Packed XI had quietly replaced the Dream XI in a page that still said it was "players you've signed" | 5.7: the Album reworked into one hub (level and packs, My XI, Cards, Badges, Signed); it says the Packed XI replaced the Dream XI |
 | 2026-09-30 | Found while building levels: a new player's first game asked for a leaderboard name twice (the draft's score, then the Packed XI's) | 5.6: the Packed XI only posts quietly if you already have a name |
