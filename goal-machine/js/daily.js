@@ -155,6 +155,7 @@
     const s = GM.streak();
     root.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>${GM.calIcon()} Today</h2><span></span></div>
       <div class="streak-hero"><div class="flame ${s ? 'lit' : ''}">🔥</div><div><b>${s}</b><span>day streak</span><small>Best ${GM.bestStreak()} · play any daily to keep it going</small></div></div>
+      ${GM.matchBanner ? GM.matchBanner() : ''}
       <div class="daily-list">${games.map(g => {
         const G = GAMES[g], st = GM.dailyStatus(g), gs = GM.streak(g);
         const name = g === 'club' ? `${esc(club)} Footle` : G.name;
@@ -202,15 +203,25 @@
   const EMOJI = { hit: '🟩', near: '🟨', miss: '⬛' };
   const isAnswer = (g, a) => g.id === a.id || (g.name === a.name && g.first === a.first);
   GM.footleAnswer = answerFor;  // for tests
+  // pre-match Footle: someone who played for both sides (either side, if hardly anyone did)
+  function matchAnswer(fx) {
+    const both = GM.bothSides(fx), r = GM.rng('mfootle:' + fx.id);
+    const pool = both.length >= 3 ? both : GM.players.filter(p => (p.clubs.includes(fx.home) || p.clubs.includes(fx.away)) && p.apps >= 60);
+    return { p: r.weighted(pool, p => Math.sqrt(p.fame)), both: both.length >= 3 };
+  }
+  GM.matchFootleAnswer = matchAnswer;
 
-  GM.footle = function (root, clubMode) {
+  GM.footle = function (root, clubMode, fxId) {
+    const fx = fxId ? GM.fixtureById(fxId) : null;  // the pre-match Footle (no streak or leaderboard)
+    if (fxId && !fx) { location.hash = '#/matchday'; return; }
     const club = clubMode ? GM.favClub() : '';
     if (clubMode && !club) { location.hash = '#/settings?s=look'; GM.toast('Pick your favourite club first'); return; }
-    const day = GM.today(), key = clubMode ? `cfootle:${day}:${GM.slug(club)}` : 'footle:' + day, game = clubMode ? 'club' : 'footle';
-    const ans = answerFor(day, club);
+    const day = GM.today(), key = fx ? 'mfootle:' + fx.id : clubMode ? `cfootle:${day}:${GM.slug(club)}` : 'footle:' + day, game = clubMode ? 'club' : 'footle';
+    const ma = fx ? matchAnswer(fx) : null, ans = fx ? ma.p : answerFor(day, club);
     const st = store.get(key, { guesses: [] });
     const guesses = () => st.guesses.map(id => GM.players[id]);
-    const title = clubMode ? `${esc(club)} Footle` : 'Footle';
+    const title = fx ? `${esc(GM.clubShort(fx.home))} v ${esc(GM.clubShort(fx.away))} Footle` : clubMode ? `${esc(club)} Footle` : 'Footle';
+    const back = fx ? '#/matchday' : '#/today';
 
     function row(g) {
       const f = feedback(g, ans);
@@ -219,8 +230,8 @@
     }
     function render() {
       const gs = guesses(), won = gs.some(g => isAnswer(g, ans)), over = won || gs.length >= MAX;
-      root.innerHTML = `<div class="topbar"><a href="#/today" class="back">‹</a><h2>🟩 ${title}</h2><span class="top-btns">${clubMode ? '' : GM.lbButton('footle:' + day)}<button class="icon-btn small" id="fhelp">?</button></span></div>
-        <div class="hl-head">Guess ${Math.min(gs.length + (over ? 0 : 1), MAX)} of ${MAX}${clubMode ? ` · every answer played for ${esc(club)}` : ' · a well-known PL player'}</div>
+      root.innerHTML = `<div class="topbar"><a href="${back}" class="back">‹</a><h2>🟩 ${title}</h2><span class="top-btns">${clubMode || fx ? '' : GM.lbButton('footle:' + day)}<button class="icon-btn small" id="fhelp">?</button></span></div>
+        <div class="hl-head">Guess ${Math.min(gs.length + (over ? 0 : 1), MAX)} of ${MAX}${fx ? (ma.both ? ` · played for ${esc(fx.home)} and ${esc(fx.away)}` : ` · played for ${esc(fx.home)} or ${esc(fx.away)}`) : clubMode ? ` · every answer played for ${esc(club)}` : ' · a well-known PL player'}</div>
         ${over ? '' : `<div class="guess-box"><input class="input" id="fg" placeholder="Type a player…" autocomplete="off"><div class="ac" id="fac" hidden></div></div>`}
         <div class="f-head"><span></span><div class="f-cells">${COLS.map(([, l]) => `<span>${l}</span>`).join('')}</div></div>
         <div class="f-rows">${gs.slice().reverse().map(row).join('') || '<p class="muted center">Green is a match. Yellow is close (a shared club, a similar position, or within a few seasons, 30 apps or 10 goals). The arrows say whether the answer is higher or lower.</p>'}</div>
@@ -236,7 +247,8 @@
       store.set(key, st);
       const won = isAnswer(p, ans);
       GM.sound.play(won ? 'good' : 'place'); GM.buzz();
-      if (won || st.guesses.length >= MAX) {
+      if (fx && (won || st.guesses.length >= MAX)) { st.done = true; st.won = won; store.set(key, st); }
+      else if (won || st.guesses.length >= MAX) {
         const n = won ? st.guesses.length : 0;
         GM.markDaily(game, n, day);
         if (!clubMode && won) GM.recordScore('footle:' + day, MAX + 1 - n);
@@ -247,7 +259,8 @@
     function result(won) {
       const gs = guesses(), n = gs.length;
       const grid = gs.map(g => { const f = feedback(g, ans); return COLS.map(([k]) => EMOJI[f[k].cls]).join(''); }).join('\n');
-      const share = `⚽ ${clubMode ? club + ' ' : ''}Footle ${new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} · ${won ? n : 'X'}/${MAX}\n${grid}`;
+      if (fx) setTimeout(() => GM.sound.play(won ? 'cheer' : 'fulltime'), 250);
+      const share = `⚽ ${fx ? `${fx.home} v ${fx.away} ` : clubMode ? club + ' ' : ''}Footle ${new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} · ${won ? n : 'X'}/${MAX}\n${grid}`;
       const l = log(), dist = Array(MAX + 1).fill(0);
       let played = 0, wins = 0;
       Object.values(l).forEach(e => { if (e[game] != null) { played++; if (e[game] > 0) { wins++; dist[e[game]]++; } } });
@@ -256,12 +269,12 @@
         <div class="center">${GM.avatar(ans, 'lg')}<h3>${won ? '🎉 ' : ''}${esc(ans.name)}</h3>
           <p class="muted">${ans.poss.join('/')} · ${GM.flag(ans.nat)} · ${GM.era(ans)} · ${ans.apps} apps · ${ans.goals} goals</p>
           <div class="chips">${ans.clubs.map(c => GM.clubChip(c)).join('')}</div></div>
-        <div class="f-stats"><div><b>${played}</b><small>Played</small></div><div><b>${played ? Math.round(100 * wins / played) : 0}%</b><small>Won</small></div>
+        ${fx ? '' : `<div class="f-stats"><div><b>${played}</b><small>Played</small></div><div><b>${played ? Math.round(100 * wins / played) : 0}%</b><small>Won</small></div>
           <div><b>${GM.streak(game)}</b><small>Streak</small></div><div><b>${GM.bestStreak(game)}</b><small>Best</small></div></div>
-        <div class="f-dist">${dist.slice(1).map((c, i) => `<div><span>${i + 1}</span><i style="width:${Math.max(6, 100 * c / mx)}%" class="${won && n === i + 1 ? 'me' : ''}">${c}</i></div>`).join('')}</div>
-        <div class="actions col"><button class="btn big" id="fshare">📤 Share</button><a class="btn ghost" href="#/today">📅 Other daily games</a></div>
-        <p class="muted center">Next ${title} in ${GM.untilTomorrow()}</p></div>`;
-      GM.$('#fshare', root).onclick = () => GM.share(share, GM.baseUrl() + (clubMode ? '#/clubfootle' : '#/footle'));
+        <div class="f-dist">${dist.slice(1).map((c, i) => `<div><span>${i + 1}</span><i style="width:${Math.max(6, 100 * c / mx)}%" class="${won && n === i + 1 ? 'me' : ''}">${c}</i></div>`).join('')}</div>`}
+        <div class="actions col"><button class="btn big" id="fshare">📤 Share</button>${fx ? '<a class="btn ghost" href="#/matchday">🏟️ Back to matchday</a>' : '<a class="btn ghost" href="#/today">📅 Other daily games</a>'}</div>
+        ${fx ? '' : `<p class="muted center">Next ${title} in ${GM.untilTomorrow()}</p>`}</div>`;
+      GM.$('#fshare', root).onclick = () => GM.share(share, GM.baseUrl() + (fx ? '#/matchday' : clubMode ? '#/clubfootle' : '#/footle'));
     }
     function help() {
       GM.modal(`<h3>How to play ${title}</h3><p>Guess today's mystery Premier League player in ${MAX} tries. After each guess the tiles show how close you are:</p>

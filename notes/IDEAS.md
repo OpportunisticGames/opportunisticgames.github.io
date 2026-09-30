@@ -89,7 +89,13 @@ formations, and badges round 2.
   matches? The data-only version can be automatic; topical questions need someone to write them each week (or a
   weekly data refresh that turns into questions). Leaderboard for the week, streaks across weeks?
 
-### Your club's matchdays 💬
+### Your club's matchdays ✅ shipped in 5.5
+- **Shipped:** real fixtures (data/fixtures.js, from the FPL API or the FPL repo, rebuilt with the Tuesday data job);
+  a MATCHDAY banner on Home and Today; a matchday hub (#/matchday) with the next match and what's coming up; the
+  Matchday XI (either side, double for both, seeded by the fixture, one go, a leaderboard per match); a pre-match
+  Footle (played for both, or either if hardly anyone did); a 9am "Matchday" notification in the Android app (the app
+  sends its next match to app_inbox; a setting, on by default).
+- **Maybe next:** a league of the week's Matchday XI scores between rival fans; a post-match "who scored" quiz.
 - **Owner's idea (30 Sep 2026):** "it would be cool to have something on your team's matchdays, can't think what
   though."
 - **Notes:** needs fixture dates for the favourite club (not in our data yet; a weekly fixtures fetch in the data

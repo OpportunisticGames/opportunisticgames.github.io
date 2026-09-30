@@ -100,9 +100,11 @@
     GM.chaosLook(path === 'draft' && /^chaos/.test(q.m || ''));
     GM.$('.cal-slot', tabbar).innerHTML = GM.calIcon();  // stays right past midnight
     switch (path) {
-      case 'draft': return GM.draft.start(app, ['target', 'treble', 'mystery', 'club', 'classic', 'classicwild', 'ultimatepure', 'extreme', 'purist', 'chaos', 'chaosx'].includes(q.m) ? q.m : 'ultimate',
-        { stat: q.s, seed: q.seed, vs: q.vs, vss: q.vss ? +q.vss : undefined, hard: q.seed ? q.h === '1' : GM.isHard(), club: q.c, daily: q.daily === '1' });
+      case 'draft': return GM.draft.start(app, ['target', 'treble', 'mystery', 'club', 'classic', 'classicwild', 'ultimatepure', 'extreme', 'purist', 'chaos', 'chaosx', 'match'].includes(q.m) ? q.m : 'ultimate',
+        { fx: q.fx, stat: q.s, seed: q.seed, vs: q.vs, vss: q.vss ? +q.vss : undefined, hard: q.seed ? q.h === '1' : GM.isHard(), club: q.c, daily: q.daily === '1' });
       case 'today': return GM.todayPage(app);
+      case 'matchday': return GM.matchday(app);
+      case 'matchfootle': return GM.footle(app, false, q.fx);
       case 'online': return GM.onlinePage(app, q);
       case 'footle': return GM.footle(app, false);
       case 'clubfootle': return GM.footle(app, true);
@@ -187,6 +189,7 @@
           <button class="install-x" id="install-x" title="I already have it" aria-label="Hide">✕</button></div>`}
         ${GM.appOutdated() ? `<div class="install-bar"><a class="btn small" href="${GM.APK_URL}">📲 New version of the app – tap to update</a></div>` : ''}
       </header>
+      ${GM.matchBanner()}
       <div class="hard-toggle" role="group" aria-label="Difficulty">
         <button class="${hard ? '' : 'on'}" data-hard="0">🙂 Normal<small>clubs, years &amp; apps shown</small></button>
         <button class="${hard ? 'on' : ''}" data-hard="1">🥵 Hard<small>names &amp; positions only</small></button>
@@ -206,7 +209,7 @@
       </div>
       <a class="ht-banner" href="#/hattrick"><span>🃏</span><span><b>Hat-Trick <small class="beta-pill">BETA</small></b><small>${GM.store.get('ht:save', null) ? 'Your game’s waiting – tap to carry on' : 'Football Spades: you and a partner against two rivals'}</small></span><span>›</span></a>
       <a class="h2h-banner" href="${waiting ? '#/online' : '#/h2h'}"><span>⚔️</span><span><b>Head to Head</b><small>${waiting ? `🌐 ${waiting} online game${waiting > 1 ? 's' : ''} waiting for your move` : h2h ? `${GM.esc(h2h.names[0])} v ${GM.esc(h2h.names[1])}: tap to carry on` : 'Pass the phone, or play your mates online'}</small></span><span>🏆</span><i class="online-badge" ${waiting ? '' : 'hidden'}>${waiting}</i></a>
-      ${club ? `<div class="tile club-tile wide target-tile"><span class="tile-icon">🏟️</span><b>${GM.esc(club)} XI</b><small>Ultimate Wildcard with only ${GM.esc(club)} players. Their whole PL careers count.</small>
+      ${club ? `<div class="tile club-tile wide target-tile"><span class="tile-icon">🏟️</span><b>${GM.esc(club)} XI</b><small>Ultimate Wildcard with only ${GM.esc(club)} players. Their whole PL careers count.</small>${GM.nextMatchLine()}
         <span class="stat-pick">${statBtn('club', 'goals')}${statBtn('club', 'assists')}${statBtn('club', 'apps')}</span></div>` : ''}
       </div>
       <div data-hpanel="targets">
@@ -468,7 +471,7 @@
       ['🎯 Targets', ['target', 'treble', 'mystery']],
       ['💰 Market', ['moneyball', 'window']],
       ['⚡ Quick', ['hopper', 'hilo', 'whoami', 'grid', 'tally']],
-    ].concat(club ? [['🏟️ Your club', ['club' + GM.slug(club)]]] : []);
+    ].concat(club ? [['🏟️ Your club', ['club' + GM.slug(club)].concat(GM.nextMatch(club) ? ['match:' + GM.nextMatch(club).id] : [])]] : []);
     const SHORT = { classicwild: '⭐ Classic Wildcard', classic: '⭐ Classic', ultimate: '👑 Ultimate Wildcard', ultimatepure: '👑 Ultimate', extreme: '⚡ Extreme Wildcard',
       purist: '💎 Extreme Purist', chaos: '🌪️ CHAOS', target: '🎯 Target', treble: '🏆 The Treble', mystery: '🎲 Mystery Target', moneyball: '💰 Moneyball', window: '🔄 Transfer Window', dailies: '📊 Daily stars' };
     const SUFFIX = { goals: '', assists: 'ast', apps: 'apps' };
@@ -481,7 +484,7 @@
     let cat = CATS.findIndex(c => c[1].includes(base));
     if (cat < 0) { cat = 0; base = 'ultimate'; }
     m = keyFor(base);
-    const label = k => k.startsWith('daily:') ? GM.calIcon() + ' Daily Ultimate' : k.startsWith('grid:') ? '#️⃣ Grid today' : k.startsWith('footle:') ? '🟩 Footle today' : k.startsWith('mbdaily:') ? '💰 Moneyball today' : k.startsWith('dchaos:') ? GM.calIcon() + ' Daily CHAOS'
+    const label = k => k.startsWith('daily:') ? GM.calIcon() + ' Daily Ultimate' : k.startsWith('grid:') ? '#️⃣ Grid today' : k.startsWith('footle:') ? '🟩 Footle today' : k.startsWith('mbdaily:') ? '💰 Moneyball today' : k.startsWith('dchaos:') ? GM.calIcon() + ' Daily CHAOS' : k.startsWith('match:') ? '🏟️ ' + GM.esc(GM.matchTitle(k))
       : SHORT[k] || `${(GM.MODES[k] || {}).icon || ''} ${((GM.MODES[k] || {}).name || k).replace(/ \(Hard\)| – .*$/g, '')}`;
     const link = k => `#/leaderboard?m=${encodeURIComponent(k)}`;
     const canHard = GM.HARD_MODES.includes(keyFor(base, stat, false));

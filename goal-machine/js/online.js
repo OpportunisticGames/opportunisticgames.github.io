@@ -733,14 +733,18 @@
       ['modes', '🆕 New game modes', 'When something new comes out'],
       ['streak', '🔥 Streak reminder', 'At 8pm, if your daily streak is about to end'],
       ['comeback', '💤 Come back', 'If you haven’t played for a few days'],
+      ['matchday', '🏟️ Matchday', 'At 9am when your club plays that day'],
     ],
-    prefs() { return { move: true, friends: true, results: true, modes: true, streak: true, comeback: true, daily: null, ...GM.store.get('notif', {}) }; },
+    prefs() { return { move: true, friends: true, results: true, modes: true, streak: true, comeback: true, matchday: true, daily: null, ...GM.store.get('notif', {}) }; },
     set(k, v) { GM.store.set('notif', { ...GM.store.get('notif', {}), [k]: v }); GM.notify.sync(); },
     sync() {
       const a = GM.account();
       if (!a || !GM.lb.enabled || !window.AndroidApp) return;
       const today = GM.today(), log = GM.dailyLog ? GM.dailyLog() : {};
       const state = { day: Object.keys(log[today] || {}).length ? today : '', streak: GM.streak ? GM.streak() : 0, played: GM.store.get('lastPlayed', '') };
+      // your club's next match, so the server can say "Matchday" that morning (sent again whenever the app syncs)
+      const nm = GM.nextMatch && GM.nextMatch();
+      if (nm) state.match = { day: nm.day, text: `${nm.home} v ${nm.away}, ${GM.kickOff(nm)}` };
       let tz = 'Europe/London'; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || tz; } catch (e) { }
       const cfg = { url: GM.lb.cfg.supabaseUrl, key: GM.lb.cfg.supabaseAnonKey, rpc: 'app_inbox', args: { p_user: a.name, p_prefs: GM.notify.prefs(), p_state: state, p_tz: tz } };
       if (typeof window.AndroidApp.setInbox === 'function') GM.app('setInbox', JSON.stringify(cfg));

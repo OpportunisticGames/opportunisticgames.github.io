@@ -9,7 +9,7 @@ clone https://github.com/douglasbc/scraping-understat-dataset us
 clone https://github.com/ewenme/transfers transfers
 if [ ! -d fpl ]; then
   git clone -q --depth 1 --filter=blob:none --sparse https://github.com/vaastav/Fantasy-Premier-League fpl
-  git -C fpl sparse-checkout set --no-cone '/data/*/players_raw.csv' '/data/*/gws/merged_gw.csv' '/data/*/teams.csv' '/data/*/players/*/history.csv'
+  git -C fpl sparse-checkout set --no-cone '/data/*/players_raw.csv' '/data/*/gws/merged_gw.csv' '/data/*/teams.csv' '/data/*/fixtures.csv' '/data/*/players/*/history.csv'
 else
   git -C fpl pull -q --depth 1 origin HEAD
 fi

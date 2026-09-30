@@ -58,7 +58,7 @@
     ['coin', '🎲', 'Fortune Favours', 'Win a Double or Nothing coin toss.', e => e.type === 'draft' && e.coinWin],
     ['chaos', '🌪️', 'Agent of Chaos', 'Score 500+ points in Ultimate Wildcard CHAOS (goals).', e => chaos(e) && e.stat === 'goals' && e.points >= 500],
     ['hard', '🥵', 'No Clues', 'Finish a draft in Hard mode.', e => e.type === 'draft' && e.hard],
-    ['fan6', '🧣', 'Proper Fan', 'Have 6+ players who played for your club in one XI (not in a Club XI).', e => e.type === 'draft' && e.mode !== 'club' && GM.favClub() && e.xi.filter(p => p.clubs.includes(GM.favClub())).length >= 6],
+    ['fan6', '🧣', 'Proper Fan', 'Have 6+ players who played for your club in one XI (not in a Club or Matchday XI).', e => e.type === 'draft' && e.mode !== 'club' && e.mode !== 'match' && GM.favClub() && e.xi.filter(p => p.clubs.includes(GM.favClub())).length >= 6],
     ['lifers', '🗓️', 'Lifers', 'Every player in your XI had a PL career spanning 10+ seasons.', e => e.type === 'draft' && e.xi.length === 11 && e.xi.every(p => plSeasons(p) >= 10)],
     ['down5', '📉', 'Going Down', 'Have 5+ players who were relegated from the PL in one XI.', e => e.type === 'draft' && e.xi.filter(relegated).length >= 5],
     // CHAOS challenges

@@ -1,6 +1,6 @@
 name: Update player data
 
-# Every Tuesday morning (after the weekend's gameweek) rebuild goal-machine/data/players.js from the latest FPL data,
+# Every Tuesday morning (after the weekend's gameweek) rebuild goal-machine/data/players.js (and fixtures.js) from the latest FPL data,
 # sanity-check it, and publish it if anything changed. Also runnable by hand from the Actions tab.
 on:
   schedule:
@@ -52,10 +52,14 @@ jobs:
             python goal-machine/tools/build_players.py 1
           python -c "import json,sys; s=open('goal-machine/data/players_all.js').read(); n=len(json.loads(s[s.index('=')+1:s.rindex(';')])['players']); print(n,'players'); sys.exit(n < 4500)"
 
+      - name: Build fixtures (matchday features; keeps the old list if this fails)
+        continue-on-error: true
+        run: SRC="$RUNNER_TEMP/src" OUT=goal-machine/data/fixtures.js python goal-machine/tools/build_fixtures.py
+
       - name: Publish if changed
         if: github.ref == 'refs/heads/master' && !inputs.dry_run
         run: |
-          if git diff --quiet -- goal-machine/data/players.js goal-machine/data/players_all.js; then echo "No new matches - nothing to publish"; exit 0; fi
+          if git diff --quiet -- goal-machine/data/players.js goal-machine/data/players_all.js goal-machine/data/fixtures.js; then echo "No new matches or fixtures - nothing to publish"; exit 0; fi
           (cd goal-machine && python tools/bump_version.py)
           DATE=$(grep -o '"generated":"[0-9-]*"' goal-machine/data/players.js | cut -d'"' -f4)
           git config user.name "github-actions[bot]"

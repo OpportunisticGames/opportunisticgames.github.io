@@ -527,7 +527,7 @@ GM.lbModal = async function (key) {
   const DATED = { daily: '📅 Daily Ultimate', footle: '🟩 Footle', grid: '#️⃣ Daily Club Grid', mbdaily: '💰 Daily Moneyball', dchaos: '🌪️ Daily CHAOS' };
   const [pre, date] = key.split(':'), hard = /h$/.test(key) && GM.HARD_MODES.includes(key.slice(0, -1));
   const md = GM.MODES[hard ? key.slice(0, -1) : key] || GM.MODES[key] || {};
-  const title = date ? `${DATED[pre] || pre} · today` : `${md.icon || ''} ${(md.name || key).replace(/ \(Hard\)$/, '')}${hard ? ' · Hard' : ''}`;
+  const title = pre === 'match' ? `🏟️ ${GM.esc(GM.matchTitle(key))}` : date ? `${DATED[pre] || pre} · today` : `${md.icon || ''} ${(md.name || key).replace(/ \(Hard\)$/, '')}${hard ? ' · Hard' : ''}`;
   const pts = /^d?chaos/.test(key) ? '<small> pts</small>' : '', me = GM.getName();
   const m = GM.modal(`<div class="lb-pop"><h3>${title}</h3><p class="lb-pop-kicker">🏆 Leaderboard</p>
     ${pts ? '<p class="muted center small">CHAOS points: your XI’s total plus every bonus</p>' : ''}
@@ -763,6 +763,7 @@ GM.MODES = {
   tally: { name: 'Guess the Tally', icon: '🔢' },
   hattrick: { name: 'Hat-Trick', icon: '🃏' },
   chaos: { name: 'Ultimate Wildcard CHAOS', icon: '🌪️' }, chaosast: { name: 'CHAOS – Assists', icon: '🌪️' }, chaosapps: { name: 'CHAOS – Apps', icon: '🌪️' },
+  match: { name: 'Matchday XI', icon: '🏟️' },
   chaosx: { name: 'CHAOS Extreme', icon: '🌪️' }, chaosxast: { name: 'CHAOS Extreme – Assists', icon: '🌪️' }, chaosxapps: { name: 'CHAOS Extreme – Apps', icon: '🌪️' },
   moneyball: { name: 'Moneyball', icon: '💰' }, moneyballast: { name: 'Moneyball – Assists', icon: '💰' }, moneyballapps: { name: 'Moneyball – Apps', icon: '💰' },
   window: { name: 'Transfer Window', icon: '🔄' }, windowast: { name: 'Transfer Window – Assists', icon: '🔄' }, windowapps: { name: 'Transfer Window – Apps', icon: '🔄' },
