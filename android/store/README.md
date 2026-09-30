@@ -29,7 +29,7 @@ It's doable, but a few things need you (accounts and keys) and there are two rea
 | Play version without the 🎧 Soundtrack (Epidemic Sound licence covers the website only) | ✅ |
 | Offensive-name filter, and players can report names and profile pictures | ✅ |
 | Privacy policy page | ✅ https://opportunisticgames.github.io/goal-machine/privacy.html |
-| App icon 512×512, feature graphic 1024×500, 4 phone screenshots | ✅ in this folder (`node android/store/make_store_assets.js` remakes them) |
+| App icon 512×512, feature graphic 1024×500, 7 captioned phone screenshots | ✅ in this folder (`node android/store/make_store_assets.js` remakes them) |
 | No ads, no analytics, no tracking | ✅ keeps the Data safety form simple |
 
 ## Where it's up to (Sep 2026)
@@ -70,34 +70,10 @@ It's doable, but a few things need you (accounts and keys) and there are two rea
 
 ## Store listing (copy and paste)
 
-- **App name:** Goal Machine – Football XI Quiz
-- **Short description (max 80):** Build the biggest-scoring XI from 5,000+ footballers. Dailies, duels & more.
-- **Full description:**
-
-> How well do you really know English top-flight football since 1992?
->
-> Spin the reels and build an XI from over 5,000 real players, every one of them equally likely. Can you find the goal
-> machines among the journeymen? Every player, his clubs and his career are there: 2,000+ with 50 or more appearances,
-> and in Extreme and Purist modes everyone who ever played.
->
-> ⚽ ULTIMATE WILDCARD: build the XI with the most goals, assists or appearances, with 13 wildcards to play
-> 🎯 CLASSIC & TARGET: hit the number exactly for a bullseye
-> 🏆 THE TREBLE and 🎲 MYSTERY TARGET: three targets at once, or a secret one
-> 📅 DAILY GAMES: the Daily Ultimate, Footle (guess the mystery player in 8) and the Daily Club Grid, with streaks
-> ⚔️ HEAD TO HEAD: pass the phone for a best-of series, or play a friend online in a Draft Duel or Live Race
-> 🦘 Club Hopper, Higher or Lower, Who Am I? and Guess the Tally
-> 📒 Collect players in your album, build your Dream XI and unlock 34 badges
-> 🏟️ Pick your club for club colours, a daily Club Footle and a Club XI draft
-> 🌙 Light and dark themes, music and sound effects
->
-> Unofficial fan-made game. Not affiliated with, endorsed by or connected to the Premier League, its clubs or any
-> player. Player statistics are compiled from public sources.
-
-- **Category:** Games → Trivia (or Word/Puzzle). **Tags:** football, soccer, quiz, trivia.
-- **Contact email:** opportunisticyp@gmail.com (shown publicly).
-- **Website:** https://opportunisticgames.github.io/
-- **Account deletion URL:** https://opportunisticgames.github.io/goal-machine/privacy.html#delete
-- **Privacy policy URL:** https://opportunisticgames.github.io/goal-machine/privacy.html
+The name, short description and full description are in **`listing.txt`** (within Google's limits: name 27/30,
+short description 78/80). The graphics are here too: `icon-512.png`, `feature-graphic.png` and seven captioned
+1080×1920 screenshots (`screenshot-1-draft.png` … `screenshot-7-home.png`). `make_store_assets.js` remakes them all
+from the live game, as the Play version, with no personal names and no "Premier League" in the graphics' own text.
 
 ## Play Console answers
 
