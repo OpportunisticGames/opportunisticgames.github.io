@@ -13,7 +13,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
       Object.entries(x).forEach(([k, v]) => set(k, v)); }, extra);
     await pg.reload(); await pg.waitForTimeout(400);
   };
-  const closeNews = () => pg.evaluate(() => { const m = document.querySelector('.modal-wrap .mb-news'); if (!m) return ''; const t = m.querySelector('h3').textContent; (m.querySelector('[data-ok], [data-no]') || m.querySelector('button')).click(); return t; });
+  const closeNews = () => pg.evaluate(() => { const m = document.querySelector('.mb-breaking:not(.out)'); if (!m) return ''; const t = m.querySelector('h2').textContent; (m.querySelector('[data-ok], [data-no]') || m.querySelector('button')).click(); return t; });
   const top = () => pg.evaluate(() => [...document.querySelectorAll('.mb-top b')].map(e => e.textContent));
   await fresh();
 
@@ -25,6 +25,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
 
   // a season
   await pg.goto(U + '#/moneyball'); await pg.waitForTimeout(400);
+  await pg.evaluate(() => { window.snd = []; const p = GM.sound.play; GM.sound.play = (n, x) => { snd.push(n); return p(n, x); }; });
   ok(/Chairman for a season/.test(await pg.textContent('#app')), 'it starts with the idea: chairman for a season, net worth is the score');
   await pg.click('#mbgo'); await pg.waitForTimeout(400);
   let t = await top();
@@ -32,26 +33,31 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const ask = await pg.evaluate(() => { const b = document.querySelector('[data-buy]:not([disabled])'); const price = b.querySelector('.mk-price').textContent; b.click(); return price; });
   await pg.waitForTimeout(300);
   t = await top();
-  ok((await pg.$$('.mb-row')).length === 1 && (await pg.$$('[data-buy]')).length === 3, `buying one (${ask}) puts him in your squad`);
+  ok((await pg.$$('.mb-card:not(.empty)')).length === 1 && (await pg.$$('.mb-card.empty')).length === 4 && (await pg.$$('[data-buy]')).length === 3, `buying one (${ask}) puts his card in your squad`);
+  ok(await pg.evaluate(() => document.body.classList.contains('money-mode') && !!document.querySelector('.mb-hud #mbnet') && !!document.querySelector('.mb-hud svg .mbs-line')), 'the boardroom look: a net worth counter and a chart of the season');
   await pg.click('#mbplay'); await pg.waitForTimeout(1200);
-  ok((await pg.$$('.mbw-row')).length === 1 && /Scored|Assist|Clean sheet|Quiet game|Benched|Injured/.test(await pg.textContent('#mbweek')), 'the matchweek: each player’s game, prize money and value change');
+  ok(!!(await pg.$('.mb-live .rec')) && (await pg.$$('.mbl-ev')).length >= 1, 'the matchweek plays out live, minute by minute');
+  ok((await pg.$$('.mbw-row')).length === 1 && /Scored|Brace|Hat-trick|Assist|Clean sheet|Quiet game|Benched|Injured/.test(await pg.textContent('#mbweek')), '…then each player’s prize money and value change');
   await pg.click('#mbnext'); await pg.waitForTimeout(900);
   const news = await closeNews();
-  ok(!!news, `week 2 brings news: “${news}”`);
+  ok(!!news, `week 2 brings BREAKING NEWS: “${news}”`);
   await pg.waitForTimeout(300);
   // sell
   if (await pg.$('[data-sell]')) {
-    const before = await pg.evaluate(() => document.querySelectorAll('.mb-row').length);
+    const before = await pg.evaluate(() => document.querySelectorAll('.mb-card:not(.empty)').length);
     await pg.click('[data-sell]'); await pg.waitForTimeout(300);
-    await pg.evaluate(() => { const y = [...document.querySelectorAll('.modal-wrap button')].find(b => /Sell/.test(b.textContent)); if (y) y.click(); }); await pg.waitForTimeout(400);
-    ok(await pg.evaluate(() => document.querySelectorAll('.mb-row').length) === before - 1, 'selling (after a check) takes him off your books');
+    await pg.evaluate(() => { const y = [...document.querySelectorAll('.modal-wrap button')].find(b => /Sell/.test(b.textContent)); if (y) y.click(); }); await pg.waitForTimeout(250);
+    ok(!!(await pg.$('.mbc-stamp')), 'selling stamps his card SOLD');
+    await pg.waitForTimeout(900);
+    ok(await pg.evaluate(() => document.querySelectorAll('.mb-card:not(.empty)').length) === before - 1, '…and takes him off your books');
+    ok(await pg.evaluate(() => ['newsflash', 'stamp'].every(n => snd.includes(n))), 'sounds: the news sting, the stamp coming down');
   }
   // play through, buying what we can afford
   for (let w = 2; w <= 8; w++) {
     await closeNews(); await pg.waitForTimeout(200);
     if (w === 8) {
-      const cut = await pg.evaluate(() => ({ banner: !!document.querySelector('.mb-deadline'), tags: document.querySelectorAll('[data-buy] .dc-tag').length }));
-      ok(cut.banner && cut.tags >= 1, 'week 8 is Deadline Day: cut-price players');
+      const cut = await pg.evaluate(() => ({ banner: !!document.querySelector('.mb-deadline .mbd-clock'), tags: document.querySelectorAll('[data-buy] .dc-tag').length, was: document.querySelectorAll('[data-buy] .mk-price s').length }));
+      ok(cut.banner && cut.tags >= 1 && cut.was >= 1, 'week 8 is Deadline Day: a clock, and cut-price players with the old price struck through');
     }
     await pg.evaluate(() => { for (let i = 0; i < 2; i++) { const x = document.querySelector('[data-buy]:not([disabled])'); if (x) x.click(); } });
     await pg.waitForTimeout(200);
@@ -59,8 +65,10 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     await pg.click('#mbnext'); await pg.waitForTimeout(1300);
   }
   await closeNews(); await pg.waitForTimeout(600);
-  const res = await pg.evaluate(() => ({ score: (document.querySelector('.result-score') || {}).textContent, best: GM.best('money'), bars: document.querySelectorAll('.mb-result .mb-chart i').length }));
-  ok(/^£[\d.,]+m/.test(res.score || '') && res.best > 0 && res.bars === 9, `full time: net worth (${(res.score || '').split('n')[0]}), a chart of the season, on the board (${res.best})`);
+  await pg.waitForTimeout(1500);
+  const res = await pg.evaluate(() => ({ score: (document.querySelector('.result-score') || {}).textContent, best: GM.best('money'), chart: !!document.querySelector('.mb-result svg .mbs-line'), verdict: (document.querySelector('.mbr-verdict b') || {}).textContent }));
+  ok(/^£[\d.,]+m/.test(res.score || '') && res.best > 0 && res.chart && !!res.verdict, `full time: the chairman’s report — “${res.verdict}”, net worth (${(res.score || '').split('n')[0]}), a chart, on the board (${res.best})`);
+  ok(await pg.evaluate(() => snd.includes('count') && ['fanfare', 'bell', 'good', 'tricklose', 'boo', 'sacked'].some(n => snd.includes(n)) && GM.sound.TRACKS.includes('boardroom')), 'the counter rolls up, the verdict has its own sound, and Moneyball has its own music (Boardroom)');
   ok(await pg.evaluate(() => GM.scoreText('money', 143) === '£143m' && GM.scoreText('ultimate', 1432) === '1,432'), 'boards show Moneyball scores in £m');
 
   // Hard and Extreme
@@ -89,6 +97,8 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(dr >= 90 && dr <= 110, `the Daily counts for your streak (doing nothing: £${dr}m, just the news)`);
   await pg.goto(U + '#/'); await pg.goto(U + '#/moneyball?daily=1'); await pg.waitForTimeout(500);
   ok(!!(await pg.$('.mb-result')) && !(await pg.$('#mbagain')), 'one go: coming back shows today’s result');
+  await pg.goto(U + '#/'); await pg.waitForTimeout(300);
+  ok(!(await pg.evaluate(() => document.body.classList.contains('money-mode'))), 'leaving Moneyball puts the normal look back');
 
   // the economy: luck alone makes a little, stars are a gamble, knowing who's underpriced pays
   const sim = await pg.evaluate(() => {

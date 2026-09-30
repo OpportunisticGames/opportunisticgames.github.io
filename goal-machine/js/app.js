@@ -98,6 +98,7 @@
     }
     GM.sound.scene(path === 'draft' && /^chaos/.test(q.m || '') ? 'chaos' : path);  // each game area has its own music (CHAOS has Mayhem)
     GM.chaosLook(path === 'draft' && /^chaos/.test(q.m || ''));
+    GM.moneyLook(path === 'moneyball');
     GM.applyIntl();
     GM.$('.cal-slot', tabbar).innerHTML = GM.calIcon();  // stays right past midnight
     switch (path) {
@@ -139,6 +140,12 @@
 
   /* ---------------------------------------------------------------- home */
   // CHAOS always sits on the dark look (its neon needs it); leaving puts your own look back. A CHAOS Race turns it on too.
+  // 💰 Moneyball's boardroom look (dark, gold and money green)
+  GM.moneyLook = function (on) {
+    if (on === document.body.classList.contains('money-mode')) return;
+    document.body.classList.toggle('money-mode', on);
+    if (on) { document.documentElement.dataset.theme = 'dark'; GM.app('setBars', '#07140f', false); } else if (!document.body.classList.contains('chaos-mode')) GM.applyTheme();
+  };
   GM.chaosLook = function (chaos) {
     if (chaos === document.body.classList.contains('chaos-mode')) return;
     document.body.classList.toggle('chaos-mode', chaos);
@@ -393,7 +400,7 @@
     const bgInfo = () => {
       const v = GM.sound.settings().bg, t = GM.sound.nowPlaying();
       GM.$('#s-bg-about').textContent = v === 'tunes' ? 'Real songs on shuffle, the same wherever you are in the game'
-        : 'Made for the game: Anthem on the menus, Matchday for team builders, Thinking Cap for puzzles and Derby for head-to-heads';
+        : 'Made for the game: Anthem on the menus, Matchday for team builders, Thinking Cap for puzzles, Derby for head-to-heads and Boardroom for Moneyball';
       GM.$('#s-now').hidden = v !== 'tunes';
       GM.$('#s-now span').innerHTML = t ? `🎧 <b>${GM.esc(t.title)}</b>${t.artist ? `<small>${GM.esc(t.artist)}</small>` : ''}` : '🎧 Tap anywhere to start';
     };
