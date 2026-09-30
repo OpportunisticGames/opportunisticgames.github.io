@@ -5,4 +5,11 @@
     "package_name": "io.github.opportunisticgames.goalmachine",
     "sha256_cert_fingerprints": ["19:75:EC:F0:87:8A:0F:9B:0C:25:3D:C7:82:56:8D:42:C5:AC:0C:A9:32:B6:1A:5E:1A:73:B7:07:8B:C0:9F:70"]
   }
+}, {
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "goal.machine",
+    "sha256_cert_fingerprints": ["AC:CE:05:0A:B5:E6:A8:CB:0B:A6:40:49:D2:63:A3:D5:C9:02:CD:65:53:23:18:B1:32:8B:F9:B2:12:61:9D:A6"]
+  }
 }]

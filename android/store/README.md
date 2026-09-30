@@ -38,8 +38,9 @@ It's doable, but a few things need you (accounts and keys) and there are two rea
   `applicationId 'goal.machine'`; the GitHub APK stays `io.github.opportunisticgames.goalmachine`. Both are in
   `google-services.json` (Firebase), so instant notifications work in either.
 - ✅ Private upload key made and handed over; it goes in the `UPLOAD_KEYSTORE_*` secrets.
-- ⏳ After the first upload: copy the **app signing key SHA-256** from Play Console → Test and release → App integrity
-  and add a second entry for `goal.machine` to `/.well-known/assetlinks.json`, so game links open in the Play app.
+- ✅ First bundle uploaded to Internal testing (build 31). The Play **app signing key** SHA-256 (`AC:CE:05:…:9D:A6`, found
+  under Protected with Play → Play Store protection → Play app signing) is in `/.well-known/assetlinks.json` for
+  `goal.machine`, so game links open in the Play app.
 - ⏳ Switch the app category from App to **Game** (Store settings).
 
 ## What you need to do
