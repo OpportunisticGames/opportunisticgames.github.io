@@ -69,30 +69,59 @@ formations, and badges round 2.
 - **Maybe next:** spare pieces for finished cards turn into something (a "pick your own piece" token?); a weekly
   special pack (Team of the Week, see the FPL API ideas); trading pieces with friends.
 
-### First game: a guided first XI 💬 *(Claude's idea, owner keen)*
+### First game: a guided first XI ✅ shipped in 5.6 *(Claude's idea)*
+- **Shipped:** first launch asks "Play my first XI" (an Ultimate draft, no wildcards, `tut=1`) with coach bubbles for
+  spin, pick and place until 3 signings, then a full-time card pointing at CHAOS and packs. Home shows a "New here?"
+  card until you've played. The three "how it works" cards stay under Settings.
 - The home screen throws a lot at a new player (Normal/Hard/Extreme, four tabs, CHAOS, Ultimate, lots of tiles).
 - **Idea:** on first launch one big "▶ Play your first XI" button: a short guided game ("Spin… pick one… put him in the
   slot…"), then the full home screen. Where testers would bounce if anywhere.
 - **Questions:** skip button for people who know it? Which mode (Ultimate goals, wildcards off for the first go)?
 
-### Club v club: fans playing for their club 💬 *(Claude's idea, owner keen)*
+### Club v club: fans playing for their club ✅ shipped in 5.6 *(Claude's idea)*
+- **Shipped:** `club_table(p_week)` in Supabase: this week's (Mon–Sun, UK) Daily Ultimate results by club, the average,
+  ranked from 3 games (same spins for everyone, so it's fair). Your club goes with your account (`set_profile`,
+  players.club). Page `#/clubs` (This week / Last week), linked from Ranks and the club tile.
+- **Maybe next:** a Monday notification with last week's winner; a club v club badge; the rival's position on Home.
 - A weekly table of clubs, each scoring from its fans' results ("Everton fans 4th this week, Liverpool fans 11th").
   Fits the banter and matchdays, and gives a reason to recruit mates.
 - **Notes:** everyone already picks a club and scores already go to Supabase, so it's a view plus a page. Needs the
   club saved with the account (it's only on the phone now). Average per active fan, or total (big clubs win)? Probably
   an average over fans with 3+ games that week, so small clubs can top it.
 
-### Levels: a rank to climb 💬 *(Claude's idea, owner keen)*
+### Levels: a rank to climb ✅ shipped in 5.6 *(Claude's idea)*
+- **Shipped:** XP for a draft 25, a daily game +20, any other game 15, a badge 50, a pack 5, an online game 10 (win 30).
+  Level n→n+1 takes 100 + 25(n−1) XP. Ranks: Sunday League 1, Non-League 5, League Two 10, League One 15,
+  Championship 20, Premier League 30, Champions League 40, Ballon d'Or 50. A pack every level. The level chip on Home,
+  `#/level`, and "Lv 12" next to names on boards (players.level via set_profile). Existing players start with XP for
+  what they've done (games, badges, dailies).
+- **Maybe next:** unlocks by rank (pitch styles, card designs, CHAOS managers).
 - Everything you do earns XP towards a rank: Sunday League → Non-League → Championship → Premier League → Ballon d'Or.
   Badges are the only long-term progress now.
 - **Questions:** what earns XP (games, dailies, badges, packs)? Unlocks along the way (pitch styles, card designs,
   CHAOS managers) or just the title? Show the rank next to your name on leaderboards?
 
-### Monthly leaderboards 💬 *(Claude's idea, owner keen)*
+### Monthly leaderboards ✅ shipped in 5.6 *(Claude's idea)*
+- **Shipped:** a `month_scores` view (UK months); boards open on This month with an All time switch (remembered),
+  on the Ranks page and the in-game 🏆 pop-up. Dated boards (a day, a match) have no switch.
+- **Maybe next:** "End of season: you finished 7th" at the start of each month, with a pack for the top 3.
 - All-time boards go stale (once someone has 600 on Ultimate a newcomer can't catch them). Monthly boards (keeping
   all-time) give a fresh race each month and an "End of season: you finished 7th" moment, maybe with a pack prize.
 - **Notes:** the scores table has created_at, so a monthly view per mode is cheap; the boards need a This month / All
   time switch.
+
+### Launch basics 💬 *(Claude's ideas, 30 Sep 2026)*
+- **Ask for a review at a good moment:** after a personal best or a badge, Play's in-app review prompt (needs the
+  Play Review API in the Android app; Google limits how often it shows). Early ratings matter a lot.
+- **Anonymous usage stats:** which modes people play and where they drop off (a small Supabase `events` table:
+  mode, action, day; no names). We'd stop guessing what to build.
+- **Streak freeze:** one missed day doesn't wipe a 40-day streak; earn a freeze by playing 7 days in a row.
+
+### Bigger ideas for later 💬 *(Claude's ideas, 30 Sep 2026)*
+- **Commentary:** a line when you sign someone ("He's been waiting his whole career for this"), audio later. Makes
+  the quiet modes feel alive.
+- **Other leagues:** the Women's Super League, La Liga… a bigger audience, but data is the hard part.
+- **Money:** cosmetic unlocks or a supporter pack, whenever the owner wants to think about it.
 
 ### More from the FPL API 💬
 - **Context (30 Sep 2026):** the fixtures now come from the FPL API (`fantasy.premierleague.com/api/`, no login, the

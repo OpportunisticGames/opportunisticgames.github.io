@@ -537,16 +537,17 @@ GM.lbModal = async function (key) {
   const pts = /^d?chaos/.test(key) ? '<small> pts</small>' : '', me = GM.getName();
   const m = GM.modal(`<div class="lb-pop"><h3>${title}</h3><p class="lb-pop-kicker">🏆 Leaderboard</p>
     ${pts ? '<p class="muted center small">CHAOS points: your XI’s total plus every bonus</p>' : ''}
-    <div class="lb lb-pop-list" id="lbpop">${GM.lb.enabled ? '<div class="muted">Loading…</div>' : '<div class="muted">The global leaderboard is switched off.</div>'}</div>
+    ${GM.lbPeriod(key)}<div class="lb lb-pop-list" id="lbpop">${GM.lb.enabled ? '<div class="muted">Loading…</div>' : '<div class="muted">The global leaderboard is switched off.</div>'}</div>
     <h4>⭐ You</h4><div class="lb" id="lbpopyou"></div>
     <div class="row"><a class="btn ghost small" href="#/leaderboard?m=${encodeURIComponent(key)}" data-leave>All leaderboards ›</a><button class="btn" data-close>Back to the game</button></div></div>`);
+  GM.$$('[data-per]', m.el).forEach(a => a.onclick = () => { GM.store.set('lbMonth', a.dataset.per === '1'); m.close(); GM.lbModal(key); });
   const leave = GM.$('[data-leave]', m.el); if (leave) leave.addEventListener('click', () => m.close());
   GM.lbYou(key, GM.$('#lbpopyou', m.el));
   if (!GM.lb.enabled) return;
   try {
     const rows = await GM.lb.top(key), el = GM.$('#lbpop', m.el);
     if (!el) return;
-    el.innerHTML = rows.length ? rows.slice(0, 25).map((r, i) => `<div ${GM.lbRow(r.name, me)}><span>${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span><span>${GM.esc(r.name)}${GM.pctTag(key, r.meta)}</span><b>${r.score.toLocaleString()}${pts}</b></div>`).join('')
+    el.innerHTML = rows.length ? rows.slice(0, 25).map((r, i) => `<div ${GM.lbRow(r.name, me)}><span>${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span><span>${GM.esc(r.name)}${GM.lbLevel(r)}${GM.pctTag(key, r.meta)}</span><b>${r.score.toLocaleString()}${pts}</b></div>`).join('')
       : '<div class="muted">No scores yet – be the first!</div>';
     if (rows.some(r => r.name !== me)) el.insertAdjacentHTML('beforeend', GM.lbReportHint);
     const mine = GM.$('.lb-row.me', el); if (mine) mine.scrollIntoView({ block: 'nearest' });
@@ -572,13 +573,17 @@ GM.lbYou = async function (key, el) {
   show('<div class="muted">Loading…</div>');
   let mine = null;
   if (GM.lb.enabled && name) { try { mine = await GM.lb.mine(key, name); } catch (e) { } }
-  if (mine) show(row(`#${mine.rank}`, `${GM.esc(name)}${GM.pctTag(key, mine.meta)}<small class="muted"> · of ${mine.of.toLocaleString()} · ${new Date(mine.at).toLocaleDateString()}</small>`, mine.score));
+  if (mine) show(row(`#${mine.rank}`, `${GM.esc(name)}${GM.pctTag(key, mine.meta)}<small class="muted"> · of ${mine.of.toLocaleString()}${GM.lbMonth() && !/:/.test(key) ? ' this month' : ''} · ${new Date(mine.at).toLocaleDateString()}</small>`, mine.score));
   else if (localBest != null) show(row('–', `${name ? GM.esc(name) : 'You'}${GM.pctTag(key, localTop.m)}<small class="muted"> · not on the board yet</small>`, localBest));
   else show('<div class="muted">You haven’t played this one yet</div>');
 };
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-lb]'); if (b) { e.preventDefault(); GM.lbModal(b.dataset.lb); } });
 // Leaderboard rows carry data-name (not your own), and tapping one offers to report the name. Three reports from different
 // players hide it from the public boards until its owner changes it (report_name in Supabase).
+GM.lbMonth = () => GM.store.get('lbMonth', true) !== false;
+// This month / All time, for boards that aren't for one day or match
+GM.lbPeriod = key => (/:/.test(key) ? '' : `<div class="hard-toggle small lb-period">${[[1, '📅 This month'], [0, '🏆 All time']].map(([v, l]) => `<a class="${+GM.lbMonth() === v ? 'on' : ''}" data-per="${v}">${l}</a>`).join('')}</div>`);
+GM.lbLevel = r => (r.level ? `<i class="lv-tag">Lv ${r.level}</i>` : '');
 GM.lbRow = (name, me) => `class="lb-row ${name === me ? 'me' : ''}"${name === me ? '' : ` data-name="${GM.esc(name)}"`}`;
 GM.lbReportHint = '<p class="muted center small">Tap a name to report it if it’s offensive</p>';
 document.addEventListener('click', async e => {
@@ -841,7 +846,7 @@ Object.keys(GM.MODES).filter(k => GM.HARD_MODES.includes(k)).forEach(k => {
 GM.best = mode => GM.store.get('best:' + mode, 0);
 
 /** Records a finished game locally and (if configured) on the global board. Returns {isBest}. */
-GM.recordScore = async function (mode, score, meta = {}) {
+GM.recordScore = async function (mode, score, meta = {}, opts = {}) {
   const hist = GM.store.get('hist:' + mode, []);
   hist.push({ s: score, t: Date.now(), m: meta });
   hist.sort((a, b) => b.s - a.s);
@@ -852,7 +857,7 @@ GM.recordScore = async function (mode, score, meta = {}) {
   GM.store.set('lastPlayed', GM.today());
   if (GM.notify) GM.notify.sync();  // the app's reminders know you've played (streak, come back)
   GM.backup.save(true);
-  if (GM.lb.enabled && score > 0) {
+  if (GM.lb.enabled && score > 0 && !(opts.quiet && !GM.account())) {  // quiet: only if you've a name already (no box)
     const name = await GM.askName();
     if (name) GM.lb.submit(mode, score, name, meta).catch(() => GM.toast('Could not reach the global leaderboard'));
   }
@@ -880,8 +885,10 @@ GM.lb = {
     const res = await this.rpc('submit_score', { p_username: acc.name, p_key: acc.key, p_mode: mode, p_score: score, p_meta: meta || null });
     if (res !== 'ok') throw new Error(res);
   },
+  // boards are This month (the default: a fresh race every month) or All time; dated boards (a day, a match) are all time
+  view: mode => (GM.lbMonth() && !/:/.test(mode) ? 'month_scores' : 'best_scores'),
   async top(mode, limit = 25) {
-    const r = await fetch(`${this.cfg.supabaseUrl}/rest/v1/best_scores?select=name,score,created_at,meta&mode=eq.${encodeURIComponent(mode)}&order=score.desc,created_at.asc&limit=${limit}`,
+    const r = await fetch(`${this.cfg.supabaseUrl}/rest/v1/${this.view(mode)}?select=name,score,created_at,meta,level&mode=eq.${encodeURIComponent(mode)}&order=score.desc,created_at.asc&limit=${limit}`,
       { headers: this.headers() });
     if (!r.ok) throw new Error(await r.text());
     return r.json();
@@ -889,7 +896,7 @@ GM.lb = {
   // your account's best on a board, with your rank and how many are on it (null if you haven't a score there)
   async mine(mode, name = GM.getName()) {
     if (!name) return null;
-    const base = `${this.cfg.supabaseUrl}/rest/v1/best_scores?mode=eq.${encodeURIComponent(mode)}`;
+    const base = `${this.cfg.supabaseUrl}/rest/v1/${this.view(mode)}?mode=eq.${encodeURIComponent(mode)}`;
     const count = async q => {
       const r = await fetch(`${base}${q}&select=name`, { headers: { ...this.headers(), Prefer: 'count=exact', Range: '0-0' } });
       if (!r.ok && r.status !== 206) throw new Error(await r.text());

@@ -204,6 +204,7 @@
   function celebrate(fresh, newPlayers) {
     let delay = 600;
     if (fresh.length && GM.givePack) GM.givePack(fresh.length, fresh.length > 1 ? 'new badges' : 'new badge');
+    if (fresh.length && GM.addXP) GM.addXP(GM.XP.badge * fresh.length);
     fresh.forEach(x => { setTimeout(() => GM.toast(`🏅 Badge unlocked: ${x.icon} <b>${x.name}</b>`, 2600), delay); delay += 2800; });
     const stars = newPlayers.filter(p => p.hon.H || p.hon.B || p.goals >= 100);
     if (stars.length) setTimeout(() => GM.toast(`📒 Collected ${stars.slice(0, 2).map(p => GM.esc(p.name)).join(' & ')}${stars.length > 2 ? ` +${stars.length - 2}` : ''}!`, 2600), delay);
@@ -225,7 +226,8 @@
     if (ev.mode === 'match' && ev.fx && !(a.md || []).includes(ev.fx)) a.md = (a.md || []).concat(ev.fx).slice(-100);
     if (ev.mode === 'nation' && ev.nat && !(a.nations || []).includes(ev.nat)) a.nations = (a.nations || []).concat(ev.nat);
     if (ev.mode === 'nation') GM.store.set('nationsPlayed', a.nations);
-    if (!purist && GM.cardsFromDraft) GM.cardsFromDraft(ev.xi);  // a piece of each signing's card (once a day each)
+    if (!purist && GM.cardsFromDraft) GM.cardsFromDraft(ev.xi);
+    if (GM.addXP) GM.addXP(GM.XP.draft);  // a piece of each signing's card (once a day each)
     const fresh = check({ type: 'draft', ...ev }, a);
     save(a);
     if (purist) save(book, 'purist');
@@ -245,6 +247,7 @@
       if (opp && !o.beat.includes(opp)) o.beat.push(opp);
       if (!o.kinds.includes(g.kind)) o.kinds.push(g.kind);
     }
+    if (GM.addXP) GM.addXP(won ? GM.XP.win : GM.XP.online);
     const fresh = check({ type: 'online', kind: g.kind, variant: g.variant, won }, a);
     save(a);
     celebrate(fresh, []);
@@ -252,6 +255,7 @@
 
   /** Called when any other game finishes. */
   GM.checkGame = function (mode, score, extra) {
+    if (GM.addXP) GM.addXP(mode === 'pack' ? GM.XP.pack : GM.XP.game);
     const a = load();
     const fresh = check({ type: 'game', mode, score, extra }, a);
     if (fresh.length) { save(a); celebrate(fresh, []); }

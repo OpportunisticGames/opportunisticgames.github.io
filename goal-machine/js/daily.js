@@ -41,7 +41,7 @@
     root.classList.add('has-club');
     if (GM.applyTheme) GM.applyTheme();  // the Club look's bar colour
   };
-  GM.setFavClub = c => { store.set('club', c); GM.applyClub(); };
+  GM.setFavClub = c => { store.set('club', c); GM.applyClub(); if (GM.syncProfile) GM.syncProfile(); };
   GM.applyClub();
   // each club gets its own Club XI board names (mode keys are letters only)
   GM.clubs.forEach(c => ['', 'ast', 'apps'].forEach(s => {
@@ -65,6 +65,7 @@
     const l = log(), before = Object.keys(l[day] || {}).length;
     l[day] = { ...(l[day] || {}), [game]: value };
     store.set('dlog', l);
+    if (Object.keys(l[day]).length > before && GM.addXP) GM.addXP(GM.XP.daily);
     if (before === 2 && Object.keys(l[day]).length === 3 && day === GM.today() && GM.givePack) GM.givePack(1, 'three daily games today');
     if (GM.notify) GM.notify.sync();  // no streak or daily reminder once you've played today
   };

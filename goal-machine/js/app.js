@@ -106,6 +106,8 @@
       case 'today': return GM.todayPage(app);
       case 'matchday': return GM.matchday(app);
       case 'nations': return GM.nationsPage(app);
+      case 'level': return GM.levelPage(app);
+      case 'clubs': return GM.clubsPage(app, q.w === '1' ? 1 : 0);
       case 'packs': return GM.packsPage(app, ['cards', 'how'].includes(q.v) ? q.v : 'xi', GM.TIERS[q.t] ? q.t : '');
       case 'matchfootle': return GM.footle(app, false, q.fx);
       case 'online': return GM.onlinePage(app, q);
@@ -186,13 +188,13 @@
         <div class="logo small">GOAL<span>MACHINE</span></div>
         <a class="icon-btn" href="#/updates" aria-label="Updates">📰${GM.hasUnseenUpdate() ? '<i class="new-dot"></i>' : ''}</a></div>
       <header class="hero">
-        <p>${club ? `<span class="fan-chip">${GM.clubChip(club, true)}</span> <span class="banter">${GM.esc(GM.clubBanter(club))}</span>` : `${GM.allPlayers ? GM.allPlayers.length.toLocaleString() : '5,000+'} Premier League players · 1992 to today`}</p>
+        <p>${GM.levelChip()} ${club ? `<span class="fan-chip">${GM.clubChip(club, true)}</span> <span class="banter">${GM.esc(GM.clubBanter(club))}</span>` : `${GM.allPlayers ? GM.allPlayers.length.toLocaleString() : '5,000+'} Premier League players · 1992 to today`}</p>
         ${installHidden() || hasNativeApp ? '' : `<div class="install-bar">
           ${isAndroid ? `<a class="btn small" id="getapk" href="${GM.APK_URL}">🤖 Get the Android app</a>` : `<button class="btn small" id="install" hidden>📲 Install app</button>`}
           <button class="install-x" id="install-x" title="I already have it" aria-label="Hide">✕</button></div>`}
         ${GM.appOutdated() ? `<div class="install-bar"><a class="btn small" href="${GM.APK_URL}">📲 New version of the app – tap to update</a></div>` : ''}
       </header>
-      ${GM.matchBanner()}${GM.intlBanner()}
+      ${GM.firstXICard()}${GM.matchBanner()}${GM.intlBanner()}
       ${GM.packsWaiting() ? `<a class="pack-bar" href="#/packs"><span>🎁</span><span><b>${GM.packsWaiting()} pack${GM.packsWaiting() > 1 ? 's' : ''} to open</b><small>${GM.esc(GM.packedXI().n < 11 ? 'Build your Packed XI' : 'Improve your Packed XI')}</small></span><span>›</span></a>` : ''}
       <div class="hard-toggle three" role="group" aria-label="Difficulty">${Object.entries(GM.LEVELS).map(([k, [i, n, sub]]) => `<button class="${k === level ? 'on' : ''}" data-level="${k}">${i} ${n}<small>${sub}</small></button>`).join('')}</div>
       <div class="seg home-tabs" id="htabs">${HTABS.map(([k, l, modes]) => `<button data-t="${k}">${l}${modes.some(m => newTag(m)) ? '<i class="new-dot"></i>' : ''}</button>`).join('')}</div>
@@ -210,7 +212,7 @@
       </div>
       <a class="ht-banner" href="#/hattrick"><span>🃏</span><span><b>Hat-Trick <small class="beta-pill">BETA</small></b><small>${GM.store.get('ht:save', null) ? 'Your game’s waiting – tap to carry on' : 'Football Spades: you and a partner against two rivals'}</small></span><span>›</span></a>
       <a class="h2h-banner" href="${waiting ? '#/online' : '#/h2h'}"><span>⚔️</span><span><b>Head to Head</b><small>${waiting ? `🌐 ${waiting} online game${waiting > 1 ? 's' : ''} waiting for your move` : h2h ? `${GM.esc(h2h.names[0])} v ${GM.esc(h2h.names[1])}: tap to carry on` : 'Pass the phone, or play your mates online'}</small></span><span>🏆</span><i class="online-badge" ${waiting ? '' : 'hidden'}>${waiting}</i></a>
-      ${club ? `<div class="tile club-tile wide target-tile"><span class="tile-icon">🏟️</span><b>${GM.esc(club)} XI</b><small>Ultimate Wildcard with only ${GM.esc(club)} players. Their whole PL careers count.</small>${GM.nextMatchLine()}
+      ${club ? `<div class="tile club-tile wide target-tile"><span class="tile-icon">🏟️</span><b>${GM.esc(club)} XI</b><small>Ultimate Wildcard with only ${GM.esc(club)} players. Their whole PL careers count.</small>${GM.nextMatchLine()}<a class="next-match" href="#/clubs">🏆 Club v club: this week’s table ›</a>
         <span class="stat-pick">${statBtn('club', 'goals')}${statBtn('club', 'assists')}${statBtn('club', 'apps')}</span></div>` : ''}
       </div>
       <div data-hpanel="targets">
@@ -257,6 +259,7 @@
       GM.setLevel(b.dataset.level); home();
     });
     GM.$('#share-game').onclick = () => GM.shareGame();
+    GM.syncProfile();  // your club and level, for club v club and the boards (only when they change)
     if (GM.online && GM.online.check) GM.online.check().then(() => {  // refresh the banner if the count changed
       const n = GM.store.get('onlineWaiting', 0), sm = GM.$('.h2h-banner small');
       if (sm && n !== waiting && location.hash.replace(/^#\/?/, '') === '') home();
@@ -492,16 +495,17 @@
       : SHORT[k] || `${(GM.MODES[k] || {}).icon || ''} ${((GM.MODES[k] || {}).name || k).replace(/ \(Hard\)| – .*$/g, '')}`;
     const link = k => `#/leaderboard?m=${encodeURIComponent(k)}`;
     const canHard = GM.HARD_MODES.includes(keyFor(base, stat, false));
-    const pickers = `<div class="lb-cats">${CATS.map(([name, list], i) => `<a class="${i === cat ? 'on' : ''}" href="${link(keyFor(list[0]))}">${name}</a>`).join('')}</div>
+    const pickers = `<div class="lb-cats">${CATS.map(([name, list], i) => `<a class="${i === cat ? 'on' : ''}" href="${link(keyFor(list[0]))}">${name}</a>`).join('')}<a href="#/clubs">🏟️ Club v club</a></div>
       <div class="tabs">${CATS[cat][1].map(k => `<a class="tab ${k === base ? 'active' : ''}" href="${link(k === 'dailies' ? 'dailies' : keyFor(k))}">${label(k)}</a>`).join('')}</div>
       ${hasStats(base) ? `<div class="hard-toggle small three">${Object.entries(GM.STATS).map(([k, st]) => `<a class="${k === stat ? 'on' : ''}" href="${link(keyFor(base, k))}"><i class="sb-ico">${st.icon}</i>${st.name}</a>`).join('')}</div>` : ''}
       ${canHard ? `<div class="hard-toggle small"><a class="${hard ? '' : 'on'}" href="${link(keyFor(base, stat, false))}">🙂 Normal</a><a class="${hard ? 'on' : ''}" href="${link(keyFor(base, stat, true))}">🥵 Hard</a></div>` : ''}`;
     app.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>🏆 Leaderboards</h2><span></span></div>
       ${pickers}
+      ${GM.lbPeriod(m)}
       <div id="lbhidden"></div>
       ${/^d?chaos/.test(m) ? '<p class="muted center">🌪️ CHAOS scores are total points: your XI’s tally plus every bonus (chemistry, rating, titles, loyalty…).</p>' : ''}
       ${m.startsWith('footle:') ? '<p class="muted center">Footle scores: 8 for a first-guess win, down to 1 for getting it on the last guess.</p>' : ''}
-      ${GM.lb.enabled ? `<h3 class="section-title">🌍 Global</h3><div id="global" class="lb"><div class="muted">Loading…</div></div>` :
+      ${GM.lb.enabled ? `<h3 class="section-title">🌍 ${/:/.test(m) ? 'Global' : GM.lbMonth() ? new Date().toLocaleDateString(undefined, { month: 'long' }) : 'All time'}</h3><div id="global" class="lb"><div class="muted">Loading…</div></div>` :
         `<div class="banner">Global leaderboard isn’t switched on yet – use <b>⚔️ Challenge a friend</b> after a game to go head-to-head on the same spins.</div>`}
       ${/^(ultimate|club|classic|extreme|purist)/.test(m) || m.startsWith('daily:') ? `<h3 class="section-title">📊 Your spread</h3>${m.startsWith('daily:') ? GM.distHtml('daily', 'goals')
         : GM.distHtml(m, /apps(h)?$/.test(m) ? 'apps' : /ast(h)?$/.test(m) ? 'assists' : 'goals')}` : ''}
@@ -509,12 +513,13 @@
       <div class="lb" id="lbyou"></div>`;
     GM.lbYou(m, GM.$('#lbyou'));
     GM.hiddenNameBanner(GM.$('#lbhidden'));
+    GM.$$('.lb-period [data-per]').forEach(a => a.onclick = () => { GM.store.set('lbMonth', a.dataset.per === '1'); leaderboard(m); });
     if (GM.lb.enabled) {
       try {
         const rows = await GM.lb.top(m), pts = /^d?chaos/.test(m);
         const me = GM.getName();
         GM.$('#global').innerHTML = rows.length ? rows.map((r, i) =>
-          `<div ${GM.lbRow(r.name, me)}><span>${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span><span>${GM.esc(r.name)}${GM.pctTag(m, r.meta)}</span><b>${r.score.toLocaleString()}${pts ? '<small> pts</small>' : ''}</b></div>`).join('')
+          `<div ${GM.lbRow(r.name, me)}><span>${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span><span>${GM.esc(r.name)}${GM.lbLevel(r)}${GM.pctTag(m, r.meta)}</span><b>${r.score.toLocaleString()}${pts ? '<small> pts</small>' : ''}</b></div>`).join('')
           + (rows.some(r => r.name !== me) ? GM.lbReportHint : '')
           : '<div class="muted">No scores yet – be the first!</div>';
       } catch (e) { GM.$('#global').innerHTML = '<div class="muted">Couldn’t load the global board.</div>'; }
@@ -617,7 +622,7 @@
   // loading screen off, then (once per release) what's new
   const splash = document.getElementById('splash');
   if (splash) { splash.classList.add('gone'); setTimeout(() => splash.remove(), 500); }
-  if (!parseHash().path) setTimeout(() => (GM.store.get('welcomed') || GM.store.get('played', 0) ? GM.maybeShowWhatsNew() : GM.welcome()), 600);
+  if (!parseHash().path) setTimeout(() => (GM.store.get('welcomed') || GM.store.get('played', 0) ? GM.maybeShowWhatsNew() : GM.firstWelcome()), 600);
 
   // First time here: three quick cards on how it all works (also under Settings → How Goal Machine works)
   GM.welcome = function () {

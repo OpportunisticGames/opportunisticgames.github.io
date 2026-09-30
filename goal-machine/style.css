@@ -1641,3 +1641,33 @@ html.intl-break body::after { content: ''; position: fixed; top: 0; left: 0; rig
 .po-actions { display: flex; flex-direction: column; align-items: center; gap: 8px; min-height: 40px; }
 .po-better { margin: 0; color: #fde047; }
 @media (prefers-reduced-motion: reduce) { .po-foil::after, .po-pack, .po-hint { animation: none; } }
+
+/* Levels: the chip on Home, the level page; level tags on boards; This month / All time; club v club */
+.lvl-chip { position: relative; display: inline-flex; align-items: center; gap: 3px; padding: 2px 9px 4px; border-radius: 999px; background: var(--inset); color: var(--text); font: 800 .75rem Inter, sans-serif; text-decoration: none; overflow: hidden; vertical-align: middle; }
+.lvl-chip i { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--accent); }
+.lvl-hero { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 12px 0; padding: 18px; border-radius: 20px; background: var(--card); border: 2px solid var(--line); text-align: center; }
+.lvl-big { font-size: 3.4rem; line-height: 1; }
+.lvl-hero b { font: 700 1.8rem Oswald, sans-serif; } .lvl-hero small { color: var(--muted); }
+.lvl-bar { width: 100%; margin: 6px 0; }
+.lvl-ladder { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.lvl-ladder > div { display: flex; flex-direction: column; align-items: center; padding: 8px 2px; border-radius: 12px; background: var(--inset); opacity: .55; text-align: center; }
+.lvl-ladder > div.got { opacity: 1; } .lvl-ladder > div.now { box-shadow: 0 0 0 2px var(--accent); }
+.lvl-ladder span { font-size: 1.5rem; } .lvl-ladder b { font-size: .72rem; } .lvl-ladder small { font-size: .62rem; color: var(--muted); }
+.lvl-earn > div { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; padding: 8px 4px; border-bottom: 1px solid var(--line); }
+.lvl-earn b { color: var(--accent-ink, var(--accent)); }
+.lv-tag { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 999px; background: var(--inset); font: 700 .62rem Inter, sans-serif; font-style: normal; color: var(--muted); vertical-align: middle; }
+.lb-period { margin: 4px 0 8px; }
+.lb-period a { cursor: pointer; }
+.club-lb .lb-row > span:nth-child(2) { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+/* The first game: the card on Home and the coach bubbles */
+.first-xi { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; margin: 10px 0 4px; padding: 14px 16px; border-radius: 20px; text-decoration: none; color: #0a2a1f;
+  background: linear-gradient(135deg, #c8ff3d, #7ee081); box-shadow: 0 5px 0 #4c8f2c; animation: md-pulse 2.4s ease-in-out infinite; }
+.first-xi > span:first-child, .first-xi > span:last-child { font-size: 1.8rem; }
+.first-xi b { display: block; font: 700 1.2rem Oswald, sans-serif; text-transform: uppercase; letter-spacing: .5px; }
+.first-xi small { display: block; font-size: .8rem; }
+.coach { position: fixed; z-index: 110; padding: 10px 14px; border-radius: 14px; background: #ffe600; color: #2a1a00; font-size: .85rem; line-height: 1.35; box-shadow: 0 8px 24px rgba(0, 0, 0, .35); pointer-events: none; animation: pw-in .35s cubic-bezier(.2, 1.4, .4, 1); }
+.coach b { display: block; font: 700 1rem Oswald, sans-serif; letter-spacing: .3px; }
+.coach::after { content: ''; position: absolute; left: calc(var(--ax, 50%) - 8px); bottom: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: #ffe600; }
+.coach.below::after { bottom: auto; top: -8px; border: 8px solid transparent; border-top: 0; border-bottom-color: #ffe600; }
+.coach-lit { box-shadow: 0 0 0 3px #ffe600, 0 0 22px rgba(255, 230, 0, .8) !important; border-radius: 12px; }

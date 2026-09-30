@@ -72,7 +72,7 @@
     const px = GM.packedXI(), c = load();
     if (px.total > (c.best || 0)) {
       c.best = px.total; save(c);
-      GM.recordScore('packedxi', px.total, { t: px.total, n: px.n });
+      GM.recordScore('packedxi', px.total, { t: px.total, n: px.n }, { quiet: true });
     }
     return px;
   }
