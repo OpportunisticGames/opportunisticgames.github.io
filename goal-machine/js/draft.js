@@ -229,6 +229,8 @@
   // Matchday XI: on your club's matchday, players from either side (double for anyone who played for both).
   // Seeded by the fixture, so every fan gets the same spins; one go
   RULES.match = { ...RULES.club, match: true };
+  // International XI (international breaks): Ultimate Wildcard with every PL player from one country
+  RULES.nation = { ...RULES.club, club: false, nation: true };
 
   let S = null; // game state
   let root = null;
@@ -240,6 +242,7 @@
     if (mode === 'daily') return 'daily:' + GM.today();
     if (mode === 'club') return 'club' + GM.slug(club || '') + statSuffix(stat);
     if (mode === 'match') return 'match:' + club;  // club is the fixture id here
+    if (mode === 'nation') return 'nation' + GM.slug(club || '') + statSuffix(stat);  // and the country here
     return (mode === 'treble' || mode === 'mystery' ? mode : mode + statSuffix(stat)) + (hard ? 'h' : '');
   }
 
@@ -255,6 +258,7 @@
       return;
     }
     const fx = mode === 'match' ? GM.fixtureById(opts.fx) : null;
+    const nat = mode === 'nation' ? (GM.nations().includes(opts.nat) ? opts.nat : GM.store.get('nation', 'England')) : null;
     if (mode === 'match' && !fx) { location.hash = '#/matchday'; GM.toast('That match isn’t on the fixture list'); return; }
     if (fx) {
       const done = GM.store.get('match2:' + fx.id);
@@ -293,7 +297,7 @@
     }
     // any other draft left half-way: the Daily CHAOS carries straight on, the rest ask
     if (!opts.online && mode !== 'daily') {
-      const key = 'draftp:' + (dailyChaos ? 'dchaos:' + GM.today() : keyFor(mode, stat, !!opts.hard, mode === 'club' ? (opts.club || GM.favClub()) : fx ? fx.id : null));
+      const key = 'draftp:' + (dailyChaos ? 'dchaos:' + GM.today() : keyFor(mode, stat, !!opts.hard, mode === 'club' ? (opts.club || GM.favClub()) : fx ? fx.id : nat));
       const saved = GM.store.get(key);
       if (saved && saved.xi && saved.phase !== 'done' && (!opts.seed || saved.seed === opts.seed) && saved.xi.some(x => x.p != null)) {
         const resume = () => {
@@ -331,7 +335,7 @@
       reels: [], selected: -1, revealed: false, revealNext: false, special: null,
       inv: [], modifier: null, subbing: false, used: [], last: null,
       phase: 'spin', vs: opts.vs, vss: opts.vss, log: [], pending: null, wildUsed: 0, coinWin: false, bonus: [], hot: 0, event: null, meter: 0, unleash: 0, golden: false, masked: false, chaosCount: 0, manager: null, moments: [], chaosDue: false, momentSpin: -1, forceSpecial: null,
-      hard: mode !== 'daily' && !dailyChaos && !fx && !!opts.hard, club, club2: fx ? fx.away : null, fx: fx ? fx.id : null, dailyChaos, day: GM.today(),
+      hard: mode !== 'daily' && !dailyChaos && !fx && !!opts.hard, club, club2: fx ? fx.away : null, fx: fx ? fx.id : null, nat, dailyChaos, day: GM.today(),
       online: opts.online ? { ...opts.online, ms: 0, lastT: Date.now() } : null,  // Live Race: { code, seat, opp } + time taken
     };
     if (S.online) root.className = 'page-draft page-online';
@@ -340,7 +344,7 @@
     if (RULES[mode] && RULES[mode].chaos) setTimeout(() => { if (S === me && onThisGame() && !S.manager && S.spin === 0) pickManager(); }, 350);
   }
 
-  const modeKey = () => (S.dailyChaos ? 'dchaos:' + S.day : keyFor(S.mode, S.stat, S.hard, S.fx || S.club));
+  const modeKey = () => (S.dailyChaos ? 'dchaos:' + S.day : keyFor(S.mode, S.stat, S.hard, S.fx || S.nat || S.club));
   // where a half-finished draft is kept (the Daily Ultimate has its own; online races save with the race)
   const saveKey = () => (S.mode === 'daily' ? progressKey() : S.online ? null : 'draftp:' + modeKey());
   const progressKey = () => 'dailyp:' + GM.today();
@@ -350,7 +354,7 @@
   const reelWeight = () => (S.hard && (!S.rules.max || S.rules.fame) ? p => Math.sqrt(S.rules.weight(p)) : S.rules.weight);
   // what wildcard descriptions talk about: in the Treble a wildcard affects all three numbers
   const wst = () => S.rules.treble ? { ...S.st, label: 'numbers', bigLabel: 'goals' } : S.st;
-  const modeName = () => S.dailyChaos ? 'Daily CHAOS' : S.fx ? `Matchday XI · ${GM.clubShort(S.club)} v ${GM.clubShort(S.club2)}` : S.online && S.mode === 'target' ? `Target Race · ${fmt(S.target)}` : S.mode === 'club' ? GM.MODES[modeKey()].name : GM.MODES[S.mode === 'daily' ? 'daily' : (S.rules.treble || S.rules.mystery) ? S.mode : S.mode + statSuffix(S.stat)].name;
+  const modeName = () => S.dailyChaos ? 'Daily CHAOS' : S.fx ? `Matchday XI · ${GM.clubShort(S.club)} v ${GM.clubShort(S.club2)}` : S.online && S.mode === 'target' ? `Target Race · ${fmt(S.target)}` : S.mode === 'club' || S.nat ? GM.MODES[modeKey()].name : GM.MODES[S.mode === 'daily' ? 'daily' : (S.rules.treble || S.rules.mystery) ? S.mode : S.mode + statSuffix(S.stat)].name;
   const val = p => p[S.st.key];
   const bothSides = p => p.clubs.includes(S.club) && p.clubs.includes(S.club2);
   const pv = p => ({ goals: p.goals, assists: p.ast, apps: p.apps });
@@ -409,6 +413,10 @@
     if (S.club) {
       const mine = PL().filter(p => p.clubs.includes(S.club) || (S.club2 && p.clubs.includes(S.club2)));
       if (mine.some(ok)) { field = mine; fkey = 'club:' + S.club + (S.club2 ? '|' + S.club2 : ''); }
+    }
+    if (S.nat) {
+      const mine = PL().filter(p => p.nat === S.nat);
+      if (mine.some(ok)) { field = mine; fkey = 'nat:' + S.nat; }
     }
     if (wc && wc.filter) {
       const themed = field.filter(p => wc.filter(p, wst()));
@@ -1052,6 +1060,7 @@
         bull: sc.diff === 0, closeness: sc.closeness != null ? sc.closeness : null, treble: !!(sc.hits && sc.hits.length === 3),
         slots: xiSlots.map(x => ({ name: x.player.name, g: x.g })), manager: S.manager || null,
         moments: (S.moments || []).map(m => m.name), rars: (S.moments || []).map(m => m.rar), bigs: (S.bigSeen || []).length,
+        clubs: S.club2 ? [S.club, S.club2] : null, fx: S.fx || null, nat: S.nat || null,
         liked: S.manager && MANAGERS[S.manager].likes ? xiSlots.filter(x => MANAGERS[S.manager].likes(x.player)).length : 0,
       });
       S.collected = { n: S.collected.newPlayers.length, total: S.collected.total, badges: S.collected.fresh.map(x => x.icon + ' ' + x.name), book: S.collected.book };
@@ -1261,7 +1270,7 @@
     requestAnimationFrame(() => { fitPitch(); fitReels(); });
     if (!S.readonly && saveKey()) GM.store.set(saveKey(), { ...S, rules: undefined });  // saved on every move
     if (S.revealStage === 'intro') return mysteryIntro();
-    const icon = S.mode === 'club' ? '🏟️' : GM.MODES[S.mode === 'daily' ? 'daily' : S.mode].icon;
+    const icon = S.nat ? GM.flag(S.nat) : S.mode === 'club' ? '🏟️' : GM.MODES[S.mode === 'daily' ? 'daily' : S.mode].icon;
     const nReels = Math.max(3, S.reels.length);
     const sp = S.special && WILDCARDS[S.special];
     root.innerHTML = `
@@ -1320,7 +1329,7 @@
   function renderDone() {
     const sc = S.final || scoreFor(S);
     const best = GM.best(S.mode === 'daily' ? 'daily' : modeKey());
-    const icon = S.mode === 'club' ? '🏟️' : GM.MODES[S.mode === 'daily' ? 'daily' : S.mode].icon;
+    const icon = S.nat ? GM.flag(S.nat) : S.mode === 'club' ? '🏟️' : GM.MODES[S.mode === 'daily' ? 'daily' : S.mode].icon;
     const xi = S.xi.filter(s => s.p != null).map(s => ({ ...s, player: byId(s.p) }));
     root.innerHTML = `
       <div class="topbar"><a href="#/" class="back">‹</a><h2>${icon} Full time</h2><span></span></div>
@@ -1347,7 +1356,7 @@
         <button class="btn ghost" id="sharepic">🖼️ Share a picture of your XI</button>
         <a class="btn ghost" href="#/leaderboard?m=${encodeURIComponent(modeKey())}">🏆 Leaderboard</a>
       </div>`;
-    const again = GM.$('#again', root); if (again) again.onclick = () => start(root, S.mode, { hard: S.hard, stat: S.rules.mystery ? undefined : S.stat, club: S.club });
+    const again = GM.$('#again', root); if (again) again.onclick = () => start(root, S.mode, { hard: S.hard, stat: S.rules.mystery ? undefined : S.stat, club: S.club, nat: S.nat });
     GM.$('#share', root).onclick = () => GM.share(resultText(sc));
     GM.$('#sharepic', root).onclick = () => {
       const png = GM.teamPicture(S.xi.map(s => ({ pos: s.pos, p: s.p != null ? PL()[s.p] : null, v: s.p != null ? s.g : null })), {
@@ -1358,7 +1367,7 @@
     if (GM.$('#challenge', root)) GM.$('#challenge', root).onclick = async () => {
       const name = await GM.askName() || 'A friend';
       const m = S.mode === 'daily' ? 'ultimate' : S.mode;
-      const url = `${GM.baseUrl()}#/draft?m=${m}&s=${S.stat}${S.club ? '&c=' + encodeURIComponent(S.club) : ''}&seed=${encodeURIComponent(S.seed)}${S.hard ? '&h=1' : ''}&vs=${encodeURIComponent(name)}&vss=${sc.total}`;
+      const url = `${GM.baseUrl()}#/draft?m=${m}&s=${S.stat}${S.club ? '&c=' + encodeURIComponent(S.club) : ''}${S.nat ? '&n=' + encodeURIComponent(S.nat) : ''}&seed=${encodeURIComponent(S.seed)}${S.hard ? '&h=1' : ''}&vs=${encodeURIComponent(name)}&vss=${sc.total}`;
       GM.share(S.rules.max
         ? `⚽ Goal Machine – my ${modeName()}${S.hard ? ' (Hard)' : ''} XI has ${fmt(sc.t)} PL ${S.st.label}. Same spins, can you beat it?`
         : S.rules.treble || S.rules.mystery ? `⚽ Goal Machine – I scored ${sc.total} in ${modeName()}${S.hard ? ' (Hard)' : ''}. Same spins, can you beat me?`

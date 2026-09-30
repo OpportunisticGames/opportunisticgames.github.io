@@ -9,6 +9,20 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 37, label: '5.6', date: '2026-09-30', title: '🎁 Packs, levels, club v club, and international breaks',
+      items: [
+        '⬆️ Levels! Everything you play earns XP, from 🥾 Sunday League all the way to 🏆 Ballon d’Or, with a free pack every level. Your level shows next to your name on the leaderboards',
+        '🏟️ Club v club: every fan’s Daily Ultimate counts for their club in a weekly table. Same spins for everyone, so it’s a fair fight. Find it under Ranks',
+        '📅 Leaderboards now open on This month, so everyone gets a fresh race every month. All time is one tap away',
+        '👋 New players get a guided first game',
+        '🎁 Packs! A free one every day, and bonus ones for three dailies in a day or a new badge. Every player is a card: Bronze, Silver, Gold or Legend. The rarer the card, the more pieces it takes to finish. Legends walk out',
+        '🃏 Your Packed XI: the best team from the cards you’ve finished, with its own leaderboard. Signing a player in any draft gives a piece of his card too (once a day each)',
+        '🌍 International breaks! When there’s no PL football, the game puts the bunting up and opens the International XI: pick from 32 countries and build their XI from every PL player they’ve had',
+        '🎚️ One switch for difficulty: 🙂 Normal, 🥵 Hard or ⚡ Extreme. Extreme puts all 5,000+ PL players into the Main event and CHAOS, so the pool buttons on the cards have gone',
+        '🏅 A new badge list, Matchdays & breaks: Split Loyalties, Twelfth Man, Season Ticket, Pundit, World Tour, Golden Generation… and a couple of secrets. Plus five pack badges',
+      ],
+    },
+    {
       v: 36, label: '5.5', date: '2026-09-30', title: '🏟️ Matchdays, sharing your day, and secrets to find',
       items: [
         '🏟️ Matchdays! When your club plays, there’s a Matchday XI (players from either side, double points for anyone who played for both, and the same spins for every fan) and a pre-match Footle. On the Android app you get a nudge at 9am too',

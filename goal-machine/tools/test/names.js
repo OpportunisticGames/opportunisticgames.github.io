@@ -9,7 +9,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const b = await chromium.launch(), errs = [];
   const open = async (play) => {
     const ctx = await b.newContext({ viewport: { width: 360, height: 780 } }); await server.attach(ctx);
-    await ctx.route('**/rest/v1/best_scores**', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ name: 'Bob', score: 500 }, { name: 'Alice', score: 400 }]) }));
+    await ctx.route(/rest\/v1\/(best|month)_scores/, r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ name: 'Bob', score: 500 }, { name: 'Alice', score: 400 }]) }));
     await ctx.route(/wikimedia|premierleague|transfermarkt/, r => r.abort());
     if (play) await ctx.addInitScript(() => { window.AndroidApp = { channel: () => 'play', version: () => 99 }; });
     const pg = await ctx.newPage(); pg.on('pageerror', e => errs.push(e.message));

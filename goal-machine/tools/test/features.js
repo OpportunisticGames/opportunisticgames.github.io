@@ -36,7 +36,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.evaluate(() => GM.checkOnline({ code: 'R1', kind: 'race', variant: 'chaos', host: 'Alice', guest: 'Bob', result: { winner: 'host' } }, 'host'));
   await pg.goto(U + '#/album?v=badges'); await pg.waitForTimeout(600);
   const cats = await pg.$$eval('.ach-cats a', e => e.map(x => x.textContent));
-  ok(cats.length === 8 && cats.some(c => /CHAOS/.test(c)), 'badge categories (CHAOS has its own): ' + cats.join(' | '));
+  ok(cats.length === 9 && cats.some(c => /CHAOS/.test(c)), 'badge categories (CHAOS and Matchdays & breaks have their own): ' + cats.join(' | '));
   await pg.goto(U + '#/album?v=badges&c=secret'); await pg.waitForTimeout(400);
   ok(await pg.$$eval('.ach.secret b', e => e.every(x => x.textContent === '???')) && (await pg.$$('.ach.secret')).length === 7, 'seven secret badges show as ??? (CHAOS keeps its own secrets)');
   await pg.goto(U + '#/album?v=badges&c=online'); await pg.waitForTimeout(400);

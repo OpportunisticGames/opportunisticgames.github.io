@@ -40,10 +40,19 @@ def main():
     odd = {c for f in fx for c in f[1:]} - known
     if odd:
         sys.exit('unknown club names (add them to CANON): %s' % ', '.join(sorted(odd)))
-    doc = {'generated': datetime.date.today().isoformat(), 'fixtures': fx}
+    # international breaks: 11+ free days between PL matchdays in the international windows (Sep, Oct, Nov, Mar; a cup
+    # weekend leaves fewer). From the whole season's list, so a break that has already started still shows.
+    # Each is [first free day, last free day]
+    days = sorted({k[:10] for k, h, a in rows if k})
+    d = lambda x: datetime.date.fromisoformat(x)
+    breaks = [[(d(a) + datetime.timedelta(days=1)).isoformat(), (d(b) - datetime.timedelta(days=1)).isoformat()]
+              for a, b in zip(days, days[1:]) if (d(b) - d(a)).days >= 12 and d(a).month in (8, 9, 10, 11, 3)]
+    doc = {'generated': datetime.date.today().isoformat(), 'breaks': breaks, 'fixtures': fx}
     with open(out, 'w', encoding='utf-8') as f:
         f.write('window.PL_FIXTURES=' + json.dumps(doc, ensure_ascii=False, separators=(',', ':')) + ';\n')
-    print('%d fixtures from the %s written to %s' % (len(fx), where, out))
+    print('%d fixtures and %d international breaks from the %s written to %s' % (len(fx), len(breaks), where, out))
+    for b in breaks:
+        print('  break', b[0], 'to', b[1])
 
 if __name__ == '__main__':
     main()

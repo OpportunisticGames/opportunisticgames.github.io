@@ -41,7 +41,7 @@
     root.classList.add('has-club');
     if (GM.applyTheme) GM.applyTheme();  // the Club look's bar colour
   };
-  GM.setFavClub = c => { store.set('club', c); GM.applyClub(); };
+  GM.setFavClub = c => { store.set('club', c); GM.applyClub(); if (GM.syncProfile) GM.syncProfile(); };
   GM.applyClub();
   // each club gets its own Club XI board names (mode keys are letters only)
   GM.clubs.forEach(c => ['', 'ast', 'apps'].forEach(s => {
@@ -62,9 +62,11 @@
   const log = () => store.get('dlog', {});
   GM.dailyLog = log;
   GM.markDaily = function (game, value, day = GM.today()) {
-    const l = log();
+    const l = log(), before = Object.keys(l[day] || {}).length;
     l[day] = { ...(l[day] || {}), [game]: value };
     store.set('dlog', l);
+    if (Object.keys(l[day]).length > before && GM.addXP) GM.addXP(GM.XP.daily);
+    if (before === 2 && Object.keys(l[day]).length === 3 && day === GM.today() && GM.givePack) GM.givePack(1, 'three daily games today');
     if (GM.notify) GM.notify.sync();  // no streak or daily reminder once you've played today
   };
   GM.dailyResult = (game, day = GM.today()) => (log()[day] || {})[game];
@@ -155,7 +157,8 @@
     const s = GM.streak();
     root.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>${GM.calIcon()} Today</h2><span></span></div>
       <div class="streak-hero"><div class="flame ${s ? 'lit' : ''}">🔥</div><div><b>${s}</b><span>day streak</span><small>Best ${GM.bestStreak()} · play any daily to keep it going</small></div></div>
-      ${GM.matchBanner ? GM.matchBanner() : ''}
+      ${GM.matchBanner ? GM.matchBanner() + GM.intlBanner() : ''}
+      ${GM.packsWaiting && GM.packsWaiting() ? `<a class="pack-bar" href="#/packs"><span>🎁</span><span><b>${GM.packsWaiting()} pack${GM.packsWaiting() > 1 ? 's' : ''} to open</b><small>A free one every day</small></span><span>›</span></a>` : ''}
       <div class="daily-list">${games.map(g => {
         const G = GAMES[g], st = GM.dailyStatus(g), gs = GM.streak(g);
         const name = g === 'club' ? `${esc(club)} Footle` : G.name;
@@ -247,7 +250,7 @@
       store.set(key, st);
       const won = isAnswer(p, ans);
       GM.sound.play(won ? 'good' : 'place'); GM.buzz();
-      if (fx && (won || st.guesses.length >= MAX)) { st.done = true; st.won = won; store.set(key, st); }
+      if (fx && (won || st.guesses.length >= MAX)) { st.done = true; st.won = won; store.set(key, st); if (won) GM.checkGame('mfootle', st.guesses.length); }
       else if (won || st.guesses.length >= MAX) {
         const n = won ? st.guesses.length : 0;
         GM.markDaily(game, n, day);

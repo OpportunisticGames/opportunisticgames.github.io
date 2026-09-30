@@ -1,7 +1,9 @@
-/* Goal Machine – your club's matchdays. The fixtures come from data/fixtures.js (rebuilt with the weekly data).
+/* Goal Machine – your club's matchdays, and international breaks. The fixtures come from data/fixtures.js (rebuilt with the weekly data).
    On matchday: a banner on Home and Today, the Matchday XI (players from either side, double for anyone who played
    for both, the same spins for every fan, one go) and a pre-match Footle (a mystery player who played for both).
-   The Android app also gets a 9am "Matchday" notification (see app_inbox in Supabase). */
+   The Android app also gets a 9am "Matchday" notification (see app_inbox in Supabase).
+   International breaks (from the gaps in the fixture list): a flag-bunting look, a banner, and the International XI,
+   a draft of every PL player from one country. */
 'use strict';
 
 (function () {
@@ -15,7 +17,7 @@
     }).sort((a, b) => a.ko - b.ko);
     return list;
   };
-  GM.setFixtures = fx => { window.PL_FIXTURES = { fixtures: fx }; list = null; };  // for tests
+  GM.setFixtures = (fx, breaks) => { window.PL_FIXTURES = { fixtures: fx, breaks: breaks || [] }; list = null; GM.applyIntl(); };  // for tests
   GM.fixtureById = id => GM.fixtures().find(f => f.id === id) || null;
   // your club's next match: today's (all day, even after full time), or the next one
   GM.nextMatch = (club = GM.favClub(), from = GM.today()) => club ? GM.fixtures().find(f => (f.home === club || f.away === club) && f.day >= from) || null : null;
@@ -70,5 +72,66 @@
         ft.done ? (ft.won ? `✅ Got it in ${ft.guesses.length}` : '❌ Not this time · tap to see who it was') : ft.guesses.length ? `▶ ${ft.guesses.length} guess${ft.guesses.length === 1 ? '' : 'es'} so far` : '')}
       ${later.length ? `<h3 class="section-title">Coming up</h3><div class="md-list">${later.map(x => `<div><span>${GM.esc(vs(x, club))}</span><small>${when(x)}</small></div>`).join('')}</div>` : ''}
       <p class="muted center small">Kick-off times are in your time zone. Matchday games open whenever ${GM.esc(club)} play.</p>`;
+  };
+
+  /* ================================================================ international breaks */
+  const breaks = () => (window.PL_FIXTURES || {}).breaks || [];
+  const nice = day => new Date(day + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+  // the break we're in (null if there's PL football): { from, to, back: the first PL kick-off after it }
+  GM.intlBreak = (day = GM.today()) => {
+    const b = breaks().find(([a, z]) => day >= a && day <= z);
+    if (!b) return null;
+    const next = GM.fixtures().find(f => f.day > b[1]);
+    return { from: b[0], to: b[1], back: next ? next.ko : null };
+  };
+  GM.nextBreak = (day = GM.today()) => { const b = breaks().find(([a]) => a > day); return b ? { from: b[0], to: b[1] } : null; };
+  // the flag bunting look, on for the whole break
+  GM.applyIntl = () => document.documentElement.classList.toggle('intl-break', !!GM.intlBreak());
+  GM.applyIntl();
+
+  // countries with 10+ PL regulars (50+ apps), biggest first. The draft uses every PL player they've had; if none of
+  // them fits a slot (no keeper left, say) the reels fall back to anyone, as Club XI does
+  let nats = null;
+  GM.nations = function () {
+    if (nats) return nats;
+    const c = {};
+    GM.players.forEach(p => { if (p.nat) c[p.nat] = (c[p.nat] || 0) + 1; });
+    return (nats = Object.keys(c).filter(k => c[k] >= 10).sort((a, b) => c[b] - c[a]));
+  };
+  // each country gets its own boards
+  GM.nations().forEach(n => ['', 'ast', 'apps'].forEach(sfx => {
+    GM.MODES['nation' + GM.slug(n) + sfx] = { name: `${n} XI` + ({ ast: ' – Assists', apps: ' – Apps' }[sfx] || ''), icon: '🌍' };
+  }));
+  const FLAGS = ['England', 'France', 'Brazil', 'Spain', 'Scotland', 'Netherlands', 'Wales', 'Argentina', 'Ireland', 'Portugal', 'Nigeria', 'Germany'];
+  GM.intlBanner = function () {
+    const b = GM.intlBreak();
+    if (!b) return '';
+    return `<a class="intl-banner" href="#/nations"><span class="ib-flags" aria-hidden="true">${FLAGS.concat(FLAGS).map(GM.flag).join(' ')}</span>
+      <span class="ib-row"><span>🌍</span><span><b>INTERNATIONAL BREAK</b><small>${b.back ? `No PL football till ${nice(localDay(b.back))}. ` : ''}Build a country’s XI instead</small></span><span>›</span></span></a>`;
+  };
+
+  GM.nationsPage = function (root) {
+    const b = GM.intlBreak(), nb = GM.nextBreak();
+    const top = `<div class="topbar"><a href="#/" class="back">‹</a><h2>🌍 International XI</h2>`;
+    if (!b) {
+      root.innerHTML = `${top}<span></span></div>
+        <div class="md-card"><span class="kicker">International break</span><p class="md-clock">${nb ? `Next one: ${nice(nb.from)} to ${nice(nb.to)}` : 'The next one isn’t on the fixture list yet'}</p></div>
+        <div class="md-tile locked"><span class="md-ico">🔒</span><b>International XI</b><small>Comes out for every international break: pick a country and build its XI from every PL player it’s had.</small></div>`;
+      return;
+    }
+    const all = GM.nations(), mine = GM.store.get('nation', 'England'), pick = all.includes(mine) ? mine : all[0];
+    const statBtn = s => {
+      const st = GM.STATS[s], key = GM.draft.modeKey('nation', s, false, pick), best = GM.best(key);
+      return `<a class="stat-btn" href="#/draft?m=nation&n=${encodeURIComponent(pick)}&s=${s}"><i class="sb-ico">${st.icon}</i>${st.name}${best ? `<small>PB ${best.toLocaleString()}</small>` : ''}</a>`;
+    };
+    const done = GM.store.get('nationsPlayed', []);
+    root.innerHTML = `${top}<span class="top-btns">${GM.lbButton(GM.draft.modeKey('nation', 'goals', false, pick))}</span></div>
+      <div class="md-card today intl"><span class="kicker">INTERNATIONAL BREAK</span>
+        <div class="ib-big">${GM.flag(pick)}</div><b class="ib-name">${GM.esc(pick)} XI</b>
+        <p class="md-clock small">Every PL player ${GM.esc(pick)} has had, all equally likely. Wildcards on. Until ${nice(b.to)}</p>
+        <span class="stat-pick">${['goals', 'assists', 'apps'].map(statBtn).join('')}</span></div>
+      <h3 class="section-title">Pick a country</h3>
+      <div class="nation-grid">${all.map(n => `<button class="${n === pick ? 'on' : ''}" data-nat="${GM.esc(n)}"><span>${GM.flag(n)}</span>${GM.esc(n)}${done.includes(n) ? '<i>✓</i>' : ''}</button>`).join('')}</div>`;
+    GM.$$('[data-nat]', root).forEach(el => el.onclick = () => { GM.store.set('nation', el.dataset.nat); GM.nationsPage(root); window.scrollTo(0, 0); });
   };
 })();
