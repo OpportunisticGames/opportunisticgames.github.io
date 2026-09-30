@@ -23,6 +23,7 @@
         '🥵 Moneyball has a Hard mode too: names and positions only',
         '📅 The daily games stay the same for everyone, whatever your difficulty',
         '🏆 The leaderboards’ difficulty is Normal, Hard or Extreme, like the switch on Home',
+        '🔊 Packs sound the part too: a jingle when you earn one, the cards dealt out, a shimmer when a Gold or Legend is hiding in the pack, a floodlit walkout for Legends, and a snap when a card’s finished. Levelling up has its own jingle',
         '🎏 The international break bunting no longer clashes with your club’s stripe',
       ],
     },

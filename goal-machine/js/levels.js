@@ -37,7 +37,7 @@
       const promo = after.rank !== before.rank;
       setTimeout(() => {
         GM.toast(`⬆️ <b>Level ${after.n}</b>${promo ? ` · promoted to ${after.icon} <b>${after.rank}</b>!` : ''}`, 3200);
-        GM.sound.play(promo ? 'cheer' : 'good');
+        GM.sound.play('levelup'); if (promo) setTimeout(() => GM.sound.play('cheer'), 450);
         if (GM.givePack) GM.givePack(1, promo ? `promoted to ${after.rank}` : `level ${after.n}`, promo ? 'legends' : 'standard');
       }, 1500);
       GM.syncProfile();

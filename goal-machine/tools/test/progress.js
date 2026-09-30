@@ -48,10 +48,10 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const lv = await pg.evaluate(() => ({ xp: GM.xp(), chip: (document.querySelector('.lvl-chip') || {}).textContent }));
   ok(lv.xp >= 25 && /Lv \d/.test(lv.chip), `a draft earns XP (${lv.xp}) and Home shows your level (${lv.chip.trim()})`);
   const p0 = await pg.evaluate(() => GM.packsWaiting());
-  const n = await pg.evaluate(() => { GM.addXP(500); return GM.myLevel().n; });
-  await pg.waitForTimeout(2000);
+  const n = await pg.evaluate(() => { window.snd = []; const p = GM.sound.play; GM.sound.play = (k, x) => { snd.push(k); return p(k, x); }; GM.addXP(500); return GM.myLevel().n; });
+  await pg.waitForTimeout(2800);
   const up = { n, packs: await pg.evaluate(() => GM.packsWaiting()) - p0 };
-  ok(up.n >= 4 && up.packs >= 1, `levelling up (to ${up.n}) gives a pack`);
+  ok(up.n >= 4 && up.packs >= 1 && await pg.evaluate(() => snd.includes('levelup') && snd.includes('packget')), `levelling up (to ${up.n}) gives a pack, with a level-up jingle`);
   ok(await pg.evaluate(() => { const s = [0, 100, 225, 375, 550]; return s.every((x, i) => GM.levelOf(x).n === i + 1) && GM.levelOf(99).n === 1 && GM.levelOf(40000).rank === 'Ballon d’Or'; }), 'the ladder: 100 XP for level 2, a bit more each level, Ballon d’Or at the top');
   await pg.goto(U + '#/level'); await pg.waitForTimeout(400);
   ok((await pg.$$('.lvl-ladder > div')).length === 8 && /Earn a badge/.test(await pg.textContent('.lvl-earn')), 'the level page: the ladder and how to earn XP');

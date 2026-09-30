@@ -27,6 +27,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   // opening (no wildcard in this one; they're tested below)
   await pg.evaluate(() => { GM.packForce = { wild: 'none' }; });
   await pg.goto(U + '#/packs'); await pg.waitForTimeout(500);
+  await pg.evaluate(() => { window.snd = []; const p = GM.sound.play; GM.sound.play = (n, x) => { snd.push(n); return p(n, x); }; });
   await pg.click('#openpack'); await pg.waitForTimeout(400);
   await pg.$eval('.po-pack', e => e.click()); await pg.waitForTimeout(700);
   ok(await pg.evaluate(() => document.querySelector('.pack-open').classList.contains('charging')), 'tapping the pack charges it up…');
@@ -43,6 +44,10 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const badges = await pg.evaluate(() => Object.keys(GM.store.get('album').ach));
   ok(badges.includes('colpack'), 'the first pack earns Pack Opener');
   ok(await pg.evaluate(() => GM.packsWaiting()) >= 1, 'and a new badge earns a bonus pack');
+  await pg.waitForTimeout(1000);
+  const sn = await pg.evaluate(() => snd.slice());
+  ok(['drumroll', 'charge', 'crack', 'deal'].every(n => sn.includes(n)) && ['silver', 'jackpot', 'fanfare'].some(n => sn.includes(n)) && sn.includes('packget'),
+    `sounds: the drum roll, charging, the tear, the deal, a flip for the tier, and a jingle when you earn a pack (${[...new Set(sn)].join(', ')})`);
 
   // pieces from drafts: once a day per player
   const dr = await pg.evaluate(() => {
@@ -72,6 +77,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.waitForTimeout(800);
   const ch = await pg.evaluate(() => { const b = [...document.querySelectorAll('.po-choice [data-pick]')]; return { n: b.length, visible: b.every(e => e.querySelector('.pc-front').getBoundingClientRect().width > 50), name: b[2] && b[2].querySelector('.pc-name').textContent }; });
   ok(ch.n === 3 && ch.visible, 'a wildcard flips and offers three cards to choose from');
+  ok(await pg.evaluate(() => snd.includes('wild') && snd.includes('box')), '…with its own sounds');
   await pg.$eval('[data-pick="2"]', e => e.click()); await pg.waitForTimeout(9000);
   const after2 = await pg.evaluate(() => ({ sum: Object.values(GM.store.get('cards').p).reduce((a, n) => a + n, 0), chosen: !!document.querySelector('.pack-open .pcard.from-wild'), done: !!document.querySelector('[data-done]') }));
   ok(after2.chosen && after2.done && after2.sum - before2 >= 4, `the pick (${ch.name}) takes the wildcard’s place and the pack finishes`);
