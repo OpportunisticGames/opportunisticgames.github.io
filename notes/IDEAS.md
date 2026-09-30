@@ -303,3 +303,4 @@ _None yet._
   default: friend invites and challenges, your move, new game modes, come back (from noon on the 4th day without a
   game, and again after 2 weeks) and an 8pm streak reminder if the streak is about to end. Results are also on. There's
   a daily reminder at a chosen time (off by default). Announce a new mode by adding a row to `announcements`.
+- **Done in 5.9 (owner's idea):** NEW / UPDATED tags on game tiles (from the release's `tags`), and a rotating banner on Home: matchday, the international break, the release's featured games (`promo` in updates.js) and news from the `announcements` table (readable by the app now). Posting an announcement puts it in the banner for a fortnight, no release needed.

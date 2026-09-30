@@ -12,6 +12,7 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 2026-10-01 | Tapping Moneyball turned Home dark (Moneyball's boardroom look and music) without Moneyball appearing. Couldn't reproduce in testing: likely the Moneyball page failing to draw on that phone after the router had already switched the look | 5.9: a page that fails to draw now shows a "Something went wrong" screen with Reload, in the normal look; Home always resets the look and music whenever it draws |
 | 2026-10-01 | In an international break the flag bunting sat on top of your club's stripe along the top edge, and the stripe showed through between the flags | 5.7.1: the bunting takes over the top edge for the break |
 | 2026-10-01 | The leaderboards' difficulty only had Normal and Hard; Extreme boards were hidden in the version list | 5.7.1: the drop-down is Normal / Hard / Extreme, like Home |
 | 2026-10-01 | Extreme only changed the Main event and CHAOS; the other games ignored it | 5.7.1: every player on the reels and markets in the Target games, Moneyball, the Transfer Window, Higher or Lower and Guess the Tally; in the name-typing games (Who Am I?, Club Grid, Club Hopper) any PL player counts at every level and Extreme turns suggestions off (owner's idea). Hard added to the money games. Own boards throughout; the dailies stay the same for everyone |

@@ -9,7 +9,21 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 41, label: '5.9', date: '2026-10-01', title: '🎠 A rotating banner, and tags for what’s new',
+      items: [
+        '🎠 Home has a rotating banner: matchday, the international break, new games and news, turning over by itself. Swipe it or tap the dots',
+        '🏷️ Games get a NEW or UPDATED tag until you’ve had a go',
+        '🛠️ Fixed: tapping Moneyball could turn Home dark without opening the game. If a page ever fails to load, you now get a Reload button instead',
+      ],
+    },
+    {
       v: 40, label: '5.8', date: '2026-10-01', title: '💼 The new Moneyball, and Extreme everywhere',
+      // tags on the game tiles until you open them, and the featured slides in Home's rotating banner (for three weeks)
+      tags: { moneyball: 'UPDATED' },
+      promo: [
+        { href: '#/moneyball', icon: '💼', cls: 't-green', title: 'The new Moneyball', sub: 'Chairman for a season: £100m, five players, breaking news and Deadline Day. How rich can you get?' },
+        { href: '#/packs', icon: '🔊', cls: 't-purple', kick: '🎧 Turn it up', title: 'Packs with sound', sub: 'Floodlit Legend walkouts, a shimmer when there’s gold in the pack, and a snap when you finish a card' },
+      ],
       items: [
         '💼 Moneyball is brand new: you’re chairman for a season with £100m and room for five players. The market prices reputation; your players earn money and value by what they actually do on the pitch. Buy low, sell high, and finish the season as rich as you can',
         '📰 Every week brings news: a big bid for your star (sell or keep?), injuries, takeovers, an agent’s tip… and week 8 is Deadline Day',

@@ -1,6 +1,6 @@
 // Offline support: cache the app shell, network-first so updates show up on the next load.
-const CACHE = 'goal-machine-v40';
-const SHELL = ['./', 'index.html', 'style.css', 'config.js', 'data/players.js', 'data/photos.js', 'data/faces.js', 'js/core.js', 'js/audio.js', 'js/daily.js', 'js/draft.js', 'js/report.js', 'js/collection.js', 'js/packs.js', 'js/levels.js', 'js/firstgame.js', 'js/modes.js', 'js/h2h.js', 'js/online.js', 'js/picture.js', 'js/market.js', 'js/moneyball.js', 'js/hattrick.js', 'js/updates.js', 'js/banter.js', 'data/fixtures.js', 'js/matchday.js', 'js/app.js',
+const CACHE = 'goal-machine-v41';
+const SHELL = ['./', 'index.html', 'style.css', 'config.js', 'data/players.js', 'data/photos.js', 'data/faces.js', 'js/core.js', 'js/audio.js', 'js/daily.js', 'js/draft.js', 'js/report.js', 'js/collection.js', 'js/packs.js', 'js/levels.js', 'js/firstgame.js', 'js/modes.js', 'js/h2h.js', 'js/online.js', 'js/picture.js', 'js/market.js', 'js/moneyball.js', 'js/hattrick.js', 'js/updates.js', 'js/banter.js', 'data/fixtures.js', 'js/matchday.js', 'js/promo.js', 'js/app.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {
