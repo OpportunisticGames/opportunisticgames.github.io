@@ -24,6 +24,7 @@
         '📅 The daily games stay the same for everyone, whatever your difficulty',
         '🏆 The leaderboards’ difficulty is Normal, Hard or Extreme, like the switch on Home',
         '🔊 Packs sound the part too: a jingle when you earn one, the cards dealt out, a shimmer when a Gold or Legend is hiding in the pack, a floodlit walkout for Legends, and a snap when a card’s finished. Levelling up has its own jingle',
+        '🎹 On the Google Play app, the game’s own music now starts switched on (you can turn it off in Settings)',
         '🎏 The international break bunting no longer clashes with your club’s stripe',
       ],
     },
