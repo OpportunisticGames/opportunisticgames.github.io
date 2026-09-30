@@ -16,10 +16,10 @@
 <body>
   <main id="app" class="prose">
     <div class="topbar"><a href="./#/settings" class="back">‹</a><h2>🔐 Privacy policy</h2><span></span></div>
-    <p class="muted">Goal Machine, by Opportunistic Games. Last updated 26 September 2026.</p>
+    <p class="muted">Goal Machine, by Opportunistic Games. Last updated 30 September 2026.</p>
 
     <h3>The short version</h3>
-    <p>Goal Machine doesn't track you, show ads or use analytics. It keeps your games on your own device. The only things that leave it are the name, scores and optional profile picture you choose to share, backups you make, and the moves in online games.</p>
+    <p>Goal Machine doesn't track you, show ads or use analytics. It keeps your games on your own device. The only things that leave it are the name, scores and optional profile picture you choose to share, backups you make, the moves in online games, and (in the Android app, if you allow notifications) an address for sending them to your phone.</p>
 
     <h3>What stays on your device</h3>
     <p>Your scores, album, streaks, daily results, settings, favourite club and any game in progress are saved in your browser or app storage on your phone. They never leave it unless you use a feature below. Clearing the app's data or your browser's site data deletes them.</p>
@@ -31,8 +31,10 @@
       <li><b>Profile picture (optional).</b> If you add one, a small copy (160×160) is stored with your name. Your friends and the people you play online see it; it isn't shown on the public leaderboards. Anyone can report a picture as offensive, and pictures reported by several players are removed. Remove yours any time in Settings.</li>
       <li><b>Backups.</b> If you have an account, your album, stats, streaks and scores from this device are backed up under your name so you can restore them on another phone. Only you (with your account key) can read them.</li>
       <li><b>Online games.</b> A game room holds the two players' names and their picks or running totals. Rooms are deleted two days after they were last used.</li>
+      <li><b>Notifications (Android app).</b> If you have a leaderboard name and allow notifications, your phone gets a notification address (a token) from Google's Firebase Cloud Messaging. We store it with your name, the kinds of notification you've switched on and your time zone, so we can tell your phone when it's your move, a friend challenges you or a game finishes. It's used for nothing else. Switching the kinds off in Settings stops them; deleting your account removes the token.</li>
+      <li><b>Feedback (optional).</b> If you send a bug report or idea from Settings, we store your message with your leaderboard name (if you have one), the game version, the page you were on, your screen size and your phone or browser type. We keep it until we've dealt with it; ask us and we'll delete it.</li>
     </ul>
-    <p>This data is held by our database provider, Supabase, in the UK (London). We don't sell or share it, and we don't use it for advertising.</p>
+    <p>This data is held by our database provider, Supabase, in the UK (London). Notifications are delivered by Google's Firebase Cloud Messaging. We don't sell or share it, and we don't use it for advertising.</p>
 
     <h3>Other services the game uses</h3>
     <p>Player photos are loaded from the Premier League, Transfermarkt or Wikimedia Commons, and fonts from Google Fonts. Like any website, those servers see the usual technical details of a request (such as your IP address). We send them nothing about you.</p>
