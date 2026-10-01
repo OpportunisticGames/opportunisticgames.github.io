@@ -9,6 +9,23 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 42, label: '5.10', date: '2026-10-02', title: '🕴️ Dodgy Owner: Club Boss grows up',
+      tags: { owner: 'NEW' },
+      promo: [
+        { href: '#/owner', icon: '🕴️', cls: 't-navy', title: 'Dodgy Owner', sub: 'You’ve bought a club. Hire and sack coaches, meddle, wheel and deal, and stay one step ahead of the league’s investigators.' },
+      ],
+      items: [
+        '🕴️ Club Boss is now Dodgy Owner: you’ve bought a club, and you’re far too involved. A full 38-game season and a cup, with a squad of 20',
+        '🧢 Hire and sack head coaches, each with perks and an ego. Or meddle and pick the team yourself: formation, tactics, the XI (proud coaches hate it)',
+        '💪 Fitness, injuries, yellow cards and bans, and morale: rotate your squad or it breaks. Stars left out sulk and ask to leave',
+        '💷 Money comes in every week (TV, tickets, your sponsor) and wages go out. Two transfer windows with a Deadline Day each: bids get accepted, countered or laughed off, then agree his wages. Loans, free agents, and clubs bidding for your players',
+        '📺 Watch matches live with commentary: the half-time team talk (the owner’s version), subs and tactics. Or sim to the next decision',
+        '🕵️ Dodgy choices (creative accounting, a crypto sponsor, watering the pitch, ignoring the wage cap…) bring money or an edge but raise the Heat. Too much and the league investigates: fines, embargoes, points deductions',
+        '📣 Keep the fans happy: if they turn completely, they force you to sell',
+        '🏅 New badges: Cup Run, Under Investigation, Squeaky Clean and a secret one',
+      ],
+    },
+    {
       v: 41, label: '5.9', date: '2026-10-01', title: '📋 Club Boss, a rotating banner, and tags for what’s new',
       tags: { boss: 'NEW' },
       promo: [

@@ -134,7 +134,8 @@
       case 'dailygrid': return GM.grid(app, true);
       case 'tally': return GM.tally(app);
       case 'moneyball': return GM.moneyball(app, q);
-      case 'boss': return GM.clubBoss(app, q);
+      case 'owner': return GM.dodgyOwner(app, q);
+      case 'boss': location.replace('#/owner'); return;  // Club Boss grew up into Dodgy Owner
       case 'window': location.replace('#/moneyball'); return;  // the Transfer Window is part of the new Moneyball
       case 'auction': return GM.auction(app, q);
       case 'leaderboard': return leaderboard(q.m);
@@ -202,7 +203,7 @@
     };
     const h2h = GM.store.get('h2h', null);
     // sub-tabs keep Home short: the main event up front, everything else a tap away (the dailies live in the Today tab)
-    const HTABS = [['main', '⚽ Main', ['chaos']], ['targets', '🎯 Targets', []], ['market', '💰 Market', ['boss', 'moneyball', 'auction']], ['quick', '⚡ Quick & more', []]];
+    const HTABS = [['main', '⚽ Main', ['chaos']], ['targets', '🎯 Targets', []], ['market', '💰 Market', ['owner', 'moneyball', 'auction']], ['quick', '⚡ Quick & more', []]];
     const htab = HTABS.some(t => t[0] === GM.store.get('homeTab')) ? GM.store.get('homeTab') : 'main';
     app.innerHTML = `
       <div class="appbar"><a class="icon-btn" href="#/settings" aria-label="Settings">⚙️</a>
@@ -246,7 +247,7 @@
       </div>
       <div data-hpanel="market">
       <div class="tiles">
-        ${tile('#/boss', 't-navy wide', '📋', 'Club Boss', 'Take over a club for a season. Sign, sell and sack your way up a 10-club league.', pb('boss') ? Math.floor(pb('boss') / 100) + ' pts' : 0)}
+        ${tile('#/owner', 't-navy wide', '🕴️', 'Dodgy Owner', 'You’ve bought a club. Hire and sack coaches, meddle, wheel and deal, and try to stay one step ahead of the league’s investigators.', pb('owner') ? Math.floor(pb('owner') / 100) + ' pts' : 0)}
         ${tile('#/moneyball', 't-green wide', '💼', 'Moneyball', 'Chairman for a season: buy low, sell high, and get rich. Bids, injuries, takeovers and Deadline Day.', pb('money') ? '£' + pb('money') + 'm' : 0)}
         ${dtile('moneyball', 't-gold', 'Same season for everyone · one go')}
         ${tile('#/auction', 't-magenta', '🔨', 'Auction', 'Secret bids against a mate', 0)}
@@ -499,9 +500,9 @@
       [GM.calIcon() + ' Daily', ['daily:' + today, 'footle:' + today, 'grid:' + today, 'dmoney:' + today, 'dailies']],
     ].concat(club ? [['🏟️ Your club', ['clubs', 'club' + GM.slug(club)].concat(GM.nextMatch(club) ? ['match:' + GM.nextMatch(club).id] : [])]] : [])
       .concat(GM.intlBreak() || GM.store.get('nationsPlayed', []).length ? [['🌍 International', nations]] : [])
-      .concat([['🃏 Packed XI', ['packedxi']], ['🎯 Targets', ['target', 'treble', 'mystery']], ['💰 Market', ['boss', 'money']], ['⚡ Quick', ['hopper', 'hilo', 'whoami', 'grid', 'tally']]]);
+      .concat([['🃏 Packed XI', ['packedxi']], ['🎯 Targets', ['target', 'treble', 'mystery']], ['💰 Market', ['owner', 'money']], ['⚡ Quick', ['hopper', 'hilo', 'whoami', 'grid', 'tally']]]);
     const NAMES = { classicwild: 'Classic Wildcard', classic: 'Classic', ultimate: 'Ultimate Wildcard', ultimatepure: 'Ultimate', extreme: 'Extreme Wildcard', purist: 'Extreme Purist',
-      chaos: 'CHAOS', chaosx: 'CHAOS Extreme', target: 'Target', treble: 'The Treble', mystery: 'Mystery Target', money: 'Moneyball', boss: 'Club Boss', dailies: 'Daily stars', clubs: 'Club v club', packedxi: 'Packed XI' };
+      chaos: 'CHAOS', chaosx: 'CHAOS Extreme', target: 'Target', treble: 'The Treble', mystery: 'Mystery Target', money: 'Moneyball', owner: 'Dodgy Owner', dailies: 'Daily stars', clubs: 'Club v club', packedxi: 'Packed XI' };
     const SUFFIX = { goals: '', assists: 'ast', apps: 'apps' };
     const hasStats = b => !!GM.MODES[b + 'ast'];
     // m → base board, stat, level (Normal / Hard / Extreme), and the option for Club v club (week) or Daily stars (sort)
