@@ -310,6 +310,6 @@ Feedback on 5.8: better, but still "just clicking buttons". Not clear how many t
 afford one of four; the £2m scout tip doesn't help; 8 weeks is mostly luck; bargains don't make sense.
 Owner's ideas: start with a full XI; values rise and fall with individual and team performance; hire and sack
 managers with perks; a whole season; start with a meh team and build it into a good one.
-Proposal (awaiting a yes): see the reply of 2026-10-01. The short version: your club, a mid-table XI and a
+**Built in 5.9 as a new game, Club Boss** (owner: "try this as a new game mode first"), alongside Moneyball: your club, a 4-4-2 with OVRs, two swaps a week, managers with perks (sack for a bounce), a 10-club league over 9 weeks, points as the score. If it lands, Moneyball could fold into it or go. Original proposal: see the reply of 2026-10-01. The short version: your club, a mid-table XI and a
 budget; a mini-league of real fixtures; score = points (the board's target by difficulty); swap-one-for-one transfers
 from a browsable market; managers with perks; form visible to everyone (no paid scouting).

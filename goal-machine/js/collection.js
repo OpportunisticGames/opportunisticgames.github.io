@@ -123,6 +123,10 @@
     ['mbprofit', '📈', 'In the Black', 'Finish a Moneyball season worth £150m or more.', e => game(e, 'money') && e.score >= 150],
     ['mbflip', '💎', 'Buy Low, Sell High', 'Sell a player for double what you paid in Moneyball.', e => game(e, 'money') && e.extra && e.extra.flip >= 2],
     ['mbmadrid', '📨', 'Sold to Madrid', 'Accept a big-money bid for one of your stars.', e => game(e, 'money') && e.extra && e.extra.bid],
+    // Club Boss
+    ['mbchamp', '🏆', 'Champions!', 'Win the league in Club Boss.', e => game(e, 'boss') && e.extra && e.extra.pos === 1],
+    ['mbinvincible', '🛡️', 'Invincibles', 'Go a whole Club Boss season unbeaten.', e => game(e, 'boss') && e.extra && e.extra.unbeaten],
+    ['mbbounce', '📣', 'New Manager Bounce', 'Sack a manager and still finish in the top three in Club Boss.', e => game(e, 'boss') && e.extra && e.extra.sacked && e.extra.pos <= 3],
     // packs (the collect list)
     ['colpack', '🎁', 'Pack Opener', 'Open your first pack.', e => game(e, 'pack')],
     ['colwalk', '🚶', 'Walkout', 'Pull a Legend in a pack.', e => game(e, 'pack') && e.extra && e.extra.legend],

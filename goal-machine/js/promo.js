@@ -91,7 +91,7 @@
     fetching = true;
     const since = new Date(Date.now() - NEWS_DAYS * DAY).toISOString();
     fetch(`${c.supabaseUrl}/rest/v1/announcements?select=id,title,body,link,created_at&created_at=gte.${encodeURIComponent(since)}&order=created_at.desc&limit=3`,
-      { headers: { apikey: c.supabaseAnonKey, Authorization: 'Bearer ' + c.supabaseAnonKey } })
+      { headers: GM.lb.headers() })  // the same headers as the leaderboards (a publishable key isn't sent as a Bearer token)
       .then(r => (r.ok ? r.json() : Promise.reject(r.status)))
       .then(list => {
         const changed = JSON.stringify(list) !== JSON.stringify(old.list);

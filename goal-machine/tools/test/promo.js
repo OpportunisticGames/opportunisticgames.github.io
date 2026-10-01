@@ -11,7 +11,8 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     { id: 10, title: 'Cup final weekend', body: 'A special CHAOS event all weekend', link: 'https://example.org/goal-machine/#/draft?m=chaos', created_at: new Date().toISOString() },
     { id: 8, title: 'Old news', body: 'y', link: 'https://example.org/goal-machine/#/packs', created_at: new Date(Date.now() - 30 * 864e5).toISOString() }];
   await pg.route(/wikimedia|premierleague|transfermarkt/, r => r.abort());
-  await pg.route(/supabase/, r => { if (!/announcements/.test(r.request().url())) return r.abort(); asked++; r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(NEWS) }); });
+  let auth = null;
+  await pg.route(/supabase/, r => { if (!/announcements/.test(r.request().url())) return r.abort(); asked++; auth = r.request().headers().authorization || ''; r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(NEWS) }); });
   await pg.goto(U);
   await pg.evaluate(() => { localStorage.clear(); const set = (k, v) => localStorage.setItem('gm:' + k, JSON.stringify(v)); set('seenVersion', 999); set('welcomed', 1); set('firstXI', 1); set('sfx', false); set('homeTab', 'market');
     GM.setFixtures([['2099-01-01T15:00:00Z', 'Everton', 'Chelsea']], []); });
@@ -28,6 +29,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.evaluate(() => document.querySelector('.promo-dots button:last-child').click()); await pg.waitForTimeout(900);
   ok(await pg.evaluate(() => { const t = document.querySelector('.promo-track'); return Math.round(t.scrollLeft / t.clientWidth) === t.children.length - 1; }), 'tapping a dot goes to that slide');
   await pg.goto(U + '#/settings'); await pg.goto(U + '#/'); await pg.waitForTimeout(600);
+  ok(auth !== null && !/sb_publishable/.test(auth), 'the news is asked for the same way as the leaderboards (no publishable key as a Bearer token)');
   ok(a0 >= 1 && asked === a0, 'the news is fetched at most every half hour');
 
   // Home's tabs: no half-width tile left on its own in a row
