@@ -114,7 +114,7 @@
   }
 
   /* ---------------------------------------------------------------- a new season */
-  // three clubs you could buy (your favourite among them if you have one), each in a different situation
+  // three clubs you could buy (your favourite turns up about a third of the time), each in a different situation
   function clubOffers(seed) {
     const r = GM.rng(seed + '|clubs'), names = leagueClubs(), fav = GM.favClub() && names.includes(GM.favClub()) ? GM.favClub() : null;
     const pool = r.shuffle(names.filter(c => c !== fav && !BIG.includes(c)));

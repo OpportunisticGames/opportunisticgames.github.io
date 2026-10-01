@@ -2295,3 +2295,40 @@ body.owner-mode .ow-mail .btn.ghost small { color: #4a3b2a; }
 .ow-spark.up path { stroke: #22c55e; } .ow-spark.down path { stroke: #ef4444; }
 .ow-subs small.muted { display: block; width: 100%; font-size: .66rem; margin-bottom: 2px; }
 .ow-chip .pos, .ow-pitchmini .pos { font-size: .55rem; padding: 0 4px; }
+
+/* 🧹 Tidy-up (5.12): readable cards, nothing covering anything */
+/* cards: the shine sits under the words; bigger, darker names that wrap to two lines instead of being cut off */
+.pc-sheen { z-index: 0; }
+.pc-front > :not(.pc-sheen):not(.pc-done) { position: relative; z-index: 1; }
+.pc-name { font-size: 1.5em; line-height: 1.15; letter-spacing: 0; padding: .18em .1em; }  /* one line; longer names get smaller, not cut off */
+.pc-name.long { font-size: 1.25em; } .pc-name.xlong { font-size: 1.02em; } .pc-name.xxlong { font-size: .78em; letter-spacing: -.02em; }
+.tier-b .pc-name, .tier-b .pc-front { color: #24140a; }
+.tier-g .pc-front { color: #241800; }
+.tier-g .pc-name, .tier-s .pc-name { text-shadow: 0 1px 0 rgba(255, 255, 255, .55); }
+.tier-l .pc-name { text-shadow: 0 1px 2px rgba(0, 0, 0, .5); }
+.pc-top small, .pc-stats { font-size: .72em; opacity: 1; }
+.pc-stats b { font-size: 1.55em; }
+.pc-club { font-size: .75em; }
+/* "complete" is a pill along the bottom edge, not a sash across his face */
+/* finished: a green tick badge in the corner (the pips show it too), not a sash across his face */
+.pc-done { top: .45em; right: .45em; bottom: auto; left: auto; transform: none; width: 1.9em; height: 1.9em; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1em; color: transparent; overflow: hidden; z-index: 2; box-shadow: 0 0 0 .15em #fff, 0 .15em .4em rgba(0, 0, 0, .35); }
+.pc-done::before { content: '✓'; color: #fff; font: 900 1.15em Inter, sans-serif; position: absolute; }
+/* the international break bunting no longer sits on top of the logo or page titles */
+html.intl-break #app { padding-top: 22px; }
+/* game tiles on small phones: titles fit beside the icon */
+@media (max-width: 380px) {
+  .tile-icon { font-size: 2.2rem; }
+  .tiles .tile:not(.wide) b { font-size: 1.12rem; max-width: 100%; }
+  .tiles .tile:not(.wide) { padding-top: 46px; }
+  .stat-pick .stat-btn { font-size: .76rem; padding-left: 3px; padding-right: 3px; flex-basis: 60px; }
+}
+.stat-btn { min-width: 0; overflow-wrap: anywhere; }
+/* the draft title wraps onto a second line on narrow phones instead of being cut off */
+.page-draft .t-name { white-space: normal; text-overflow: clip; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.1; text-align: center; }
+.page-draft .inv .muted { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+/* wide tiles keep their first lines clear of the corner icon */
+.tile.wide > b, .tile.wide > small:first-of-type { padding-right: 52px; }
+/* Goal Royale: deck names fit the small cards on phones */
+.gr-card { padding-left: 2px; padding-right: 2px; }
+.gr-card b { font-size: clamp(.64rem, 3vw, .76rem); letter-spacing: -.01em; }
+.gr-card b.long { font-size: clamp(.56rem, 2.5vw, .68rem); }

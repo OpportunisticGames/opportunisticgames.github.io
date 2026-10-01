@@ -180,7 +180,7 @@
       [['F', 2], ['M', 3], ['D', 2], ['G', 1]].forEach(([g, n]) => pick.push(...have.filter(p => p.pos === g).sort((a, b) => rank(b) - rank(a)).slice(0, n)));
       return pick.map(card);
     }
-    const cardHtml = (c, extra = '', cls = '') => `<div class="gr-card t-${c.t}${cls}" ${extra}><span class="gr-cost">${c.cost}</span><b>${esc(c.short)}</b><small>${c.g}${c.ab ? ' · ' + esc(c.ab) : ''}</small></div>`;
+    const cardHtml = (c, extra = '', cls = '') => `<div class="gr-card t-${c.t}${cls}" ${extra}><span class="gr-cost">${c.cost}</span><b${c.short.length > 9 ? ' class="long"' : ''}>${esc(c.short)}</b><small>${c.g}${c.ab ? ' · ' + esc(c.ab) : ''}</small></div>`;
 
     function hub() {
       const ar = arenaOf(st.trophies), next = ARENAS[ar + 1];

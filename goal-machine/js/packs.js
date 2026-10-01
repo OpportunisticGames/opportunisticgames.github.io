@@ -200,7 +200,7 @@
   }
 
   /* ---------------------------------------------------------------- the cards */
-  const short = n => (n.length <= 13 ? n : n.split(' ').slice(-1)[0]);
+  const short = n => (n.length <= 12 ? n : n.split(' ').slice(-1)[0]);  // the full name if it's short, else the surname
   GM.cardHtml = function (x, opts = {}) {
     const back = opts.back !== false;
     const backHtml = back ? `<div class="pc-back"><span class="pcb-ring"><b>GM</b></span></div>` : '';
@@ -214,7 +214,7 @@
       <div class="pc-front"><span class="pc-sheen"></span>
         <div class="pc-top"><b class="pc-num">${p.goals}</b><small>GLS</small><span class="pc-pos">${p.poss[0]}</span><span class="pc-flag">${GM.flag(p.nat)}</span></div>
         <div class="pc-photo">${GM.avatar(p, 'lg')}</div>
-        <div class="pc-name${short(p.name).length > 9 ? ' long' : ''}">${GM.esc(short(p.name))}</div>
+        <div class="pc-name${short(p.name).length > 13 ? ' xxlong' : short(p.name).length > 10 ? ' xlong' : short(p.name).length > 7 ? ' long' : ''}">${GM.esc(short(p.name))}</div>
         <div class="pc-stats"><span><b>${p.ast}</b>AST</span><span><b>${p.apps}</b>APP</span><span><b>${p.first}</b>DEB</span></div>
         <div class="pc-foot"><span class="pc-club">${GM.esc(GM.clubShort(p.clubs[0]))}</span><span class="pc-pips">${x.spare ? '<em>spare</em>' : pips}</span></div>
         ${x.finished ? '<span class="pc-done">COMPLETE</span>' : ''}${x.chose ? `<span class="pc-chose">${WILDS[x.chose].icon}</span>` : ''}</div></div></div>`;

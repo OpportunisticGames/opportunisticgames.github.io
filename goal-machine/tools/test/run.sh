@@ -4,7 +4,7 @@
 cd "$(dirname "$0")/../.." || exit 1
 N=${1:-5}; shift
 OUT=$(mktemp -d)
-JOBS=(moneyball owner reign royale promo extreme packs progress breaks matchday secrets features sweep names cards layout races quickmatch hattrick htonline chaos:draft chaos:ev:0/3 chaos:ev:1/3 chaos:ev:2/3)
+JOBS=(moneyball owner reign royale promo fit extreme packs progress breaks matchday secrets features sweep names cards layout races quickmatch hattrick htonline chaos:draft chaos:ev:0/3 chaos:ev:1/3 chaos:ev:2/3)
 [ $# -gt 0 ] && JOBS=("$@")
 run() {
   local j=$1 name=${1//[:\/]/_} t=${1%%:*} part=${1#*:}
