@@ -303,3 +303,13 @@ _None yet._
   default: friend invites and challenges, your move, new game modes, come back (from noon on the 4th day without a
   game, and again after 2 weeks) and an 8pm streak reminder if the streak is about to end. Results are also on. There's
   a daily reminder at a chosen time (off by default). Announce a new mode by adding a row to `announcements`.
+- **Done in 5.9 (owner's idea):** NEW / UPDATED tags on game tiles (from the release's `tags`), and a rotating banner on Home: matchday, the international break, the release's featured games (`promo` in updates.js) and news from the `announcements` table (readable by the app now). Posting an announcement puts it in the banner for a fortnight, no release needed.
+
+## 💼 Moneyball, take 3 (owner feedback, 2026-10-01): to discuss
+Feedback on 5.8: better, but still "just clicking buttons". Not clear how many to sign; by week 3 you can only
+afford one of four; the £2m scout tip doesn't help; 8 weeks is mostly luck; bargains don't make sense.
+Owner's ideas: start with a full XI; values rise and fall with individual and team performance; hire and sack
+managers with perks; a whole season; start with a meh team and build it into a good one.
+**Built in 5.9 as a new game, Club Boss** (owner: "try this as a new game mode first"), alongside Moneyball: your club, a 4-4-2 with OVRs, two swaps a week, managers with perks (sack for a bounce), a 10-club league over 9 weeks, points as the score. If it lands, Moneyball could fold into it or go. Original proposal: see the reply of 2026-10-01. The short version: your club, a mid-table XI and a
+budget; a mini-league of real fixtures; score = points (the board's target by difficulty); swap-one-for-one transfers
+from a browsable market; managers with perks; form visible to everyone (no paid scouting).

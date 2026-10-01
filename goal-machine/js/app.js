@@ -78,7 +78,7 @@
   function route() {
     const { path, q } = parseHash();
     const tried = path === 'draft' ? q.m : path;
-    if (GM.NEW_MODES.includes(tried)) GM.store.set('tried:' + tried, 1);
+    GM.triedGame(tried);  // opening a game clears its NEW / UPDATED tag
     if (path !== 'settings') GM.lastPage = location.hash;  // for feedback: the page you were on before Settings
     if (MENU_PAGES.includes(path)) {  // remember menu pages for the back button
       if (menuTrail[menuTrail.length - 1] !== (location.hash || '#/')) menuTrail.push(location.hash || '#/');
@@ -101,6 +101,17 @@
     GM.moneyLook(path === 'moneyball');
     GM.applyIntl();
     GM.$('.cal-slot', tabbar).innerHTML = GM.calIcon();  // stays right past midnight
+    try { page(path, q); } catch (e) {
+      // a page that fails to draw: never leave the last page up in the wrong look, say so and offer a way out
+      console.error(e);
+      GM.chaosLook(false); GM.moneyLook(false);
+      app.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>😬 Something went wrong</h2><span></span></div>
+        <div class="result"><p>This page didn’t load properly. Try again, and if it keeps happening tell us in Settings → Feedback.</p>
+          <p class="muted"><small>${GM.esc(String(e && e.message || e))}</small></p>
+          <div class="actions col"><button class="btn big" onclick="location.reload()">🔄 Reload</button><a class="btn ghost" href="#/">🏠 Home</a></div></div>`;
+    }
+  }
+  function page(path, q) {
     switch (path) {
       case 'draft': return GM.draft.start(app, ['target', 'treble', 'mystery', 'club', 'classic', 'classicwild', 'ultimatepure', 'extreme', 'purist', 'chaos', 'chaosx', 'match', 'nation'].includes(q.m) ? q.m : 'ultimate',
         { fx: q.fx, nat: q.n, stat: q.s, seed: q.seed, vs: q.vs, vss: q.vss ? +q.vss : undefined, hard: q.seed ? q.h === '1' : GM.isHard(), extreme: q.seed ? q.x === '1' : GM.isExtreme(), club: q.c, daily: q.daily === '1' });
@@ -123,6 +134,7 @@
       case 'dailygrid': return GM.grid(app, true);
       case 'tally': return GM.tally(app);
       case 'moneyball': return GM.moneyball(app, q);
+      case 'boss': return GM.clubBoss(app, q);
       case 'window': location.replace('#/moneyball'); return;  // the Transfer Window is part of the new Moneyball
       case 'auction': return GM.auction(app, q);
       case 'leaderboard': return leaderboard(q.m);
@@ -153,6 +165,8 @@
   };
 
   function home() {
+    // Home always has the normal look and music, whatever drew it (a game's dark look must never be left behind)
+    GM.chaosLook(false); GM.moneyLook(false); GM.sound.scene('');
     const hard = GM.isHard(), level = GM.level(), extreme = level === 'extreme';
     const pb = k => GM.best(hard && GM.HARD_MODES.includes(k) ? k + 'h' : extreme && GM.extremeKey(k) || k);
     const club = GM.favClub(), waiting = GM.account() ? GM.store.get('onlineWaiting', 0) : 0;
@@ -162,10 +176,10 @@
       return `<a class="stat-btn" href="#/draft?m=${m}&s=${s}${m === 'club' ? '&c=' + encodeURIComponent(club) : ''}"><i class="sb-ico">${st.icon}</i>${label || st.name}${best ? `<small>PB ${pct || best.toLocaleString()}</small>` : ''}</a>`;
     };
     // NEW on the newest modes until you've opened them
-    const newTag = k => (GM.NEW_MODES.includes(k) && !GM.store.get('tried:' + k) ? '<span class="new-tag">NEW</span>' : '');
+    const newTag = k => GM.gameTag(k);
     const tile = (href, cls, icon, title, sub, best, extra = '') => {
       const k = href.replace(/^#\/(draft\?m=)?/, '').replace(/[?&].*$/, '');
-      return `<a class="tile ${cls}" href="${href}"><span class="tile-icon">${icon}</span>${best ? `<span class="tile-pb">PB ${best.toLocaleString()}</span>` : newTag(k)}<b>${title}</b><small>${sub}</small>${extra}</a>`;
+      return `<a class="tile ${cls}" href="${href}"><span class="tile-icon">${icon}</span>${best ? `<span class="tile-pb">PB ${best.toLocaleString()}</span>` : ''}${newTag(k)}<b>${title}</b><small>${sub}</small>${extra}</a>`;
     };
     const album = GM.albumSummary();
     // The main event: pick the player pool and whether wildcards are on - six modes in two small switches (remembered)
@@ -188,7 +202,7 @@
     };
     const h2h = GM.store.get('h2h', null);
     // sub-tabs keep Home short: the main event up front, everything else a tap away (the dailies live in the Today tab)
-    const HTABS = [['main', '⚽ Main', ['chaos']], ['targets', '🎯 Targets', []], ['market', '💰 Market', ['auction']], ['quick', '⚡ Quick & more', []]];
+    const HTABS = [['main', '⚽ Main', ['chaos']], ['targets', '🎯 Targets', []], ['market', '💰 Market', ['boss', 'moneyball', 'auction']], ['quick', '⚡ Quick & more', []]];
     const htab = HTABS.some(t => t[0] === GM.store.get('homeTab')) ? GM.store.get('homeTab') : 'main';
     app.innerHTML = `
       <div class="appbar"><a class="icon-btn" href="#/settings" aria-label="Settings">⚙️</a>
@@ -201,7 +215,7 @@
           <button class="install-x" id="install-x" title="I already have it" aria-label="Hide">✕</button></div>`}
         ${GM.appOutdated() ? `<div class="install-bar"><a class="btn small" href="${GM.APK_URL}">📲 New version of the app – tap to update</a></div>` : ''}
       </header>
-      ${GM.firstXICard()}${GM.matchBanner()}${GM.intlBanner()}
+      ${GM.firstXICard()}${GM.promoHtml()}
       ${GM.packsWaiting() ? `<a class="pack-bar" href="#/packs?open=1"><span>🎁</span><span><b>${GM.packsWaiting()} pack${GM.packsWaiting() > 1 ? 's' : ''} to open</b><small>${GM.esc(GM.packedXI().n < 11 ? 'Build your Packed XI' : 'Improve your Packed XI')}</small></span><span>›</span></a>` : ''}
       <div class="hard-toggle three" role="group" aria-label="Difficulty">${Object.entries(GM.LEVELS).map(([k, [i, n, sub]]) => `<button class="${k === level ? 'on' : ''}" data-level="${k}">${i} ${n}<small>${sub}</small></button>`).join('')}</div>
       <div class="seg home-tabs" id="htabs">${HTABS.map(([k, l, modes]) => `<button data-t="${k}">${l}${modes.some(m => newTag(m)) ? '<i class="new-dot"></i>' : ''}</button>`).join('')}</div>
@@ -232,8 +246,9 @@
       </div>
       <div data-hpanel="market">
       <div class="tiles">
-        ${dtile('moneyball', 't-gold', 'Same season for everyone · one go')}
+        ${tile('#/boss', 't-navy wide', '📋', 'Club Boss', 'Take over a club for a season. Sign, sell and sack your way up a 10-club league.', pb('boss') ? Math.floor(pb('boss') / 100) + ' pts' : 0)}
         ${tile('#/moneyball', 't-green wide', '💼', 'Moneyball', 'Chairman for a season: buy low, sell high, and get rich. Bids, injuries, takeovers and Deadline Day.', pb('money') ? '£' + pb('money') + 'm' : 0)}
+        ${dtile('moneyball', 't-gold', 'Same season for everyone · one go')}
         ${tile('#/auction', 't-magenta', '🔨', 'Auction', 'Secret bids against a mate', 0)}
       </div>
       </div>
@@ -265,6 +280,7 @@
       GM.setLevel(b.dataset.level); home();
     });
     GM.$('#share-game').onclick = () => GM.shareGame();
+    GM.promoWire();
     GM.syncProfile();  // your club and level, for club v club and the boards (only when they change)
     if (GM.online && GM.online.check) GM.online.check().then(() => {  // refresh the banner if the count changed
       const n = GM.store.get('onlineWaiting', 0), sm = GM.$('.h2h-banner small');
@@ -483,9 +499,9 @@
       [GM.calIcon() + ' Daily', ['daily:' + today, 'footle:' + today, 'grid:' + today, 'dmoney:' + today, 'dailies']],
     ].concat(club ? [['🏟️ Your club', ['clubs', 'club' + GM.slug(club)].concat(GM.nextMatch(club) ? ['match:' + GM.nextMatch(club).id] : [])]] : [])
       .concat(GM.intlBreak() || GM.store.get('nationsPlayed', []).length ? [['🌍 International', nations]] : [])
-      .concat([['🃏 Packed XI', ['packedxi']], ['🎯 Targets', ['target', 'treble', 'mystery']], ['💰 Moneyball', ['money']], ['⚡ Quick', ['hopper', 'hilo', 'whoami', 'grid', 'tally']]]);
+      .concat([['🃏 Packed XI', ['packedxi']], ['🎯 Targets', ['target', 'treble', 'mystery']], ['💰 Market', ['boss', 'money']], ['⚡ Quick', ['hopper', 'hilo', 'whoami', 'grid', 'tally']]]);
     const NAMES = { classicwild: 'Classic Wildcard', classic: 'Classic', ultimate: 'Ultimate Wildcard', ultimatepure: 'Ultimate', extreme: 'Extreme Wildcard', purist: 'Extreme Purist',
-      chaos: 'CHAOS', chaosx: 'CHAOS Extreme', target: 'Target', treble: 'The Treble', mystery: 'Mystery Target', money: 'Moneyball', dailies: 'Daily stars', clubs: 'Club v club', packedxi: 'Packed XI' };
+      chaos: 'CHAOS', chaosx: 'CHAOS Extreme', target: 'Target', treble: 'The Treble', mystery: 'Mystery Target', money: 'Moneyball', boss: 'Club Boss', dailies: 'Daily stars', clubs: 'Club v club', packedxi: 'Packed XI' };
     const SUFFIX = { goals: '', assists: 'ast', apps: 'apps' };
     const hasStats = b => !!GM.MODES[b + 'ast'];
     // m → base board, stat, level (Normal / Hard / Extreme), and the option for Club v club (week) or Daily stars (sort)

@@ -38,6 +38,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.click('#mbplay'); await pg.waitForTimeout(1200);
   ok(!!(await pg.$('.mb-live .rec')) && (await pg.$$('.mbl-ev')).length >= 1, 'the matchweek plays out live, minute by minute');
   ok((await pg.$$('.mbw-row')).length === 1 && /Scored|Brace|Hat-trick|Assist|Clean sheet|Quiet game|Benched|Injured/.test(await pg.textContent('#mbweek')), '…then each player’s prize money and value change');
+  ok(await pg.evaluate(() => [...document.querySelectorAll('[data-buy], [data-sell]')].every(b => b.disabled)), 'once the matchweek’s played, the market’s shut till next week');
   await pg.click('#mbnext'); await pg.waitForTimeout(900);
   const news = await closeNews();
   ok(!!news, `week 2 brings BREAKING NEWS: “${news}”`);

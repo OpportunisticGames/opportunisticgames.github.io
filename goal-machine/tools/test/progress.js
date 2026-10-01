@@ -77,7 +77,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.selectOption('#lbp', '0'); await pg.waitForTimeout(900);
   ok(calls.some(c => /^best_scores\?/.test(c)) && await pg.$eval('#lbp', e => e.value) === '0', 'All time switches to the all-time boards');
   await pg.evaluate(() => GM.store.set('lbMonth', true));
-  await pg.goto(U + '#/leaderboard?m=' + encodeURIComponent('daily:2026-09-30')); await pg.waitForTimeout(700);
+  await pg.goto(U + '#/leaderboard?m=' + encodeURIComponent('daily:' + await pg.evaluate(() => GM.today()))); await pg.waitForTimeout(700);  // today's, whatever the date
   ok(!(await pg.$('#lbp')), 'a day’s board has no month switch');
 
   // club v club, and your club and level with your account

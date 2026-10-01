@@ -256,6 +256,7 @@
     function play() {
       if (S.phase !== 'market') return;
       S.phase = 'playing';
+      GM.$$('[data-buy], [data-sell]', root).forEach(b => { b.disabled = true; });  // no business while the games are on
       const before = net();
       const rows = S.squad.map(x => {
         const p = byPk(x.k);
@@ -329,7 +330,7 @@
       const n = net(), from = shown == null ? n : shown;
       const info = p => lv === 'hard' ? `<span class="dc-meta">${GM.posBadges(p)}</span>`
         : `<span class="dc-meta">${GM.posBadges(p)} ${GM.flag(p.nat)}</span><small>${GM.era(p)} · ${p.apps} apps</small><span class="chips">${p.clubs.slice(0, 3).map(c => GM.clubChip(c)).join('')}</span>`;
-      const deadline = S.week === WEEKS;
+      const deadline = S.week === WEEKS, shut = S.phase !== 'market';  // once the matchweek's played, the market's shut till next week
       root.innerHTML = `${top()}
         <div class="mb-hud ${n >= START ? 'up' : 'down'}">
           <div class="mbh-main"><small>NET WORTH</small><b id="mbnet">${money(from)}</b><span class="mbh-ch">${pct(n / START - 1)} on ${money(START)}</span></div>
@@ -346,14 +347,14 @@
             <div class="mbc-val">${money(x.value)}</div><small class="mbc-ch">${ch >= 0 ? '▲' : '▼'} ${pct(ch)} <i>paid ${money(x.paid)}</i></small>
             ${chart(x.hist, 120, 26, { base: x.paid, cls: 'mbc-spark' })}
             <small class="mbc-last">${x.out ? `🚑 out ${x.out}w` : x.away ? '🌍 away' : x.last ? resultText(x.last) : '✍️ new signing'}</small>
-            <button class="mbc-sell" data-sell="${i}">Sell ${money(x.value * (1 - FEE))}</button></div>`; }).join('')}
+            <button class="mbc-sell" data-sell="${i}" ${shut ? 'disabled' : ''}>Sell ${money(x.value * (1 - FEE))}</button></div>`; }).join('')}
           ${Array.from({ length: SQUAD - S.squad.length }, () => '<div class="mb-card empty"><span>+</span><small>Empty slot</small></div>').join('')}</div>
         <h3 class="section-title">🛒 Transfer market</h3>
         <div class="duel-cards mk4 mb-market">${S.market.map((o, i) => { const p = byPk(o.k), tip = o.tip ? `<small class="mb-tip">🕵️ ${p.goals} goals, ${p.ast} assists in ${p.apps}</small>` : '';
-          return `<button class="duel-card mk-card" data-buy="${i}" ${o.ask > S.cash || S.squad.length >= SQUAD ? 'disabled' : ''}>${deadline ? `<span class="dc-tag">⏰ −${Math.round((1 - DEADLINE) * 100)}%</span>` : ''}
+          return `<button class="duel-card mk-card" data-buy="${i}" ${shut || o.ask > S.cash || S.squad.length >= SQUAD ? 'disabled' : ''}>${deadline ? `<span class="dc-tag">⏰ −${Math.round((1 - DEADLINE) * 100)}%</span>` : ''}
             ${GM.avatar(p, '', lv === 'hard')}<b>${esc(p.name)}</b>${info(p)}${tip}<span class="mk-price">${deadline ? `<s>${money(o.full)}</s> ` : ''}${money(o.ask)}</span></button>`; }).join('') || '<p class="muted center">Sold out this week.</p>'}</div>
         <div id="mbweek"></div>
-        <div class="actions col"><button class="btn big" id="mbplay">⚽ Play matchweek ${S.week}</button></div>
+        <div class="actions col">${shut ? `<button class="btn big" id="mbnext">${S.week === WEEKS ? '🏁 Full time' : `▶ Week ${S.week + 1}`}</button>` : `<button class="btn big" id="mbplay">⚽ Play matchweek ${S.week}</button>`}</div>
         ${S.news.length ? `<details class="set mb-log"><summary><span>📰 The season so far</span></summary><ul>${S.news.slice().reverse().map(l => `<li>${esc(l)}</li>`).join('')}</ul></details>` : ''}`;
       if (from !== n) countUp(GM.$('#mbnet', root), from, n, 700);
       shown = n;
@@ -367,15 +368,16 @@
         if (card) { card.insertAdjacentHTML('beforeend', `<div class="mbc-stamp ${profit >= 0 ? 'up' : 'down'}">SOLD<small>${profit >= 0 ? '+' : '−'}${money(Math.abs(profit))}</small></div>`); if (profit > 0) burst(card, 20); }
         setTimeout(render, 900);
       });
-      GM.$('#mbplay', root).onclick = play;
+      if (GM.$('#mbplay', root)) GM.$('#mbplay', root).onclick = play;
+      if (GM.$('#mbnext', root)) GM.$('#mbnext', root).onclick = next;
       // Deadline Day: the clock runs down to 11pm (for show)
       const clk = GM.$('#mbclock', root);
       if (clk) {
         const t0 = Date.now(), p2 = n => String(n).padStart(2, '0'), tick = () => {
           if (!clk.isConnected) return clearInterval(iv);
-          const left = Math.max(0, 3600 - Math.floor((Date.now() - t0) / 1000) * 9);  // an hour to go, at nine times the speed
+          const left = Math.max(0, 3600 - Math.floor((Date.now() - t0) / 1000) * 90);  // an hour to go, in 40 seconds
           clk.textContent = left ? `${p2(Math.floor(left / 60))}:${p2(left % 60)} to go` : 'WINDOW SHUT';
-          if (left && left <= 90) GM.sound.play('clock');  // the last ten seconds tick
+          if (left && left <= 900) GM.sound.play('clock');  // the last ten seconds tick
           if (!left && !clk.dataset.shut) { clk.dataset.shut = 1; GM.sound.play('slam'); GM.buzz(60); }
         };
         const iv = setInterval(tick, 1000); tick();

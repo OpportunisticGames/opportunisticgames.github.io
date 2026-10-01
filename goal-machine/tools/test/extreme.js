@@ -24,11 +24,12 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.selectOption('#lbv', 'ultimatepure'); await pg.waitForTimeout(500);
   ok(/m=purist$/.test(await hash()), 'Ultimate (no wildcards) on Extreme → Extreme Purist');
   const boards = {};
-  for (const [label, want] of [['CHAOS', /m=chaosx$/], ['Targets', /m=targetx$/], ['Quick', /m=hopperx$/], ['Moneyball', /m=moneyx$/]]) {
+  for (const [label, want] of [['CHAOS', /m=chaosx$/], ['Targets', /m=targetx$/], ['Quick', /m=hopperx$/], ['Market', /m=bossx$/]]) {
     await pg.evaluate(l => [...document.querySelectorAll('.lbx-games a')].find(a => a.textContent.includes(l)).click(), label); await pg.waitForTimeout(500);
     boards[label] = await hash(); ok(want.test(boards[label]), `${label} keeps Extreme where it has one (${boards[label].split('m=')[1]})`);
   }
-  ok(await pg.$$eval('#lbh option', l => l.length) === 3, 'Moneyball has Normal / Hard / Extreme');
+  await pg.selectOption('#lbv', 'money'); await pg.waitForTimeout(500);
+  ok(/m=moneyx$/.test(await hash()) && await pg.$$eval('#lbh option', l => l.length) === 3, 'the Market group has Club Boss and Moneyball, each with Normal / Hard / Extreme');
   await pg.evaluate(() => [...document.querySelectorAll('.lbx-games a')].find(a => a.textContent.includes('Quick')).click()); await pg.waitForTimeout(500);
   await pg.selectOption('#lbv', 'hilo'); await pg.waitForTimeout(500);
   await pg.selectOption('#lbh', 'extreme'); await pg.waitForTimeout(500);

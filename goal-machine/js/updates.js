@@ -9,7 +9,30 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 41, label: '5.9', date: '2026-10-01', title: '📋 Club Boss, a rotating banner, and tags for what’s new',
+      tags: { boss: 'NEW' },
+      promo: [
+        { href: '#/boss', icon: '📋', cls: 't-navy', title: 'Club Boss', sub: 'Take over a club with a mid-table XI and a budget. Sign, sell and sack your way up the league.' },
+        { href: '#/moneyball', icon: '💼', cls: 't-green', kick: '✨ New in 5.8', title: 'The new Moneyball', sub: 'Chairman for a season: £100m, five players, breaking news and Deadline Day.' },
+      ],
+      items: [
+        '📋 New game: Club Boss. Take over a club with a mid-table XI, a budget and a manager, and get as many points as you can in a 10-club league. Every player has an OVR from what he really did in the PL; swap players two a week, find the bargains, and hire and sack managers with perks (In the Market tab)',
+        '🏅 Three new badges: Champions!, Invincibles and New Manager Bounce',
+        '🎠 Home has a rotating banner: matchday, the international break, new games and news, turning over by itself. Swipe it or tap the dots',
+        '🏷️ Games get a NEW or UPDATED tag until you’ve had a go',
+        '🛠️ Moneyball: signing a player after the week’s matches could stop the season going on (the market now shuts once the games are played), and the Deadline Day clock is much quicker',
+        '🧹 The Market tab is tidier',
+        '🛠️ Fixed: tapping Moneyball could turn Home dark without opening the game. If a page ever fails to load, you now get a Reload button instead',
+      ],
+    },
+    {
       v: 40, label: '5.8', date: '2026-10-01', title: '💼 The new Moneyball, and Extreme everywhere',
+      // tags on the game tiles until you open them, and the featured slides in Home's rotating banner (for three weeks)
+      tags: { moneyball: 'UPDATED' },
+      promo: [
+        { href: '#/moneyball', icon: '💼', cls: 't-green', title: 'The new Moneyball', sub: 'Chairman for a season: £100m, five players, breaking news and Deadline Day. How rich can you get?' },
+        { href: '#/packs', icon: '🔊', cls: 't-purple', kick: '🎧 Turn it up', title: 'Packs with sound', sub: 'Floodlit Legend walkouts, a shimmer when there’s gold in the pack, and a snap when you finish a card' },
+      ],
       items: [
         '💼 Moneyball is brand new: you’re chairman for a season with £100m and room for five players. The market prices reputation; your players earn money and value by what they actually do on the pitch. Buy low, sell high, and finish the season as rich as you can',
         '📰 Every week brings news: a big bid for your star (sell or keep?), injuries, takeovers, an agent’s tip… and week 8 is Deadline Day',
