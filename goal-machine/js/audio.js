@@ -309,7 +309,7 @@
     matchday: ['draft', 'daily', 'owner'],
     boardroom: ['moneyball', 'window', 'reign'],
     puzzle: ['footle', 'clubfootle', 'grid', 'dailygrid', 'whoami', 'tally', 'hattrick'],
-    derby: ['h2h', 'h2hplay', 'hilo', 'hopper', 'online', 'auction'],
+    derby: ['h2h', 'h2hplay', 'hilo', 'hopper', 'online', 'auction', 'royale'],
     chaos: ['chaos'],
   };
   const trackFor = path => Object.keys(SCENES).find(k => SCENES[k].includes(path)) || 'anthem';

@@ -9,6 +9,8 @@
       hint: 'Sack a head coach in Dodgy Owner', test: () => !!GM.store.get('owner:sacked', 0) },
     { id: 'hattrick', icon: '🃏', name: 'Hat-Trick', sub: 'Football Spades: you and a partner against two rivals', href: '#/hattrick', cls: 't-teal',
       hint: 'Play 10 games of anything', test: () => GM.store.get('played', 0) >= 10 || !!GM.store.get('ht:record', null) || !!GM.store.get('ht:save', null) },
+    { id: 'royale', icon: '⚔️', name: 'Goal Royale', sub: 'Your packed players, real-time battles, goals instead of towers', href: '#/royale', cls: 't-red',
+      hint: 'Collect a Legend card (finish one from packs)', test: () => (GM.cardsDone ? GM.cardsDone('l') : 0) > 0 },
   ];
   const byPath = path => GM.SECRET_GAMES.find(g => g.href === '#/' + path);
   // unlocked? (the first time the test passes it's remembered, and flagged for a celebration)
@@ -28,6 +30,14 @@
   GM.secretLockPage = function (root, g) {
     root.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>🔒 Secret game</h2><span></span></div>
       <div class="secret-lock"><span class="sl-icon">🔒</span><b>Locked</b><p>This one’s a secret. To unlock it:</p><p class="sl-hint">🗝️ ${GM.esc(g.hint)}</p><a class="btn" href="#/">Back to Home</a></div>`;
+  };
+  // the tester's key (#/tester?code=…): unlocks every secret game on this device, for play-testing
+  GM.TESTER_CODE = 'owner-test-2026';
+  GM.unlockAllSecrets = function () {
+    const fresh = GM.SECRET_GAMES.filter(g => !GM.store.get('secret:' + g.id, 0)).map(g => g.id);
+    GM.SECRET_GAMES.forEach(g => GM.store.set('secret:' + g.id, 1));
+    GM.store.set('secretNew', (GM.store.get('secretNew', []) || []).concat(fresh));
+    return fresh.length;
   };
   // Home's secret section
   GM.secretTiles = function () {

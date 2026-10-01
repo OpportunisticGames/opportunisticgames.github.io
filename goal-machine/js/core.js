@@ -805,6 +805,7 @@ GM.MODES = {
   boss: { name: 'Club Boss', icon: '📋' },
   owner: { name: 'Dodgy Owner', icon: '🕴️' },
   reign: { name: 'Reign Check', icon: '👑' },
+  royale: { name: 'Goal Royale', icon: '⚔️' },
   chaosx: { name: 'CHAOS Extreme', icon: '🌪️' }, chaosxast: { name: 'CHAOS Extreme – Assists', icon: '🌪️' }, chaosxapps: { name: 'CHAOS Extreme – Apps', icon: '🌪️' },
   moneyball: { name: 'Moneyball', icon: '💰' }, moneyballast: { name: 'Moneyball – Assists', icon: '💰' }, moneyballapps: { name: 'Moneyball – Apps', icon: '💰' },
   window: { name: 'Transfer Window', icon: '🔄' }, windowast: { name: 'Transfer Window – Assists', icon: '🔄' }, windowapps: { name: 'Transfer Window – Apps', icon: '🔄' },

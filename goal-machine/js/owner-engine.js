@@ -118,7 +118,7 @@
   function clubOffers(seed) {
     const r = GM.rng(seed + '|clubs'), names = leagueClubs(), fav = GM.favClub() && names.includes(GM.favClub()) ? GM.favClub() : null;
     const pool = r.shuffle(names.filter(c => c !== fav && !BIG.includes(c)));
-    const picks = (fav ? [fav] : []).concat(pool).slice(0, 3);
+    const picks = (fav && r() < 0.35 ? [fav] : []).concat(pool).slice(0, 3);  // your club turns up now and then, not every time
     return r.shuffle(Object.keys(SITUATIONS)).map((sit, i) => ({ club: picks[i], sit }));
   }
   const leagueClubs = () => { const now = [...new Set((GM.fixtures ? GM.fixtures() : []).flatMap(f => [f.home, f.away]))]; return (now.length >= N ? now : GM.clubs).slice(); };
@@ -132,7 +132,7 @@
     const used = new Set(), squad = [];
     [['G', 2], ['D', 7], ['M', 7], ['F', 4]].forEach(([g, n]) => {
       const c = r.shuffle(pool.filter(p => p.pos === g && ovr(p) >= L.band[0] && ovr(p) <= L.band[1]));
-      for (let i = 0; i < n && i < c.length; i++) { used.add(c[i].pk); squad.push(mkPlayer(c[i], { value: r1(fairValue(ovr(c[i])) * (0.85 + 0.3 * r())) })); }
+      for (let i = 0; i < n && i < c.length; i++) { used.add(c[i].pk); const v = r1(fairValue(ovr(c[i])) * (0.85 + 0.3 * r())); squad.push(mkPlayer(c[i], { value: v, paid: v, came: true, vh: [v] })); }
     });
     const S = {
       v: 2, seed, lv, week: 0, n: 0, club: mine, owner, sit, coach, rel: 70, meddle: false, form: '4-4-2', ment: 'balanced', xi: null,
@@ -193,7 +193,9 @@
   const formBonus = x => { const t = x.rt.slice(-3); return t.length ? clamp((t.reduce((a, b) => a + b, 0) / t.length - 6.5) * 1.2, -3, 3) : 0; };
   // how well he'll play today: OVR, worn down by tiredness, lifted or sunk by morale and form
   const isYoung = p => p.first >= 2015;
-  const eff = (S, x) => ovr(P(S, x)) * (0.8 + 0.2 * x.fit / 100) + (x.mor - 70) / 12 + formBonus(x) + (S.coach === 'youth' && isYoung(P(S, x)) ? 3 : 0);
+  // his OVR now: what he was, plus how he's developed this season (good runs of form lift it, bad ones drop it)
+  const ovrNow = (S, x) => ovr(P(S, x)) + (x.dev || 0);
+  const eff = (S, x) => ovrNow(S, x) * (0.8 + 0.2 * x.fit / 100) + (x.mor - 70) / 12 + formBonus(x) + (S.coach === 'youth' && isYoung(P(S, x)) ? 3 : 0);
   const available = x => !x.inj && !x.ban;
   // the best XI the coach would pick: the fittest good players in his shape (tired ones rested)
   function pickXI(S, form = S.form) {
@@ -242,7 +244,7 @@
     return L;
   }
   const strength = S => { const L = lines(S, readyXI(S), S.ment); return r1((L.gk + L.def * 4 + L.mid * 4 + L.att * 2) / 11); };
-  const teamOvr = S => Math.round(readyXI(S).reduce((a, s) => a + (s.i == null ? 40 : ovr(P(S, S.squad[s.i]))), 0) / 11);
+  const teamOvr = S => Math.round(readyXI(S).reduce((a, s) => a + (s.i == null ? 40 : ovrNow(S, S.squad[s.i])), 0) / 11);
   const wageBill = S => r1(S.squad.reduce((a, x) => a + x.wage, 0) + (COACHES[S.coach] ? COACHES[S.coach].wage : 0));  // £k a week
   function table(S) { return S.teams.map((t, i) => ({ ...t, i, gd: t.gf - t.ga, pts: t.p - t.ded })).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf); }
   const position = S => table(S).findIndex(t => t.you) + 1;
@@ -397,7 +399,7 @@
     const rows = played.map(i => {
       const x = S.squad[i], g = x.g, gl = M.gl[i] || 0, as = M.as[i] || 0, cs = M.ga === 0 && (g === 'D' || g === 'G');
       let rt = 6 + (res === 'W' ? 0.4 : res === 'L' ? -0.4 : 0) + gl * 1 + as * 0.7 + (cs ? 0.8 : 0) - ((g === 'D' || g === 'G') ? M.ga * 0.2 : 0)
-        - (M.cards[i] === 1 ? 0.3 : M.cards[i] >= 2 ? 1.5 : 0) + (ovr(P(S, x)) - 70) / 20 + (r() - 0.5) * 1.2;
+        - (M.cards[i] === 1 ? 0.3 : M.cards[i] >= 2 ? 1.5 : 0) + (ovrNow(S, x) - 70) / 20 + (r() - 0.5) * 1.2;
       rt = clamp(r1(rt), 3, 10);
       if (M.mins[i] >= 10) { x.rt.push(rt); x.apps++; }
       x.gl += gl; x.as += as;
@@ -476,7 +478,15 @@
       x.mor = clamp(x.mor + (70 - x.mor) * 0.05, 0, 100);
       const last = x.rt.length && S.results.length && S.results[S.results.length - 1].week === S.week ? x.rt[x.rt.length - 1] : null;
       if (last != null) x.value = r1(Math.max(0.3, x.value * (1 + (last - 6.5) * 0.03 * (S.coach === 'youth' && isYoung(P(S, x)) ? 2 : 1))));
-      x.value = r1(x.value + (fairValue(ovr(P(S, x))) - x.value) * 0.04);
+      x.value = r1(x.value + (fairValue(ovrNow(S, x)) - x.value) * 0.04);
+      // every four weeks: a good run lifts his OVR, a bad one drops it (young players develop faster)
+      if (S.week % 4 === 0 && x.rt.length >= 3) {
+        const last = x.rt.slice(-4), a = last.reduce((s2, v) => s2 + v, 0) / last.length, young = isYoung(P(S, x));
+        const up = a >= (young ? 6.9 : 7.3), down = a <= (young ? 5.6 : 5.9);
+        if (up && (x.dev || 0) < (young ? 7 : 4)) { x.dev = (x.dev || 0) + 1; S.news.push(`📈 ${P(S, x).name} is improving: OVR ${ovrNow(S, x)}`); }
+        else if (down && (x.dev || 0) > -4) x.dev = (x.dev || 0) - 1;
+      }
+      (x.vh = x.vh || []).push(x.value); if (x.vh.length > 40) x.vh.shift();
     });
     // the owner's other worries (the fans first: at zero after this week's games, they force you out)
     if (S.fans <= 0) { S.over = 'fans'; notes.push('📣 The fans have had enough. The supporters’ trust has forced you to sell the club.'); }
@@ -521,19 +531,25 @@
   /* ---------------------------------------------------------------- transfers */
   function freeAgents(S) {
     const pool = poolFor(S.lv), r = GM.rng(`${S.seed}|free|${S.week}`), mine = new Set(S.squad.map(x => x.k));
-    return r.shuffle(pool.filter(p => !mine.has(p.pk) && ovr(p) <= 72 && ovr(p) >= 55)).slice(0, 8).map(p => p.pk);
+    return r.shuffle(pool.filter(p => !mine.has(p.pk) && !(S.gone || {})[p.pk] && ovr(p) <= 72 && ovr(p) >= 55)).slice(0, 8).map(p => p.pk);
   }
   // your bid for a player: accepted, countered or rejected
   function bid(S, k, fee) {
     const p = byPk(k), ask = askPrice(S, p), r = GM.rng(`${S.seed}|bid|${k}|${S.week}|${Math.round(fee * 10)}`);
     if (!windowOpen(S)) return { res: 'shut' };
+    if ((S.gone || {})[k]) return { res: 'gone' };
     if (S.embargo && S.week >= 19) return { res: 'embargo' };
     if (fee >= ask) return { res: 'accept', ask };
     if (fee >= ask * 0.8) return { res: 'counter', counter: r1(Math.max(fee + 0.5, (fee + ask) / 2 * (1 + r() * 0.08))), ask };
     return { res: 'reject', ask };
   }
   // personal terms: what he wants a week (£k), and whether he'll take your offer
-  const demand = (S, p) => Math.round(wageFor(ovr(p)) * (1 + (position(S) > 12 ? 0.1 : 0)));
+  // what he wants a week: his OVR's going rate, more for the famous (honours, big clubs), and his agent's mood
+  const demand = (S, p) => {
+    const rep = GM.market.reputation(p), fv = fairValue(ovr(p)), fame = clamp(Math.sqrt(rep / Math.max(4, fv * 1.6)), 0.8, 1.4);
+    const agent = 0.85 + 0.3 * GM.rng(`${S.seed}|wage|${p.pk}`)();
+    return Math.round(wageFor(ovr(p)) * fame * agent * (1 + (position(S) > 12 ? 0.1 : 0)));
+  };
   function terms(S, p, offer) {
     const d = demand(S, p);
     if (offer >= d) return true;
@@ -544,11 +560,13 @@
   // sign him (fee agreed and terms accepted): loans pay a tenth of his value and he goes back in the summer
   function sign(S, k, fee, wage, loan = false) {
     const p = byPk(k);
+    if ((S.gone || {})[k]) return 'He’s only just left. Not this season.';
     if (S.squad.length >= SQUAD_MAX) return 'Your squad’s full (26). Sell someone first.';
     if (!capRoom(S, wage)) return 'cap';
     if (S.cash - fee < -10) return 'The bank won’t lend you any more.';
     S.cash = r1(S.cash - fee); book(S, loan ? 'Loan fees' : 'Transfers in', -fee);
     const x = mkPlayer(p, { wage, value: loan ? fairValue(ovr(p)) : Math.max(fee, 0.5), loan, joined: S.week, paid: fee, mor: 80 });
+    x.vh = [x.value];
     S.squad.push(x);
     S.fans = clamp(S.fans + (ovr(p) >= 80 ? 6 : ovr(p) >= 74 ? 3 : 1), 0, 100);
     S.shortlist = S.shortlist.filter(s => s !== k);
@@ -563,6 +581,7 @@
     S.cash = r1(S.cash + fee); book(S, 'Transfers out', fee);
     S.squad.splice(i, 1);
     S.xi = null;
+    S.gone = Object.assign(S.gone || {}, { [x.k]: to });  // he's gone: no buying him back this season
     S.offers = S.offers.filter(o => o.k !== x.k);
     S.fans = clamp(S.fans - (ovr(P(S, x)) >= 78 ? 5 : 0), 0, 100);
     S.news.push(`👋 ${P(S, x).name} sold to ${to} for £${fee}m.`);
@@ -575,6 +594,7 @@
     const c = releaseCost(S, x);
     S.cash = r1(S.cash - c); book(S, 'Pay-offs', -c);
     S.squad.splice(i, 1); S.xi = null;
+    S.gone = Object.assign(S.gone || {}, { [x.k]: 'released' });
     S.news.push(`📄 ${P(S, x).name} released (£${c}m pay-off).`);
     return true;
   }
@@ -700,7 +720,7 @@
 
   GM.owner = { WEEKS, N, LEVELS, FORMATIONS, COACHES, OWNERS, SITUATIONS, STYLES, TALKS, SPONSORS, CUP, WINDOWS, SQUAD_MIN, SQUAD_MAX, clubOffers, legacy, profit, skim,
     ovr, wageFor, fairValue, askPrice, ownerOf, canLoan, loanFee, create, rounds, fixture, cupTie, cupWeek, windowOpen, deadlineDay, nextWindow,
-    eff, available, pickXI, readyXI, lines, strength, teamOvr, wageBill, table, position, scoreOf, formBonus,
+    eff, ovrNow, available, pickXI, readyXI, lines, strength, teamOvr, wageBill, table, position, scoreOf, formBonus,
     startMatch, stepMatch, halfTime, sub, autoSub, coachSubs, endMatch, simMatch, endWeek, bid, demand, terms, capRoom, sign, sell, release, releaseCost,
     answer, choicesFor, hire, sackCost, coachOffer, freeAgents, ord, book };
 })();
