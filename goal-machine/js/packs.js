@@ -346,6 +346,8 @@
         ${n ? '<button class="btn small" id="openpack">🎁 Open</button>' : ''}</div></div>`;
   };
   GM.cardsFinished = () => { const c = load(); return GM.players.filter(p => done(c, p)).length; };
+  // the finished cards themselves (Goal Royale builds its decks from them)
+  GM.cardsOwned = () => { const c = load(); return GM.players.filter(p => done(c, p)); };
   // the Album's Cards section: how many of each tier you've finished, the cards you've started, and how it works
   GM.cardsSection = function (tier = '') {
     const c = load();

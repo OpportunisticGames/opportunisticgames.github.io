@@ -9,6 +9,8 @@
       hint: 'Sack a head coach in Dodgy Owner', test: () => !!GM.store.get('owner:sacked', 0) },
     { id: 'hattrick', icon: '🃏', name: 'Hat-Trick', sub: 'Football Spades: you and a partner against two rivals', href: '#/hattrick', cls: 't-teal',
       hint: 'Play 10 games of anything', test: () => GM.store.get('played', 0) >= 10 || !!GM.store.get('ht:record', null) || !!GM.store.get('ht:save', null) },
+    { id: 'royale', icon: '⚔️', name: 'Goal Royale', sub: 'Your packed players, real-time battles, goals instead of towers', href: '#/royale', cls: 't-red',
+      hint: 'Collect a Legend card (finish one from packs)', test: () => (GM.cardsDone ? GM.cardsDone('l') : 0) > 0 },
   ];
   const byPath = path => GM.SECRET_GAMES.find(g => g.href === '#/' + path);
   // unlocked? (the first time the test passes it's remembered, and flagged for a celebration)

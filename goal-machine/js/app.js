@@ -139,6 +139,7 @@
       case 'moneyball': return GM.moneyball(app, q);
       case 'owner': return GM.dodgyOwner(app, q);
       case 'reign': return GM.reignCheck(app);
+      case 'royale': return GM.goalRoyale(app);
       case 'boss': location.replace('#/owner'); return;  // Club Boss grew up into Dodgy Owner
       case 'window': location.replace('#/moneyball'); return;  // the Transfer Window is part of the new Moneyball
       case 'auction': return GM.auction(app, q);

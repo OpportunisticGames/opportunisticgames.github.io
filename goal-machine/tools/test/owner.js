@@ -149,7 +149,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.click('#owsim'); await pg.waitForTimeout(800);
   s = await S();
   ok(s.week > w0 && (s.inbox.some(m => m.need) || s.offers.length || s.week === 3 || s.week >= 19), `⏩ sims until something needs you (week ${w0} → ${s.week})`);
-  ok(s.squad.some(x => x.fit < 95) && s.cashLog.length > 2, 'fitness drops with games, the money’s logged every week');
+  ok(s.cashLog.length > 2 && await pg.evaluate(() => { const E = GM.owner, T = E.create('fit', 'normal', 'yesman', {}); T.week = 1; E.simMatch(T, E.fixture(T)); return T.squad.filter(x => x.fit < 90).length >= 8; }), 'a match tires the players who played; the money’s logged every week');
 
   // heat: an investigation
   await pg.evaluate(() => {

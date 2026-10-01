@@ -9,6 +9,13 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 43, label: '5.11', date: '2026-10-02', title: '🤫 A third secret game',
+      items: [
+        '🤫 A new secret game is hiding in the Quick & more tab. To unlock it, finish a Legend card from your packs. (It’s worth it: your packed players finally get to fight.)',
+        '🏅 Two new badges to go with it',
+      ],
+    },
+    {
       v: 42, label: '5.10', date: '2026-10-02', title: '🕴️ Dodgy Owner, 👑 Reign Check and 🤫 secret games',
       tags: { owner: 'NEW' },
       promo: [
