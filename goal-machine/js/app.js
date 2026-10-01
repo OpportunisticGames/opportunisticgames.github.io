@@ -99,12 +99,15 @@
     GM.sound.scene(path === 'draft' && /^chaos/.test(q.m || '') ? 'chaos' : path);  // each game area has its own music (CHAOS has Mayhem)
     GM.chaosLook(path === 'draft' && /^chaos/.test(q.m || ''));
     GM.moneyLook(path === 'moneyball');
+    GM.ownerLook(path === 'owner' || path === 'reign');
     GM.applyIntl();
     GM.$('.cal-slot', tabbar).innerHTML = GM.calIcon();  // stays right past midnight
+    const locked = GM.secretLocked && GM.secretLocked(path);  // a secret game you haven't unlocked yet
+    if (locked) { GM.ownerLook(false); return GM.secretLockPage(app, locked); }
     try { page(path, q); } catch (e) {
       // a page that fails to draw: never leave the last page up in the wrong look, say so and offer a way out
       console.error(e);
-      GM.chaosLook(false); GM.moneyLook(false);
+      GM.chaosLook(false); GM.moneyLook(false); GM.ownerLook(false);
       app.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>😬 Something went wrong</h2><span></span></div>
         <div class="result"><p>This page didn’t load properly. Try again, and if it keeps happening tell us in Settings → Feedback.</p>
           <p class="muted"><small>${GM.esc(String(e && e.message || e))}</small></p>
@@ -134,7 +137,9 @@
       case 'dailygrid': return GM.grid(app, true);
       case 'tally': return GM.tally(app);
       case 'moneyball': return GM.moneyball(app, q);
-      case 'boss': return GM.clubBoss(app, q);
+      case 'owner': return GM.dodgyOwner(app, q);
+      case 'reign': return GM.reignCheck(app);
+      case 'boss': location.replace('#/owner'); return;  // Club Boss grew up into Dodgy Owner
       case 'window': location.replace('#/moneyball'); return;  // the Transfer Window is part of the new Moneyball
       case 'auction': return GM.auction(app, q);
       case 'leaderboard': return leaderboard(q.m);
@@ -158,6 +163,12 @@
     document.body.classList.toggle('money-mode', on);
     if (on) { document.documentElement.dataset.theme = 'dark'; GM.app('setBars', '#07140f', false); } else if (!document.body.classList.contains('chaos-mode')) GM.applyTheme();
   };
+  // 🕴️ the dodgy owner games' look: ink-dark, paper cards, gold, a serif face (Dodgy Owner and Reign Check)
+  GM.ownerLook = function (on) {
+    if (on === document.body.classList.contains('owner-mode')) return;
+    document.body.classList.toggle('owner-mode', on);
+    if (on) { document.documentElement.dataset.theme = 'dark'; GM.app('setBars', '#1a1622', false); } else if (!document.body.classList.contains('chaos-mode') && !document.body.classList.contains('money-mode')) GM.applyTheme();
+  };
   GM.chaosLook = function (chaos) {
     if (chaos === document.body.classList.contains('chaos-mode')) return;
     document.body.classList.toggle('chaos-mode', chaos);
@@ -166,7 +177,7 @@
 
   function home() {
     // Home always has the normal look and music, whatever drew it (a game's dark look must never be left behind)
-    GM.chaosLook(false); GM.moneyLook(false); GM.sound.scene('');
+    GM.chaosLook(false); GM.moneyLook(false); GM.ownerLook(false); GM.sound.scene('');
     const hard = GM.isHard(), level = GM.level(), extreme = level === 'extreme';
     const pb = k => GM.best(hard && GM.HARD_MODES.includes(k) ? k + 'h' : extreme && GM.extremeKey(k) || k);
     const club = GM.favClub(), waiting = GM.account() ? GM.store.get('onlineWaiting', 0) : 0;
@@ -202,7 +213,7 @@
     };
     const h2h = GM.store.get('h2h', null);
     // sub-tabs keep Home short: the main event up front, everything else a tap away (the dailies live in the Today tab)
-    const HTABS = [['main', '⚽ Main', ['chaos']], ['targets', '🎯 Targets', []], ['market', '💰 Market', ['boss', 'moneyball', 'auction']], ['quick', '⚡ Quick & more', []]];
+    const HTABS = [['main', '⚽ Main', ['chaos']], ['targets', '🎯 Targets', []], ['market', '💰 Market', ['owner', 'moneyball', 'auction']], ['quick', '⚡ Quick & more', []]];
     const htab = HTABS.some(t => t[0] === GM.store.get('homeTab')) ? GM.store.get('homeTab') : 'main';
     app.innerHTML = `
       <div class="appbar"><a class="icon-btn" href="#/settings" aria-label="Settings">⚙️</a>
@@ -231,7 +242,6 @@
           <span class="variant wild-switch" role="group" aria-label="Wildcards"><button data-wild="1" class="${wild ? 'on' : ''}">🃏 Wildcards on</button><button data-wild="0" class="${wild ? '' : 'on'}">🚫 No wildcards</button></span>
           <span class="stat-pick">${statBtn(ult, 'goals')}${statBtn(ult, 'assists')}${statBtn(ult, 'apps')}</span></span>
       </div>
-      <a class="ht-banner" href="#/hattrick"><span>🃏</span><span><b>Hat-Trick <small class="beta-pill">BETA</small></b><small>${GM.store.get('ht:save', null) ? 'Your game’s waiting – tap to carry on' : 'Football Spades: you and a partner against two rivals'}</small></span><span>›</span></a>
       <a class="h2h-banner" href="${waiting ? '#/online' : '#/h2h'}"><span>⚔️</span><span><b>Head to Head</b><small>${waiting ? `🌐 ${waiting} online game${waiting > 1 ? 's' : ''} waiting for your move` : h2h ? `${GM.esc(h2h.names[0])} v ${GM.esc(h2h.names[1])}: tap to carry on` : 'Pass the phone, or play your mates online'}</small></span><span>🏆</span><i class="online-badge" ${waiting ? '' : 'hidden'}>${waiting}</i></a>
       ${club ? `<div class="tile club-tile wide target-tile"><span class="tile-icon">🏟️</span><b>${GM.esc(club)} XI</b><small>Ultimate Wildcard with only ${GM.esc(club)} players. Their whole PL careers count.</small>${GM.nextMatchLine()}<a class="next-match" href="#/clubs">🏆 Club v club: this week’s table ›</a>
         <span class="stat-pick">${statBtn('club', 'goals')}${statBtn('club', 'assists')}${statBtn('club', 'apps')}</span></div>` : ''}
@@ -246,7 +256,7 @@
       </div>
       <div data-hpanel="market">
       <div class="tiles">
-        ${tile('#/boss', 't-navy wide', '📋', 'Club Boss', 'Take over a club for a season. Sign, sell and sack your way up a 10-club league.', pb('boss') ? Math.floor(pb('boss') / 100) + ' pts' : 0)}
+        ${tile('#/owner', 't-navy wide', '🕴️', 'Dodgy Owner', 'You’ve bought a club. Hire and sack coaches, meddle, wheel and deal, and try to stay one step ahead of the league’s investigators.', pb('owner') ? Math.floor(pb('owner') / 100) + ' pts' : 0)}
         ${tile('#/moneyball', 't-green wide', '💼', 'Moneyball', 'Chairman for a season: buy low, sell high, and get rich. Bids, injuries, takeovers and Deadline Day.', pb('money') ? '£' + pb('money') + 'm' : 0)}
         ${dtile('moneyball', 't-gold', 'Same season for everyone · one go')}
         ${tile('#/auction', 't-magenta', '🔨', 'Auction', 'Secret bids against a mate', 0)}
@@ -265,6 +275,7 @@
         <small>${album.players.toLocaleString()}/${GM.players.length.toLocaleString()} players · ${album.badges}/${album.totalBadges} badges${album.purist ? ` · 💎 ${album.purist.toLocaleString()} purist` : ''}</small>
         <span class="bar"><i style="width:${(100 * album.players / GM.players.length).toFixed(1)}%"></i></span></a>
       <a class="tile t-navy wide" href="#/players"><span class="tile-icon">📖</span><b>Player index</b><small>All ${GM.allPlayers ? GM.allPlayers.length.toLocaleString() : '5,000+'} Premier League players, and how often you've signed them</small></a>
+      ${GM.secretTiles()}
       </div>
       <button class="btn ghost share-game" id="share-game">📣 Share Goal Machine with your mates</button>
       <footer class="muted center">Playing as <a href="#/settings?s=account">${GM.account() ? '🔒 ' : ''}${GM.esc(GM.getName() || 'no name yet')}</a> · <a href="#/updates">v${GM.versionLabel}</a></footer>`;
@@ -281,6 +292,7 @@
     });
     GM.$('#share-game').onclick = () => GM.shareGame();
     GM.promoWire();
+    GM.secretCelebrate();
     GM.syncProfile();  // your club and level, for club v club and the boards (only when they change)
     if (GM.online && GM.online.check) GM.online.check().then(() => {  // refresh the banner if the count changed
       const n = GM.store.get('onlineWaiting', 0), sm = GM.$('.h2h-banner small');
@@ -499,9 +511,9 @@
       [GM.calIcon() + ' Daily', ['daily:' + today, 'footle:' + today, 'grid:' + today, 'dmoney:' + today, 'dailies']],
     ].concat(club ? [['🏟️ Your club', ['clubs', 'club' + GM.slug(club)].concat(GM.nextMatch(club) ? ['match:' + GM.nextMatch(club).id] : [])]] : [])
       .concat(GM.intlBreak() || GM.store.get('nationsPlayed', []).length ? [['🌍 International', nations]] : [])
-      .concat([['🃏 Packed XI', ['packedxi']], ['🎯 Targets', ['target', 'treble', 'mystery']], ['💰 Market', ['boss', 'money']], ['⚡ Quick', ['hopper', 'hilo', 'whoami', 'grid', 'tally']]]);
+      .concat([['🃏 Packed XI', ['packedxi']], ['🎯 Targets', ['target', 'treble', 'mystery']], ['💰 Market', ['owner', 'money']], ['⚡ Quick', ['hopper', 'hilo', 'whoami', 'grid', 'tally']]]);
     const NAMES = { classicwild: 'Classic Wildcard', classic: 'Classic', ultimate: 'Ultimate Wildcard', ultimatepure: 'Ultimate', extreme: 'Extreme Wildcard', purist: 'Extreme Purist',
-      chaos: 'CHAOS', chaosx: 'CHAOS Extreme', target: 'Target', treble: 'The Treble', mystery: 'Mystery Target', money: 'Moneyball', boss: 'Club Boss', dailies: 'Daily stars', clubs: 'Club v club', packedxi: 'Packed XI' };
+      chaos: 'CHAOS', chaosx: 'CHAOS Extreme', target: 'Target', treble: 'The Treble', mystery: 'Mystery Target', money: 'Moneyball', owner: 'Dodgy Owner', dailies: 'Daily stars', clubs: 'Club v club', packedxi: 'Packed XI' };
     const SUFFIX = { goals: '', assists: 'ast', apps: 'apps' };
     const hasStats = b => !!GM.MODES[b + 'ast'];
     // m → base board, stat, level (Normal / Hard / Extreme), and the option for Club v club (week) or Daily stars (sort)

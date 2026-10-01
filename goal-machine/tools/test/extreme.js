@@ -24,7 +24,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.selectOption('#lbv', 'ultimatepure'); await pg.waitForTimeout(500);
   ok(/m=purist$/.test(await hash()), 'Ultimate (no wildcards) on Extreme → Extreme Purist');
   const boards = {};
-  for (const [label, want] of [['CHAOS', /m=chaosx$/], ['Targets', /m=targetx$/], ['Quick', /m=hopperx$/], ['Market', /m=bossx$/]]) {
+  for (const [label, want] of [['CHAOS', /m=chaosx$/], ['Targets', /m=targetx$/], ['Quick', /m=hopperx$/], ['Market', /m=ownerx$/]]) {
     await pg.evaluate(l => [...document.querySelectorAll('.lbx-games a')].find(a => a.textContent.includes(l)).click(), label); await pg.waitForTimeout(500);
     boards[label] = await hash(); ok(want.test(boards[label]), `${label} keeps Extreme where it has one (${boards[label].split('m=')[1]})`);
   }

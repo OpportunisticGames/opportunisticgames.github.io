@@ -9,6 +9,29 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 42, label: '5.10', date: '2026-10-02', title: '🕴️ Dodgy Owner, 👑 Reign Check and 🤫 secret games',
+      tags: { owner: 'NEW' },
+      promo: [
+        { href: '#/owner', icon: '🕴️', cls: 't-navy', title: 'Dodgy Owner', sub: 'You’ve bought a club. Hire and sack coaches, meddle, wheel and deal, and stay one step ahead of the league’s investigators.' },
+      ],
+      items: [
+        '🕴️ Club Boss is now Dodgy Owner: you’ve bought a club, and you’re far too involved. A full 38-game season and a cup, with a squad of 20',
+        '🎭 Five kinds of owner, each with their own ambition: the Petro-Prince, the Spreadsheet, the Local Lad, the Crypto Bro and the Asset Stripper. Then pick your club: a big club in crisis, a steady one, or plucky newcomers',
+        '🧢 Hire and sack head coaches (Pep Cardigola, Jürgen Kloppity, José Moaninho, Sir Alex Furyson, Big Sam Alldicey and more), each with perks and an ego. Or meddle and pick the team yourself: they hate that',
+        '🔄 Every rival plays a style (possession, counter-attack, high press, long ball, park the bus): pick the tactics to beat it',
+        '💪 Fitness, injuries, yellow cards and bans, and morale: rotate your squad or it breaks. Stars left out sulk and ask to leave',
+        '💷 Money comes in every week and wages go out. Two transfer windows with a Deadline Day each: bid, haggle, agree his wages. Loans, free agents, and clubs bidding for your players',
+        '📺 Watch matches live with commentary: the half-time team talk (the owner’s version), subs and tactics. Or sim to the next decision',
+        '🕵️ Dodgy choices bring money or an edge but raise the Heat: fines, embargoes, points deductions, or a lifetime ban. Keep the fans on side and don’t go bust',
+        '🏛️ Your score is your legacy: league points, the Cup, the fans, profit and your ambition. More than one way to win',
+        '🤫 Secret games! Fun knock-offs you unlock by doing something. Find them at the bottom of the Quick & more tab',
+        '👑 Secret game: Reign Check. Own a club one swipe at a time: keep the fans, the squad, the money and the league in balance. Too much of anything gets you thrown out too',
+        '🃏 Hat-Trick is now a secret game too (if you’ve played it already, it’s still yours)',
+        '🎨 Both owner games have a new look: ink, gold and paper',
+        '🏅 New badges, including a couple of secret ones',
+      ],
+    },
+    {
       v: 41, label: '5.9', date: '2026-10-01', title: '📋 Club Boss, a rotating banner, and tags for what’s new',
       tags: { boss: 'NEW' },
       promo: [

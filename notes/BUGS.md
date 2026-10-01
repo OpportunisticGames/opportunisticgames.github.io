@@ -12,6 +12,7 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 2026-10-02 | Found while building Dodgy Owner: toast messages sat on top of everything at the bottom of the screen and swallowed taps on the buttons underneath (the big Continue buttons, modal buttons) for a couple of seconds | 5.10: toasts let taps through |
 | 2026-10-01 | Moneyball: signing a player after the week's matches had played (the market was still open) stuck the season: the screen went back to "Play matchweek", which did nothing, so week 8 never played | 5.9: the market and selling shut once the matchweek's played, and the button moves on to next week |
 | 2026-10-01 | Moneyball: the Deadline Day clock took over six minutes to run down | 5.9: it runs down in about 40 seconds |
 | 2026-10-01 | The Market tab's tiles were ragged: Daily Moneyball and the Auction each sat alone in half a row (should have been caught) | 5.9: Moneyball full width, the two small tiles side by side; a test now fails if any Home tab leaves a half-width tile alone |

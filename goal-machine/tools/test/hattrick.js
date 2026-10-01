@@ -10,7 +10,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const ctx = await b.newContext({ viewport: { width: 360, height: 780 } }); await server.attach(ctx);
   await ctx.route(/wikimedia|premierleague|transfermarkt/, r => r.abort());
   const pg = await ctx.newPage(); pg.on('pageerror', e => errs.push(e.message));
-  await pg.goto(U); await pg.evaluate(() => { localStorage.setItem('gm:seenVersion', '99'); localStorage.setItem('gm:welcomed', '1'); });
+  await pg.goto(U); await pg.evaluate(() => { localStorage.setItem('gm:seenVersion', '99'); localStorage.setItem('gm:welcomed', '1'); localStorage.setItem('gm:played', '10'); });  // (Hat-Trick is a secret game: 10 games unlock it)
   const sim = await pg.evaluate(() => {
     const R = GM.hattrickRules, out = { hands: 0, bad: [], bids: [], tricksLed: 0, legendLeadEarly: 0, deckOk: true, jokers: 0 };
     for (let h = 0; h < 200; h++) {
