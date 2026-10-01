@@ -123,7 +123,12 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(!!(await pg.$('.ow-next .ow-style')) && !!(await pg.$('.ow-ambition')), 'the next match shows how they play (and what beats it), and your ambition');
   await pg.click('#owgo'); await pg.click('[data-live]'); await pg.waitForTimeout(500);
   ok(!!(await pg.$('.ow-board')) && !!(await pg.$('.ow-feed')), 'watching it live: a scoreboard, the clock, the commentary');
+  for (let i = 0; i < 30 && !(await pg.evaluate(() => GM.store.get('owner:save:owner') && document.querySelectorAll('#owfeed .ow-ev.fresh').length)); i++) await pg.waitForTimeout(300);
+  await pg.evaluate(() => { const f = document.querySelector('#owfeed .ow-ev.fresh'); if (f) f.dataset.mark = '1'; });
+  await pg.waitForTimeout(1500);
+  ok(await pg.evaluate(() => !!document.querySelector('#owfeed [data-mark]')), 'commentary lines stay where they are (no flashing redraws)');
   await pg.click('#owskip'); await pg.waitForTimeout(400);
+  ok((await pg.$$('.modal-wrap .ow-subs .pos')).length >= 11, 'the subs show everyone’s position');
   ok(/Half-time/.test(await pg.textContent('.modal-wrap')) && (await pg.$$('[data-talk]')).length === 5, 'half-time: five team talks (the owner’s)');
   await pg.click('[data-talk="bonus"]'); await pg.waitForTimeout(200);
   await pg.click('[data-off="9"]'); await pg.evaluate(() => document.querySelector('.modal-wrap [data-on]').click()); await pg.waitForTimeout(300);
@@ -217,6 +222,30 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(own.crypto, 'the Crypto Bro’s cash swings with MoonDoge');
   ok(own.sits, 'clubs in crisis have better squads and less money; plucky newcomers the opposite');
   ok(own.bust && own.banned, 'more ways to fail: going bust (administration) and being banned by the league');
+  // the owner's bug reports (2026-10-02)
+  const fixes = await pg.evaluate(() => {
+    const E = GM.owner, out = {};
+    GM.store.set('club', 'Everton');
+    const offers = Array.from({ length: 30 }, (_, i) => E.clubOffers('cl' + i).some(c => c.club === 'Everton')).filter(Boolean).length;
+    out.fav = offers > 0 && offers < 30;  // your club turns up sometimes, not every time
+    const S = E.create('fx1', 'normal', 'yesman', {});
+    const same = GM.players.filter(p => E.ovr(p) === 75).slice(0, 12).map(p => E.demand(S, p));
+    out.wages = new Set(same).size >= 6;  // the same OVR doesn't mean the same wage
+    S.week = 1; const i = 3, k = S.squad[i].k; E.sell(S, i, 10, 'Arsenal');
+    out.noBuyBack = E.bid(S, k, 99).res === 'gone' && typeof E.sign(S, k, 1, 50) === 'string';
+    out.paid = S.squad.every(x => x.paid > 0 && x.came);
+    // development: a hot run lifts his OVR (and it shows up in the team's), values are tracked weekly
+    const T = E.create('fx2', 'normal', 'yesman', {}); T.inbox = []; const x = T.squad[2], base = E.ovrNow(T, x);
+    x.rt = [8.2, 8.0, 7.9, 8.4]; T.week = 4; E.endWeek(T);
+    out.dev = E.ovrNow(T, x) === base + 1 && x.vh.length >= 2;
+    return out;
+  });
+  ok(await pg.evaluate(() => { const E = GM.owner, S = E.create('cs', 'normal', 'yesman', {}); S.week = 1; const M = E.startMatch(S, E.fixture(S)); S.squad.forEach(x => { x.fit = 60; }); E.stepMatch(S, M, 62); E.coachSubs(S, M); return M.subs < 3 && M.ev.some(e => e.k === 'sub'); }), 'the coach makes subs when legs are tired');
+  ok(fixes.fav, 'your favourite club is one of the three on offer sometimes, not every time');
+  ok(fixes.wages, 'players with the same OVR want different wages (fame and their agent)');
+  ok(fixes.noBuyBack, 'sell a player and you can’t buy him straight back');
+  ok(fixes.paid, 'every player shows what he cost (the starting squad: what he was worth when you bought the club)');
+  ok(fixes.dev, 'a good run of form lifts a player’s OVR, and his value is tracked every week');
   // sacking a coach unlocks a secret game
   await fresh({ homeTab: 'quick' });
   ok(/Sack a head coach/.test(await pg.textContent('.secret-tiles')), 'Reign Check starts locked: “Sack a head coach in Dodgy Owner”');

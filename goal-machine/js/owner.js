@@ -31,6 +31,12 @@
     let tab = 'home', mtab = 'search', mf = { g: '', sort: 'value', max: -1 }, timer = null;  // the market opens on bargains you can afford
     const P = x => byPk(x.k);
     const ovrOf = p => E.ovr(p);
+    // your players: OVR now (with ▲/▼ for how he's developed), and value against what you paid
+    const ovrX = x => E.ovrNow(S, x);
+    const devTag = x => (x.dev ? `<small class="ow-dev ${x.dev > 0 ? 'up' : 'down'}">${x.dev > 0 ? '▲' : '▼'}${Math.abs(x.dev)}</small>` : '');
+    const gain = x => (x.loan ? 0 : Math.round((x.value - (x.paid || 0)) * 10) / 10);
+    const paidTxt = x => (x.loan ? 'on loan' : x.nephew ? 'family' : `${x.came ? 'came with the club at' : 'paid'} ${money(x.paid || 0)}`);
+    const spark = (vals, w = 240, h = 46) => { if (!vals || vals.length < 2) return ''; const mx = Math.max(...vals), mn = Math.min(...vals), sp = Math.max(0.1, mx - mn); return `<svg class="ow-spark ${vals[vals.length - 1] >= vals[0] ? 'up' : 'down'}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><path d="${vals.map((v, i) => (i ? 'L' : 'M') + (i * w / (vals.length - 1)).toFixed(1) + ' ' + (h - 4 - (h - 8) * (v - mn) / sp).toFixed(1)).join(' ')}"/></svg>`; };
     const seesOvr = p => lv === 'normal' || S.coach === 'nerd' || S.owner === 'nerd' || S.scouted[p.pk] || S.squad.some(x => x.k === p.pk);
     const ovrBadge = (o, cls = '') => `<span class="cb-ovr ${o >= 80 ? 'hi' : o >= 70 ? 'mid' : 'lo'} ${cls}">${o}</span>`;
     const ovrShown = p => { if (seesOvr(p)) return ovrBadge(ovrOf(p)); const o = ovrOf(p), r = GM.rng(S.seed + '|scout|' + p.pk)(), lo = o - 3 - Math.floor(r * 4); return `<span class="cb-ovr q">${lo}–${lo + 8}</span>`; };
@@ -222,18 +228,19 @@
     function squadTab() {
       const G = { G: '🧤 Goalkeepers', D: '🛡️ Defenders', M: '⚙️ Midfielders', F: '🎯 Forwards' }, xi = new Set(E.readyXI(S).map(s => s.i));
       return `<p class="cb-hint">${S.squad.length} players · tap one for his details, to list him, or let him go. <b>Fitness</b> drops when they play and comes back with rest.</p>
-        ${['G', 'D', 'M', 'F'].map(g => `<h3 class="section-title">${G[g]}</h3><div class="ow-squad">${S.squad.map((x, i) => [x, i]).filter(([x]) => x.g === g).sort((a, b) => ovrOf(P(b[0])) - ovrOf(P(a[0]))).map(([x, i]) => {
+        ${['G', 'D', 'M', 'F'].map(g => `<h3 class="section-title">${G[g]}</h3><div class="ow-squad">${S.squad.map((x, i) => [x, i]).filter(([x]) => x.g === g).sort((a, b) => ovrX(b[0]) - ovrX(a[0])).map(([x, i]) => {
           const p = P(x), form = x.rt.slice(-3), fa = form.length ? form.reduce((a, b) => a + b, 0) / form.length : null;
           return `<button class="ow-pl${xi.has(i) ? ' xi' : ''}" data-pl="${i}">${GM.avatar(p, '', plain)}<span class="ow-pl-who"><b>${esc(p.name)}</b>
             <span>${x.inj ? `🚑 ${x.inj}w ` : ''}${x.ban ? `🟥 ${x.ban} ` : ''}${x.yc ? `🟨${x.yc} ` : ''}${x.listed ? '🏷️ ' : ''}${x.loan ? '🔁 loan ' : ''}${x.nephew ? '👦 ' : ''}${moodIcon(x.mor)} ${pill(fa)} <small>${x.apps} apps${x.gl ? ` · ${x.gl}⚽` : ''}</small></span>
-            ${bar(x.fit, fitCls(x.fit))}</span>${ovrBadge(ovrOf(p))}<span class="ow-wage">${k$(x.wage)}</span></button>`; }).join('')}</div>`).join('')}`;
+            ${bar(x.fit, fitCls(x.fit))}</span><span class="ow-ovrcol">${ovrBadge(ovrX(x))}${devTag(x)}</span><span class="ow-val"><b>${money(x.value)}</b><small class="${gain(x) > 0 ? 'up' : gain(x) < 0 ? 'down' : ''}">${x.loan ? 'loan' : `${gain(x) >= 0 ? '▲' : '▼'} ${money(Math.abs(gain(x)))}`}</small><small>${k$(x.wage)}/wk</small></span></button>`; }).join('')}</div>`).join('')}`;
     }
     function playerSheet(i) {
       const x = S.squad[i]; if (!x) return;
       const p = P(x), avg = x.rt.length ? (x.rt.reduce((a, b) => a + b, 0) / x.rt.length).toFixed(1) : '–';
       const m = GM.modal(`<div class="ow-sheet">${GM.avatar(p, 'lg', plain)}<h3>${esc(p.name)}</h3><p>${GM.posBadges(p)} ${plain ? '' : `${GM.flag(p.nat)} <small class="muted">${GM.era(p)} · ${p.apps} PL apps</small>`}</p>
-          <div class="ow-facts"><div><small>OVR</small>${ovrBadge(ovrOf(p))}</div><div><small>Fitness</small><b>${Math.round(x.fit)}%</b></div><div><small>Morale</small><b>${moodIcon(x.mor)} ${Math.round(x.mor)}</b></div>
-            <div><small>Value</small><b>${money(x.value)}</b></div><div><small>Wage</small><b>${k$(x.wage)}</b></div><div><small>This season</small><b>${x.apps} apps · ${x.gl} ⚽ · ${x.as} 🅰️ · avg ${avg}</b></div></div>
+          <div class="ow-facts"><div><small>OVR${x.dev ? ` (started ${ovrOf(p)})` : ''}</small><span>${ovrBadge(ovrX(x))} ${devTag(x)}</span></div><div><small>Fitness</small><b>${Math.round(x.fit)}%</b></div><div><small>Morale</small><b>${moodIcon(x.mor)} ${Math.round(x.mor)}</b></div>
+            <div><small>Value</small><b>${money(x.value)}</b><small class="${gain(x) >= 0 ? 'up' : 'down'}">${x.loan ? '' : `${gain(x) >= 0 ? '+' : '−'}${money(Math.abs(gain(x)))} on what you paid`}</small></div><div><small>${x.came ? 'Came with the club' : 'Paid'}</small><b>${x.loan ? 'loan' : money(x.paid || 0)}</b></div><div><small>Wage</small><b>${k$(x.wage)}</b></div><div><small>This season</small><b>${x.apps} apps · ${x.gl} ⚽ · ${x.as} 🅰️ · avg ${avg}</b></div></div>
+          ${(x.vh || []).length > 1 ? `<div class="ow-vh"><small>His value this season</small>${spark(x.vh)}</div>` : ''}
           ${x.inj ? `<p>🚑 Injured for ${x.inj} week${x.inj > 1 ? 's' : ''}.</p>` : ''}${x.ban ? `<p>🟥 Banned for ${x.ban} match${x.ban > 1 ? 'es' : ''}.</p>` : ''}${x.loan ? '<p>🔁 On loan: he can’t be sold.</p>' : ''}
           <div class="actions col">${x.loan ? '' : `<button class="btn" data-list>${x.listed ? '🏷️ Take him off the list' : '🏷️ Transfer-list him (offers come in)'}</button>
             <button class="btn ghost" data-release>📄 Release him (pay-off ${money(E.releaseCost(S, x))})</button>`}<button class="btn ghost" data-close>Close</button></div></div>`);
@@ -287,7 +294,7 @@
       const tabs = [['search', '🔎 Search'], ['offers', `📨 Offers${S.offers.length ? ` (${S.offers.length})` : ''}`], ['free', '🆓 Free agents'], ['short', `⭐ Shortlist${S.shortlist.length ? ` (${S.shortlist.length})` : ''}`]];
       let body = '';
       if (mtab === 'search') body = searchHtml();
-      else if (mtab === 'offers') body = S.offers.length ? S.offers.map((o, n) => { const x = S.squad.find(y => y.k === o.k); if (!x) return ''; const p = P(x); return `<div class="ow-offer">${GM.avatar(p, '', plain)}<span><b>${esc(o.club)} bid ${money(o.fee)}</b><small>for ${esc(p.name)} (worth ${money(x.value)}${x.listed ? ', listed' : ''})</small></span>
+      else if (mtab === 'offers') body = S.offers.length ? S.offers.map((o, n) => { const x = S.squad.find(y => y.k === o.k); if (!x) return ''; const p = P(x); return `<div class="ow-offer">${GM.avatar(p, '', plain)}<span><b>${esc(o.club)} bid ${money(o.fee)}</b><small>for ${esc(p.name)}: worth ${money(x.value)}, ${paidTxt(x)}${x.listed ? ', listed' : ''}</small><small class="${o.fee - (x.paid || 0) >= 0 ? 'up' : 'down'}">${o.fee - (x.paid || 0) >= 0 ? 'Profit' : 'Loss'}: ${money(Math.abs(Math.round((o.fee - (x.paid || 0)) * 10) / 10))}</small></span>
           <span class="ow-choices"><button class="btn small" data-offer="${n}" data-act="yes">Accept</button><button class="btn small ghost" data-offer="${n}" data-act="more">Ask for more</button><button class="btn small ghost" data-offer="${n}" data-act="no">Reject</button></span></div>`; }).join('') : '<p class="muted center">No offers. Transfer-list a player (Squad tab) and clubs will come in during a window.</p>';
       else if (mtab === 'free') body = `<p class="cb-hint">Free agents sign any time, for wages only. New ones every few weeks.</p>${rowsHtml(S.free.map(byPk).filter(Boolean), true)}`;
       else body = S.shortlist.length ? rowsHtml(S.shortlist.map(byPk).filter(Boolean)) : '<p class="muted center">Star players in the market to keep an eye on them.</p>';
@@ -297,7 +304,7 @@
     function searchHtml() {
       const mine = new Set(S.squad.map(x => x.k));
       if (!poolCache) poolCache = (lv === 'extreme' ? GM.allPlayers : GM.players);
-      let list = poolCache.filter(p => !mine.has(p.pk) && (!mf.g || p.pos === mf.g));
+      let list = poolCache.filter(p => !mine.has(p.pk) && !(S.gone || {})[p.pk] && (!mf.g || p.pos === mf.g));
       const withAsk = list.map(p => ({ p, o: ovrOf(p) })).filter(r => r.o >= 58);
       const cap = mf.max === -1 ? Math.max(0.5, S.cash) : mf.max;
       let rows = withAsk.map(r => ({ ...r, ask: E.askPrice(S, r.p) })).filter(r => !cap || r.ask <= cap);
@@ -340,6 +347,7 @@
         if (r.res === 'accept') { GM.sound.play('good'); GM.toast(`✅ ${esc(own.name)} accept ${money(fee)}`); termsFlow(p, fee, false); }
         else if (r.res === 'counter') counterFlow(p, r.counter);
         else if (r.res === 'reject') { GM.sound.play('bad'); GM.toast(`❌ ${esc(own.name)} laughed at ${money(fee)}`, 2600); }
+        else if (r.res === 'gone') GM.toast('He’s only just left you. Not this season.');
         else GM.toast(r.res === 'embargo' ? '⚖️ You’re under a transfer embargo' : 'The window’s shut');
       };
     }
@@ -414,25 +422,47 @@
     function match() {
       const M = S.live;
       stopTimer();
-      const draw = () => {
-        if (!root.isConnected || !S.live || GM.dodgyOwner.run !== runId || !location.hash.startsWith('#/owner')) return stopTimer();
-        const pos = Math.round(100 * M.poss[0] / Math.max(1, M.poss[0] + M.poss[1]));
+      // the screen's built once; each minute only the numbers change and new commentary slides in (and stays)
+      let shown = 0;
+      const posTag = x => `<span class="pos pos-${x.g}">${P(x).poss[0]}</span>`;
+      const evHtml = (e, fresh) => `<div class="ow-ev ${e.k}${fresh ? ' fresh' : ''}"><span>${e.m}'</span>${esc(e.t)}</div>`;
+      const build = () => {
         root.innerHTML = `${top()}
-          <div class="ow-live"><div class="ow-board"><b>${esc(GM.clubShort(M.fx.home ? S.club : M.oppName))}</b><span>${M.fx.home ? M.gf : M.ga} – ${M.fx.home ? M.ga : M.gf}</span><b>${esc(GM.clubShort(M.fx.home ? M.oppName : S.club))}</b></div>
-            <div class="ow-clock"><i class="rec"></i>${M.min}'${M.fx.comp === 'cup' ? ' · 🏆 ' + E.CUP.names[M.fx.round] : ''}</div>
-            <div class="ow-poss"><i style="width:${pos}%"></i><span>${pos}% possession · shots ${M.shots[0]}–${M.shots[1]}</span></div>
-            <div class="ow-feed">${M.ev.slice(-12).reverse().map(e => `<div class="ow-ev ${e.k}"><span>${e.m}'</span>${esc(e.t)}</div>`).join('') || '<div class="ow-ev"><span>0\'</span>Kick-off!</div>'}</div>
-            <div class="ow-pitchmini">${M.xi.map((s, n) => { const x = s.i != null ? S.squad[s.i] : null; return x ? `<span class="${x.fit < 60 ? 'low' : x.fit < 75 ? 'mid' : ''}">${esc(shortName(P(x)))} ${Math.round(x.fit)}%${M.cards[s.i] === 1 ? ' 🟨' : ''}</span>` : '<span class="gone">—</span>'; }).join('')}</div>
-            <div class="row ow-ctl"><button class="btn ghost" id="owpause">⏸ Changes</button><button class="btn ghost" id="owfast">${speed > 1 ? '▶ Normal' : '⏩ Faster'}</button><button class="btn ghost" id="owskip">⏭ Skip</button></div></div>`;
+          <div class="ow-live"><div class="ow-board"><b>${esc(GM.clubShort(M.fx.home ? S.club : M.oppName))}</b><span id="owsc"></span><b>${esc(GM.clubShort(M.fx.home ? M.oppName : S.club))}</b></div>
+            <div class="ow-clock"><i class="rec"></i><span id="owclk"></span>${M.fx.comp === 'cup' ? ' · 🏆 ' + E.CUP.names[M.fx.round] : ''}</div>
+            <div class="ow-poss"><i id="owpossbar"></i><span id="owposs"></span></div>
+            <div class="ow-feed" id="owfeed">${M.ev.slice(-12).reverse().map(e => evHtml(e)).join('') || '<div class="ow-ev"><span>0\'</span>Kick-off!</div>'}</div>
+            <div class="ow-pitchmini" id="owmini"></div>
+            <div class="row ow-ctl"><button class="btn ghost" id="owpause">⏸ Changes</button><button class="btn ghost" id="owfast"></button><button class="btn ghost" id="owskip">⏭ Skip</button></div></div>`;
+        shown = M.ev.length;
         GM.$('#owpause', root).onclick = () => { paused = true; changes(false); };
         GM.$('#owfast', root).onclick = () => { speed = speed > 1 ? 1 : 4; run(); draw(); };
         GM.$('#owskip', root).onclick = () => { stopTimer(); if (!M.htDone) { E.stepMatch(S, M, 45); draw(); return changes(true); } E.stepMatch(S, M, 90); finish(); };  // skip to half-time, then to the end
+      };
+      const draw = () => {
+        if (!root.isConnected || !S.live || GM.dodgyOwner.run !== runId || !location.hash.startsWith('#/owner')) return stopTimer();
+        if (!GM.$('#owfeed', root)) build();
+        const pos = Math.round(100 * M.poss[0] / Math.max(1, M.poss[0] + M.poss[1]));
+        GM.$('#owsc', root).textContent = `${M.fx.home ? M.gf : M.ga} – ${M.fx.home ? M.ga : M.gf}`;
+        GM.$('#owclk', root).textContent = M.min + "'";
+        GM.$('#owpossbar', root).style.width = pos + '%';
+        GM.$('#owposs', root).textContent = `${pos}% possession · shots ${M.shots[0]}–${M.shots[1]}`;
+        GM.$('#owfast', root).textContent = speed > 1 ? '▶ Normal' : '⏩ Faster';
+        const feed = GM.$('#owfeed', root);
+        if (M.ev.length > shown) {
+          if (!shown) feed.innerHTML = '';
+          M.ev.slice(shown).forEach(e => feed.insertAdjacentHTML('afterbegin', evHtml(e, true)));
+          shown = M.ev.length;
+          while (feed.children.length > 12) feed.lastElementChild.remove();
+        }
+        GM.$('#owmini', root).innerHTML = M.xi.map(s => { const x = s.i != null ? S.squad[s.i] : null; return x ? `<span class="${x.fit < 60 ? 'low' : x.fit < 75 ? 'mid' : ''}">${posTag(x)} ${esc(shortName(P(x)))} ${Math.round(x.fit)}%${M.cards[s.i] === 1 ? ' 🟨' : ''}</span>` : '<span class="gone">—</span>'; }).join('');
       };
       const tick = () => {
         if (GM.dodgyOwner.run !== runId || !location.hash.startsWith('#/owner')) return stopTimer();  // you've left: it carries on when you're back
         if (paused) return;
         const before = M.ev.length;
         E.stepMatch(S, M, M.min + 1);
+        if (!S.meddle && !M.coachSubbed && M.min >= 62 && !paused) { M.coachSubbed = true; E.coachSubs(S, M); }  // the coach's changes (unless you're picking the team)
         const fresh = M.ev.slice(before);
         fresh.forEach(e => GM.sound.play(e.k === 'goal' ? 'cheer' : e.k === 'conc' ? 'bad' : e.k === 'red' || e.k === 'card' ? 'whistle' : e.k === 'inj' ? 'ambulance' : e.k === 'chance' ? 'tap' : ''));
         if (fresh.some(e => e.k === 'goal')) GM.buzz(60);
@@ -455,8 +485,9 @@
         const m = GM.modal(`<h3>${ht ? `Half-time: ${M.gf}–${M.ga}` : `${M.min}': changes`}</h3>
           ${ht ? `<p class="muted">Your team talk (as the owner, obviously):</p><div class="ow-talks">${Object.entries(E.TALKS).map(([k, t]) => `<button class="btn small ghost" data-talk="${k}">${t.icon} ${t.name}</button>`).join('')}</div>` : ''}
           <p class="muted">Subs left: ${M.subs}. Tap a player to take off, then one to bring on.</p>
-          <div class="ow-subs"><div>${M.xi.map((s, n) => s.i != null ? `<button class="ow-chip" data-off="${n}">${esc(shortName(P(S.squad[s.i])))} ${Math.round(S.squad[s.i].fit)}%</button>` : '').join('')}</div>
-            <div>${bench.map(i => `<button class="ow-chip on" data-on="${i}">${esc(shortName(P(S.squad[i])))} ${E.ovr(P(S.squad[i]))}</button>`).join('') || '<span class="muted">Nobody left on the bench</span>'}</div></div>
+          <div class="ow-subs"><div><small class="muted">On the pitch</small>${M.xi.map((s, n) => s.i != null ? `<button class="ow-chip" data-off="${n}">${posTag(S.squad[s.i])} ${esc(shortName(P(S.squad[s.i])))} ${Math.round(S.squad[s.i].fit)}%</button>` : '').join('')}</div>
+            <div><small class="muted">The bench</small>${bench.map(i => `<button class="ow-chip on" data-on="${i}">${posTag(S.squad[i])} ${esc(shortName(P(S.squad[i])))} ${E.ovrNow(S, S.squad[i])}</button>`).join('') || '<span class="muted">Nobody left on the bench</span>'}</div></div>
+          ${!S.meddle ? `<p class="cb-hint">${esc((E.COACHES[S.coach] || { name: 'The coach' }).name)} will make his own changes around the hour if you don’t.</p>` : ''}
           <div class="seg">${[['defend', '🛡️ Defend'], ['balanced', '⚖️ Balanced'], ['attack', '⚔️ Attack']].map(([k, l]) => `<button data-mm="${k}" class="${M.ment === k ? 'on' : ''}">${l}</button>`).join('')}</div>
           <button class="btn big" data-resume>${ht ? '▶ Second half' : '▶ Back to the game'}</button>`);
         const talks = GM.$$('[data-talk]', m.el);

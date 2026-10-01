@@ -13,6 +13,8 @@
       items: [
         '🤫 A new secret game is hiding in the Quick & more tab. To unlock it, finish a Legend card from your packs. (It’s worth it: your packed players finally get to fight.)',
         '🏅 Two new badges to go with it',
+        '🕴️ Dodgy Owner: players develop now (good runs of form lift their rating, young players faster), and you can see each player’s value through the season, what you paid and the profit on any offer',
+        '🛠️ Dodgy Owner fixes: the live commentary no longer flashes; you can’t sell a player and buy him straight back; wage demands vary by player; subs show positions and the coach makes his own changes; your favourite club isn’t always on offer; the sponsor options are readable',
       ],
     },
     {

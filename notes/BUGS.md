@@ -12,6 +12,15 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 2026-10-02 | Dodgy Owner: with Everton as your favourite club, Everton was always one of the three clubs to buy | 5.11: your club turns up about a third of the time |
+| 2026-10-02 | Dodgy Owner: the live commentary flashed over and over (the whole screen redrew four times a second, replaying every line's animation) | 5.11: the screen's built once; only the numbers change, and new lines slide in once and stay |
+| 2026-10-02 | Dodgy Owner: you could sell a player and instantly buy him back | 5.11: anyone you sell or release can't be signed again that season (and isn't in the search) |
+| 2026-10-02 | Dodgy Owner: every player of the same OVR wanted exactly the same wage | 5.11: wage demands depend on fame (honours, big clubs) and the agent too |
+| 2026-10-02 | Dodgy Owner: subs didn't show positions, and the coach never made subs in a live match | 5.11: position badges on every sub chip and on the pitch list; the coach makes his own changes around the hour unless you're meddling |
+| 2026-10-02 | Dodgy Owner: you couldn't see what you'd paid for a player, so you couldn't tell if an offer was a profit | 5.11: paid (or value when you bought the club) on the squad list, the player sheet and every offer, with profit/loss |
+| 2026-10-02 | Dodgy Owner: the shirt sponsor's other two options were unreadable (dark buttons on the paper card) | 5.11: readable paper buttons |
+| 2026-10-02 | Dodgy Owner: no way to see if a player's value or rating was rising | 5.11: players develop (good runs of form lift their OVR, ▲/▼ shown; young players faster), and each player's value is charted through the season |
+| 2026-10-02 | Dodgy Owner: the chosen half-time team talk turned grey, looking unchosen | 5.11: the chosen one is highlighted gold |
 | 2026-10-02 | Found while building Dodgy Owner: toast messages sat on top of everything at the bottom of the screen and swallowed taps on the buttons underneath (the big Continue buttons, modal buttons) for a couple of seconds | 5.10: toasts let taps through |
 | 2026-10-01 | Moneyball: signing a player after the week's matches had played (the market was still open) stuck the season: the screen went back to "Play matchweek", which did nothing, so week 8 never played | 5.9: the market and selling shut once the matchweek's played, and the button moves on to next week |
 | 2026-10-01 | Moneyball: the Deadline Day clock took over six minutes to run down | 5.9: it runs down in about 40 seconds |
