@@ -30,15 +30,40 @@
   const BIG = ['Manchester City', 'Arsenal', 'Liverpool', 'Chelsea', 'Manchester United', 'Tottenham Hotspur', 'Newcastle United', 'Aston Villa'];
 
   // Head coaches: the owner hires and sacks them. ego: how much he minds you picking the team (relationship lost per meddled match)
+  // Head coaches (affectionate parodies). ego: relationship lost per meddled match. Perks are what they're famous for.
   const COACHES = {
-    nerd: { icon: '💻', name: 'The Data Nerd', perk: 'Sees through the market: exact OVRs on everyone, and +2 attack', ego: 4, wage: 40, att: 2 },
-    sergeant: { icon: '🪖', name: 'The Sergeant Major', perk: 'Gruelling training: players recover 6 more fitness a week, but morale dips', ego: 8, wage: 35, fit: 6 },
-    yesman: { icon: '🙇', name: 'The Yes-Man', perk: 'No perks, no opinions. Pick the team all you like, he won’t mind', ego: 0, wage: 15 },
-    philosopher: { icon: '🧘', name: 'The Philosopher', perk: 'Wonderful football (+4 midfield) when HE picks the team. Hates meddling', ego: 14, wage: 70, mid: 4 },
-    firefighter: { icon: '🧯', name: 'The Firefighter', perk: '+5 to everything while you’re in the bottom six', ego: 6, wage: 45, fire: 5 },
-    busparker: { icon: '🚌', name: 'The Bus Parker', perk: 'Parks the bus: +5 defence, −2 attack', ego: 6, wage: 30, def: 5, att: -2 },
-    zealot: { icon: '⚡', name: 'The Gegenpress Zealot', perk: '+4 attack, +2 midfield, but legs tire 30% faster', ego: 10, wage: 55, att: 4, mid: 2, drain: 1.3 },
-    hairdryer: { icon: '💨', name: 'The Hairdryer', perk: 'Half-time team talks hit twice as hard', ego: 8, wage: 40, talk: 2 },
+    philosopher: { icon: '🧥', name: 'Pep Cardigola', tag: 'The Tiki-Taka Tinkerer', perk: '+4 midfield when HE picks the team. Overthinks; hates meddling', ego: 14, wage: 70, mid: 4 },
+    zealot: { icon: '🤗', name: 'Jürgen Kloppity', tag: 'Heavy Metal Football', perk: '+4 attack, +2 midfield, and big hugs (morale up every week), but legs tire 30% faster', ego: 10, wage: 55, att: 4, mid: 2, drain: 1.3, hugs: 1 },
+    busparker: { icon: '🚌', name: 'José Moaninho', tag: 'The Special Two', perk: 'Parks the bus (+5 defence, −2 attack) and plays mind games (every opponent −1). Huge ego', ego: 16, wage: 65, def: 5, att: -2, mind: 1 },
+    hairdryer: { icon: '💨', name: 'Sir Alex Furyson', tag: 'Squeaky Bum Time', perk: 'Half-time talks hit twice as hard, and his teams score late (better finishing after 80′)', ego: 10, wage: 60, talk: 2, late: 1 },
+    sergeant: { icon: '🧢', name: 'Tony Pullcap', tag: 'Cap and Long Throws', perk: 'Gruelling training: +6 fitness back a week and +2 defence, but morale dips', ego: 8, wage: 35, fit: 6, def: 2 },
+    firefighter: { icon: '🧯', name: 'Big Sam Alldicey', tag: 'Never Been Relegated', perk: '+5 to everything while you’re in the bottom six', ego: 6, wage: 45, fire: 5 },
+    yesman: { icon: '😊', name: 'Ole Gunnar Smilesjær', tag: 'The Nice Guy', perk: 'No tactics to speak of, but never minds you meddling, and keeps everyone smiling (+2 morale a week)', ego: 0, wage: 20, smile: 2 },
+    nerd: { icon: '💻', name: 'Graham Plotter', tag: 'The Laptop', perk: 'Sees through the market (exact OVRs on everyone) and +2 attack', ego: 4, wage: 40, att: 2 },
+    dealer: { icon: '🚗', name: 'Harry Readyknapp', tag: 'Window Down, Deal Done', perk: 'Wheeler-dealer: signings 15% cheaper and clubs pay 15% more for your players', ego: 6, wage: 45 },
+    youth: { icon: '🌱', name: 'Arsène Wonger', tag: 'Le Professeur', perk: 'Young players (debut 2015 or later) play 3 better and their values rise twice as fast', ego: 8, wage: 50, youth: 3 },
+  };
+  // Who you are: each owner plays differently and wants something different (achieving it is worth a lot of legacy)
+  const OWNERS = {
+    petro: { icon: '🛢️', name: 'The Petro-Prince', text: 'Bottomless pockets: £80m more, and the wage cap is “a suggestion” (no heat for ignoring it). The league already has a file on you.', cash: 80, heat: 30, fans: 5, ambition: 'Finish in the top four', amb: (S, pos) => pos <= 4 },
+    nerd: { icon: '📊', name: 'The Spreadsheet', text: 'A Moneyball disciple: exact OVRs on everyone, free scouting, and clubs pay you 20% more for your players. Not much cash, though.', cash: -10, ambition: 'Make £25m profit and stay up', amb: (S, pos) => profit(S) >= 25 && pos <= 17 },
+    local: { icon: '🏠', name: 'The Local Lad', text: 'A lifelong fan who won the lottery. The fans adore you (+25), but every dodgy deal costs you with them too.', fans: 25, ambition: 'Finish in the top half with the fans on 85+', amb: (S, pos) => pos <= 10 && S.fans >= 85 },
+    crypto: { icon: '🪙', name: 'The Crypto Bro', text: 'Your fortune is in MoonDoge. Every week it moons or rugs: wild swings in your cash. To the moon!', heat: 10, ambition: 'Reach the Cup semi-finals', amb: S => S.cup.won || S.cup.ties.filter(t => t.through).length >= 3 },
+    stripper: { icon: '🏚️', name: 'The Asset Stripper', text: 'You bought the club to squeeze it. Skim money into your own account every week (Money tab); it counts towards your legacy. Just don’t get relegated.', ambition: 'Skim £40m and stay up', amb: (S, pos) => (S.skim || 0) >= 40 && pos <= 17 },
+  };
+  // The club you buy: same league, different situations
+  const SITUATIONS = {
+    crisis: { icon: '🔥', name: 'Big club in crisis', text: 'A good squad, a mountain of debt and furious fans.', band: 3, cash: -25, fans: -20 },
+    steady: { icon: '⚖️', name: 'Mid-table and comfortable', text: 'Nothing special. Nothing terrible. Yet.', band: 0, cash: 0, fans: 0 },
+    upstart: { icon: '🚀', name: 'Plucky newcomers', text: 'A weak squad but money in the bank and fans who are just happy to be here.', band: -3, cash: 30, fans: 15 },
+  };
+  // How rival teams play, and what beats it
+  const STYLES = {
+    possession: { icon: '🔄', name: 'Possession', hint: 'They hog the ball (+3 midfield). Pack your midfield.' },
+    counter: { icon: '⚡', name: 'Counter-attack', hint: 'Lethal on the break if you attack. Stay balanced or sit deep.' },
+    press: { icon: '🔥', name: 'High press', hint: 'Exhausting to play against. Sitting deep saves your legs.' },
+    direct: { icon: '🎯', name: 'Long ball', hint: 'Big and direct (+3 attack, −2 defence). Defending deep blunts it.' },
+    bus: { icon: '🚌', name: 'Park the bus', hint: 'A wall (+5 defence, −3 attack). Attack them: they can’t hurt you.' },
   };
   const esc = GM.esc, byPk = k => GM.anyByPk(k);
   const r1 = x => Math.round(x * 10) / 10, clamp = (x, a, b) => Math.max(a, Math.min(b, x));
@@ -70,7 +95,7 @@
     const key = owner && o >= owner.str + 3 ? 1.25 : 1;
     const mood = 0.9 + 0.2 * GM.rng(`${S.seed}|ask|${p.pk}|${S.week >= 19 ? 2 : 1}`)();
     const envelope = S.discount != null && windowOpen(S) && WINDOWS.some(([a, b]) => S.discount >= a && S.discount <= b && S.week <= b) ? 0.8 : 1;
-    return r1(fv * repRatio * key * mood * envelope * (deadlineDay(S) ? 0.85 : 1));
+    return r1(fv * repRatio * key * mood * envelope * (deadlineDay(S) ? 0.85 : 1) * (S.coach === 'dealer' ? 0.85 : 1));
   }
   // which rival club a market player belongs to (the better he is, the bigger the club)
   function ownerOf(S, p) {
@@ -89,11 +114,20 @@
   }
 
   /* ---------------------------------------------------------------- a new season */
-  function create(seed, lv, coach) {
-    const L = LEVELS[lv], pool = poolFor(lv), r = GM.rng(seed + '|start');
-    const clubsNow = [...new Set((GM.fixtures ? GM.fixtures() : []).flatMap(f => [f.home, f.away]))];
-    const names = (clubsNow.length >= N ? clubsNow : GM.clubs).slice();
-    const mine = GM.favClub() && names.includes(GM.favClub()) ? GM.favClub() : r.pick(names.filter(c => !BIG.includes(c)));
+  // three clubs you could buy (your favourite among them if you have one), each in a different situation
+  function clubOffers(seed) {
+    const r = GM.rng(seed + '|clubs'), names = leagueClubs(), fav = GM.favClub() && names.includes(GM.favClub()) ? GM.favClub() : null;
+    const pool = r.shuffle(names.filter(c => c !== fav && !BIG.includes(c)));
+    const picks = (fav ? [fav] : []).concat(pool).slice(0, 3);
+    return r.shuffle(Object.keys(SITUATIONS)).map((sit, i) => ({ club: picks[i], sit }));
+  }
+  const leagueClubs = () => { const now = [...new Set((GM.fixtures ? GM.fixtures() : []).flatMap(f => [f.home, f.away]))]; return (now.length >= N ? now : GM.clubs).slice(); };
+  function create(seed, lv, coach, opt = {}) {
+    const owner = OWNERS[opt.owner] ? opt.owner : 'local', sit = SITUATIONS[opt.sit] ? opt.sit : 'steady', OW = OWNERS[owner], SI = SITUATIONS[sit];
+    const L = { ...LEVELS[lv] }, pool = poolFor(lv), r = GM.rng(seed + '|start');
+    L.band = [L.band[0] + SI.band, L.band[1] + SI.band];
+    const names = leagueClubs();
+    const mine = opt.club && names.includes(opt.club) ? opt.club : GM.favClub() && names.includes(GM.favClub()) ? GM.favClub() : r.pick(names.filter(c => !BIG.includes(c)));
     const rivals = r.shuffle(names.filter(c => c !== mine)).slice(0, N - 1).sort((a, b) => BIG.includes(b) - BIG.includes(a));
     const used = new Set(), squad = [];
     [['G', 2], ['D', 7], ['M', 7], ['F', 4]].forEach(([g, n]) => {
@@ -101,13 +135,14 @@
       for (let i = 0; i < n && i < c.length; i++) { used.add(c[i].pk); squad.push(mkPlayer(c[i], { value: r1(fairValue(ovr(c[i])) * (0.85 + 0.3 * r())) })); }
     });
     const S = {
-      v: 1, seed, lv, week: 0, n: 0, club: mine, coach, rel: 70, meddle: false, form: '4-4-2', ment: 'balanced', xi: null,
-      cash: L.cash, heat: 0, fans: L.fans, embargo: 0, ignoredCap: false, sponsor: null,
-      teams: [{ name: mine, you: true, str: 0 }].concat(rivals.map((c, i) => ({ name: c, str: AI_STR[i] + L.ai + Math.round((r() - 0.5) * 2) })))
+      v: 2, seed, lv, week: 0, n: 0, club: mine, owner, sit, coach, rel: 70, meddle: false, form: '4-4-2', ment: 'balanced', xi: null,
+      cash: L.cash + (OW.cash || 0) + SI.cash, heat: OW.heat || 0, fans: clamp(L.fans + (OW.fans || 0) + SI.fans, 5, 95), embargo: 0, ignoredCap: false, sponsor: null, skim: 0, ownerLoan: 0,
+      teams: [{ name: mine, you: true, str: 0 }].concat(rivals.map((c, i) => ({ name: c, str: AI_STR[i] + L.ai + Math.round((r() - 0.5) * 2), style: r.pick(Object.keys(STYLES)) })))
         .map(t => Object.assign(t, { p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, ded: 0 })),
-      squad, results: [], cup: { round: 0, out: false, won: false, ties: [] }, inbox: [], offers: [], news: [], ledger: {}, cashLog: [L.cash],
+      squad, results: [], cup: { round: 0, out: false, won: false, ties: [] }, inbox: [], offers: [], news: [], ledger: {}, cashLog: [],
       scouted: {}, free: [], shortlist: [], over: null, live: null, bonus: 0,
     };
+    S.cash0 = S.cash; S.cashLog.push(S.cash);
     S.free = freeAgents(S);
     S.inbox.push(sponsorEvent(S));
     pickXI(S);
@@ -157,7 +192,8 @@
   /* ---------------------------------------------------------------- the team */
   const formBonus = x => { const t = x.rt.slice(-3); return t.length ? clamp((t.reduce((a, b) => a + b, 0) / t.length - 6.5) * 1.2, -3, 3) : 0; };
   // how well he'll play today: OVR, worn down by tiredness, lifted or sunk by morale and form
-  const eff = (S, x) => ovr(P(S, x)) * (0.8 + 0.2 * x.fit / 100) + (x.mor - 70) / 12 + formBonus(x);
+  const isYoung = p => p.first >= 2015;
+  const eff = (S, x) => ovr(P(S, x)) * (0.8 + 0.2 * x.fit / 100) + (x.mor - 70) / 12 + formBonus(x) + (S.coach === 'youth' && isYoung(P(S, x)) ? 3 : 0);
   const available = x => !x.inj && !x.ban;
   // the best XI the coach would pick: the fittest good players in his shape (tired ones rested)
   function pickXI(S, form = S.form) {
@@ -210,7 +246,29 @@
   const wageBill = S => r1(S.squad.reduce((a, x) => a + x.wage, 0) + (COACHES[S.coach] ? COACHES[S.coach].wage : 0));  // £k a week
   function table(S) { return S.teams.map((t, i) => ({ ...t, i, gd: t.gf - t.ga, pts: t.p - t.ded })).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf); }
   const position = S => table(S).findIndex(t => t.you) + 1;
-  const scoreOf = S => { const t = S.teams[0]; return Math.max(0, (t.p - t.ded) * 100 + clamp(t.gf - t.ga + 50, 0, 99)); };
+  const profit = S => r1(S.cash - (S.cash0 ?? LEVELS[S.lv].cash) - (S.ownerLoan || 0));
+  // the legacy: league points, plus everything else a season can be remembered for (so there's more than one way to win)
+  function legacy(S) {
+    const t = S.teams[0], pos = position(S), pts = t.p - t.ded, OW = OWNERS[S.owner] || OWNERS.local, parts = [];
+    parts.push(['⚽ League points', pts]);
+    parts.push(['📊 Final position', pos === 1 ? 40 : pos <= 4 ? 20 : pos <= 10 ? 5 : pos >= 18 ? -20 : 0]);
+    const won = S.cup.ties.filter(x => x.through).length;
+    parts.push(['🏆 The Cup', won * 4 + (S.cup.won ? 25 : 0)]);
+    parts.push([`${OW.icon} Ambition: ${OW.ambition}`, OW.amb(S, pos) ? 30 : 0]);
+    parts.push(['📣 The fans', Math.round(S.fans / 10)]);
+    parts.push(['💷 Profit', Math.max(-15, Math.round(profit(S) / 3))]);
+    if (S.skim) parts.push(['💼 Skimmed for yourself', Math.round(S.skim / 2)]);
+    if (S.over && S.over !== 'done') parts.push([{ fans: '📣 Forced out by the fans', bankrupt: '🏦 Administration', expelled: '⚖️ Banned by the league' }[S.over], -30]);
+    return { parts, total: Math.max(0, parts.reduce((a, p) => a + p[1], 0)) };
+  }
+  const scoreOf = S => legacy(S).total;
+  // the asset stripper's little habit
+  function skim(S, amt) {
+    if (S.owner !== 'stripper' || S.cash < amt) return false;
+    S.cash = r1(S.cash - amt); S.skim = r1((S.skim || 0) + amt); book(S, 'Skimmed', -amt);
+    S.heat = clamp(S.heat + 2 * amt, 0, 100);  // a little heat for every £1m
+    return true;
+  }
 
   /* ---------------------------------------------------------------- the match */
   function startMatch(S, fx) {
@@ -220,9 +278,11 @@
     const M = {
       fx, oppName: opp.name, min: 0, gf: 0, ga: 0, ev: [], xi, bench: S.squad.map((x, i) => i).filter(i => !xi.some(s => s.i === i) && available(S.squad[i])).slice(0, 9),
       subs: SUBS, ment: S.ment, extra: fx.home ? 2 : 0, talk: 0, red: 0, oppRed: 0, shots: [0, 0], poss: [0, 0], cards: {}, mins: {}, gl: {}, as: {}, inj: [], subbed: [], done: false, ht: false,
-      opp: { gk: o + (r() - 0.5) * 4, def: o + (r() - 0.5) * 4, mid: o + (r() - 0.5) * 4, att: o + (r() - 0.5) * 4 },
+      opp: { gk: o + (r() - 0.5) * 4, def: o + (r() - 0.5) * 4, mid: o + (r() - 0.5) * 4, att: o + (r() - 0.5) * 4 }, style: opp.style || r.pick(Object.keys(STYLES)),
       seed: `${S.seed}|match|${fx.comp}|${fx.week}`, meddled: S.meddle,
     };
+    const st = { possession: { mid: 3 }, direct: { att: 3, def: -2 }, bus: { def: 5, att: -3 }, press: { mid: 2 }, counter: {} }[M.style] || {};
+    ['gk', 'def', 'mid', 'att'].forEach(l => { M.opp[l] += (st[l] || 0) - ((COACHES[S.coach] || {}).mind ? 1 : 0); });
     xi.forEach(s => { if (s.i != null) M.mins[s.i] = 0; });
     S.squad.forEach((x, i) => { if (x.ban && !xi.some(s => s.i === i)) x.ban--; });  // a banned player serves his ban
     S.live = M;
@@ -246,6 +306,11 @@
         const you = roll < yC, A = you ? me : op, D = you ? op : me;
         let conv = (0.035 + 0.17 / (1 + Math.exp(-(A.att - D.def) / 10))) * (1 - (D.gk - 70) / 250);
         if (you && M.ment === 'attack') conv *= 1.05; if (!you && M.ment === 'attack') conv *= 1.2; if (!you && M.ment === 'defend') conv *= 0.78;
+        // their style, and what beats it
+        if (M.style === 'counter' && !you) conv *= M.ment === 'attack' ? 1.35 : 0.9;
+        if (M.style === 'bus' && you && M.ment === 'attack') conv *= 1.2;
+        if (M.style === 'direct' && !you && M.ment === 'defend') conv *= 0.8;
+        if (you && C.late && M.min > 80) conv *= 1.3;  // squeaky bum time
         M.shots[you ? 0 : 1]++;
         if (r() < conv) {
           if (you) {
@@ -261,7 +326,7 @@
       M.xi.forEach(s => {
         if (s.i == null) return;
         const x = S.squad[s.i];
-        x.fit = Math.max(0, x.fit - 0.2 * (C.drain || 1) * (M.ment === 'attack' ? 1.1 : 1));
+        x.fit = Math.max(0, x.fit - 0.2 * (C.drain || 1) * (M.ment === 'attack' ? 1.1 : 1) * (M.style === 'press' && M.ment !== 'defend' ? 1.25 : 1));
         M.mins[s.i] = (M.mins[s.i] || 0) + 1;
         if (r() < 0.0016 * (s.g === 'D' ? 1.4 : s.g === 'G' ? 0.3 : 1)) {
           M.cards[s.i] = (M.cards[s.i] || 0) + 1;
@@ -406,18 +471,24 @@
       x.fit = clamp(x.fit + 15 + (C.fit || 0), 0, 100);
       if (x.inj) x.inj--;
       if (S.coach === 'sergeant') x.mor = clamp(x.mor - 1, 0, 100);
+      if (C.hugs) x.mor = clamp(x.mor + 1, 0, 100);
+      if (C.smile) x.mor = clamp(x.mor + C.smile, 0, 100);
       x.mor = clamp(x.mor + (70 - x.mor) * 0.05, 0, 100);
       const last = x.rt.length && S.results.length && S.results[S.results.length - 1].week === S.week ? x.rt[x.rt.length - 1] : null;
-      if (last != null) x.value = r1(Math.max(0.3, x.value * (1 + (last - 6.5) * 0.03)));
+      if (last != null) x.value = r1(Math.max(0.3, x.value * (1 + (last - 6.5) * 0.03 * (S.coach === 'youth' && isYoung(P(S, x)) ? 2 : 1))));
       x.value = r1(x.value + (fairValue(ovr(P(S, x))) - x.value) * 0.04);
     });
     // the owner's other worries (the fans first: at zero after this week's games, they force you out)
     if (S.fans <= 0) { S.over = 'fans'; notes.push('📣 The fans have had enough. The supporters’ trust has forced you to sell the club.'); }
+    if (S.owner === 'crypto') { const r2 = rng(S, 'moon'), v = r1(r2() < 0.5 ? 1 + r2() * 4 : -(1 + r2() * 3.5)); S.cash = r1(S.cash + v); book(S, 'MoonDoge', v); if (Math.abs(v) >= 3.5) notes.push(v > 0 ? `🚀 MoonDoge mooned: +£${v}m!` : `📉 MoonDoge rugged: −£${-v}m.`); }
+    // at 100 heat there's no investigation: you're simply out
+    if (S.heat >= 100 && !S.over) { S.over = 'expelled'; notes.push('⚖️ You’ve failed the league’s fit and proper persons test. You’re banned from owning a club.'); }
     S.heat = clamp(S.heat - 2, 0, 100);
     S.fans = clamp(S.fans + (S.fans < 55 ? 1 : -0.3), 0, 100);
-    if (S.ignoredCap && wageBill(S) / 1000 > L.cap) { S.heat = clamp(S.heat + 2, 0, 100); }
+    if (S.ignoredCap && S.owner !== 'petro' && wageBill(S) / 1000 > L.cap) { S.heat = clamp(S.heat + 2, 0, 100); }
     if (S.cash < 0) { S.heat = clamp(S.heat + 1, 0, 100); S.fans = clamp(S.fans - 1, 0, 100); }
-    investigate(S, notes);
+    if (!S.over) investigate(S, notes);
+    if (S.cash < -30 && !S.over) { S.over = 'bankrupt'; notes.push('🏦 The bank’s pulled the plug. The club’s gone into administration.'); }
     if (S.rel <= 10 && S.coach) { notes.push(`🧢 ${COACHES[S.coach].name} has had enough of you and walked out. Hire a new coach.`); S.coach = null; }
     S.cashLog.push(S.cash);
     if (S.over) { S.news.push(...notes); return notes; }
@@ -469,7 +540,7 @@
     if (offer < d * 0.85) return false;
     return GM.rng(`${S.seed}|terms|${p.pk}|${S.week}|${offer}`)() < (offer - d * 0.85) / (d * 0.15);
   }
-  const capRoom = (S, extra) => wageBill(S) / 1000 + extra / 1000 <= LEVELS[S.lv].cap || S.ignoredCap;
+  const capRoom = (S, extra) => wageBill(S) / 1000 + extra / 1000 <= LEVELS[S.lv].cap || S.ignoredCap || S.owner === 'petro';
   // sign him (fee agreed and terms accepted): loans pay a tenth of his value and he goes back in the summer
   function sign(S, k, fee, wage, loan = false) {
     const p = byPk(k);
@@ -516,7 +587,7 @@
       const chance = (x.listed ? 0.4 : 0.05) + (f > 1 ? 0.08 : 0) + (o >= 80 ? 0.06 : 0);
       if (r() > chance) return;
       const clubs = S.teams.slice(1).filter(t => Math.abs(t.str - o) <= 8), club = clubs.length ? r.pick(clubs) : r.pick(S.teams.slice(1));
-      const fee = r1(x.value * (x.listed ? 0.75 + r() * 0.3 : 1.1 + r() * 0.45) * (deadlineDay(S) ? 1.15 : 1));
+      const fee = r1(x.value * (x.listed ? 0.75 + r() * 0.3 : 1.1 + r() * 0.45) * (deadlineDay(S) ? 1.15 : 1) * (S.owner === 'nerd' ? 1.2 : 1) * (S.coach === 'dealer' ? 1.15 : 1));
       S.offers.push({ k: x.k, club: club.name, fee, week: S.week });
       notes.push(`📨 ${club.name} bid £${fee}m for ${p.name}.`);
     });
@@ -554,7 +625,7 @@
     { id: 'stadium', title: '🏟️ Naming rights', body: 'A company will pay £8m to rename your stadium “The ToiletRollDirect.com Arena”.',
       choices: [{ label: 'Take the money', sub: '+£8m · fans −10', fx: S => { S.cash += 8; book(S, 'Naming rights', 8); S.fans -= 10; return 'Welcome to the ToiletRollDirect.com Arena.'; } }, { label: 'Tradition matters', sub: 'fans +3', fx: S => { S.fans += 3; return 'The fans sing your name. Once.'; } }] },
     { id: 'loan', title: '🏝️ A loan from yourself', body: 'You could lend the club £15m from your “offshore” account. Nobody needs to know where it came from.',
-      choices: [{ label: 'Lend it', sub: '+£15m · heat', fx: S => { S.cash += 15; book(S, 'Owner loan', 15); S.heat += 25; return 'The money arrives from a Pacific island.'; } }, { label: 'No', sub: '', fx: () => 'Probably wise.' }] },
+      choices: [{ label: 'Lend it', sub: '+£15m · heat', fx: S => { S.cash += 15; S.ownerLoan = (S.ownerLoan || 0) + 15; book(S, 'Owner loan', 15); S.heat += 25; return 'The money arrives from a Pacific island.'; } }, { label: 'No', sub: '', fx: () => 'Probably wise.' }] },
     { id: 'envelope', when: S => windowOpen(S), title: '✉️ The agent', body: 'An agent says he can get you 20% off any signing this window. He just needs a brown envelope.',
       choices: [{ label: 'Hand it over', sub: '£1m · 20% off fees this window · heat', fx: S => { S.cash -= 1; book(S, 'Agent “fees”', -1); S.discount = S.week; S.heat += 15; return 'Envelope delivered. Nobody saw. Probably.'; } }, { label: 'No', sub: '', fx: () => 'He says you’ll regret it.' }] },
     { id: 'bustup', title: '🥊 Training ground bust-up', body: 'Two players had a fight at training. The coach wants them fined; the dressing room wants it forgotten.',
@@ -588,7 +659,8 @@
     const choices = choicesFor(S, item);
     const c = choices[k];
     if (!c) return null;
-    const note = c.fx(S);
+    const heat0 = S.heat, note = c.fx(S);
+    if (S.owner === 'local' && S.heat > heat0) S.fans -= Math.round((S.heat - heat0) * 0.5);  // the fans hear about it
     S.heat = clamp(S.heat, 0, 100); S.fans = clamp(S.fans, 0, 100); S.rel = clamp(S.rel, 0, 100);
     S.inbox = S.inbox.filter(m => m !== item);
     S.news.push(`${item.title}: ${note}`);
@@ -611,7 +683,7 @@
   // hire a coach (sacking the old one costs his compensation)
   const sackCost = S => (S.coach ? r1(COACHES[S.coach].wage * 30 / 1000 + 1) : 0);
   function hire(S, id, sacking) {
-    if (sacking && S.coach) { const c = sackCost(S); S.cash = r1(S.cash - c); book(S, 'Compensation', -c); S.news.push(`🧢 ${COACHES[S.coach].name} sacked (£${c}m compensation).`); S.fans = clamp(S.fans + 3, 0, 100); }
+    if (sacking && S.coach) { GM.store.set('owner:sacked', (GM.store.get('owner:sacked', 0) || 0) + 1); const c = sackCost(S); S.cash = r1(S.cash - c); book(S, 'Compensation', -c); S.news.push(`🧢 ${COACHES[S.coach].name} sacked (£${c}m compensation).`); S.fans = clamp(S.fans + 3, 0, 100); }
     S.coach = id; S.rel = 70; S.bounce = 2;
     S.inbox = S.inbox.filter(m => m.id !== 'coach');
     S.news.push(`🧢 ${COACHES[id].name} is your new head coach.`);
@@ -626,7 +698,7 @@
   const baseWorth = GM.mbWorth;
   GM.mbWorth = p => (p && typeof p.pk === 'string' && p.pk.startsWith('__nephew') ? 0.5 : baseWorth(p));
 
-  GM.owner = { WEEKS, N, LEVELS, FORMATIONS, COACHES, TALKS, SPONSORS, CUP, WINDOWS, SQUAD_MIN, SQUAD_MAX,
+  GM.owner = { WEEKS, N, LEVELS, FORMATIONS, COACHES, OWNERS, SITUATIONS, STYLES, TALKS, SPONSORS, CUP, WINDOWS, SQUAD_MIN, SQUAD_MAX, clubOffers, legacy, profit, skim,
     ovr, wageFor, fairValue, askPrice, ownerOf, canLoan, loanFee, create, rounds, fixture, cupTie, cupWeek, windowOpen, deadlineDay, nextWindow,
     eff, available, pickXI, readyXI, lines, strength, teamOvr, wageBill, table, position, scoreOf, formBonus,
     startMatch, stepMatch, halfTime, sub, autoSub, coachSubs, endMatch, simMatch, endWeek, bid, demand, terms, capRoom, sign, sell, release, releaseCost,

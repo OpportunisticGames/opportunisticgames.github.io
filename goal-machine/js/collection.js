@@ -130,6 +130,10 @@
     ['mbheat', '🔥', 'Under Investigation', 'Finish a Dodgy Owner season with the heat at 80 or more.', e => game(e, 'owner') && e.extra && e.extra.heat >= 80],
     ['mbclean', '😇', 'Squeaky Clean', 'Finish in the top half with no heat at all.', e => game(e, 'owner') && e.extra && e.extra.heat === 0 && e.extra.pos <= 10],
     ['mbout', '📣', 'Owner Out', 'Get forced out by your own fans.', e => game(e, 'owner') && e.extra && e.extra.sacked, true],
+    ['mbdream', '🎯', 'Living the Dream', 'Achieve your owner’s ambition in Dodgy Owner.', e => game(e, 'owner') && e.extra && e.extra.amb],
+    // Reign Check (a secret game)
+    ['mbreign', '👑', 'Long Live the Owner', 'Reign for a whole season in Reign Check.', e => game(e, 'reign') && e.extra && e.extra.weeks >= 38],
+    ['mbstatue', '🗿', 'Statue', 'Get flattened by your own statue in Reign Check.', e => game(e, 'reign') && e.extra && e.extra.end === 'f100', true],
     // packs (the collect list)
     ['colpack', '🎁', 'Pack Opener', 'Open your first pack.', e => game(e, 'pack')],
     ['colwalk', '🚶', 'Walkout', 'Pull a Legend in a pack.', e => game(e, 'pack') && e.extra && e.extra.legend],

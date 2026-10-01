@@ -307,7 +307,7 @@
   const SCENES = {
     anthem: ['', 'today', 'leaderboard', 'album', 'players', 'updates', 'settings', 'about', 'credits'],
     matchday: ['draft', 'daily', 'owner'],
-    boardroom: ['moneyball', 'window'],
+    boardroom: ['moneyball', 'window', 'reign'],
     puzzle: ['footle', 'clubfootle', 'grid', 'dailygrid', 'whoami', 'tally', 'hattrick'],
     derby: ['h2h', 'h2hplay', 'hilo', 'hopper', 'online', 'auction'],
     chaos: ['chaos'],

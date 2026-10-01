@@ -2152,3 +2152,90 @@ body.money-mode .mb-hud.up .mbh-ch { color: #3ddc84; } body.money-mode .mb-hud.d
 .ow-subs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
 .ow-subs > div { display: flex; flex-wrap: wrap; gap: 4px; align-content: flex-start; }
 @keyframes ow-pulse { 50% { opacity: .55; } }
+
+/* 🕴️ the dodgy owner games (Dodgy Owner, Reign Check): ink-dark, flat, paper cards, old gold, a serif face */
+body.owner-mode {
+  --bg: #1a1622; --bg2: #231d2e; --panel: #2a2335; --panel2: #332a40; --card: #2a2335; --text: #efe4cc; --muted: #b9a98d;
+  --accent: #d4a24c; --accent2: #d4a24c; --hi: #d4a24c; --hi2: #6fae8f; --link: #e0b860; --line: rgba(212, 162, 76, .25); --edge: rgba(0, 0, 0, .5);
+  --inset: rgba(0, 0, 0, .3); --modal: #231d2e; --nav: rgba(26, 22, 34, .96); --btn-edge: #8a6420; --good: #6fae8f; --bad: #d0614f;
+  --toast-bg: #d4a24c; --toast-text: #1a1622;
+  color-scheme: dark; color: var(--text); background: transparent; font-family: Alegreya, Georgia, serif;
+}
+body.owner-mode .topbar h2, body.owner-mode .section-title, body.owner-mode h3 { font-family: Alegreya, Georgia, serif; font-weight: 800; letter-spacing: .5px; }
+body.owner-mode .topbar h2 { color: #d4a24c; }
+body.owner-mode .btn { font-family: Alegreya, Georgia, serif; font-weight: 800; color: #1a1622; }
+body.owner-mode .btn.ghost { color: var(--text); }
+body.owner-mode .btn.big:not(.ghost) { background: #d4a24c; box-shadow: 0 4px 0 #8a6420; }
+body.owner-mode .seg button.on { background: #d4a24c; color: #1a1622; }
+/* paper cards */
+body.owner-mode .ow-mail, body.owner-mode .ow-next, body.owner-mode .cb-mgr, body.owner-mode .ow-coach, body.owner-mode .ow-ambition, body.owner-mode .ow-legacy, body.owner-mode .rg-endcard {
+  background: #efe4cc; color: #2a2118; border: 0; box-shadow: 0 4px 0 #b9a27a, 0 10px 24px rgba(0, 0, 0, .35); }
+body.owner-mode .ow-mail p, body.owner-mode .cb-mgr small, body.owner-mode .ow-coach small, body.owner-mode .ow-next .muted, body.owner-mode .ow-ambition small { color: #6b5a45; }
+body.owner-mode .ow-mail.need { box-shadow: 0 0 0 3px #d4a24c, 0 4px 0 #b9a27a; }
+body.owner-mode .ow-mail .btn.ghost, body.owner-mode .ow-next .btn.ghost { color: #2a2118; border-color: #b9a27a; }
+body.owner-mode .ow-hud { background: #2a2335; border: 2px solid #d4a24c55; box-shadow: none; }
+body.owner-mode .cb-pitch { background: repeating-linear-gradient(180deg, #3f6b4a 0 34px, #3a6344 34px 68px); }
+body.owner-mode .cb-score, body.owner-mode .ow-board { background: #2a2335; border: 2px solid #d4a24c55; box-shadow: none; }
+body.owner-mode .cb-score.W { background: #2f5e46; } body.owner-mode .cb-score.L { background: #6b2e2e; }
+body.owner-mode .cb-tr.you { background: #d4a24c; color: #1a1622; }
+body.owner-mode .ow-go { background: rgba(26, 22, 34, .96); }
+.ow-steps { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin: 6px 0 10px; font-size: .78rem; }
+.ow-steps span { padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.ow-steps .on { background: #d4a24c; color: #1a1622; border-color: #d4a24c; font-weight: 800; } .ow-steps .done { color: var(--text); }
+.ow-amb { display: block; margin-top: 4px; color: #8a5a10; }
+.ow-style { margin-top: 8px; padding: 7px 10px; border-radius: 10px; background: #00000014; font-size: .8rem; text-align: left; line-height: 1.3; }
+.ow-style small { display: block; margin-top: 2px; opacity: .75; }
+.ow-ambition { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 14px; margin-bottom: 10px; background: var(--panel); border: 2px solid var(--line); }
+.ow-ambition > span:first-child { font-size: 2rem; }
+.ow-ambition small { display: block; font-size: .72rem; color: var(--muted); } .ow-ambition b { display: block; }
+.ow-ambition.on { box-shadow: 0 0 0 3px #6fae8f, 0 4px 0 #b9a27a; }
+.ow-skim { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; margin: 10px 0; padding: 10px 12px; border-radius: 14px; background: var(--panel); border: 2px dashed #d4a24c; }
+.ow-skim > span:first-child { font-size: 1.8rem; } .ow-skim small { display: block; color: var(--muted); font-size: .74rem; }
+.ow-legacy { margin: 10px 0; padding: 12px; border-radius: 14px; text-align: left; display: flex; flex-direction: column; gap: 4px; }
+.ow-legacy > div { display: flex; justify-content: space-between; gap: 10px; font-size: .9rem; }
+.ow-legacy .pos { color: #2f6e4a; } .ow-legacy .neg { color: #a33a2e; }
+.ow-legacy .tot { border-top: 2px solid #2a211833; margin-top: 4px; padding-top: 6px; font-size: 1.1rem; font-weight: 800; }
+
+/* 👑 Reign Check (js/reign.js) */
+.rg { max-width: 440px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.rg-meters { display: flex; justify-content: center; gap: 14px; margin-top: 4px; }
+.rg-meter { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.rg-icon { display: flex; align-items: center; justify-content: center; width: 54px; height: 54px; border-radius: 14px; font-size: 1.7rem; background: linear-gradient(to top, #d4a24c var(--v), #3a3146 var(--v)); transition: background .4s; }
+.rg-meter.danger .rg-icon { box-shadow: 0 0 0 3px #d0614f; animation: ow-pulse 1s infinite; }
+.rg-dot { width: 0; height: 0; border-radius: 50%; background: #efe4cc; transition: width .15s, height .15s; }
+.rg-dot.small { width: 7px; height: 7px; } .rg-dot.big { width: 13px; height: 13px; }
+.rg-text { min-height: 4.6em; margin: 4px 8px; text-align: center; font: 500 1.12rem/1.4 Alegreya, Georgia, serif; }
+.rg-stage { width: 100%; display: flex; justify-content: center; padding: 6px 0; }
+.rg-card { position: relative; width: min(72vw, 290px); aspect-ratio: 1 / 1.08; border-radius: 18px; background: var(--bg); border: 7px solid #efe4cc; box-shadow: 0 10px 0 #b9a27a, 0 18px 40px rgba(0, 0, 0, .45); display: flex; align-items: center; justify-content: center; touch-action: none; user-select: none; cursor: grab; overflow: hidden; }
+.rg-card.in { animation: rg-in .35s ease-out; }
+@keyframes rg-in { from { transform: translateY(40px) scale(.92); opacity: 0; } }
+.rg-face { font-size: 7rem; filter: drop-shadow(0 6px 0 rgba(0, 0, 0, .25)); pointer-events: none; }
+.rg-label { position: absolute; top: 0; left: 0; right: 0; padding: 12px 14px; background: rgba(26, 22, 34, .82); color: #efe4cc; font: 800 1.05rem Alegreya, Georgia, serif; opacity: 0; transition: opacity .12s; pointer-events: none; }
+.rg-label.l { text-align: right; } .rg-label.r { text-align: left; }
+.rg-card.show-l .rg-label.l, .rg-card.show-r .rg-label.r { opacity: 1; }
+.rg-who { text-align: center; margin: 4px 0 0; } .rg-who b { display: block; font: 800 1.15rem Alegreya, Georgia, serif; } .rg-who small { color: var(--muted); }
+.rg-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+.rg-btn { padding: 9px 8px; border-radius: 12px; border: 1px solid var(--line); background: transparent; color: var(--text); font: 700 .86rem Alegreya, Georgia, serif; }
+.rg-foot { display: flex; justify-content: space-between; width: 100%; font-size: .78rem; color: var(--muted); gap: 6px; }
+.rg-coach { font-size: .8rem; color: var(--muted); }
+.rg-endcard { width: min(84vw, 340px); padding: 18px; border-radius: 18px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.rg-endcard .rg-face { font-size: 5rem; }
+.rg-endcard b { font: 800 1.6rem Alegreya, Georgia, serif; } .rg-endcard p { margin: 0; color: #4a3b2a; }
+.rg-endings { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; font-size: 1.6rem; }
+.rg-endings span { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: var(--panel); opacity: .45; }
+.rg-endings .got { opacity: 1; background: #d4a24c33; }
+.rg-obj { margin: 0; padding-left: 20px; align-self: stretch; }
+.rg-intro .how-list { align-self: stretch; }
+
+/* 🤫 secret games */
+.secret-tiles .tile.locked { --c1: #3a3a46; --c2: #24242e; --c3: #15151c; color: #a8a8b8; cursor: default; }
+.secret-tiles .tile.locked .tile-icon { filter: grayscale(1); }
+.secret-lock, .secret-unlock { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 30px 10px; text-align: center; }
+.secret-unlock { padding: 6px 0; } .secret-unlock .tile { width: 100%; text-align: left; }
+.sl-icon { font-size: 4rem; animation: pop .5s; }
+.sl-hint { padding: 10px 14px; border-radius: 12px; background: var(--panel); border: 2px dashed var(--line); font-weight: 700; }
+html:has(body.owner-mode), body.owner-mode { background: #1a1622; }
+body.owner-mode { min-height: 100vh; }
+body.owner-mode .cb-mgr b { font-family: Alegreya, Georgia, serif; text-transform: none; font-size: 1.15rem; letter-spacing: 0; }
+body.owner-mode .ow-amb { font-size: .95rem; }
+body.owner-mode .section-title::before { background: #d4a24c; }

@@ -804,6 +804,7 @@ GM.MODES = {
   money: { name: 'Moneyball', icon: '💰' },
   boss: { name: 'Club Boss', icon: '📋' },
   owner: { name: 'Dodgy Owner', icon: '🕴️' },
+  reign: { name: 'Reign Check', icon: '👑' },
   chaosx: { name: 'CHAOS Extreme', icon: '🌪️' }, chaosxast: { name: 'CHAOS Extreme – Assists', icon: '🌪️' }, chaosxapps: { name: 'CHAOS Extreme – Apps', icon: '🌪️' },
   moneyball: { name: 'Moneyball', icon: '💰' }, moneyballast: { name: 'Moneyball – Assists', icon: '💰' }, moneyballapps: { name: 'Moneyball – Apps', icon: '💰' },
   window: { name: 'Transfer Window', icon: '🔄' }, windowast: { name: 'Transfer Window – Assists', icon: '🔄' }, windowapps: { name: 'Transfer Window – Apps', icon: '🔄' },
@@ -879,7 +880,7 @@ GM.EXTREME_GAMES = ['target', 'treble', 'mystery', 'hilo', 'whoami', 'tally', 'g
 GM.extremeKey = k => { const m = String(k).match(/^(target|treble|mystery|hilo|whoami|tally|grid|hopper|money|boss|owner)(ast|apps)?$/); return m ? m[1] + 'x' + (m[2] || '') : null; };
 // a score as the board shows it: Moneyball's are net worth in £m
 // Club Boss's are points ×100 plus goal difference (for ties), shown as points
-GM.scoreText = (key, n) => (/^d?money/.test(key) ? '£' + Number(n).toLocaleString() + 'm' : /^(boss|owner)/.test(key) ? Math.floor(n / 100) + (Math.floor(n / 100) === 1 ? ' pt' : ' pts') : Number(n).toLocaleString());
+GM.scoreText = (key, n) => (/^d?money/.test(key) ? '£' + Number(n).toLocaleString() + 'm' : /^boss/.test(key) ? Math.floor(n / 100) + (Math.floor(n / 100) === 1 ? ' pt' : ' pts') : Number(n).toLocaleString());
 // every PL player by key (loaded with GM.loadAll)
 let allByPk = null;
 GM.anyByPk = k => GM.byPk.get(k) || (GM.allPlayers ? (allByPk || (allByPk = new Map(GM.allPlayers.map(p => [p.pk, p])))).get(k) : undefined);

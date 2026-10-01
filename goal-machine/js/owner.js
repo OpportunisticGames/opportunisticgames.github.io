@@ -31,37 +31,49 @@
     let tab = 'home', mtab = 'search', mf = { g: '', sort: 'value', max: -1 }, timer = null;  // the market opens on bargains you can afford
     const P = x => byPk(x.k);
     const ovrOf = p => E.ovr(p);
-    const seesOvr = p => lv === 'normal' || S.coach === 'nerd' || S.scouted[p.pk] || S.squad.some(x => x.k === p.pk);
+    const seesOvr = p => lv === 'normal' || S.coach === 'nerd' || S.owner === 'nerd' || S.scouted[p.pk] || S.squad.some(x => x.k === p.pk);
     const ovrBadge = (o, cls = '') => `<span class="cb-ovr ${o >= 80 ? 'hi' : o >= 70 ? 'mid' : 'lo'} ${cls}">${o}</span>`;
     const ovrShown = p => { if (seesOvr(p)) return ovrBadge(ovrOf(p)); const o = ovrOf(p), r = GM.rng(S.seed + '|scout|' + p.pk)(), lo = o - 3 - Math.floor(r * 4); return `<span class="cb-ovr q">${lo}–${lo + 8}</span>`; };
 
     /* ---------------------------------------------------------------- the pitch */
+    // three steps: who you are, which club, which coach
     function intro() {
-      const seed = GM.newSeed(), offer = GM.rng(seed + '|first').shuffle(Object.keys(E.COACHES)).slice(0, 3);
-      root.innerHTML = `${top()}<div class="ow-intro">
-        <div class="ow-hero">🕴️</div><h3>You’ve bought a football club</h3>
-        <p>Congratulations! You’re now the proud, <i>extremely</i> hands-on owner of a mid-table Premier League club. Nobody asked where the money came from.</p>
-        <ul class="how-list">
-          <li>🧢 <b>Hire and sack head coaches</b>. Or meddle and pick the team yourself (proud coaches hate it).</li>
-          <li>👥 A squad of 20: <b>fitness, injuries, bans and morale</b>. Rotate or they’ll break.</li>
-          <li>💷 Money comes in every week (TV, tickets, your sponsor) and <b>wages go out</b>. Two windows to buy, sell, loan and haggle.</li>
-          <li>🕵️ Dodgy deals bring cash or an edge, but raise the <b>🔥 Heat</b>. Too much and the league comes knocking: fines, points deductions, embargoes.</li>
-          <li>📣 Keep the <b>fans</b> on side. If they turn completely, they force you to sell.</li>
-          <li>🏆 38 games and a cup. Your score is your <b>league points</b>. The fans expect ${L.target === 10 ? 'a top-half finish' : 'you to stay up'}.</li></ul>
-        ${lv === 'hard' ? '<p class="muted">🥵 Hard: a weaker squad, less money, names and positions only, and the market only shows OVR ranges until you scout.</p>' : lv === 'extreme' ? '<p class="muted">⚡ Extreme: every PL player, a squad of unknowns, OVR ranges until you scout.</p>' : ''}
-        <h3 class="section-title">Hire your first head coach</h3>
-        <div class="cb-mgrs">${offer.map(c => coachCard(c)).join('')}</div>
-        ${GM.store.get(SAVE, null) ? '<p class="muted center">Starting again replaces the season you’re in.</p>' : ''}</div>`;
-      GM.$$('[data-coach]', root).forEach(b => b.onclick = () => {
-        S = E.create(seed, lv, b.dataset.coach); save();
-        GM.sound.play('whistle'); GM.buzz(30);
-        if (q.new) history.replaceState(null, '', '#/owner');
-        tab = 'home'; hub();
-      });
+      const seed = GM.newSeed(), pick = {};
+      const step = n => {
+        const head = `<div class="ow-hero">🕴️</div><h3>You’ve bought a football club</h3>
+          <div class="ow-steps">${['Who are you?', 'Which club?', 'Your coach'].map((t, i) => `<span class="${i === n ? 'on' : i < n ? 'done' : ''}">${i + 1}. ${t}</span>`).join('')}</div>`;
+        let body = '';
+        if (n === 0) body = `<p>Congratulations! You’re now the proud, <i>extremely</i> hands-on owner of a Premier League club. Nobody asked where the money came from.</p>
+          <ul class="how-list">
+            <li>🧢 <b>Hire and sack head coaches</b>, or meddle and pick the team yourself (proud coaches hate it).</li>
+            <li>👥 A squad of 20: <b>fitness, injuries, bans and morale</b>. Rotate or they’ll break. Every opponent plays a style: pick the tactics to beat it.</li>
+            <li>💷 Money in every week, <b>wages</b> out. Two windows to buy, sell, loan and haggle.</li>
+            <li>🕵️ Dodgy deals bring cash or an edge but raise the <b>🔥 Heat</b>: fines, embargoes, points deductions, or a lifetime ban.</li>
+            <li>📣 Keep the <b>fans</b> on side, and don’t go bust.</li>
+            <li>🏛️ Your score is your <b>legacy</b>: league points, the Cup, the fans, profit and your own ambition. There’s more than one way to win.</li></ul>
+          ${lv === 'hard' ? '<p class="muted">🥵 Hard: weaker squads, less money, names and positions only, and OVR ranges until you scout.</p>' : lv === 'extreme' ? '<p class="muted">⚡ Extreme: every PL player, squads of unknowns, OVR ranges until you scout.</p>' : ''}
+          <h3 class="section-title">What kind of owner are you?</h3>
+          <div class="cb-mgrs">${Object.entries(E.OWNERS).map(([k, o]) => `<button class="cb-mgr" data-owner="${k}"><span>${o.icon}</span><b>${o.name}</b><small>${o.text}<br><b class="ow-amb">🎯 ${o.ambition}</b></small></button>`).join('')}</div>`;
+        else if (n === 1) body = `<h3 class="section-title">Which club are you buying?</h3>
+          <div class="cb-mgrs">${E.clubOffers(seed).map(c => { const T = E.SITUATIONS[c.sit]; return `<button class="cb-mgr" data-club="${esc(c.club)}" data-sit="${c.sit}"><span>${T.icon}</span><b>${esc(c.club)}</b><small>${T.name}: ${T.text}</small></button>`; }).join('')}</div>`;
+        else body = `<h3 class="section-title">Hire your first head coach</h3>
+          <div class="cb-mgrs">${GM.rng(seed + '|first').shuffle(Object.keys(E.COACHES)).slice(0, 3).map(c => coachCard(c)).join('')}</div>`;
+        root.innerHTML = `${top()}<div class="ow-intro">${head}${body}${GM.store.get(SAVE, null) && n === 0 ? '<p class="muted center">Starting again replaces the season you’re in.</p>' : ''}</div>`;
+        window.scrollTo(0, 0);
+        GM.$$('[data-owner]', root).forEach(b => b.onclick = () => { pick.owner = b.dataset.owner; GM.sound.play('tap'); step(1); });
+        GM.$$('[data-club]', root).forEach(b => b.onclick = () => { pick.club = b.dataset.club; pick.sit = b.dataset.sit; GM.sound.play('tap'); step(2); });
+        GM.$$('[data-coach]', root).forEach(b => b.onclick = () => {
+          S = E.create(seed, lv, b.dataset.coach, pick); save();
+          GM.sound.play('whistle'); GM.buzz(30);
+          if (q.new) history.replaceState(null, '', '#/owner');
+          tab = 'home'; hub();
+        });
+      };
+      step(0);
     }
     function coachCard(id, extra = '') {
       const C = E.COACHES[id];
-      return `<button class="cb-mgr" data-coach="${id}"><span>${C.icon}</span><b>${C.name}</b><small>${C.perk} · ${k$(C.wage)} a week${C.ego >= 10 ? ' · 😤 big ego' : C.ego === 0 ? ' · no ego' : ''}</small>${extra}</button>`;
+      return `<button class="cb-mgr" data-coach="${id}"><span>${C.icon}</span><b>${C.name}</b><small><i>“${C.tag}”</i> ${C.perk} · ${k$(C.wage)} a week${C.ego >= 10 ? ' · 😤 big ego' : C.ego === 0 ? ' · no ego' : ''}</small>${extra}</button>`;
     }
 
     /* ---------------------------------------------------------------- the hub */
@@ -83,7 +95,7 @@
       const pos = E.position(S), t = S.teams[0], st = nextStep(), win = E.windowOpen(S), dl = E.deadlineDay(S);
       const tabs = [['home', '🏠 Club'], ['squad', '👥 Squad'], ['team', '📋 Team'], ['transfers', '🔁 Transfers'], ['money', '💷 Money'], ['league', '📊 League']];
       root.innerHTML = `${top()}
-        <div class="ow-hud"><div class="ow-hud-top"><span class="cb-club">${GM.clubChip(S.club, true)}</span><span class="ow-week">${S.week === 0 ? 'Pre-season' : `Week ${S.week}/38`}${win ? (dl ? ' · ⏰ DEADLINE DAY' : ' · 🪟 window open') : ''}</span></div>
+        <div class="ow-hud"><div class="ow-hud-top"><span class="cb-club">${(E.OWNERS[S.owner] || {}).icon || '🕴️'} ${GM.clubChip(S.club, true)}</span><span class="ow-week">${S.week === 0 ? 'Pre-season' : `Week ${S.week}/38`}${win ? (dl ? ' · ⏰ DEADLINE DAY' : ' · 🪟 window open') : ''}</span></div>
           <div class="cb-stats"><div><small>Position</small><b>${S.week > 1 || S.results.length ? E.ord(pos) : '–'}</b></div><div><small>Points</small><b>${t.p - t.ded}${t.ded ? '<sup>−' + t.ded + '</sup>' : ''}</b></div><div><small>💷 Cash</small><b class="${S.cash < 0 ? 'neg' : ''}">${money(S.cash)}</b></div><div><small>Wages</small><b>${k$(E.wageBill(S))}</b></div></div>
           <div class="ow-meters"><span>📣 Fans ${bar(S.fans, S.fans < 30 ? 'low' : S.fans < 55 ? 'mid' : 'ok')}</span><span>🔥 Heat ${bar(S.heat, S.heat >= 65 ? 'low' : S.heat >= 40 ? 'mid' : 'ok')}</span></div></div>
         <div class="seg ow-tabs">${tabs.map(([k, l]) => `<button data-tab="${k}" class="${k === tab ? 'on' : ''}">${l}${k === 'home' && S.inbox.some(m => m.need) ? '<i class="new-dot"></i>' : k === 'transfers' && S.offers.length ? '<i class="new-dot"></i>' : ''}</button>`).join('')}</div>
@@ -103,11 +115,14 @@
     }
     function preMatch(fx) {
       const opp = fx.comp === 'league' ? S.teams[fx.opp] : { name: fx.oppName, str: fx.oppStr };
-      const tired = E.readyXI(S).filter(s => s.i != null && S.squad[s.i].fit < 70).length;
+      const tired = E.readyXI(S).filter(s => s.i != null && S.squad[s.i].fit < 70).length, sty = opp.style && E.STYLES[opp.style];
       const m = GM.modal(`<h3>${fx.comp === 'cup' ? '🏆 ' + E.CUP.names[fx.round] : '⚽ Matchweek ' + fx.week}: v ${esc(opp.name)}</h3>
         <p class="muted">${fx.home ? 'At home' : 'Away'} · their strength ${Math.round(opp.str)} · yours ${Math.round(E.strength(S))}${tired ? ` · <b>${tired} tired player${tired > 1 ? 's' : ''} in the XI</b>` : ''}</p>
+        ${sty ? `<div class="ow-style">${sty.icon} <b>${sty.name}</b>: ${sty.hint}</div>` : ''}
+        <div class="seg">${[['defend', '🛡️ Defend'], ['balanced', '⚖️ Balanced'], ['attack', '⚔️ Attack']].map(([k, l]) => `<button data-pm="${k}" class="${S.ment === k ? 'on' : ''}">${l}</button>`).join('')}</div>
         <div class="row"><button class="btn" data-live>📺 Watch it live</button><button class="btn ghost" data-sim>⚡ Quick result</button></div>
         <button class="btn ghost" data-close>Not yet</button>`);
+      GM.$$('[data-pm]', m.el).forEach(b => b.onclick = () => { S.ment = b.dataset.pm; save(); GM.$$('[data-pm]', m.el).forEach(x => x.classList.toggle('on', x === b)); });
       GM.$('[data-live]', m.el).onclick = () => { m.close(); E.startMatch(S, fx); markPlayed(fx); save(); speed = 1; match(); };
       GM.$('[data-sim]', m.el).onclick = () => { m.close(); markPlayed(fx); const res = E.simMatch(S, fx); save(); resultModal(res); };
     }
@@ -152,11 +167,18 @@
       const fx = E.fixture(S), tie = E.cupTie(S), next = [tie && S.playedCup !== S.week ? tie : null, fx && S.playedLeague !== S.week ? fx : null].filter(Boolean);
       const last = S.results.slice(-5);
       return `${next.map(f => { const o = f.comp === 'league' ? S.teams[f.opp] : { name: f.oppName, str: f.oppStr }; return `<div class="ow-next"><span class="kicker">${f.comp === 'cup' ? '🏆 ' + E.CUP.names[f.round] : 'Next up · week ' + f.week}</span>
-          <div class="cb-vs"><div><b>${esc(GM.clubShort(S.club))}</b>${ovrBadge(Math.round(E.strength(S)))}</div><span>v</span><div><b>${esc(GM.clubShort(o.name))}</b>${ovrBadge(Math.round(o.str))}</div></div><small class="muted">${esc(o.name)} · ${f.home ? 'home' : 'away'}</small></div>`; }).join('')}
+          <div class="cb-vs"><div><b>${esc(GM.clubShort(S.club))}</b>${ovrBadge(Math.round(E.strength(S)))}</div><span>v</span><div><b>${esc(GM.clubShort(o.name))}</b>${ovrBadge(Math.round(o.str))}</div></div><small class="muted">${esc(o.name)} · ${f.home ? 'home' : 'away'}</small>
+          ${o.style ? `<div class="ow-style">${E.STYLES[o.style].icon} <b>${E.STYLES[o.style].name}</b>: ${E.STYLES[o.style].hint} <small>You’re set to ${S.ment}.</small></div>` : ''}</div>`; }).join('')}
+        ${ambitionHtml()}
         ${S.inbox.length ? `<h3 class="section-title">📨 Inbox</h3>${S.inbox.map((m, n) => inboxCard(m, n)).join('')}` : ''}
         ${!S.coach ? `<h3 class="section-title">🧢 You need a head coach</h3><div class="cb-mgrs">${E.coachOffer(S).map(c => coachCard(c)).join('')}</div>` : ''}
         ${last.length ? `<h3 class="section-title">Recent results</h3><div class="ow-form">${last.map(r => `<span class="ow-res ${r.res}" title="${esc(r.opp)}">${r.res}<small>${r.gf}–${r.ga}</small></span>`).join('')}</div>` : ''}
         <h3 class="section-title">📰 News</h3><ul class="ow-news">${S.news.slice(-10).reverse().map(n => `<li>${esc(n)}</li>`).join('') || '<li class="muted">Nothing yet. Pre-season friendlies, mainly.</li>'}</ul>`;
+    }
+    function ambitionHtml() {
+      const OW = E.OWNERS[S.owner]; if (!OW) return '';
+      const pos = E.position(S), on = OW.amb(S, pos);
+      return `<div class="ow-ambition ${on ? 'on' : ''}"><span>${OW.icon}</span><span><small>${OW.name}’s ambition</small><b>🎯 ${OW.ambition}</b><small>${on ? 'On track right now ✅' : 'Not there yet'}${S.owner === 'nerd' || S.owner === 'stripper' ? ` · profit ${money(E.profit(S))}${S.skim ? ` · skimmed ${money(S.skim)}` : ''}` : ''}</small></span></div>`;
     }
     function inboxCard(m, n) {
       const ch = E.choicesFor(S, m);
@@ -182,6 +204,9 @@
         GM.$$('[data-slot]', root).forEach(b => b.onclick = () => slotPicker(+b.dataset.slot));
         const ap = GM.$('#owauto', root); if (ap) ap.onclick = () => { E.pickXI(S, S.form); save(); hub(); GM.toast('Fittest XI picked'); };
         const sk = GM.$('#owsack', root); if (sk) sk.onclick = sackCoach;
+      },
+      money() {
+        const sk = GM.$('#owskim', root); if (sk) sk.onclick = () => { if (E.skim(S, 1)) { save(); GM.sound.play('cash'); hub(); } else GM.toast('Not enough in the club’s account'); };
       },
       transfers() {
         GM.$$('[data-mtab]', root).forEach(b => b.onclick = () => { mtab = b.dataset.mtab; hub(); });
@@ -366,6 +391,8 @@
           ${pts.length > 1 ? `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" class="ow-chart"><path d="${pts.map((v, i) => (i ? 'L' : 'M') + (i * w / (pts.length - 1)).toFixed(1) + ' ' + y(v)).join(' ')}"/></svg>` : ''}</div>
         <div class="ow-facts"><div><small>Wage bill</small><b>${k$(E.wageBill(S))} a week</b>${bar(100 * E.wageBill(S) / (L.cap * 1000), E.wageBill(S) > L.cap * 1000 ? 'low' : 'ok')}<small>cap ${k$(L.cap * 1000)}${S.ignoredCap ? ' (ignored 🕵️)' : ''}</small></div>
           <div><small>TV money</small><b>${money(L.tv)} a week</b></div><div><small>Sponsor</small><b>${sp ? sp.icon + ' ' + esc(sp.name) : 'none yet'}</b></div></div>
+        ${S.owner === 'stripper' ? `<div class="ow-skim"><span>💼</span><span><b>Your “consultancy fees”</b><small>Skimmed so far: ${money(S.skim || 0)}. Each £1m skimmed adds legacy, and a little heat.</small></span><button class="btn small" id="owskim">Skim £1m</button></div>` : ''}
+        ${S.owner === 'crypto' ? '<p class="cb-hint">🪙 Your MoonDoge holdings swing your cash every week. HODL.</p>' : ''}
         <h3 class="section-title">This season’s books</h3><div class="ow-ledger">${led.map(([k, v]) => `<div><span>${esc(k)}</span><b class="${v < 0 ? 'neg' : 'pos'}">${v < 0 ? '−' : '+'}${money(Math.abs(v)).slice(0)}</b></div>`).join('') || '<p class="muted">Nothing yet.</p>'}</div>
         <h3 class="section-title">🔥 Heat ${Math.round(S.heat)}/100</h3><p class="cb-hint">How closely the league is watching you. It cools a little every week. Above 50, investigations start: fines, then transfer embargoes, then points deductions (80+).</p>
         <h3 class="section-title">📣 Fans ${Math.round(S.fans)}/100</h3><p class="cb-hint">Wins, big signings and stunts please them; defeats, selling stars and greed don’t. Happy fans fill the ground (more gate money). At zero, they force you to sell.</p>`;
@@ -473,22 +500,27 @@
       else if (pos === 1) setTimeout(() => GM.sound.play('fanfare'), 1200);
       else if (pos <= L.target) setTimeout(() => GM.sound.play('cheer'), 1200);
       fullTime(false, isBest);
-      GM.checkGame('owner', score, { pos, unbeaten: !S.teams[0].l && S.over === 'done', cup: S.cup.won, heat: S.heat, ded: S.teams[0].ded, sacked: S.over === 'fans', lv });
-      await GM.recordScore(key, score, { t: S.teams[0].p - S.teams[0].ded, pos });
+      GM.store.set('owner:finished', 1);  // unlocks a secret game
+      GM.checkGame('owner', score, { pos, unbeaten: !S.teams[0].l && S.over === 'done', cup: S.cup.won, heat: S.heat, ded: S.teams[0].ded, sacked: S.over === 'fans', amb: (E.OWNERS[S.owner] || { amb: () => false }).amb(S, pos), owner: S.owner, lv });
+      await GM.recordScore(key, score, { t: score, pos, pts: S.teams[0].p - S.teams[0].ded });
     }
     function fullTime(seen, isBest) {
       stopTimer();
       const pos = E.position(S), t = S.teams[0], ok = pos <= L.target, pts = t.p - t.ded;
       const V = S.over === 'fans' ? ['📣', 'Forced out', 'The supporters’ trust has bought the club off you. They’re singing in the streets.']
+        : S.over === 'bankrupt' ? ['🏦', 'Administration', 'The receivers have changed the locks. Your parking space is now a skip.']
+        : S.over === 'expelled' ? ['⚖️', 'Banned for life', 'You failed the fit and proper persons test. Spectacularly.']
         : pos === 1 ? ['🏆', 'CHAMPIONS!', 'Nobody saw it coming. Least of all the league’s investigators.'] : pos <= 4 ? ['🌟', 'Into Europe', 'Next season: Tuesday nights in faraway places.']
         : ok ? ['👍', 'Job done', `The fans wanted ${L.target === 10 ? 'the top half' : 'survival'}, and got it.`] : pos >= 18 ? ['💀', 'Relegated', 'Down you go. At least the car park’s yours.'] : ['😐', 'Mid-table mediocrity', 'Not quite what the fans had in mind.'];
       const scorers = S.squad.filter(x => x.gl).sort((a, b) => b.gl - a.gl), best = S.squad.filter(x => x.rt.length >= 5).map(x => ({ x, a: x.rt.reduce((s, v) => s + v, 0) / x.rt.length })).sort((a, b) => b.a - a.a)[0];
-      const txt = `🕴️ Goal Machine – ${title}: ${GM.clubShort(S.club)} finished ${E.ord(pos)} with ${pts} points${S.cup.won ? ' and won the Cup 🏆' : ''}. Heat ${Math.round(S.heat)} 🔥 ${V[0]}`;
+      const LG = E.legacy(S), OW = E.OWNERS[S.owner] || {};
+      const txt = `🕴️ Goal Machine – ${title}: as ${OW.name || 'owner'} of ${GM.clubShort(S.club)}, finished ${E.ord(pos)} with ${pts} points${S.cup.won ? ' and won the Cup 🏆' : ''}. Legacy ${LG.total} 🏛️ ${V[0]}`;
       root.innerHTML = `${top()}<div class="cb-final ${ok ? 'ok' : 'bad'}">
         <span class="kicker">The end of the season · ${esc(S.club)}</span>
         <div class="cb-verdict"><span>${V[0]}</span><b>${V[1]}</b><small>${V[2]}</small></div>
         <div class="result"><div class="result-score"><span>${E.ord(pos)}</span><small>${pts} point${pts === 1 ? '' : 's'} · W${t.w} D${t.d} L${t.l}${t.ded ? ` · −${t.ded} deducted` : ''}</small></div>
           ${isBest ? '<div class="banner">🏆 New personal best!</div>' : ''}
+          <div class="ow-legacy"><span class="kicker">🏛️ Your legacy</span>${LG.parts.map(([k, v]) => `<div><span>${esc(k)}</span><b class="${v < 0 ? 'neg' : v > 0 ? 'pos' : ''}">${v > 0 ? '+' : ''}${v}</b></div>`).join('')}<div class="tot"><span>Total</span><b>${LG.total}</b></div></div>
           <div class="ow-facts"><div><small>🏆 Cup</small><b>${S.cup.won ? 'WINNERS' : S.cup.ties.length ? E.CUP.names[Math.min(4, S.cup.ties.length - 1)] : '–'}</b></div><div><small>💷 Cash</small><b>${money(S.cash)}</b></div><div><small>🔥 Heat</small><b>${Math.round(S.heat)}</b></div><div><small>📣 Fans</small><b>${Math.round(S.fans)}</b></div></div>
           ${scorers[0] ? `<div class="mb-deal good">${GM.avatar(P(scorers[0]), '', plain)}<span><small>⚽ Top scorer</small><b>${esc(P(scorers[0]).name)}</b><i>${scorers[0].gl} goals</i></span></div>` : ''}
           ${best ? `<div class="mb-deal good">${GM.avatar(P(best.x), '', plain)}<span><small>⭐ Player of the season</small><b>${esc(P(best.x).name)}</b><i>average rating ${best.a.toFixed(1)}</i></span></div>` : ''}

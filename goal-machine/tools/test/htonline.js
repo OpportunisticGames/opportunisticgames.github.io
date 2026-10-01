@@ -12,7 +12,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     await ctx.route(/wikimedia|premierleague|transfermarkt/, r => r.abort());
     const pg = await ctx.newPage(); pg.on('pageerror', e => errs.push(name + ': ' + e.message));
     server.fns.claim_name({ p_username: name, p_key: key });
-    await pg.goto(U); await pg.evaluate(([n, k]) => { localStorage.setItem('gm:seenVersion', '99'); localStorage.setItem('gm:welcomed', '1'); localStorage.setItem('gm:account', JSON.stringify({ name: n, key: k })); }, [name, key]);
+    await pg.goto(U); await pg.evaluate(([n, k]) => { localStorage.setItem('gm:seenVersion', '99'); localStorage.setItem('gm:welcomed', '1'); localStorage.setItem('gm:played', '10'); localStorage.setItem('gm:account', JSON.stringify({ name: n, key: k })); }, [name, key]);
     return pg;
   };
   const A = await phone('Alice', 'a'.repeat(28)), B = await phone('Bob', 'b'.repeat(28));
