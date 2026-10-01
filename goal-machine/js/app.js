@@ -139,6 +139,7 @@
       case 'moneyball': return GM.moneyball(app, q);
       case 'owner': return GM.dodgyOwner(app, q);
       case 'reign': return GM.reignCheck(app);
+      case 'tester': if (q.code === GM.TESTER_CODE) { GM.unlockAllSecrets(); GM.store.set('homeTab', 'quick'); GM.toast('🔓 Every secret game is unlocked on this device'); } location.replace('#/'); return;
       case 'royale': return GM.goalRoyale(app);
       case 'boss': location.replace('#/owner'); return;  // Club Boss grew up into Dodgy Owner
       case 'window': location.replace('#/moneyball'); return;  // the Transfer Window is part of the new Moneyball

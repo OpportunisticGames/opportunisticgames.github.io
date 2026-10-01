@@ -41,12 +41,12 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.waitForTimeout(1500);
   const before = await pg.evaluate(() => document.querySelector('#grstn').textContent);
   const next0 = await pg.evaluate(() => GM.goalRoyale.live.sides[0].next);
-  await pg.evaluate(() => { const c = [...document.querySelectorAll('[data-hand]')].find(e => !e.classList.contains('dim')); c.click(); });
+  await pg.evaluate(() => { const S = GM.goalRoyale.live.sides[0]; S.st = 10; const i = S.hand.findIndex(c => c.g !== 'G'); document.querySelector(`[data-hand="${i}"]`).click(); });  // a player, not a keeper boost
   const pitch = await pg.$eval('#grpitch', e => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height }; });
   await pg.mouse.click(pitch.x + pitch.w * 0.3, pitch.y + pitch.h * 0.2); await pg.waitForTimeout(200);
   ok(/Your half only/.test(await pg.evaluate(() => [...document.querySelectorAll('.toast')].map(t => t.textContent).join())), 'you can only send players on in your own half');
   await pg.mouse.click(pitch.x + pitch.w * 0.3, pitch.y + pitch.h * 0.8); await pg.waitForTimeout(250);
-  ok((await pg.$$('.gr-u.s0')).length >= 1 && +await pg.evaluate(() => document.querySelector('#grstn').textContent) < +before + 1 && await pg.evaluate(() => GM.goalRoyale.live.sides[0].next) === next0 + 1, 'tap a card, tap your half: he runs on, it costs stamina, and the hand cycles');
+  ok((await pg.$$('.gr-u.s0')).length >= 1 && +await pg.evaluate(() => document.querySelector('#grstn').textContent) < 10 && await pg.evaluate(() => GM.goalRoyale.live.sides[0].next) === next0 + 1, 'tap a card, tap your half: he runs on, it costs stamina, and the hand cycles');
   await pg.waitForTimeout(6000);
   ok((await pg.$$('.gr-u.s1')).length >= 1, 'the opponent plays cards too');
 
@@ -102,6 +102,12 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const fin = await pg.evaluate(() => ({ cls: (document.querySelector('.gr-result') || {}).className || '', st: GM.store.get('royale'), packs: GM.packsWaiting(), best: GM.best('royale') }));
   ok(/win/.test(fin.cls) && fin.st.played === 5 && fin.st.trophies === 220 && fin.best === 220, `a win: +30 trophies (${fin.st.trophies}), on the board`);
   ok(fin.packs >= packs0 + 1 && /New arena/.test(await pg.textContent('.gr-hub')) && /5 more wins/.test(await pg.textContent('.gr-hub')), 'the fifth win brings a pack, and 200 trophies a new arena (Non-League)');
+  // the tester's link unlocks everything on this device
+  await pg.evaluate(() => { ['reign', 'hattrick', 'royale'].forEach(id => localStorage.removeItem('gm:secret:' + id)); localStorage.setItem('gm:played', '0'); localStorage.setItem('gm:cards', 'null'); });
+  await pg.goto(U + '#/'); await pg.goto(U + '#/tester?code=wrong'); await pg.waitForTimeout(400);
+  ok(await pg.evaluate(() => !GM.secretUnlocked('reign')), 'a wrong tester code does nothing');
+  await pg.goto(U + '#/tester?code=' + await pg.evaluate(() => GM.TESTER_CODE)); await pg.waitForTimeout(600);
+  ok(await pg.evaluate(() => GM.SECRET_GAMES.every(g => GM.secretUnlocked(g.id))) && /#\/$/.test(await pg.evaluate(() => location.hash)), 'the tester link unlocks every secret game and goes Home');
   ok(!errs.length, errs.length ? 'page errors: ' + errs.join(' | ') : 'no page errors');
   await b.close();
 })();

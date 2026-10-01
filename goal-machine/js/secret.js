@@ -31,6 +31,14 @@
     root.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>🔒 Secret game</h2><span></span></div>
       <div class="secret-lock"><span class="sl-icon">🔒</span><b>Locked</b><p>This one’s a secret. To unlock it:</p><p class="sl-hint">🗝️ ${GM.esc(g.hint)}</p><a class="btn" href="#/">Back to Home</a></div>`;
   };
+  // the tester's key (#/tester?code=…): unlocks every secret game on this device, for play-testing
+  GM.TESTER_CODE = 'owner-test-2026';
+  GM.unlockAllSecrets = function () {
+    const fresh = GM.SECRET_GAMES.filter(g => !GM.store.get('secret:' + g.id, 0)).map(g => g.id);
+    GM.SECRET_GAMES.forEach(g => GM.store.set('secret:' + g.id, 1));
+    GM.store.set('secretNew', (GM.store.get('secretNew', []) || []).concat(fresh));
+    return fresh.length;
+  };
   // Home's secret section
   GM.secretTiles = function () {
     return `<h3 class="section-title">🤫 Secret games <small>${GM.SECRET_GAMES.filter(g => GM.secretUnlocked(g.id)).length}/${GM.SECRET_GAMES.length} unlocked</small></h3>
