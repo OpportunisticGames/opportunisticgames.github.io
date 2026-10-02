@@ -21,7 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA, ALL, OUT, CHECKED = ROOT / 'data/players.js', ROOT / 'data/players_all.js', ROOT / 'data/photos.js', ROOT / 'data/photos_checked.json'
-MATCHER = 3  # raise when the finder gets better: earlier misses are then tried again at once
+MATCHER = 4  # raise when the finder gets better: earlier misses are then tried again at once
 SRC = os.environ.get('SRC', 'src')
 UA = 'GoalMachinePhotos/1.0 (https://opportunisticgames.github.io/goal-machine/; fan-made quiz game)'
 PL_PHOTO = 'https://resources.premierleague.com/premierleague/photos/players/110x140/p{}.png'
@@ -219,10 +219,13 @@ def from_wikipedia(p):
         text = fold(pg.get('extract', ''))
         if not re.search(r'football|soccer', fold(pg.get('description', '')) + ' ' + text[:300]):  # Australian, American and Canadian articles say "soccer"
             continue
-        if not any(t in text for t in tests):
-            continue
+        # the article's title is exactly his name (a "(footballer)" or "(born 1975)" tag allowed) and its birth year fits: that's
+        # him even if the intro doesn't happen to name one of his clubs; otherwise the intro must mention a club of his
+        exact = fold(re.sub(r'\s*\(.*\)$', '', pg['title'])) == fold(p['name'])
         born = re.search(r'born[^)]{0,40}?\b(19\d\d|20\d\d)\b', pg.get('extract', '')[:400])
         if born and not (15 <= p['first'] - int(born.group(1)) <= 40):
+            continue
+        if not (exact and born) and not any(t in text for t in tests):
             continue
         # it's him. Candidate pictures, best first: the article's lead image, Wikidata's image, other images in the
         # article and a Commons search (those last three only if the file has his name in it)
