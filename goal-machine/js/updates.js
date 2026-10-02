@@ -15,6 +15,7 @@
         '🪖 Called up! A tank rolls on and takes a player for national service (his place is empty again, and there’s a medal)',
         '🌍 Earthquakes crack the pitch, 🌧️ rain pours down in Stoke, 💼 the owner legs it with a briefcase of cash, 💔 break-ups and 💍 weddings (with the car and the tin cans)',
         '🚁 The helicopter and the 🐦 pigeon are drawn and fly properly, and the 🌪️ tornado is there from the moment it’s announced',
+        '🏃 Some of them stay for the whole game: the streaker keeps running laps with a steward after him, the dog trots up and down, the pigeon waddles about and the flying saucer hovers over the stand',
         '🧹 Everything that happens leaves its mark: cracks, puddles, flares, police tape, scarves, scorch marks… by full time your pitch has been through it',
       ],
     },

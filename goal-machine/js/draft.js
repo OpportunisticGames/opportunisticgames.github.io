@@ -140,7 +140,7 @@
   // more match-day nonsense. go(r) changes the game and returns { note, run }; look = [scene, sound]
   const XEV = {
     pigeon: { rar: 'c', icon: '🐦', name: 'Pitch invader', tone: 'weird', look: ['kickoff', 'wild'], go: () => { S.bonus.push(['🐦 A pigeon', 1]); return { note: 'A pigeon lands on the pitch. It’s just a pigeon. It’s staying. <b>+1</b> bonus point, for the pigeon.', run: c => c.fly('🐦') }; } },
-    streaker: { rar: 'c', icon: '🏃', name: 'Streaker', tone: 'good', look: ['party', ['whistle', 'cheer']], go: () => { const p = pts(6); S.bonus.push(['🏃 The streaker', p]); return { note: `Someone’s run on with nothing on. Best laugh of the season: <b>+${p}</b> bonus. He’s left his pants behind.`, run: c => c.dash('🏃') }; } },
+    streaker: { rar: 'c', icon: '🏃', name: 'Streaker', tone: 'good', look: ['party', ['whistle', 'cheer']], go: () => { roam('streaker'); const p = pts(6); S.bonus.push(['🏃 The streaker', p]); return { note: `Someone’s run on with nothing on. Best laugh of the season: <b>+${p}</b> bonus. He’s still out there, with a steward after him.`, run: c => c.dash('🏃') }; } },
     amnesty: { rar: 'r', icon: '📺', name: 'VAR overturns it all', tone: 'good', look: ['tv', ['var', 'cheer']], go: () => {
       const hurt = filledIdx().filter(i => HURT.includes(S.xi[i].mod));
       if (!hurt.length) { const p = pts(10); S.bonus.push(['📺 Nothing to overturn', p]); return { note: `VAR looks at everything and finds nothing wrong with your XI: <b>+${p}</b> bonus.` }; }
@@ -158,6 +158,7 @@
       if (i < 0) return { note: 'Your keeper hasn’t signed yet, so the pies go to waste.' };
       scale(S.xi[i], 2, 'boosted'); return { note: `${nm(i)} has eaten all the pies and now fills the whole goal: his numbers <b>double</b>.`, run: c => c.visit(i, '🥧') }; } },
     dog: { rar: 'c', icon: '🐕', name: 'Dog on the pitch', tone: 'good', look: ['kickoff', 'box'], go: r => {
+      roam('dog');
       if (S.inv.length >= 3) return { note: 'A dog runs on, looks at your full wildcard bag and runs off again.' };
       const cards = Object.keys(WILDCARDS).filter(k => !WILDCARDS[k].chaos && !S.rules.noWild.includes(k)), w = cards[Math.floor(r() * cards.length)];
       S.inv.push(w); return { note: `A dog runs on and fetches you a wildcard: ${WILDCARDS[w].icon} <b>${WILDCARDS[w].name}</b>!`, run: c => c.bag('🐕') }; } },
@@ -191,7 +192,7 @@
     aliens: { rar: 'r', icon: '🛸', name: 'Alien abduction', tone: 'weird', look: ['lightning', 'spooky'], go: r => {
       const f = filledIdx(); if (!f.length) return { note: 'The aliens look around, find nobody worth taking, and leave.' };
       const fw = f.filter(i => GM.GROUP[S.xi[i].pos] === 'F'), pool = fw.length ? fw : f, i = pool[Math.floor(r() * pool.length)], p = pts(40);
-      scale(S.xi[i], 0, 'halved'); S.bonus.push(['🛸 Documentary rights', p]);
+      scale(S.xi[i], 0, 'halved'); S.bonus.push(['🛸 Documentary rights', p]); roam('ufo');
       return { note: `${nm(i)} is beamed up mid-warm-up: he counts for <b>nothing</b>. The documentary rights pay <b>+${p}</b> bonus.`, run: c => c.abduct(i) }; } },
     arrest: { rar: 'u', icon: '🚔', name: 'Arrested!', tone: 'bad', look: ['red', 'siren'], go: r => {
       const f = filledIdx().filter(i => S.xi[i].pos !== 'GK'); if (!f.length) return { note: 'The police have a look round, find nothing to nick, and leave.' };
@@ -660,6 +661,30 @@
     amnesty: '#tv', box: '📦', retro: '👕', aliens: '#ring', royal: '👑', oligarch: '💰', arrest: '#tape', derby: '#flare', golden: '#ball',
     'var+': '#tv', 'var-': '#tv', masked: '🎭', handofgod: '🧤', sponge: '#bucket', swapdeal: '🔀', testimonial: '#scarf', loanarmy: '🧳', helicopter2: '#pad',
     fairytale: '🦊', lastminute: '⏱️', splat: '💩', deadline: '#paper', sacked: '#paper', injury: '#cross', hamstring: '#cross', coin: '#coin', hero: '#ball', physio: '#cross',
+  };
+  // things that stay ALIVE on the pitch for the rest of the game: the streaker doing laps with a steward after him, the
+  // dog trotting up and down, the saucer hovering over the stand. Their animations run on the clock (a negative delay),
+  // so re-drawing the pitch after every tap doesn't send them back to the start.
+  const roam = k => { if (S.rules.chaos && !(S.roam || []).includes(k)) S.roam = (S.roam || []).concat(k); };
+  const PERSON = (skin, top, legs, cls) => `<svg class="spr ${cls}" viewBox="0 0 20 34" width="20" height="34"><circle cx="10" cy="5" r="4" fill="${skin}"/>
+    <path d="M10 9v12" stroke="${top}" stroke-width="5" stroke-linecap="round"/><g class="arm a1"><path d="M10 11l-6 6" stroke="${top === '#ffd400' ? '#ffd400' : skin}" stroke-width="2.4" stroke-linecap="round"/></g>
+    <g class="arm a2"><path d="M10 11l6 6" stroke="${top === '#ffd400' ? '#ffd400' : skin}" stroke-width="2.4" stroke-linecap="round"/></g>
+    <g class="leg l1"><path d="M10 21l-4 11" stroke="${legs}" stroke-width="2.8" stroke-linecap="round"/></g><g class="leg l2"><path d="M10 21l4 11" stroke="${legs}" stroke-width="2.8" stroke-linecap="round"/></g></svg>`;
+  const DOG = `<svg class="spr dog" viewBox="0 0 40 26" width="40" height="26"><path class="tail" d="M6 10q-5-6-4-9" stroke="#8a5a2b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <ellipse cx="17" cy="13" rx="12" ry="6" fill="#a8703a"/><circle cx="31" cy="9" r="5.5" fill="#a8703a"/><path d="M28 5l-2-4 4 2z" fill="#6b4220"/><circle cx="33" cy="8" r="1" fill="#111"/><circle cx="36.5" cy="10" r="1.3" fill="#111"/>
+    <g class="leg l1"><path d="M10 17v8" stroke="#8a5a2b" stroke-width="2.5"/></g><g class="leg l2"><path d="M14 17v8" stroke="#8a5a2b" stroke-width="2.5"/></g>
+    <g class="leg l1"><path d="M22 17v8" stroke="#8a5a2b" stroke-width="2.5"/></g><g class="leg l2"><path d="M26 17v8" stroke="#8a5a2b" stroke-width="2.5"/></g></svg>`;
+  const ROAM = {
+    streaker: { dur: 14, html: () => PERSON('#f2c4a0', '#f2c4a0', '#f2c4a0', 'runner') },
+    steward: { dur: 14, lag: 1.1, html: () => PERSON('#e8b48a', '#ffd400', '#222', 'runner') },
+    dog: { dur: 9, html: () => DOG },
+    ufo: { dur: 7, html: () => SPRITE.ufo },
+  };
+  const roamHtml = () => {
+    const ks = (S.roam || []).flatMap(k => k === 'streaker' ? ['streaker', 'steward'] : [k]).filter(k => ROAM[k]);
+    if (!ks.length) return '';
+    const now = Date.now() / 1000;
+    return `<div class="roam" aria-hidden="true">${ks.map(k => { const d = ROAM[k].dur; return `<i class="rm rm-${k}" style="animation-duration:${d}s;animation-delay:-${((now - (ROAM[k].lag || 0)) % d).toFixed(2)}s">${ROAM[k].html()}</i>`; }).join('')}</div>`;
   };
   function leave(key) {
     const icon = MESS[key]; if (!icon || !S.rules.chaos) return;
@@ -1532,7 +1557,7 @@
       .sort((a, b) => lat(a[1]) - lat(b[1]) || a[1] - b[1])).filter(r => r.length);
     const shape = rows.slice(0, -1).reverse().map(r => r.length).join('-');
     return `<div class="pitch ${S.subbing !== false ? 'subbing' : ''} ${S.pending != null ? 'placing' : ''}">
-      <div class="pitch-lines"></div><div class="shape">${shape}</div>${S.rules.chaos ? messHtml() : ''}
+      <div class="pitch-lines"></div><div class="shape">${shape}</div>${S.rules.chaos ? messHtml() + roamHtml() : ''}
       ${rows.map(r => `<div class="pitch-row ${r.length > 4 ? 'crowded' : ''}">${r.map(([s, i]) => slotHtml(s, i)).join('')}</div>`).join('')}
     </div>`;
   }
