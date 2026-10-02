@@ -7,8 +7,11 @@ on:
     inputs:
       names:
         description: 'Player names, separated by |'
-        required: true
-        default: 'Mark Viduka|Nigel Martyn'
+        required: false
+        default: ''
+  push:
+    branches: ['claude/**']
+    paths: ['goal-machine/tools/debug_names.txt']   # edit that file (one name per line) to run it on a feature branch
 
 jobs:
   debug:
@@ -20,5 +23,8 @@ jobs:
           python-version: '3.11'
       - name: Look the players up, loudly
         env:
-          DEBUG_NAMES: ${{ inputs.names }}
-        run: python goal-machine/tools/fetch_photos.py
+          INPUT_NAMES: ${{ inputs.names }}
+        run: |
+          NAMES="$INPUT_NAMES"
+          [ -z "$NAMES" ] && NAMES=$(paste -sd'|' goal-machine/tools/debug_names.txt)
+          DEBUG_NAMES="$NAMES" python goal-machine/tools/fetch_photos.py
