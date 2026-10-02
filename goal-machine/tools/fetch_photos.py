@@ -21,7 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA, ALL, OUT, CHECKED = ROOT / 'data/players.js', ROOT / 'data/players_all.js', ROOT / 'data/photos.js', ROOT / 'data/photos_checked.json'
-MATCHER = 4  # raise when the finder gets better: earlier misses are then tried again at once
+MATCHER = 5  # raise when the finder gets better: earlier misses are then tried again at once
 SRC = os.environ.get('SRC', 'src')
 UA = 'GoalMachinePhotos/1.0 (https://opportunisticgames.github.io/goal-machine/; fan-made quiz game)'
 PL_PHOTO = 'https://resources.premierleague.com/premierleague/photos/players/110x140/p{}.png'
@@ -38,6 +38,9 @@ def fold(s):
     return re.sub(r'\s+', ' ', re.sub(r'[^a-z0-9 ]', ' ', s)).strip()
 
 
+_tl = threading.local()   # per thread: did a request give up (network trouble) rather than answer?
+
+
 def get(url, headers=None, method='GET', tries=3):
     req = urllib.request.Request(url, method=method, headers={'User-Agent': UA, **(headers or {})})
     for i in range(tries):
@@ -50,6 +53,7 @@ def get(url, headers=None, method='GET', tries=3):
         except Exception:
             pass
         time.sleep(1 + 2 * i)
+    _tl.failed = True
     return 0, b''
 
 
@@ -294,14 +298,15 @@ def main():
     found, lock, done = {'pl': 0, 'w': 0}, threading.Lock(), [0]
 
     def work(p):
+        _tl.failed = False
         hit = None
         if not p['code'] and not p['tm'] and not (photos.get(key(p)) or {}).get('pl'):
             hit = from_pl(p, idx)
         w = from_wikipedia(p)
-        return p, hit, w
+        return p, hit, w, _tl.failed
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:
-        for p, hit, w in ex.map(work, todo[:limit]):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex:
+        for p, hit, w, failed in ex.map(work, todo[:limit]):
             with lock:
                 done[0] += 1
                 if hit or w:
@@ -309,7 +314,7 @@ def main():
                     found['pl'] += bool(hit)
                     found['w'] += bool(w)
                     checked.pop(key(p), None)
-                if not w:
+                if not w and not failed:   # a request that gave up isn't a miss: he's looked up again next time
                     checked[key(p)] = TODAY.isoformat()
                 if done[0] % 100 == 0:
                     save(photos, checked)
