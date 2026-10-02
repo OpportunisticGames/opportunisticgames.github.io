@@ -1,0 +1,24 @@
+name: Debug a player photo
+
+# Looks one or more players up the way the photo finder does and prints every request and answer, so a missing photo can
+# be explained. Run by hand from the Actions tab: names separated by | (e.g. Mark Viduka|Nigel Martyn). Saves nothing.
+on:
+  workflow_dispatch:
+    inputs:
+      names:
+        description: 'Player names, separated by |'
+        required: true
+        default: 'Mark Viduka|Nigel Martyn'
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Look the players up, loudly
+        env:
+          DEBUG_NAMES: ${{ inputs.names }}
+        run: python goal-machine/tools/fetch_photos.py
