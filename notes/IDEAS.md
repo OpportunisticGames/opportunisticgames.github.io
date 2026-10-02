@@ -23,7 +23,7 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
-### CHAOS: the screen gets messier as the game goes on 💬 *(owner, 2 Oct 2026)*
+### CHAOS: the screen gets messier as the game goes on 🚧 being built in 5.17 *(owner, 2 Oct 2026)*
 - **Owner's words:** "make the screen a little more chaotic as time goes on? E.g if you got the pigeon a little pigeon stays
   on somewhere around the pitch, an ambulance is there for an injured player, a tornado does wreck things a little etc. There
   could even be a thing that splatters on your screen or obscures some of your current players' numbers? Like you'd then
@@ -36,7 +36,7 @@ formations, and badges round 2.
 - **Questions:** how messy at the end of a wild game (cap at about 6 leftovers)? Can you wipe the splat off (tap 3 times)?
   Does Daily CHAOS / a race get the same leftovers (yes, it's seeded)?
 
-### CHAOS: keepers that matter, ways to win points back, more wildcards and managers 💬 *(owner, 2 Oct 2026)*
+### CHAOS: keepers that matter, ways to win points back, more wildcards and managers 🚧 being built in 5.17 *(owner, 2 Oct 2026)*
 - **Owner's words:** "Who ate all the pies" is a dud in goals mode (keepers don't score). Either a flat bonus, or "rework it
   so keepers can actually contribute to the game". Also: "a way for a player to regain the points they have lost, like a
   wildcard to reset a player's points, or a super rare event that makes everyone who has lost points regain points". And

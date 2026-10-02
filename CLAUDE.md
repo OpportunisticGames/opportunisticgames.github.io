@@ -17,6 +17,8 @@ game mode for players; this file is about how to work on it.
 - **Bug and idea banks:** `notes/BUGS.md` and `notes/IDEAS.md`. When the owner reports a bug, log it and fix it
   straight away, then move it to *Fixed* with the version. When they share an idea, log it (with their words and
   our notes and questions) and **discuss it, don't build it** until they say go. Read both at the start of a session.
+  While we're working on one part of the game (say CHAOS), the owner's ideas for that part go straight into the
+  current update (log them, then build them with it); only ideas for other parts wait in the bank.
 - No personal names in the app, the address or the copy. The one exception the owner asked for: affectionate parodies of real managers as
   the head coaches in Dodgy Owner and Reign Check (Pep Cardigola, José Moaninho and friends). No AI model names in commits, PRs or files.
 - **Secret games** (`js/secret.js`): locked knock-offs unlocked by doing something (Reign Check, Hat-Trick, Goal Royale).
