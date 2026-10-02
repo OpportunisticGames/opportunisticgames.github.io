@@ -9,6 +9,12 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 47, label: '5.12.1', date: '2026-10-02', title: '🏅 A few new badge icons',
+      items: [
+        '🏅 Eight badges that shared an icon with another now have their own',
+      ],
+    },
+    {
       v: 46, label: '5.12', date: '2026-10-02', title: '🏅 100 badges, and Google Play Games',
       items: [
         '🏅 Badges are now a tidy 100. New ones for the long haul: games played, levels, 50 packs opened, 25 online wins, 100 days of the Daily, and Extreme mode',
