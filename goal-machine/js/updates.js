@@ -9,6 +9,12 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 52, label: '5.13.2', date: '2026-10-02', title: '🏆 Play Games in Settings',
+      items: [
+        '🏆 In the Play app, Google Play Games now has its own section in Settings, next to Account and Gameplay',
+      ],
+    },
+    {
       v: 50, label: '5.13.1', date: '2026-10-02', title: '🎮 Play Games sign-in',
       items: [
         '🎮 Settings has a Google Play Games section in the Play app: who you’re signed in as, a Sign in button, and shortcuts to your achievements and leaderboards',
