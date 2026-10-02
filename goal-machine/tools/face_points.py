@@ -5,9 +5,9 @@ portraits, action shots, group photos), so each image is downloaded once and run
 The biggest face gives a focal point and size, written to data/faces.js as
     window.GM_FACES = {"tm:<portrait id>": [cx, cy, w], "w:<name>|<first season>": [cx, cy, w]}
 with cx, cy the face centre and w its width, all as percentages of the image. Images with no clear face are recorded
-as [] so they aren't fetched again. Usage: python tools/face_points.py [max images]   (needs opencv-python-headless<5: OpenCV 5 dropped the Haar cascades)
+as [tag] so they aren't fetched again (the tag is a fingerprint of the picture, see main). Usage: python tools/face_points.py [max images]   (needs opencv-python-headless<5: OpenCV 5 dropped the Haar cascades)
 """
-import json, re, sys, time, urllib.request
+import hashlib, json, os, re, sys, time, urllib.request
 from pathlib import Path
 
 import cv2
@@ -24,6 +24,23 @@ def cascade(name):
 CASCADE = cascade('haarcascade_frontalface_default.xml')
 FRONTAL = [CASCADE, cascade('haarcascade_frontalface_alt2.xml'), cascade('haarcascade_frontalface_alt.xml')]
 PROFILE = cascade('haarcascade_profileface.xml')
+# OpenCV's YuNet, a small neural face detector: far better than the Haar cascades at faces that are small, turned or
+# in shadow (action shots, crowds). The workflow downloads the model next to this file; without it, Haar only.
+YUNET = Path(os.environ.get('YUNET', Path(__file__).with_name('face_detection_yunet.onnx')))
+DETECTOR = 3  # raise when face finding gets better: every photo is looked at again
+
+
+def yunet(img):
+    """Faces as (x, y, w, h, score), found by YuNet on the picture (small pictures are scaled up first)."""
+    if not YUNET.exists():
+        return []
+    h, w = img.shape[:2]
+    k = max(1.0, 480 / min(w, h))
+    if k > 1:
+        img = cv2.resize(img, (int(w * k), int(h * k)), interpolation=cv2.INTER_CUBIC)
+    det = cv2.FaceDetectorYN.create(str(YUNET), '', (img.shape[1], img.shape[0]), 0.7, 0.3, 50)
+    _, faces = det.detect(img)
+    return [(f[0] / k, f[1] / k, f[2] / k, f[3] / k, float(f[-1])) for f in (faces if faces is not None else [])]
 
 
 def load_js(path):
@@ -51,6 +68,12 @@ def face(data):
     if img is None:
         return []
     h, w = img.shape[:2]
+    # YuNet first: the subject is the best mix of big, sure and high in the picture (a crowd face is small, a
+    # team-mate's is usually lower down or off to the side)
+    nn = yunet(img)
+    if nn:
+        x, y, fw, fh, _ = max(nn, key=lambda f: f[4] * f[2] * f[3] * (1.25 - 0.5 * (f[1] + f[3] / 2) / h))
+        return [round(float(100 * (x + fw / 2) / w), 1), round(float(100 * (y + fh / 2) / h), 1), round(float(100 * fw / w), 1)]
     grey = cv2.equalizeHist(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY))
     min_side = max(20, int(min(w, h) * 0.08))
     size = (min_side, min_side)
@@ -78,9 +101,8 @@ def main():
     d = load_js(DATA)
     photos = load_js(PHOTOS) if PHOTOS.exists() else {}
     faces = load_js(OUT) if OUT.exists() else {}
-    if faces.get('_detector') != 2:  # a better detector: faces it missed before are tried again
-        faces = {k: v for k, v in faces.items() if v}
-        faces['_detector'] = 2
+    if faces.get('_detector') != DETECTOR:  # a better detector: every photo is looked at again
+        faces = {'_detector': DETECTOR}
     jobs = []
     # every-player file too (Extreme / Purist), for its Transfermarkt portraits
     rows = d['players'] + (load_js(ALL)['players'] if ALL.exists() else [])
@@ -90,15 +112,20 @@ def main():
         ph = photos.get(f'{r[0]}|{r[6]}')
         if ph and ph.get('w'):
             jobs.append((f'w:{r[0]}|{r[6]}', ph['w']))
-    todo = [j for j in jobs if j[0] not in faces][:limit]
+    # each entry ends with a short fingerprint of the picture it was found in, so a player whose photo changes is
+    # looked at again ([cx, cy, w, tag], or [tag] when there's no clear face)
+    tag = lambda url: hashlib.md5(url.encode()).hexdigest()[:6]
+    todo = [j for j in jobs if j[0] not in faces or (faces[j[0]] or [''])[-1] != tag(j[1])][:limit]
     print(f'{len(jobs)} photos, {len(todo)} to check', file=sys.stderr)
     hit = 0
     for n, (k, url) in enumerate(todo):
-        data = fetch(url)
+        # a bigger copy of a Wikimedia thumbnail, so small faces in action shots can be found (positions are percentages)
+        data = fetch(re.sub(r'/(\d+)px-', '/640px-', url)) if '/thumb/' in url else None
+        data = data or fetch(url)
         if data is None:
             continue  # try again next run
-        faces[k] = face(data)
-        hit += bool(faces[k])
+        faces[k] = face(data) + [tag(url)]
+        hit += len(faces[k]) > 1
         if n % 100 == 0:
             print(f'  {n}/{len(todo)} faces found {hit}', file=sys.stderr)
         time.sleep(0.05)
