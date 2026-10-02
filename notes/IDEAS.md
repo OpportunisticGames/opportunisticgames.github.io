@@ -30,9 +30,7 @@ formations, and badges round 2.
   created in Play Console (Grow > Play Games Services > Achievements, each gets an ID and points; 1,000 points max
   in total), and a bridge call from `GM.app(...)` when a badge unlocks. Play version only.
 - **Owner's decision (2 Oct):** ALL badges become achievements, kept in step as badges are added or removed.
-- **Limits (Play docs):** 400 achievements over the game's whole lifetime (deleted ones still count), 2,000 points in
-  total, 5-point steps, 200 max each. We have ~95 badges, so average about 10-15 points and leave room to grow.
-  Play can't take an unlocked achievement back from a player: a removed badge is deleted/hidden in the console only.
+- **Limits (Play docs):** 400 achievements, 2,000 points in total (5-point steps, 200 max each). A published achievement can't be deleted and its hidden/visible state can't change. Plan: ~100 at launch for under half the points, so it can grow towards 250. See `notes/BADGES.md`.
 - **Questions (old):** which badges become achievements (all, or about 30 of the best)? Icons (512x512) and descriptions
   for each. Sign-in: PGS v2 signs in automatically, so no extra button, but we should say what it shares.
 
