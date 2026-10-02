@@ -732,7 +732,7 @@
     if (kind === 'money') bits(22, 'cm-coin', ['💰', '🪙', '💷']);
     if (kind === 'unleash') bits(18, 'cm-coin', ['💥', '⚡', '🔥']);
   }
-  const coinHtml = heads => `<button class="coin-wrap" aria-label="Flip the coin"><div class="coin" data-end="${heads ? 1800 : 1980}"><div class="coin-f h">⚽<b>HEADS</b></div><div class="coin-f t">🧤<b>TAILS</b></div></div><i class="coin-shadow"></i><span class="coin-go">👆 Tap to flip</span></button>`;
+  const coinHtml = heads => `<button class="coin-wrap" aria-label="Flip the coin"><div class="coin" data-end="${heads ? 1440 : 1620}">${'<i class="coin-rim"></i>'.repeat(7)}<div class="coin-f h">⚽<b>HEADS</b></div><div class="coin-f t">🧤<b>TAILS</b></div></div><i class="coin-shadow"></i><span class="coin-go">👆 Tap to flip</span></button>`;
   const mgrCard = k => { const m = MANAGERS[k]; return `<button class="mgr" data-mgr="${k}"><span class="mgr-ico">${m.icon}</span><b>${m.name}</b><small class="up">✅ ${m.perk}</small><small class="down">⚠️ ${m.catch}</small></button>`; };
   /* A moment in three acts. 1: the entrance, full screen with its own scene and sound (you flip the coin here, or pick
      a manager). 2: the action, as the card drops to the bottom and whatever it is happens on your pitch while the
@@ -836,16 +836,19 @@
         // flipped frame by frame: up, spinning end over end, and down on the right face (a CSS keyframe version
         // blended the spin as a matrix, which just wobbled)
         const coin = el.querySelector('.coin'), sh = el.querySelector('.coin-shadow'), end = +coin.dataset.end;
-        const T = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : 1600, start = performance.now();
+        // four turns end over end (a fifth for tails), thrown high, tilted and wobbling so you see it's a coin with an
+        // edge (the rim) and not a flat disc; the spin slows into the landing with a little bounce
+        const T = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : 1900, start = performance.now();
         coin.style.animation = 'none';
         const step = now => {
-          const t = Math.min(1, (now - start) / T), spin = 1 - Math.pow(1 - t, 2.2), up = Math.sin(Math.PI * t);
-          coin.style.transform = `translateY(${(-130 * up).toFixed(1)}px) scale(${(1 + 0.3 * up).toFixed(3)}) rotateX(${(end * spin).toFixed(1)}deg)`;
-          if (sh) sh.style.transform = `scale(${(1 - 0.55 * up).toFixed(3)})`;
+          const t = Math.min(1, (now - start) / T), spin = 1 - Math.pow(1 - t, 2.4), up = Math.sin(Math.PI * Math.min(1, t / 0.9));
+          const bounce = t > 0.9 ? Math.sin((t - 0.9) / 0.1 * Math.PI) * 10 : 0, tilt = 22 * (1 - t), wob = Math.sin(t * Math.PI * 5) * 10 * (1 - t);
+          coin.style.transform = `translateY(${(-170 * up - bounce).toFixed(1)}px) scale(${(1 + 0.35 * up).toFixed(3)}) rotateY(${(tilt + wob).toFixed(1)}deg) rotateX(${(end * spin).toFixed(1)}deg)`;
+          if (sh) sh.style.transform = `scale(${(1 - 0.6 * up).toFixed(3)})`;
           if (t < 1) requestAnimationFrame(step);
         };
         requestAnimationFrame(step);
-        later(T === 1 ? 50 : 1600, () => {
+        later(T === 1 ? 50 : 1900, () => {
           el.classList.add('landed'); GM.sound.play('coinland');
           later(150, () => { GM.sound.play(o.coin ? 'cheer' : 'boo'); setText(o.after, o.coin ? 'good' : 'bad'); });
           later(2000, act);
