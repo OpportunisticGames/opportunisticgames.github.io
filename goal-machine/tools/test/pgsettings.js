@@ -13,7 +13,10 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   });
   await pg.goto(U);
   await pg.evaluate(() => { localStorage.clear(); const set = (k, v) => localStorage.setItem('gm:' + k, JSON.stringify(v)); set('seenVersion', 999); set('welcomed', 1); set('sfx', false); });
-  await pg.goto(U + '#/settings?s=notify'); await pg.waitForTimeout(800);
+  await pg.goto(U + '#/settings'); await pg.waitForTimeout(600);
+  ok(await pg.evaluate(() => /Google Play Games/.test(document.body.textContent)), 'the Settings list has a Google Play Games row');
+  await pg.goto(U + '#/settings?s=pgs'); await pg.waitForTimeout(800);
+  ok(await pg.evaluate(() => /Google Play Games/.test(document.querySelector('.settings-groups, .settings')?.textContent || document.body.textContent)), 'Google Play Games is its own section');
   ok(/Signed in as Tester/.test(await pg.textContent('#s-pgs')), 'Settings shows who you are signed in as');
   await pg.click('#s-pgsin'); await pg.click('#s-pgsbadges'); await pg.click('#s-pgsboards');
   ok(JSON.stringify(await pg.evaluate(() => window.__calls)) === '["in","badges","boards"]', 'the buttons call Sign in, achievements and leaderboards');

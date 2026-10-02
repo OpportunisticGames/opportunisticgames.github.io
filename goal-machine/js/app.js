@@ -333,6 +333,7 @@
       ['look', '🎨 Look & club', `${GM.THEMES[GM.getTheme()] || ''} · ${GM.favClub() ? GM.esc(GM.clubShort(GM.favClub())) : 'No club'}`],
       ['sound', '🔊 Sound & vibration', `Effects ${snd.sfx ? 'on' : 'off'} · Music: ${{ off: 'off', music: 'game', tunes: 'soundtrack' }[snd.bg]}`],
       ...(inApp ? [['notify', '🔔 Notifications', `${GM.notify.KINDS.filter(([k]) => np[k]).length + (np.daily ? 1 : 0)} of ${GM.notify.KINDS.length + 1} on`]] : []),
+      ...(inApp && GM.app('pgsAvailable') ? [['pgs', '🏆 Google Play Games', 'Sign-in, achievements, leaderboards']] : []),
       ['play', '🎮 Gameplay', GM.LEVELS[GM.level()].slice(0, 2).join(' ')],
     ];
     const sub = GROUPS.some(g => g[0] === parseHash().q.s) ? parseHash().q.s : '';
@@ -365,7 +366,7 @@
             <label><span><b>📅 Daily reminder</b><small>A nudge to play the daily games, if you haven't yet</small></span><select class="input" id="s-ndaily"><option value="">Off</option>${Array.from({ length: 31 }, (_, i) => { const t = String(7 + Math.floor(i / 2)).padStart(2, '0') + (i % 2 ? ':30' : ':00'); return `<option ${GM.notify.prefs().daily === t ? 'selected' : ''}>${t}</option>`; }).join('')}</select></label></div>
           <div id="s-nstatus" class="nstatus"></div>
           <div class="setting-btns"><button class="btn ghost small" id="s-ntest">🔔 Send a test</button><button class="btn ghost small" id="s-ncheck">🔄 Check now</button><button class="btn ghost small" id="s-notif">⚙️ Phone settings</button></div></div>`) : ''}
-        ${inApp && GM.app('pgsAvailable') ? grp('notify', `<div class="setting"><b>🎮 Google Play Games</b><small>Your badges, scores and stats go to your Play Games profile when you’re signed in.</small>
+        ${inApp && GM.app('pgsAvailable') ? grp('pgs', `<div class="setting"><b>🏆 Google Play Games</b><small>Your badges, scores and stats go to your Play Games profile when you’re signed in.</small>
           <div id="s-pgs" class="nstatus"><span>Checking…</span></div>
           <div class="setting-btns"><button class="btn ghost small" id="s-pgsin">🔑 Sign in</button><button class="btn ghost small" id="s-pgsbadges">🏅 My achievements</button><button class="btn ghost small" id="s-pgsboards">🏆 Leaderboards</button></div></div>`) : ''}
         ${grp('play', `<div class="setting"><b>Difficulty</b><small>Hard hides clubs, years and appearances: names and positions only, and in the Target games big-name players turn up less often. Extreme brings in every one of the 5,000+ PL players, not just the 50+ app ones, in the Main event, CHAOS, the Target and money games, Higher or Lower and Guess the Tally. Where you type names (Who Am I?, the Club Grid, Club Hopper) every PL player always counts, and Extreme turns the suggestions off: type the whole name. The daily games stay the same for everyone. Each level has its own leaderboards</small>${seg('s-level', Object.fromEntries(Object.entries(GM.LEVELS).map(([k, [i, n]]) => [k, i + ' ' + n])), GM.level())}</div>`)}
