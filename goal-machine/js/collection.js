@@ -256,17 +256,40 @@
   let pgsSent = null, pgsTimer = 0;   // what this run has already told Play (null until the first, full, send)
   GM.pgsSync = () => {
     if (!GM.app('pgsAvailable')) return;
+    const lv = GM.myLevel().n;
+    if (lv !== levelSent) { levelSent = lv; GM.pgsStat('progressUpdate', { currentProgress: lv }); }
     const now = pgsState(load()), diff = {};
     Object.keys(now).forEach(k => { if (!pgsSent || pgsSent[k] !== now[k]) diff[k] = now[k]; });
     pgsSent = now;
     if (Object.keys(diff).length) GM.app('pgsUpdate', JSON.stringify(diff));
   };
-  setTimeout(GM.pgsSync, 6000);   // each time the app opens, everything is sent again so nothing is missed
+  let levelSent = 0;
+  const syncAll = () => { levelSent = 0; pgsSent = null; GM.pgsSync(); };
+  setTimeout(syncAll, 6000);   // each time the app opens, everything is sent again so nothing is missed
+
+  /* Leaderboards (the main event, CHAOS and Purist at Normal, Hard and Extreme) and Game Stats on the Play Games profile.
+     Boards are found in Play by their name, so these names must match Play Console exactly. */
+  const LB = {
+    ultimate: 'Ultimate Wildcard (Normal)', ultimateh: 'Ultimate Wildcard (Hard)', extreme: 'Ultimate Wildcard (Extreme)',
+    chaos: 'CHAOS (Normal)', chaosh: 'CHAOS (Hard)', chaosx: 'CHAOS (Extreme)',
+    ultimatepure: 'Purist (Normal)', ultimatepureh: 'Purist (Hard)', purist: 'Purist (Extreme)',
+  };
+  GM.PGS_BOARDS = LB;
+  const DRAFTS = /^(ultimate|ultimatepure|classic|classicwild|extreme|purist|chaos|chaosx|target|treble|mystery|daily|dchaos|club|match|nation)/;
+  GM.pgsStat = (name, props) => { if (GM.app('pgsAvailable')) GM.app('pgsStats', JSON.stringify([{ name, props: props || {} }])); };
+  // every finished game: its score to the leaderboard it belongs to (if any) and a Game Stats event
+  GM.pgsRecord = (mode, score) => {
+    if (!GM.app('pgsAvailable') || !isFinite(score)) return;
+    if (LB[mode] && score > 0) GM.app('pgsScore', LB[mode], score);
+    const board = String(mode).replace(/:.*/, '');
+    GM.pgsStat('gameCompleted', { gameType: DRAFTS.test(board) ? 'draft' : 'game', board, score: Math.round(score), isDaily: /^(daily|dchaos|footle|grid|dmoney|mbdaily):/.test(mode) });
+  };
 
   function celebrate(fresh, newPlayers) {
     let delay = 600;
     if (fresh.length && GM.givePack) GM.givePack(fresh.length, fresh.length > 1 ? 'new badges' : 'new badge');
     if (fresh.length && GM.addXP) GM.addXP(GM.XP.badge * fresh.length);
+    fresh.forEach(x => GM.pgsStat('badgeUnlocked', { badge: x.name }));
     fresh.forEach(x => { setTimeout(() => GM.toast(`🏅 Badge unlocked: ${x.icon} <b>${x.name}</b>`, 2600), delay); delay += 2800; });
     const stars = newPlayers.filter(p => p.hon.H || p.hon.B || p.goals >= 100);
     if (stars.length) setTimeout(() => GM.toast(`📒 Collected ${stars.slice(0, 2).map(p => GM.esc(p.name)).join(' & ')}${stars.length > 2 ? ` +${stars.length - 2}` : ''}!`, 2600), delay);
@@ -310,6 +333,7 @@
       if (!o.kinds.includes(g.kind)) o.kinds.push(g.kind);
     }
     if (GM.addXP) GM.addXP(won ? GM.XP.win : GM.XP.online);
+    GM.pgsStat('onlineGameFinished', { kind: g.kind || 'game', won: !!won });
     const fresh = check({ type: 'online', kind: g.kind, variant: g.variant, won }, a);
     save(a);
     celebrate(fresh, []);
@@ -318,6 +342,10 @@
   /** Called when any other game finishes. */
   GM.checkGame = function (mode, score, extra) {
     if (GM.addXP) GM.addXP(mode === 'pack' ? GM.XP.pack : GM.XP.game);
+    if (mode === 'pack') {
+      GM.pgsStat('packOpened', { packType: (extra && extra.type) || 'standard' });
+      ((extra && extra.finished) || []).forEach(t => GM.pgsStat('cardFinished', { tier: t }));
+    }
     const a = load();
     const fresh = check({ type: 'game', mode, score, extra }, a);
     if (fresh.length) { save(a); celebrate(fresh, []); }

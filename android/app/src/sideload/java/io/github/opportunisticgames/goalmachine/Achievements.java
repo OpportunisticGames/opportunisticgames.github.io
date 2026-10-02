@@ -14,4 +14,10 @@ final class Achievements {
     static void update(Activity activity, String progressJson) { }
 
     static void show(Activity activity) { }
+
+    static void score(Activity activity, String boardName, long score) { }
+
+    static void showBoards(Activity activity) { }
+
+    static void stats(Activity activity, String eventsJson) { }
 }

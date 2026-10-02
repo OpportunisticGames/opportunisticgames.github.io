@@ -1,0 +1,11 @@
+Event Name,Property Name,Property Type
+gameCompleted,gameType,STRING
+gameCompleted,board,STRING
+gameCompleted,score,INT64
+gameCompleted,isDaily,BOOL
+packOpened,packType,STRING
+cardFinished,tier,STRING
+badgeUnlocked,badge,STRING
+onlineGameFinished,kind,STRING
+onlineGameFinished,won,BOOL
+progressUpdate,currentProgress,INT64

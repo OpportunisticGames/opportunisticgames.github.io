@@ -231,6 +231,24 @@ public class MainActivity extends Activity {
             Achievements.update(MainActivity.this, progressJson);
         }
 
+        /** Submits a score to the Play Games leaderboard with this name. */
+        @JavascriptInterface
+        public void pgsScore(String boardName, double score) {
+            Achievements.score(MainActivity.this, boardName, (long) score);
+        }
+
+        /** Opens Google's leaderboards screen. */
+        @JavascriptInterface
+        public void pgsBoards() {
+            Achievements.showBoards(MainActivity.this);
+        }
+
+        /** Sends Play Games Game Stats events: a JSON array of {name, props}. */
+        @JavascriptInterface
+        public void pgsStats(String eventsJson) {
+            Achievements.stats(MainActivity.this, eventsJson);
+        }
+
         /** Opens Google's achievements screen. */
         @JavascriptInterface
         public void pgsShow() {

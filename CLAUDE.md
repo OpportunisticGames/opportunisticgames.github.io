@@ -31,7 +31,7 @@ game mode for players; this file is about how to work on it.
   insert one row into `announcements` (title, body, link to the new thing, e.g. `…/goal-machine/#/updates`).
   Players with "New game modes" on get it as a notification within ~15 minutes (once, for 3 days).
 
-- **Badges are Google Play Games achievements.** There are 100 (`A` in `js/collection.js`; plan and points in
+- **Badges are Google Play Games achievements (and scores, stats: `GM.pgsRecord`, `GM.pgsStat`, see `notes/PLAY_GAMES.md`).** There are 100 (`A` in `js/collection.js`; plan and points in
   `notes/BADGES.md`). The Play app matches them **by name**, so a badge's name must be exactly the achievement's name
   in Play Console (`android/store/play-achievements/`). Hidden badges (`secret`) are hidden achievements, and Play can't
   delete a published achievement or change hidden/visible, so **don't add or rename a badge without telling the owner**:
