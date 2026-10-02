@@ -105,6 +105,11 @@
   const SOUNDS = {
     // CHAOS: a crash for disasters, a siren for storms, a jackpot run for good fortune
     boom: t => { tone(140, { t, to: 38, glide: 0.45, dur: 0.55, vol: 0.34 }); noise({ t, dur: 0.45, freq: 500, vol: 0.2 }); },
+    // CHAOS vehicles: a police wail, brakes, handcuffs and a flying saucer's wobble
+    police: t => { for (let i = 0; i < 2; i++) { tone(620, { t: t + i * 0.9, to: 1250, glide: 0.42, dur: 0.45, type: 'sawtooth', lp: 2400, vol: 0.05 }); tone(1250, { t: t + i * 0.9 + 0.45, to: 620, glide: 0.42, dur: 0.45, type: 'sawtooth', lp: 2400, vol: 0.05 }); } },
+    screech: t => { noise({ t, dur: 0.35, freq: 3200, to: 2200, q: 8, vol: 0.12 }); tone(2100, { t, to: 1700, dur: 0.3, type: 'sawtooth', lp: 3500, vol: 0.02 }); },
+    cuffs: t => { [0, 0.09, 0.16].forEach(d => noise({ t: t + d, dur: 0.05, freq: 5200, q: 6, vol: 0.18 })); },
+    ufo: t => { for (let i = 0; i < 6; i++) tone(520 + (i % 2) * 260, { t: t + i * 0.3, to: 820 - (i % 2) * 300, glide: 0.3, dur: 0.32, type: 'sine', vol: 0.07 }); tone(1600, { t: t + 1.4, to: 300, glide: 1.2, dur: 1.3, type: 'triangle', vol: 0.05 }); },
     siren: t => { tone(700, { t, to: 1400, glide: 0.3, dur: 0.32, type: 'sawtooth', lp: 2600, vol: 0.05 }); tone(1400, { t: t + 0.32, to: 700, glide: 0.3, dur: 0.32, type: 'sawtooth', lp: 2600, vol: 0.05 }); },
     jackpot: t => [72, 76, 79, 84, 88, 91].forEach((n, i) => tone(midi(n), { t: t + i * 0.06, dur: 0.18, type: 'square', lp: 3000, vol: 0.06 })),
     tap: t => tone(1100, { t, to: 800, dur: 0.05, vol: 0.06 }),

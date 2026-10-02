@@ -354,7 +354,8 @@
             <div class="setting-btns"><button class="btn small" id="s-name">🔒 Claim a name</button><button class="btn ghost small" id="s-code">🔑 I have a transfer code</button></div>`}</div>`)}
         ${grp('look', `<div class="setting"><b>Appearance</b><small>Auto follows your phone's light or dark setting. Club paints the game in your favourite club's colours</small>${seg('s-theme', GM.THEMES, GM.getTheme())}</div>
         <div class="setting"><b>Favourite club</b><small>Unlocks Club Footle and Club XI, and brings your club's colours to the app</small>
-          <select class="input" id="s-club"><option value="">None</option>${GM.clubOptions().map(c => `<option ${c === GM.favClub() ? 'selected' : ''}>${GM.esc(c)}</option>`).join('')}</select></div>`)}
+          <select class="input" id="s-club"><option value="">None</option>${GM.clubOptions().map(c => `<option ${c === GM.favClub() ? 'selected' : ''}>${GM.esc(c)}</option>`).join('')}</select></div>
+        <div class="setting"><b>Animations</b><small>Full: the coin flips, the tornado tears through, the ambulance drives on. Calm keeps movement to a minimum</small>${seg('s-calm', { false: '🎬 Full', true: '🍃 Calm' }, GM.calm())}</div>`)}
         ${grp('sound', `<div class="setting"><b>Sound effects</b><small>Whistles, reels, the crowd and the goal horn</small>${seg('s-sfx', { true: '🔊 On', false: '🔇 Off' }, snd.sfx)}
           <label class="vol">🔈<input type="range" id="s-sfxvol" min="0" max="1" step="0.05" value="${snd.sfxVol}">🔊</label></div>
         <div class="setting"><b>Music</b><small id="s-bg-about"></small>${seg('s-bg', GM.playSafe ? { off: '🔇 Off', music: '🎹 Game' } : { off: '🔇 Off', music: '🎹 Game', tunes: '🎧 Soundtrack' }, snd.bg)}
@@ -434,6 +435,7 @@
     wire('s-theme', v => { GM.setTheme(v); if (v === 'club' && !GM.favClub()) GM.toast('🏟️ Pick your favourite club below to see its colours'); });
     wire('s-level', v => GM.setLevel(v));
     wire('s-buzz', v => GM.store.set('buzz', v === 'true'));
+    wire('s-calm', v => { GM.store.set('calm', v === 'true'); GM.applyCalm(); });
     GM.$('#s-club').onchange = e => { GM.setFavClub(e.target.value); GM.sound.play('whistle'); if (e.target.value) GM.toast(`🏟️ Welcome, ${GM.esc(GM.clubShort(e.target.value))} fan!`); };
     wire('s-sfx', v => { GM.sound.set('sfx', v === 'true'); GM.sound.play('whistle'); });
     const bgInfo = () => {

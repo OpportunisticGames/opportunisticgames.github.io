@@ -873,7 +873,7 @@ h2, h3 { letter-spacing: .3px; }
 .chaos-head b { display: block; font: 700 1.25rem Oswald, sans-serif; text-transform: uppercase; letter-spacing: 1px; } .chaos-head small { opacity: .85; font-size: .78rem; }
 .chaos-card .stat-row { margin: 10px 0 0; } .chaos-card .stat-btn { color: #fff; background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.25); padding: 9px 6px; }
 @keyframes spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .chaos-head > span { animation: none; } }
+/* calm animations (Settings → Look: Calm) */ body.calm .chaos-head > span { animation: none; }
 
 /* ================= Ultimate Wildcard CHAOS: its own neon look (body.chaos-mode is set by the router) ================= */
 body.chaos-mode {
@@ -920,10 +920,7 @@ body.chaos-mode .result-score { color: #ffe600; text-shadow: 0 0 20px rgba(255, 
 @keyframes flash { from { opacity: 1; } to { opacity: 0; } }
 .chaos-emoji { position: fixed; bottom: -40px; z-index: 91; pointer-events: none; animation: float-up 1.8s ease-out forwards; }
 @keyframes float-up { 0% { transform: translateY(0) rotate(0); opacity: 1; } 100% { transform: translateY(-105vh) rotate(540deg); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) {
-  body.chaos-mode::before, body.chaos-mode .topbar h2, body.chaos-mode .reel, body.chaos-mode .btn.spin, #app.shake { animation: none; }
-  .chaos-emoji { display: none; }
-}
+/* calm animations (Settings → Look: Calm) */ body.calm.chaos-mode::before, body.calm.chaos-mode .topbar h2, body.calm.chaos-mode .reel, body.calm.chaos-mode .btn.spin, body.calm #app.shake { animation: none; } body.calm .chaos-emoji { display: none; }
 body.chaos-mode .reel { background: linear-gradient(160deg, #3a0f5f, #1d0433); color: #fff4fe; }
 body.chaos-mode .reel .reel-name { color: #fff; } body.chaos-mode .reel .reel-meta, body.chaos-mode .reel small { color: #d9a8ff; }
 body.chaos-mode .reel .reel-goals { background: rgba(0, 0, 0, .35); color: #ffe600; }
@@ -1428,9 +1425,7 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
 .chaos-story ol { margin: 6px 0 0; padding-left: 22px; display: grid; gap: 4px; }
 .breakdown td.neg { color: var(--bad); }
 .btn.spin[disabled] { opacity: .5; }
-@media (prefers-reduced-motion: reduce) {
-  .cm-card, .cm-icon, .coin, .cm-fx, .slot.hit-up .slot-goals, .slot.hit-down .slot-goals, .slot.hit-down { animation-duration: .01s !important; }
-}
+/* calm animations (Settings → Look: Calm) */ body.calm .cm-card, body.calm .cm-icon, body.calm .coin, body.calm .cm-fx, body.calm .slot.hit-up .slot-goals, body.calm .slot.hit-down .slot-goals, body.calm .slot.hit-down { animation-duration: .01s !important; }
 .chaos-meter span { white-space: nowrap; flex: none; }
 /* CHAOS moments, in three acts: a full-screen entrance, then the card drops to the bottom while it happens on the pitch */
 .cm { top: 0; flex-direction: column; justify-content: flex-end; align-items: center; }
@@ -1565,7 +1560,7 @@ html.intl-break body::after { content: ''; position: fixed; top: 0; left: 0; rig
 .nation-grid button span { font-size: 1.7rem; line-height: 1.1; }
 .nation-grid button.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
 .nation-grid button i { position: absolute; top: 4px; right: 6px; font-style: normal; color: var(--accent); font-weight: 800; }
-@media (prefers-reduced-motion: reduce) { .ib-flags, .match-banner { animation: none; } }
+/* calm animations (Settings → Look: Calm) */ body.calm .ib-flags, body.calm .match-banner { animation: none; }
 
 /* Northern Ireland's flag (no emoji exists) sized like an emoji flag */
 .flag-svg { display: inline-block; width: 1.25em; height: .85em; vertical-align: -0.08em; border-radius: 2px; }
@@ -1766,7 +1761,7 @@ html.intl-break body::after { content: ''; position: fixed; top: 0; left: 0; rig
 .po-actions { position: absolute; left: 0; right: 0; bottom: max(5vh, 20px); display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 16px; }
 .po-better { margin: 0; color: #fde047; text-align: center; }
 .dealt:not(.over) .po-actions::before { content: 'Tap to speed up'; font-size: .75rem; opacity: .55; }
-@media (prefers-reduced-motion: reduce) { .po-foil::after, .po-pack, .po-hint, .po-rays, .tier-l .pc-sheen, .tier-g .pc-sheen { animation: none; } }
+/* calm animations (Settings → Look: Calm) */ body.calm .po-foil::after, body.calm .po-pack, body.calm .po-hint, body.calm .po-rays, body.calm .tier-l .pc-sheen, body.calm .tier-g .pc-sheen { animation: none; }
 .pc-name.long { font-size: 1.1em; }
 
 /* Leaderboards: one row of games, one line of drop-downs */
@@ -1920,7 +1915,7 @@ body.money-mode .mb-result .result-score.up { color: #f5c542; }
 .mb-clip:nth-child(even) { transform: rotate(.7deg); }
 .mb-fx { position: fixed; inset: 0; pointer-events: none; z-index: 140; }
 .mb-fx i { position: fixed; width: 7px; height: 7px; border-radius: 2px; animation: spark 1.1s ease-out forwards; }
-@media (prefers-reduced-motion: reduce) { .mbb-ticker span, .mb-hero, .mb-deadline { animation: none; } }
+/* calm animations (Settings → Look: Calm) */ body.calm .mbb-ticker span, body.calm .mb-hero, body.calm .mb-deadline { animation: none; }
 body.money-mode .mb-report.up, body.money-mode .mb-report.down, body.money-mode .mb-hud.up, body.money-mode .mb-hud.down { color: var(--text); }
 body.money-mode .mb-hud.up .mbh-ch { color: #3ddc84; } body.money-mode .mb-hud.down .mbh-ch { color: #ff6b6b; }
 
@@ -2427,9 +2422,37 @@ html.intl-break #app { padding-top: 22px; }
 .cm-fx.dash { left: 0; font-size: 3.4rem; animation: cm-dash 1.7s linear forwards; }
 @keyframes cm-dash { 0% { transform: translate(-60px, -50%); } 20% { transform: translate(20vw, -60%); } 40% { transform: translate(40vw, -45%); } 60% { transform: translate(55vw, -60%); }
   80% { transform: translate(78vw, -45%); } 100% { transform: translate(calc(100vw + 40px), -55%); } }
-@media (prefers-reduced-motion: reduce) { .cm-tornado, .cm-hole, .slot.spun, .pitch.windy, .mess i.new { animation-duration: .01s !important; animation-iteration-count: 1 !important; } }
+/* calm animations (Settings → Look: Calm) */ body.calm .cm-tornado, body.calm .cm-hole, body.calm .slot.spun, body.calm .pitch.windy, body.calm .mess i.new { animation-duration: .01s !important; animation-iteration-count: 1 !important; }
 /* the coin's edge: thin gold discs stacked between the two faces, so mid-flip you see a rim, not nothing */
 .coin-rim { position: absolute; inset: 0; border-radius: 50%; background: linear-gradient(90deg, #8a6406, #d9a91c 40%, #f6d55a 55%, #8a6406); }
 .coin-rim:nth-child(1) { transform: translateZ(-4.5px); } .coin-rim:nth-child(2) { transform: translateZ(-3px); } .coin-rim:nth-child(3) { transform: translateZ(-1.5px); }
 .coin-rim:nth-child(4) { transform: translateZ(0); } .coin-rim:nth-child(5) { transform: translateZ(1.5px); } .coin-rim:nth-child(6) { transform: translateZ(3px); }
 .coin-rim:nth-child(7) { transform: translateZ(4.5px); }
+/* CHAOS vehicles: drawn, not emoji. Wheels turn while they move, lights flash, and some park by a player */
+.cm-veh { position: absolute; z-index: 7; pointer-events: none; transform: translate(-50%, -50%); filter: drop-shadow(0 4px 4px rgba(0, 0, 0, .45)); }
+.cm-veh.flip .spr { transform: scaleX(-1); }
+.spr { display: block; overflow: visible; }
+.spr .whl { transform-box: fill-box; transform-origin: center; }
+.cm-veh.moving .whl { animation: wheel-turn .22s linear infinite; }
+.cm-veh.flip.moving .whl { animation-direction: reverse; }
+@keyframes wheel-turn { to { transform: rotate(360deg); } }
+.spr .lt { animation: light-flash .32s steps(1) infinite; }
+.spr .lt.b { animation-delay: .16s; }
+@keyframes light-flash { 50% { opacity: .15; } }
+/* the glow of the lights on the grass */
+.cm-veh::after { content: ''; position: absolute; left: 30%; top: -6px; width: 40px; height: 22px; border-radius: 50%; background: radial-gradient(rgba(70, 140, 255, .55), transparent 70%); animation: light-flash .32s steps(1) infinite; }
+/* the ambulance stays by an injured player for the rest of the game */
+.slot .parked { position: absolute; left: -22px; bottom: -8px; z-index: 2; width: 46px; pointer-events: none; transform: rotate(-4deg); }
+.slot .parked.r { left: auto; right: -22px; transform: scaleX(-1) rotate(-4deg); }
+.slot .parked .spr { width: 46px; height: auto; }
+/* nicked: he's bundled into the police car; beamed: he floats up into the saucer */
+.slot.nicked .avatar, .slot.nicked .slot-name, .slot.nicked .slot-goals { animation: nicked .9s ease-in forwards; }
+@keyframes nicked { 30% { transform: translateX(-6px) rotate(-8deg); } 100% { transform: translateX(-40px) translateY(8px) scale(.2); opacity: 0; } }
+.slot.beamed .avatar { animation: beamed 1.4s ease-in forwards; }
+@keyframes beamed { 0% { transform: none; } 30% { transform: translateY(-6px) rotate(8deg); } 100% { transform: translateY(-90px) scale(.3) rotate(-30deg); opacity: 0; } }
+.cm-ufo { position: absolute; z-index: 7; pointer-events: none; transform: translate(-50%, -50%); filter: drop-shadow(0 6px 8px rgba(0, 0, 0, .5)); }
+.cm-ufo .beam { position: absolute; left: 50%; top: 34px; width: 70px; height: 0; transform: translateX(-50%); clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+  background: linear-gradient(rgba(190, 255, 140, .85), rgba(190, 255, 140, .15)); transition: height .3s; }
+.cm-ufo.beaming .beam { height: 92px; animation: beam-hum .25s ease-in-out infinite alternate; }
+@keyframes beam-hum { to { opacity: .6; } }
+body.calm .cm-veh.moving .whl, body.calm .spr .lt, body.calm .cm-veh::after { animation: none; }
