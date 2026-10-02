@@ -60,7 +60,8 @@ game mode for players; this file is about how to work on it.
 - `modes.js` – quick games (Club Hopper, Higher or Lower, Who Am I?, Club Grid, Guess the Tally); `h2h.js` – pass-the-phone series.
 - `daily.js` – Today page, Footle, daily streaks. `collection.js` – Album, badges, Dream XIs. `report.js` – full-time report.
 - `picture.js` – share-a-picture of your XI. `audio.js` – synthesised sound + music. `updates.js` – changelog.
-- Data: `data/players.js` (2,039 players with 50+ apps), the full list is loaded on demand; built by `tools/build_players.py`.
+- Data: `data/players.js` (2,039 players with 50+ apps), the full list is loaded on demand; built by `tools/build_players.py`,
+  then `tools/clean_sheets.py` adds keepers' clean sheets (column 13; CHAOS counts one goal per three).
 
 ## Backend (Supabase project `tberlvceqqspgwlfzisy`)
 Everything goes through security-definer RPCs that check the account with `gm_auth(p_user, p_key)`.
@@ -111,6 +112,10 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    - `features.js` – CHAOS formations, Target percentages, the Players filter, feedback and badges.
    - `cards.js` – every reel card fits, even with bigger text (`FS=130% node cards.js`).
    - `names.js` – rude names refused, reporting a name, a hidden name renamed, and no Soundtrack in the Play app.
+   - `chaosnew.js` – keepers' clean sheets, the newer CHAOS wildcards and moments, leftovers, van Gaal and Conte.
+   - `managers.js` – manager balance: a bot plays the same seeded CHAOS drafts with every manager (timers sped up) and
+     compares average points (`node managers.js 150 "" 6`, ~25 min; `SIM_URL` points it at a frozen copy so you can keep
+     editing). Keep every manager within about 5% of the average.
    - `layout.js` – plays whole drafts and checks the pitch never changes size (`node layout.js "chaos:1,ultimate:0" 360x740`).
    Screenshots land in `./lay/` (ignored by git). Block photo hosts with `ctx.route(...)` to keep runs fast.
 3. Tests set `gm:welcomed` and `gm:seenVersion` in localStorage so the welcome and What's New pop-ups stay out of the way.

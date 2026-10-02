@@ -3,7 +3,7 @@
 // grabs and plays wildcards now and then, and flips every coin.
 //   node managers.js [games per manager, default 30] [managers, e.g. "pulis,dyche"] [parallel pages, default 6]
 const { chromium } = require(require('child_process').execSync('npm root -g').toString().trim() + '/playwright');
-const U = 'http://localhost:8765/goal-machine/';
+const U = process.env.SIM_URL || 'http://localhost:8765/goal-machine/';
 const GAMES = +(process.argv[2] || 30), ONLY = (process.argv[3] || '').split(',').filter(Boolean), PAR = +(process.argv[4] || 6);
 
 // speed every timer up (animations and pauses), so a whole CHAOS draft takes a second or two
