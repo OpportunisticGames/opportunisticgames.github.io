@@ -9,4 +9,4 @@ Built from `notes/BADGES.md`. `goal-machine-achievements.zip` is what Play Conso
    and can't change between hidden and visible, so read it through before publishing.
 3. Copy each achievement's ID (looks like `CgkI...`) into `badge-ids.csv`, last column, and send it back.
 
-If the import rejects the first row, delete the header line of the CSV and zip again. Icons are made by `make_icons.js`.
+The two CSVs have no header row (Play treats every line as an achievement). Icons are made by `make_icons.js`.
