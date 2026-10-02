@@ -7,6 +7,7 @@ import com.google.android.gms.games.achievement.Achievement;
 import com.google.android.gms.games.achievement.AchievementBuffer;
 import com.google.android.gms.games.AchievementsClient;
 import com.google.android.gms.games.GameStatsClient;
+import com.google.android.gms.games.GamesSignInClient;
 import com.google.android.gms.games.LeaderboardsClient;
 import com.google.android.gms.games.leaderboard.Leaderboard;
 import com.google.android.gms.games.leaderboard.LeaderboardBuffer;
@@ -32,8 +33,50 @@ final class Achievements {
 
     static final boolean AVAILABLE = true;
 
-    static void init(Context context) {
-        PlayGamesSdk.initialize(context.getApplicationContext());
+    /** Play Games starts in GoalMachineApp (the Application), so there is nothing to do here. */
+    static void init(Context context) { }
+
+    private static volatile String status = "Checking…";
+
+    /** What the Settings page shows: signed in as whom, or why not. */
+    static String status() {
+        return status;
+    }
+
+    /**
+     * Checks whether Play Games has signed this player in. With interactive set (the Sign in button) a player who isn't
+     * signed in is asked to sign in.
+     */
+    static void checkSignIn(Activity activity, boolean interactive) {
+        activity.runOnUiThread(() -> {
+            try {
+                final GamesSignInClient client = PlayGames.getGamesSignInClient(activity);
+                client.isAuthenticated().addOnCompleteListener(task -> {
+                    boolean ok = task.isSuccessful() && task.getResult() != null && task.getResult().isAuthenticated();
+                    if (ok) {
+                        PlayGames.getPlayersClient(activity).getCurrentPlayer()
+                            .addOnSuccessListener(p -> status = "Signed in as " + p.getDisplayName())
+                            .addOnFailureListener(e -> status = "Signed in");
+                    } else if (interactive) {
+                        status = "Signing in…";
+                        client.signIn().addOnCompleteListener(t2 -> {
+                            boolean done = t2.isSuccessful() && t2.getResult() != null && t2.getResult().isAuthenticated();
+                            status = done ? "Signed in" : "Not signed in: " + describe(t2.getException());
+                        });
+                    } else {
+                        status = "Not signed in" + (task.isSuccessful() ? "" : ": " + describe(task.getException()));
+                    }
+                });
+            } catch (Exception e) {
+                status = "Play Games isn't available: " + describe(e);
+            }
+        });
+    }
+
+    private static String describe(Exception e) {
+        if (e == null) return "Google didn't sign you in";
+        String m = e.getMessage();
+        return m == null || m.isEmpty() ? e.getClass().getSimpleName() : m;
     }
 
     /**
