@@ -56,6 +56,24 @@ formations, and badges round 2.
 - **Owner's answer (2 Oct):** the sheet must **never open on the reels**: it would give the game away. Only once a player is in
   your team (on the pitch, the result screen, packs, the Players index, the Album). That settles the mid-draft question: no ⓘ
   on reel cards at all. Still open: Hard mode (probably the same sheet, since the player is already signed), bio now or later.
+- **Owner (2 Oct):** Hard mode is fine for the sheet. Waiting for the go to build it (after the photos land).
+
+### Cards are too easy from drafts: every Silver+ card needs one pack piece 💬 *(owner, 2 Oct 2026)*
+- **Owner's words:** "it does feel too easy, maybe too easy for the legends? Like in CHAOS you can get multiple Centurion
+  throws per game. I like that you can get players from game modes too. Maybe every card needs to be both packed as well as
+  in game? A legend you could do in game 4 times but you would still need to pack them once to complete it? … You don't have
+  to get every player in game but to fully unlock a player you do have to pack them? Be creative."
+- **How it works today:** a signing gives 1 piece (once a day per player), packs give 5. Bronze needs 1, Silver 2, Gold 3,
+  Legend 5. So a Legend is finished by five days of signing him, with no pack at all.
+- **Proposal (A, recommended):** keep every piece source, but Silver, Gold and Legend need **at least one piece from a pack**.
+  Game pieces fill the card up to one short of full; the last piece has to come from a pack. Bronze stays finishable anywhere
+  (1,300 players, they should stay easy). So: Silver 1 game + 1 pack, Gold 2 + 1, Legend 4 + 1. The card shows a 🎁 pip for the
+  pack piece, so you can see what's missing. Packs favour cards that are "one pack away". Cards already finished stay finished.
+- **Alternatives:** (B) game pieces count half (two signings = a piece), no pack rule; (C) Legends (and Gold) only from packs,
+  games just show progress; (D) A + Legends need 2 pack pieces.
+- **Data:** a second count per card (`pack pieces`); existing finished cards get one pack piece so nothing is taken away.
+  Badges ("finish a Gold / Legend card") and the Packed XI keep working; the Packed XI will grow more slowly.
+- **Questions:** A or one of the others? Should Bronze really stay game-finishable?
 
 ### CHAOS moments: make the chaos part of the game, not a pop-up ✅ shipped in 5.4
 - **Owner's words (26 Sep):** "The most fun mode but things pop up all at once and it's quite hard to tell what's
