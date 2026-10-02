@@ -205,7 +205,7 @@ def credit(ii, page_title):
 def from_wikipedia(p):
     surname = fold(p['name']).split()[-1]
     titles = []
-    for q in (f"{p['name']} footballer {p['main']}", f"{p['name']} footballer", f"{p['name']} {p['clubs'][0]} {p['clubs'][-1]} player"):
+    for q in (f"{p['name']} footballer {p['main']}", f"{p['name']} footballer", f"{p['name']} {' '.join(p['clubs'][:1] + p['clubs'][-1:])} player"):
         res = get_json(WAPI + urllib.parse.urlencode({'action': 'query', 'list': 'search', 'srsearch': q, 'srlimit': 5, 'format': 'json'}))
         for x in (res or {}).get('query', {}).get('search', []):
             if surname in fold(x['title']) and x['title'] not in titles:
@@ -302,7 +302,11 @@ def main():
         hit = None
         if not p['code'] and not p['tm'] and not (photos.get(key(p)) or {}).get('pl'):
             hit = from_pl(p, idx)
-        w = from_wikipedia(p)
+        try:
+            w = from_wikipedia(p)
+        except Exception as e:   # one odd record must never stop a long run: it is tried again next time
+            print(f'  skipped {p["name"]}: {type(e).__name__}: {e}', file=sys.stderr)
+            return p, hit, None, True
         return p, hit, w, _tl.failed
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex:
