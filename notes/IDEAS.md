@@ -23,6 +23,20 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### CHAOS: keepers that matter, ways to win points back, more wildcards and managers 💬 *(owner, 2 Oct 2026)*
+- **Owner's words:** "Who ate all the pies" is a dud in goals mode (keepers don't score). Either a flat bonus, or "rework it
+  so keepers can actually contribute to the game". Also: "a way for a player to regain the points they have lost, like a
+  wildcard to reset a player's points, or a super rare event that makes everyone who has lost points regain points". And
+  "a few more interesting wildcards … and perhaps a few more managers".
+- **Notes (not built):**
+  - *Pies:* a keeper has about 0 goals, so ×2 does nothing. Options: a flat bonus in goals/assists (apps still doubles), or
+    a keeper-specific stat (clean sheets, saves) that all keepers could earn from in CHAOS.
+  - *Win points back:* a wildcard "Second Chance" that restores one hurt player (halved/zeroed/injured) to his full number,
+    and a rare event "Amnesty" / "The VAR overturns it" that restores everyone hurt. Both leave boosts alone.
+  - *Wildcards and managers:* ideas to pick from when we talk it through.
+- **Questions:** keeper stat (flat bonus or clean sheets)? Is "restore" only the damage, or the damage plus a bonus? Should
+  Second Chance be a wildcard you can hold or a random event? How many new wildcards and managers (suggest 4 each)?
+
 ### Google Play Games: achievements and Sidekick 💬 *(owner, 2 Oct 2026)*
 - **Owner's words:** Sidekick is switched on in Play Console; wants our badges to count as Google Play achievements
   (Play Points, the Play Games profile, Sidekick).
