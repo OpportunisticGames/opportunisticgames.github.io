@@ -21,7 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA, ALL, OUT, CHECKED = ROOT / 'data/players.js', ROOT / 'data/players_all.js', ROOT / 'data/photos.js', ROOT / 'data/photos_checked.json'
-MATCHER = 5  # raise when the finder gets better: earlier misses are then tried again at once
+MATCHER = 6  # raise when the finder gets better: earlier misses are then tried again at once
 SRC = os.environ.get('SRC', 'src')
 UA = 'GoalMachinePhotos/1.0 (https://opportunisticgames.github.io/goal-machine/; fan-made quiz game)'
 PL_PHOTO = 'https://resources.premierleague.com/premierleague/photos/players/110x140/p{}.png'
@@ -228,6 +228,12 @@ def from_wikipedia(p):
         exact = fold(re.sub(r'\s*\(.*\)$', '', pg['title'])) == fold(p['name'])
         born = re.search(r'born[^)]{0,40}?\b(19\d\d|20\d\d)\b', pg.get('extract', '')[:400])
         if born and not (15 <= p['first'] - int(born.group(1)) <= 40):
+            continue
+        # "(1865 – 1946)": a life that ended before his Premier League career began is somebody else with the same name
+        span = re.search(r'\((?:[^)]{0,30}?)\b(1[5-9]\d\d)\b\s*[–-]\s*(?:[^)]{0,20}?)\b(1[5-9]\d\d|20\d\d)\b', pg.get('extract', '')[:300])
+        if span and (int(span.group(2)) < p['first'] or p['first'] - int(span.group(1)) > 40):
+            continue
+        if not born and re.search(r'\b1[5-8]\d\d\b', pg.get('extract', '')[:200]):
             continue
         if not (exact and born) and not any(t in text for t in tests):
             continue
