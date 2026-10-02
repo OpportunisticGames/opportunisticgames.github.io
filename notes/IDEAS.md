@@ -34,6 +34,27 @@ formations, and badges round 2.
 - **Questions (old):** which badges become achievements (all, or about 30 of the best)? Icons (512x512) and descriptions
   for each. Sign-in: PGS v2 signs in automatically, so no extra button, but we should say what it shares.
 
+### Player sheet: tap any player for a profile 💬 *(owner, 2 Oct 2026)*
+- **Owner's words:** "it would be nice if you could click a player, whether it be on a pack, in the player index or even in
+  game, and see a little bio about the player maybe? Idk how big of a job this would be, but … it could even just be their
+  apps, goals, assists, who they played for, when they played, how many times you have used them in games etc. … if on a game
+  and you clicked on a player maybe this popup also showed you their card? So you could be like oh this player played for
+  those clubs, oh I've unlocked this player."
+- **We already have:** apps, goals, assists, positions, nationality, every club and the seasons at each (stints), honours,
+  first/last season, how often you've been offered and signed a player (`GM.pickCount`), your card progress (pips) and whether
+  you've signed him (the Album). Tapping a player opens a sheet from a pack card, the Players index and the Album today only in
+  part, and not at all mid-draft.
+- **A small job (a day or so):** one shared `GM.playerSheet(p)` popup: photo, the card (with your pips and whether it's
+  finished), main club and every club with its seasons, apps/goals/assists, honours, "you've signed him N times, offered N
+  times", and a link to the Wikipedia article. Then wire it to taps on pack cards, the Players index, the Album and Dream XI.
+- **Mid-draft is the careful part:** a tap on a reel already means "pick this player". Options: a small ⓘ on each reel card, or
+  a long-press, so a normal tap still picks. Hard mode must not leak clubs/years: the sheet would show the name, photo and
+  card only (or be disabled in Hard).
+- **A bio** (a few lines of text) would need a source: Wikipedia's article summary, fetched when the sheet opens (free
+  licence, needs credit, needs the network) or pre-fetched into a data file by the weekly job (big: 5,000+ players). Suggest
+  starting without a bio, with a "Read on Wikipedia" link.
+- **Questions:** Hard mode behaviour? ⓘ or long-press mid-draft? Bio now (live from Wikipedia) or later?
+
 ### CHAOS moments: make the chaos part of the game, not a pop-up ✅ shipped in 5.4
 - **Owner's words (26 Sep):** "The most fun mode but things pop up all at once and it's quite hard to tell what's
   going on… I dont want it to be less fun, but maybe prevent a million things happening at once. Like if my entire

@@ -9,6 +9,12 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 53, label: '5.13.3', date: '2026-10-02', title: '🃏 The right club on the card',
+      items: [
+        '🃏 A player’s card now shows the club he’s best known for (the one with the most Premier League seasons), not just the first club he played for: Kane is Spurs, Rio is Man Utd',
+      ],
+    },
+    {
       v: 52, label: '5.13.2', date: '2026-10-02', title: '🏆 Play Games in Settings',
       items: [
         '🏆 In the Play app, Google Play Games now has its own section in Settings, next to Account and Gameplay',

@@ -1,7 +1,7 @@
 name: Find player photos
 
-# Looks up faces for players without a Premier League (FPL) photo: premierleague.com's archive first, then freely
-# licensed Wikipedia images. Runs weekly after the data update, by hand from the Actions tab, and when the finder
+# Looks up freely licensed Wikipedia/Wikimedia photos for everyone (the Google Play app shows only these), and
+# premierleague.com archive photos for older players with none. Runs weekly after the data update, by hand from the Actions tab, and when the finder
 # changes on a feature branch (committing the result back to that branch).
 on:
   schedule:
@@ -20,6 +20,7 @@ concurrency: update-data
 jobs:
   photos:
     runs-on: ubuntu-latest
+    timeout-minutes: 340  # each run looks up to 1,500 players; the weekly runs work through everyone over a few weeks
     steps:
       - uses: actions/checkout@v5
 

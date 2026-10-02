@@ -41,6 +41,13 @@ GM.parseData = function (D) {
     };
     p.pk = p.name + '|' + p.first;  // stable key: survives the weekly data refresh re-ordering players
     p.photo = PH[p.pk] || null;
+    // the club he's best known for: the one with the most Premier League seasons (the latest of any tie), else the first
+    let best = p.clubs[0], bn = 0, bl = 0;
+    for (const [c, ys] of Object.entries(p.stints)) {
+      const n = ys.size, l = Math.max(...ys);
+      if (n > bn || (n === bn && l > bl)) { best = c; bn = n; bl = l; }
+    }
+    p.main = best;
     // "fame" weight – used so the reels lean towards players people have heard of
     p.pos = GM.GROUP[p.poss[0]]; p.fame = p.apps * (1 + p.goals / 30); p.key = GM.fold(p.name);
     return p;

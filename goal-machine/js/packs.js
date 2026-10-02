@@ -216,7 +216,7 @@
         <div class="pc-photo">${GM.avatar(p, 'lg')}</div>
         <div class="pc-name${short(p.name).length > 13 ? ' xxlong' : short(p.name).length > 10 ? ' xlong' : short(p.name).length > 7 ? ' long' : ''}">${GM.esc(short(p.name))}</div>
         <div class="pc-stats"><span><b>${p.ast}</b>AST</span><span><b>${p.apps}</b>APP</span><span><b>${p.first}</b>DEB</span></div>
-        <div class="pc-foot"><span class="pc-club">${GM.esc(GM.clubShort(p.clubs[0]))}</span><span class="pc-pips">${x.spare ? '<em>spare</em>' : pips}</span></div>
+        <div class="pc-foot"><span class="pc-club">${GM.esc(GM.clubShort(p.main))}</span><span class="pc-pips">${x.spare ? '<em>spare</em>' : pips}</span></div>
         ${x.finished ? '<span class="pc-done">COMPLETE</span>' : ''}${x.chose ? `<span class="pc-chose">${WILDS[x.chose].icon}</span>` : ''}</div></div></div>`;
   };
 
@@ -301,7 +301,7 @@
       const w = el.querySelector('.po-walk'), step = fast ? 450 : 900;
       el.classList.add('walking'); GM.sound.play('drumroll');
       const steps = [`<span class="pw-big">${GM.flag(p.nat)}</span><small>${GM.esc(p.nat || '')}</small>`, `<span class="pw-big">${p.poss[0]}</span><small>${GM.POS_NAME[p.poss[0]] || ''}</small>`,
-        `<span class="pw-club">${GM.clubChip(p.clubs[0], true)}</span>`, '<span class="pw-big">🟣</span><small>LEGEND</small>'];
+        `<span class="pw-club">${GM.clubChip(p.main, true)}</span>`, '<span class="pw-big">🟣</span><small>LEGEND</small>'];
       steps.forEach((s, i) => later(i * step, () => { w.innerHTML = `<div class="pw-step">${s}</div>`; GM.sound.play('walkstep', i); GM.buzz(20); }));
       later(steps.length * step, () => { el.classList.remove('walking'); w.innerHTML = ''; then(); });
     }

@@ -6,15 +6,22 @@
    played for one of his clubs, born at a sensible age) and the file is freely licensed on Wikimedia Commons.
    These need crediting, so the author and licence are kept and listed on the in-game Photo credits page.
 
+It looks at everyone in both player files (the 2,039 with 50+ apps and the full 5,000+), most appearances first,
+because the Google Play version shows only these freely licensed photos. For the Wikipedia step it tries the lead
+image, then the image Wikidata holds for him, then other images on his article and a Commons search, keeping only a
+freely licensed file with his name in it.
+
 Writes data/photos.js (loaded by the page) and data/photos_checked.json (who was looked up and when, so the weekly
 run only retries misses every couple of months). Needs SRC pointing at the fetched sources (for epl-stats).
-Usage: SRC=src python tools/fetch_photos.py [max players to look up]
+Usage: SRC=src python tools/fetch_photos.py [max players to look up]   (FETCH_LIMIT works too; default 1500 a run, so
+the weekly runs work through everyone over a few weeks)
 """
-import csv, datetime, html, json, os, re, sys, time, unicodedata, urllib.parse, urllib.request
+import concurrent.futures, csv, datetime, html, json, os, re, sys, threading, time, unicodedata, urllib.parse, urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DATA, OUT, CHECKED = ROOT / 'data/players.js', ROOT / 'data/photos.js', ROOT / 'data/photos_checked.json'
+DATA, ALL, OUT, CHECKED = ROOT / 'data/players.js', ROOT / 'data/players_all.js', ROOT / 'data/photos.js', ROOT / 'data/photos_checked.json'
+MATCHER = 2  # raise when the finder gets better: earlier misses are then tried again at once
 SRC = os.environ.get('SRC', 'src')
 UA = 'GoalMachinePhotos/1.0 (https://opportunisticgames.github.io/goal-machine/; fan-made quiz game)'
 PL_PHOTO = 'https://resources.premierleague.com/premierleague/photos/players/110x140/p{}.png'
@@ -54,11 +61,35 @@ def get_json(url, headers=None):
         return None
 
 
+def load_file(path):
+    s = path.read_text()
+    return json.loads(s[s.index('=') + 1:s.rindex(';')])
+
+
 def load_players():
-    s = DATA.read_text()
-    d = json.loads(s[s.index('=') + 1:s.rindex(';')])
-    return [dict(name=r[0], clubs=[d['clubs'][c] for c in r[3]], first=r[6], last=r[7], code=r[8],
-                 tm=r[12] if len(r) > 12 else '') for r in d['players']]
+    """Everyone, from both player files (the 50+ apps file first), keyed like the app: 'name|first season'."""
+    seen, out = set(), []
+    for path in (DATA, ALL):
+        if not path.exists():
+            continue
+        d = load_file(path)
+        for r in d['players']:
+            k = f'{r[0]}|{r[6]}'
+            if k in seen:
+                continue
+            seen.add(k)
+            clubs = [d['clubs'][c] for c in r[3]]
+            main, bn = clubs[0] if clubs else '', 0
+            for part in (r[10] if len(r) > 10 and r[10] else '').split('|'):
+                if ':' not in part:
+                    continue
+                ci, runs = part.split(':')
+                n = sum(int(b or a) - int(a) + 1 for a, _, b in (run.partition('-') for run in runs.split('.')))
+                if n > bn and d['clubs'][int(ci)] in clubs:
+                    main, bn = d['clubs'][int(ci)], n
+            out.append(dict(name=r[0], clubs=clubs, main=main, first=r[6], last=r[7], apps=r[4], code=r[8],
+                            tm=r[12] if len(r) > 12 else ''))
+    return out
 
 
 def key(p):
@@ -98,6 +129,8 @@ def from_pl(p, idx):
 # ------------------------------------------------------------------ Wikipedia / Commons
 WAPI = 'https://en.wikipedia.org/w/api.php?'
 CAPI = 'https://commons.wikimedia.org/w/api.php?'
+DAPI = 'https://www.wikidata.org/w/api.php?'
+NOT_A_FACE = re.compile(r'logo|flag|badge|crest|kit|signature|map|stadium|ground|shirt|icon|symbol|cup|trophy|stats|wiki', re.I)
 
 
 def club_tests(clubs):
@@ -111,75 +144,142 @@ def club_tests(clubs):
     return tests
 
 
+def commons_free(titles):
+    """Files on Commons with a free licence, in the order asked: [(title, imageinfo)]."""
+    titles = [t if t.startswith('File:') else 'File:' + t for t in titles]
+    out = []
+    for i in range(0, len(titles), 10):
+        chunk = titles[i:i + 10]
+        img = get_json(CAPI + urllib.parse.urlencode({
+            'action': 'query', 'titles': '|'.join(chunk), 'prop': 'imageinfo', 'iiprop': 'url|extmetadata',
+            'iiurlwidth': 220, 'format': 'json'}))
+        q = (img or {}).get('query', {})
+        norm = {n['from']: n['to'] for n in q.get('normalized', [])}
+        by = {pg.get('title'): pg for pg in q.get('pages', {}).values()}
+        for t in chunk:
+            pg = by.get(norm.get(t, t))
+            ii = ((pg or {}).get('imageinfo') or [None])[0]
+            if not ii:
+                continue  # not on Commons (e.g. a non-free local file)
+            meta = ii.get('extmetadata', {})
+            lic = meta.get('LicenseShortName', {}).get('value', '')
+            if not FREE.match(lic.strip()) or re.search(r'\bN[CD]\b', lic):
+                continue
+            out.append((t, ii))
+    return out
+
+
+def named_for(title, name):
+    """A file name that is plausibly a picture of him: it has his surname and first name in it, and isn't a logo etc."""
+    t = fold(title.rsplit('.', 1)[0].replace('File:', '').replace('_', ' '))
+    parts = fold(name).split()
+    return (re.search(r'\.(jpe?g|png)$', title, re.I) is not None and not NOT_A_FACE.search(t)
+            and parts[-1] in t and (len(parts) < 2 or parts[0] in t or parts[0][0] in t.split()))
+
+
+def credit(ii, page_title):
+    meta = ii.get('extmetadata', {})
+    lic = meta.get('LicenseShortName', {}).get('value', '')
+    artist = re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', '', meta.get('Artist', {}).get('value', 'Unknown')))).strip()
+    return {'w': ii['thumburl'], 'a': artist[:80] or 'Unknown', 'l': lic, 'u': ii['descriptionurl'], 't': page_title}
+
+
 def from_wikipedia(p):
     surname = fold(p['name']).split()[-1]
-    q = f"{p['name']} footballer {p['clubs'][0]}"
-    res = get_json(WAPI + urllib.parse.urlencode({'action': 'query', 'list': 'search', 'srsearch': q, 'srlimit': 5, 'format': 'json'}))
-    titles = [x['title'] for x in (res or {}).get('query', {}).get('search', []) if surname in fold(x['title'])]
+    titles = []
+    for q in (f"{p['name']} footballer {p['main']}", f"{p['name']} footballer", f"{p['name']} {p['clubs'][0]} {p['clubs'][-1]} player"):
+        res = get_json(WAPI + urllib.parse.urlencode({'action': 'query', 'list': 'search', 'srsearch': q, 'srlimit': 5, 'format': 'json'}))
+        for x in (res or {}).get('query', {}).get('search', []):
+            if surname in fold(x['title']) and x['title'] not in titles:
+                titles.append(x['title'])
+        if titles:
+            break
     if not titles:
         return None
     info = get_json(WAPI + urllib.parse.urlencode({
-        'action': 'query', 'titles': '|'.join(titles[:4]), 'prop': 'pageimages|description|extracts', 'piprop': 'name',
-        'exintro': 1, 'explaintext': 1, 'exlimit': 'max', 'redirects': 1, 'format': 'json'}))
+        'action': 'query', 'titles': '|'.join(titles[:4]), 'prop': 'pageimages|description|extracts|pageprops', 'piprop': 'name',
+        'ppprop': 'wikibase_item', 'exintro': 1, 'explaintext': 1, 'exlimit': 'max', 'redirects': 1, 'format': 'json'}))
     pages = sorted((info or {}).get('query', {}).get('pages', {}).values(), key=lambda x: titles.index(x['title']) if x['title'] in titles else 9)
     tests = club_tests(p['clubs'])
     for pg in pages:
         text = fold(pg.get('extract', ''))
-        if 'football' not in fold(pg.get('description', '')) + ' ' + text[:300] or not pg.get('pageimage'):
+        if 'football' not in fold(pg.get('description', '')) + ' ' + text[:300]:
             continue
         if not any(t in text for t in tests):
             continue
         born = re.search(r'born[^)]{0,40}?\b(19\d\d|20\d\d)\b', pg.get('extract', '')[:400])
         if born and not (15 <= p['first'] - int(born.group(1)) <= 40):
             continue
-        img = get_json(CAPI + urllib.parse.urlencode({
-            'action': 'query', 'titles': 'File:' + pg['pageimage'], 'prop': 'imageinfo', 'iiprop': 'url|extmetadata',
-            'iiurlwidth': 220, 'format': 'json'}))
-        page = next(iter((img or {}).get('query', {}).get('pages', {}).values()), {})
-        ii = (page.get('imageinfo') or [None])[0]
-        if not ii:
-            continue  # not on Commons (e.g. a non-free local file)
-        meta = ii.get('extmetadata', {})
-        lic = meta.get('LicenseShortName', {}).get('value', '')
-        if not FREE.match(lic.strip()) or re.search(r'\bN[CD]\b', lic):
-            continue
-        artist = re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', '', meta.get('Artist', {}).get('value', 'Unknown')))).strip()
-        return {'w': ii['thumburl'], 'a': artist[:80] or 'Unknown', 'l': lic, 'u': ii['descriptionurl'], 't': pg['title']}
+        # it's him. Candidate pictures, best first: the article's lead image, Wikidata's image, other images in the
+        # article and a Commons search (those last three only if the file has his name in it)
+        cands = [pg['pageimage']] if pg.get('pageimage') else []
+        qid = (pg.get('pageprops') or {}).get('wikibase_item')
+        if qid:
+            cl = get_json(DAPI + urllib.parse.urlencode({'action': 'wbgetclaims', 'entity': qid, 'property': 'P18', 'format': 'json'}))
+            for c in ((cl or {}).get('claims') or {}).get('P18', []):
+                v = (((c.get('mainsnak') or {}).get('datavalue') or {}).get('value'))
+                if isinstance(v, str):
+                    cands.append(v)
+        pics = get_json(WAPI + urllib.parse.urlencode({'action': 'query', 'titles': pg['title'], 'prop': 'images', 'imlimit': 50, 'format': 'json'}))
+        for pp in ((pics or {}).get('query', {}).get('pages') or {}).values():
+            cands += [i['title'] for i in pp.get('images', []) if named_for(i['title'], p['name'])]
+        found = commons_free(list(dict.fromkeys(c.replace('_', ' ') for c in cands))[:12])
+        if not found:
+            sr = get_json(CAPI + urllib.parse.urlencode({'action': 'query', 'list': 'search', 'srsearch': f"{p['name']} footballer", 'srnamespace': 6, 'srlimit': 10, 'format': 'json'}))
+            more = [x['title'] for x in (sr or {}).get('query', {}).get('search', []) if named_for(x['title'], p['name'])]
+            found = commons_free(more[:6])
+        if found:
+            return credit(found[0][1], pg['title'])
     return None
 
 
 # ------------------------------------------------------------------ main
-def main():
-    limit = int(sys.argv[1]) if len(sys.argv) > 1 else 10 ** 9
-    players = load_players()
-    photos = {}
-    if OUT.exists():
-        s = OUT.read_text()
-        photos = json.loads(s[s.index('=') + 1:s.rindex(';')])
-    checked = json.loads(CHECKED.read_text()) if CHECKED.exists() else {}
-    keys = {key(p) for p in players}
-    photos = {k: v for k, v in photos.items() if k in keys}  # forget players who dropped out of the data
-    idx = pl_index()
-    todo = [p for p in players if not p['code'] and key(p) not in photos
-            and (key(p) not in checked or (TODAY - datetime.date.fromisoformat(checked[key(p)])).days >= RETRY_DAYS)]
-    todo.sort(key=lambda p: -(p['last'] - p['first']))  # longer careers (better known) first
-    print(f'{len(todo)} players to look up (limit {limit})', file=sys.stderr)
-    found = {'pl': 0, 'w': 0}
-    for n, p in enumerate(todo[:limit]):
-        hit = from_pl(p, idx) or from_wikipedia(p)
-        if hit:
-            photos[key(p)] = hit
-            found['pl' if 'pl' in hit else 'w'] += 1
-            checked.pop(key(p), None)
-        else:
-            checked[key(p)] = TODAY.isoformat()
-        if n % 50 == 0:
-            print(f'  {n}/{len(todo)} found so far {found}', file=sys.stderr)
-        time.sleep(0.2)
+def save(photos, checked):
     OUT.write_text('// Generated by tools/fetch_photos.py - extra player photos (premierleague.com / Wikimedia Commons)\n'
                    'window.GM_PHOTOS=' + json.dumps(dict(sorted(photos.items())), ensure_ascii=False, separators=(',', ':')) + ';\n')
     CHECKED.write_text(json.dumps(dict(sorted(checked.items())), indent=0) + '\n')
-    print(f'found {found}; {len(photos)} extra photos in total; no photo yet for {len(checked)}', file=sys.stderr)
+
+
+def main():
+    limit = int(sys.argv[1]) if len(sys.argv) > 1 else int(os.environ.get('FETCH_LIMIT', 1500))
+    players = load_players()
+    photos = load_file(OUT) if OUT.exists() else {}
+    checked = json.loads(CHECKED.read_text()) if CHECKED.exists() else {}
+    if checked.get('_matcher') != MATCHER:  # a better finder: try everyone who missed again
+        checked = {'_matcher': MATCHER}
+    keys = {key(p) for p in players}
+    photos = {k: v for k, v in photos.items() if k in keys}  # forget players who dropped out of the data
+    idx = pl_index()
+    stale = lambda p: key(p) not in checked or (TODAY - datetime.date.fromisoformat(checked[key(p)])).days >= RETRY_DAYS
+    # the Play app shows only the freely licensed ('w') photos, so everyone without one is looked up, most appearances first
+    todo = [p for p in players if not (photos.get(key(p)) or {}).get('w') and stale(p)]
+    todo.sort(key=lambda p: -p['apps'])
+    print(f'{len(todo)} players to look up (limit {limit})', file=sys.stderr)
+    found, lock, done = {'pl': 0, 'w': 0}, threading.Lock(), [0]
+
+    def work(p):
+        hit = None
+        if not p['code'] and not p['tm'] and not (photos.get(key(p)) or {}).get('pl'):
+            hit = from_pl(p, idx)
+        w = from_wikipedia(p)
+        return p, hit, w
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:
+        for p, hit, w in ex.map(work, todo[:limit]):
+            with lock:
+                done[0] += 1
+                if hit or w:
+                    photos[key(p)] = {**(photos.get(key(p)) or {}), **(hit or {}), **(w or {})}
+                    found['pl'] += bool(hit)
+                    found['w'] += bool(w)
+                    checked.pop(key(p), None)
+                if not w:
+                    checked[key(p)] = TODAY.isoformat()
+                if done[0] % 100 == 0:
+                    save(photos, checked)
+                    print(f'  {done[0]}/{min(limit, len(todo))} found so far {found}', file=sys.stderr)
+    save(photos, checked)
+    print(f'found {found}; {sum(1 for v in photos.values() if v.get("w"))} Wikimedia photos in total; {len(checked) - 1} misses to retry later', file=sys.stderr)
 
 
 if __name__ == '__main__':

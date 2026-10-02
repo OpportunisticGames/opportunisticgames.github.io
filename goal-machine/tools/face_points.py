@@ -17,8 +17,13 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA, ALL, PHOTOS, OUT = ROOT / 'data/players.js', ROOT / 'data/players_all.js', ROOT / 'data/photos.js', ROOT / 'data/faces.js'
 UA = 'GoalMachinePhotos/1.0 (https://opportunisticgames.github.io/goal-machine/; fan-made quiz game)'
 TM = 'https://img.a.transfermarkt.technology/portrait/header/{}.jpg'
-CASCADE = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-PROFILE = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_profileface.xml')
+def cascade(name):
+    return cv2.CascadeClassifier(cv2.data.haarcascades + name)
+
+
+CASCADE = cascade('haarcascade_frontalface_default.xml')
+FRONTAL = [CASCADE, cascade('haarcascade_frontalface_alt2.xml'), cascade('haarcascade_frontalface_alt.xml')]
+PROFILE = cascade('haarcascade_profileface.xml')
 
 
 def load_js(path):
@@ -48,13 +53,24 @@ def face(data):
     h, w = img.shape[:2]
     grey = cv2.equalizeHist(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY))
     min_side = max(20, int(min(w, h) * 0.08))
-    found = list(CASCADE.detectMultiScale(grey, 1.1, 5, minSize=(min_side, min_side)))
+    size = (min_side, min_side)
+    found, mirrored = [], False
+    # the detectors in turn, strictest first: front-on (three trained versions), a left-facing profile, then a right-facing
+    # one (the picture flipped), and last the first detector again with fewer neighbours required
+    for det, neighbours in [(FRONTAL[0], 5), (FRONTAL[1], 4), (FRONTAL[2], 4), (PROFILE, 4)]:
+        found = list(det.detectMultiScale(grey, 1.1, neighbours, minSize=size))
+        if found:
+            break
     if not found:
-        found = list(PROFILE.detectMultiScale(grey, 1.1, 5, minSize=(min_side, min_side)))
+        found = list(PROFILE.detectMultiScale(cv2.flip(grey, 1), 1.1, 4, minSize=size))
+        mirrored = bool(found)
+    if not found:
+        found = list(CASCADE.detectMultiScale(grey, 1.05, 3, minSize=(max(30, int(min(w, h) * 0.12)),) * 2))
     if not found:
         return []
     x, y, fw, fh = max(found, key=lambda f: f[2] * f[3])  # the biggest face is the subject
-    return [round(float(100 * (x + fw / 2) / w), 1), round(float(100 * (y + fh / 2) / h), 1), round(float(100 * fw / w), 1)]
+    cx = 100 * (x + fw / 2) / w
+    return [round(float(100 - cx if mirrored else cx), 1), round(float(100 * (y + fh / 2) / h), 1), round(float(100 * fw / w), 1)]
 
 
 def main():
@@ -62,6 +78,9 @@ def main():
     d = load_js(DATA)
     photos = load_js(PHOTOS) if PHOTOS.exists() else {}
     faces = load_js(OUT) if OUT.exists() else {}
+    if faces.get('_detector') != 2:  # a better detector: faces it missed before are tried again
+        faces = {k: v for k, v in faces.items() if v}
+        faces['_detector'] = 2
     jobs = []
     # every-player file too (Extreme / Purist), for its Transfermarkt portraits
     rows = d['players'] + (load_js(ALL)['players'] if ALL.exists() else [])
