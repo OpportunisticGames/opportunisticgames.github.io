@@ -9,6 +9,16 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 58, label: '5.17', date: '2026-10-02', title: '🌪️ More CHAOS: keepers, managers, mess',
+      items: [
+        '🧤 Keepers count in CHAOS: a goal for every three Premier League clean sheets (Čech is worth 67). 🥧 Who ate all the pies? finally does something',
+        '👔 Eight new managers: Warnock, Pulis, Postecoglou, Holloway, Dyche, van Gaal, Conte and Benítez. Every manager now changes the CHAOS too (Fergie time, Klopp’s meter, Mourinho’s bus, Ranieri’s 5000–1…), and they’re balanced so none is miles better',
+        '🃏 New CHAOS wildcards: 🏥 Physio Room (your most-hurt player gets his numbers back), 🃏 Joker and 🎩 Hat-Trick Hero (50+ goals and he counts triple, fewer and he counts half)',
+        '📺 New moments: VAR overturns it all, a streaker, and the pigeon’s revenge, which covers two of your numbers until full time',
+        '🐦 CHAOS leaves its mark: pigeons, pants, pies and wreckage stay on the pitch for the rest of the game, and the tornado and the black hole are the real thing',
+      ],
+    },
+    {
       v: 56, label: '5.16', date: '2026-10-02', title: '👀 Watch your opponent live',
       items: [
         '👀 Online races: once you’ve finished, you can watch your opponent play. You see the spin they’re on, their signings and, in CHAOS, the CHAOS bar and their latest moment as it happens',

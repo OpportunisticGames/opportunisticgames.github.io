@@ -23,6 +23,45 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### CHAOS: the screen gets messier as the game goes on 🚧 being built in 5.17 *(owner, 2 Oct 2026)*
+- **Owner's words:** "make the screen a little more chaotic as time goes on? E.g if you got the pigeon a little pigeon stays
+  on somewhere around the pitch, an ambulance is there for an injured player, a tornado does wreck things a little etc. There
+  could even be a thing that splatters on your screen or obscures some of your current players' numbers? Like you'd then
+  have to keep track of it yourself … this would obviously be rare."
+- **Notes:** leftovers that stay on the pitch for the rest of the game, one per event (🐦 pigeon on the touchline, 🚑 by the
+  injured player, 🌪️ a bent corner flag and a tilted goal, 🐕 paw prints, 🥧 crumbs by the keeper, 🎺 a vuvuzela on the
+  grass). Purely decoration, kept outside `render()` like the race bar, and never over a number or a button. The rare
+  splat (🥚 / 💩 from the pigeon, a muddy boot print) covers one or two players' numbers until full time, so you track them
+  yourself; the full-time report shows everything. Must stay readable on small phones and never cover the reels.
+- **Questions:** how messy at the end of a wild game (cap at about 6 leftovers)? Can you wipe the splat off (tap 3 times)?
+  Does Daily CHAOS / a race get the same leftovers (yes, it's seeded)?
+
+### CHAOS: keepers that matter, ways to win points back, more wildcards and managers 🚧 being built in 5.17 *(owner, 2 Oct 2026)*
+- **Owner's words:** "Who ate all the pies" is a dud in goals mode (keepers don't score). Either a flat bonus, or "rework it
+  so keepers can actually contribute to the game". Also: "a way for a player to regain the points they have lost, like a
+  wildcard to reset a player's points, or a super rare event that makes everyone who has lost points regain points". And
+  "a few more interesting wildcards … and perhaps a few more managers".
+- **Notes (not built):**
+  - *Pies:* a keeper has about 0 goals, so ×2 does nothing. Options: a flat bonus in goals/assists (apps still doubles), or
+    a keeper-specific stat (clean sheets, saves) that all keepers could earn from in CHAOS.
+  - *Win points back:* a wildcard "Second Chance" that restores one hurt player (halved/zeroed/injured) to his full number,
+    and a rare event "Amnesty" / "The VAR overturns it" that restores everyone hurt. Both leave boosts alone.
+  - *Wildcards and managers:* ideas to pick from when we talk it through.
+- **Questions:** keeper stat (flat bonus or clean sheets)? Is "restore" only the damage, or the damage plus a bonus? Should
+  Second Chance be a wildcard you can hold or a random event? How many new wildcards and managers (suggest 4 each)?
+- **Decided so far (owner, 2 Oct):** keepers get a **scaled** clean-sheet stat, so pies becomes a real event.
+  FPL data (vaastav, `players_raw.csv` per season, 2016-17 on) has `clean_sheets`; 28 keepers whose whole career is in that
+  window: median 31, mean 41, 90th percentile 98, max 123 (Ederson). About 0.25 clean sheets per 90. Goals today: midfielder
+  median 10, 90th percentile 37; so **one point per 3 clean sheets** lands keepers level with midfielders. Gap: careers before
+  2016 (FPL `history_past` goes back to 2006-07; before that, estimate 0.25 × apps and say so).
+- **Manager ideas (real managers, each needs a perk and a catch; balance by simulating many bot drafts so no one is more than
+  about 5% from the average):** Warnock (1 in 10 signings counts for nothing, the rest +25%), Pulis (no injuries/red cards,
+  every signing −5%), Postecoglou (rare events 3x likelier, defenders −25%), Redknapp (meter charges double, big moments pay a
+  bonus, bad ones likelier), Dyche (meter half speed, steady +8%), Van Gaal (any outfielder can play any outfield slot, but
+  out-of-position counts 75%), Conte (back three: centre-backs +25%, formation shifts), Benitez (wildcards likelier, rotation risk
+  likelier).
+
+
 ### Google Play Games: achievements and Sidekick 💬 *(owner, 2 Oct 2026)*
 - **Owner's words:** Sidekick is switched on in Play Console; wants our badges to count as Google Play achievements
   (Play Points, the Play Games profile, Sidekick).

@@ -37,7 +37,7 @@ GM.parseData = function (D) {
     const p = {
       id: i, name: r[0], poss: r[1].split('/'), nat: r[2] >= 0 ? D.nats[r[2]] : null,
       clubs: r[3].map(c => D.clubs[c]), apps: r[4], goals: r[5], first: r[6], last: r[7], code: r[8], ast: r[9] || 0,
-      stints: parseStints(r[10] || ''), hon: parseHon(r[11] || ''), tm: r[12] || '', ds,
+      stints: parseStints(r[10] || ''), hon: parseHon(r[11] || ''), tm: r[12] || '', cs: r[13] || 0, ds,
     };
     p.pk = p.name + '|' + p.first;  // stable key: survives the weekly data refresh re-ordering players
     p.photo = PH[p.pk] || null;
