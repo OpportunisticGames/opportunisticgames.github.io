@@ -17,7 +17,10 @@ game mode for players; this file is about how to work on it.
 - **Bug and idea banks:** `notes/BUGS.md` and `notes/IDEAS.md`. When the owner reports a bug, log it and fix it
   straight away, then move it to *Fixed* with the version. When they share an idea, log it (with their words and
   our notes and questions) and **discuss it, don't build it** until they say go. Read both at the start of a session.
-- No personal names in the app, the address or the copy. No AI model names in commits, PRs or files.
+- No personal names in the app, the address or the copy. The one exception the owner asked for: affectionate parodies of real managers as
+  the head coaches in Dodgy Owner and Reign Check (Pep Cardigola, José Moaninho and friends). No AI model names in commits, PRs or files.
+- **Secret games** (`js/secret.js`): locked knock-offs unlocked by doing something (Reign Check, Hat-Trick, Goal Royale).
+  The owner's tester link `#/tester?code=owner-test-2026` unlocks them all on that device for play-testing.
 - Write plainly in the owner's British English (the game's tone: short, friendly, football-y).
 - Every release: add an entry at the top of `GM.UPDATES` in `js/updates.js`, then run `python3 tools/bump_version.py`
   from `goal-machine/` (it bumps every `?v=` in `index.html` and the service worker cache). `v` = the next cache
