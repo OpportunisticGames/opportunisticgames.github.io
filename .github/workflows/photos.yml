@@ -20,7 +20,9 @@ permissions:
   contents: write
   pages: write
 
-concurrency: update-data
+# its own queue (sharing one with the data update let every dry run cancel a waiting photo run); both only touch their
+# own files and rebase before pushing
+concurrency: photos-${{ github.ref }}
 
 jobs:
   photos:
