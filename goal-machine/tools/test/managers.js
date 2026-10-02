@@ -4,6 +4,7 @@
 //   node managers.js [games per manager, default 30] [managers, e.g. "pulis,dyche"] [parallel pages, default 6]
 const { chromium } = require(require('child_process').execSync('npm root -g').toString().trim() + '/playwright');
 const U = process.env.SIM_URL || 'http://localhost:8765/goal-machine/';
+const STRAT = process.env.STRAT || '';
 const GAMES = +(process.argv[2] || 30), ONLY = (process.argv[3] || '').split(',').filter(Boolean), PAR = +(process.argv[4] || 6);
 
 // speed every timer up (animations and pauses), so a whole CHAOS draft takes a second or two
@@ -41,9 +42,16 @@ const STEP = () => {
     f.click(); return 'sub';
   }
   const spin = document.getElementById('spin');
+  // STRAT=combo: save a Centurion Throw for a booster (Hat-Trick Hero, else Captain's Armband) and play them together
+  const combo = window.GM_STRAT === 'combo', btn = t => [...document.querySelectorAll('.wild-btn')].find(b => S.inv[b.dataset.w] === t);
+  const late = S.xi.filter(x => x.p != null).length >= 9;
+  if (combo && spin && !spin.disabled && btn('centurion')) {
+    if (!S.modifier && (btn('hero') || btn('captain'))) { (btn('hero') || btn('captain')).click(); return 'combo-boost'; }
+    if (S.modifier === 'hero' || S.modifier === 'captain' || late) { btn('centurion').click(); return 'combo-centurion'; }
+  }
   if (spin && !spin.disabled) {
     // a special spin or a respin from the bag now and then before spinning
-    const w = [...document.querySelectorAll('.wild-btn')].find(b => !['sub', 'captain', 'coin', 'rotation', 'allin', 'hot'].includes(S.inv[b.dataset.w]));
+    const w = [...document.querySelectorAll('.wild-btn')].find(b => !['sub', 'captain', 'coin', 'rotation', 'allin', 'hot', 'hero'].concat(combo ? ['centurion'] : []).includes(S.inv[b.dataset.w]));
     if (w && Math.random() < 0.5) { w.click(); return 'wild-spin'; }
     spin.click(); return 'spin';
   }
@@ -62,15 +70,15 @@ const STEP = () => {
   const best = players[0];
   // play a boost or a gamble from the bag on a good signing
   if (best && worth(best.p) >= 20) {
-    const w = [...document.querySelectorAll('.wild-btn')].find(b => ['captain', 'hot', 'coin'].includes(S.inv[b.dataset.w]));
+    const w = [...document.querySelectorAll('.wild-btn')].find(b => (combo ? ['hot', 'coin'] : ['captain', 'hot', 'coin', 'hero']).includes(S.inv[b.dataset.w]));
     if (w && !S.modifier && Math.random() < 0.7) { w.click(); return 'wild-boost'; }
   }
   const allin = [...document.querySelectorAll('.wild-btn')].find(b => S.inv[b.dataset.w] === 'allin');
   if (allin && S.xi.filter(x => x.p != null).length >= 7 && Math.random() < 0.5) { allin.click(); return 'allin'; }
   const subW = [...document.querySelectorAll('.wild-btn')].find(b => S.inv[b.dataset.w] === 'sub');
   if (subW && best && S.xi.some(x => x.p != null && x.g < 2) && worth(best.p) > 15 && Math.random() < 0.5) { subW.click(); return 'sub-card'; }
-  const wildReel = reels.find(r => S.reels[r.dataset.reel].wild);
-  if (wildReel && S.inv.length < 3 && (!best || worth(best.p) < 10 || Math.random() < 0.25)) { wildReel.click(); return 'take-wild'; }
+  const wildReel = (combo && reels.find(r => ['centurion', 'hero', 'captain'].includes(S.reels[r.dataset.reel].wild))) || reels.find(r => S.reels[r.dataset.reel].wild);
+  if (wildReel && S.inv.length < 3 && (!best || worth(best.p) < 10 || Math.random() < 0.25 || (combo && ['centurion', 'hero', 'captain'].includes(S.reels[wildReel.dataset.reel].wild) && worth(best.p) < 60))) { wildReel.click(); return 'take-wild'; }
   (best ? best.r : reels[0]).click(); return 'pick';
 };
 
@@ -89,6 +97,7 @@ const STEP = () => {
     const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
     await ctx.route(/wikimedia|premierleague|transfermarkt|supabase|fonts\./, r => r.abort());
     await ctx.addInitScript(TURBO);
+    await ctx.addInitScript(s => { window.GM_STRAT = s; }, STRAT);
     await ctx.addInitScript(() => { try { localStorage.setItem('gm:seenVersion', '999'); localStorage.setItem('gm:welcomed', '1'); localStorage.setItem('gm:sound', '0'); localStorage.setItem('gm:music', '0'); } catch (e) { /* about:blank */ } });
     const pg = await ctx.newPage();
     pg.on('pageerror', e => { errs++; if (errs < 5) console.log('page error:', e.message); });
