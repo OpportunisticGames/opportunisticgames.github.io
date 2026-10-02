@@ -12,6 +12,8 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 2026-10-02 | Cards showed the first club a player played for (Kane = Norwich, Rio = West Ham), not the club he's known for | 5.13.3: the card shows the club with the most Premier League seasons (`p.main`, worked out from the club stints; the first club if a player has none) |
+| 2026-10-02 | Many players have Wikipedia pages but no photo in the Play app (it shows only the freely licensed Wikimedia photos, and the finder only looked at the 2,039 main-pool players, and only at an article's lead image) | Photo finder reworked (see below): everyone, lead image then Wikidata then other article images then a Commons search, 1,500 a run |
 | 2026-10-02 | Play app: opening a pack, player names sat too low and were covered (fine in the Album and in a browser). Reproduced by scaling text 130%: the app's WebView follows the phone's text size, so card text outgrew the cards | 5.11.2 + app build: the app pins text zoom to 100%; the card grid also lets the photo and corner column shrink so the name always stays in place |
 | 2026-10-02 | Pack opening: players' names were hard to read on the cards (light text on bronze and gold, the shine sat over the name) and long names were cut off | 5.11.1: dark ink, the shine sits under the text, names shrink to fit (a test checks all 2,000+ fit on a 360px phone) |
 | 2026-10-02 | Pack cards: the COMPLETE label at the bottom was clipped by the card's shape | 5.11.1: a ✓ badge in the corner |

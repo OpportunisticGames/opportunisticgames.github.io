@@ -1,7 +1,7 @@
 name: Find player photos
 
-# Looks up faces for players without a Premier League (FPL) photo: premierleague.com's archive first, then freely
-# licensed Wikipedia images. Runs weekly after the data update, by hand from the Actions tab, and when the finder
+# Looks up freely licensed Wikipedia/Wikimedia photos for everyone (the Google Play app shows only these), and
+# premierleague.com archive photos for older players with none. Runs weekly after the data update, by hand from the Actions tab, and when the finder
 # changes on a feature branch (committing the result back to that branch).
 on:
   schedule:
@@ -20,6 +20,7 @@ concurrency: update-data
 jobs:
   photos:
     runs-on: ubuntu-latest
+    timeout-minutes: 340  # each run looks up to 1,500 players; the weekly runs work through everyone over a few weeks
     steps:
       - uses: actions/checkout@v5
 
@@ -34,11 +35,13 @@ jobs:
         run: SRC="$RUNNER_TEMP/src" python goal-machine/tools/fetch_photos.py
 
       - name: Find the faces in them (so avatars zoom onto the face)
+        if: always()   # even if the lookups stopped early, what they saved is kept
         run: |
           pip install -q "opencv-python-headless<5" numpy  # 5.x dropped the Haar face detector
           python goal-machine/tools/face_points.py
 
       - name: Publish if changed
+        if: always()
         run: |
           git add goal-machine/data/photos.js goal-machine/data/photos_checked.json goal-machine/data/faces.js
           if git diff --cached --quiet -- goal-machine/data/photos.js goal-machine/data/faces.js; then echo "No new photos"; exit 0; fi
@@ -46,6 +49,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Update player photos"
+          git pull --rebase -q origin "$GITHUB_REF_NAME"  # the branch may have moved while the lookups ran
           git push
           if [ "${{ github.ref }}" = "refs/heads/master" ]; then
             curl -sS -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github+json" \

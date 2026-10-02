@@ -49,19 +49,36 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(['drumroll', 'charge', 'crack', 'deal'].every(n => sn.includes(n)) && ['silver', 'jackpot', 'fanfare'].some(n => sn.includes(n)) && sn.includes('packget'),
     `sounds: the drum roll, charging, the tear, the deal, a flip for the tier, and a jingle when you earn a pack (${[...new Set(sn)].join(', ')})`);
 
-  // pieces from drafts: once a day per player
+  // pieces from drafts: once a day per player; from Silver up signings stop one piece short, the last comes from a pack
   const dr = await pg.evaluate(() => {
     const p = GM.players.find(q => q.name === 'Alan Shearer'), c0 = GM.cardPieces(p);
     GM.cardsFromDraft([p]); GM.cardsFromDraft([p]); const once = GM.cardPieces(p) - c0;
     const days = [];
     for (let i = 0; i < 6; i++) { const c = GM.store.get('cards'); c.seenDay = 'old'; GM.store.set('cards', c); GM.collectDraft({ mode: 'ultimate', stat: 'goals', total: 0, points: 0, xi: [p], slots: [], moments: [], rars: [] }); days.push(GM.cardPieces(p)); }
-    return { once, days, xi: GM.packedXI().xi.some(s => s.player && s.player.name === 'Alan Shearer') };
+    const stuck = { pieces: GM.cardPieces(p), packed: GM.cardPackPieces(p), inXI: GM.packedXI().xi.some(s => s.player && s.player.name === 'Alan Shearer'), ach: Object.keys(GM.store.get('album').ach).includes('collegend') };
+    const x = GM.cardPackPiece(p);   // one piece from a pack
+    return { once, days, stuck, finished: x.finished, xi: GM.packedXI().xi.some(s => s.player && s.player.name === 'Alan Shearer') };
   });
   ok(dr.once === 1, 'signing the same player twice in a day gives one piece');
-  ok(dr.days[dr.days.length - 1] === 5 && dr.days.every(n => n <= 5), `a Legend takes 5 pieces (${dr.days.join(' → ')})`);
-  ok(dr.xi, 'a finished card goes into the Packed XI');
+  ok(dr.days.join() === '2,3,4,4,4,4' && dr.stuck.pieces === 4 && dr.stuck.packed === 0, `signings fill a Legend to 4 of 5 and stop (${dr.days.join(' → ')})`);
+  ok(!dr.stuck.inXI && !dr.stuck.ach, 'a Legend with four signings is not finished: not in the Packed XI, no Legendary badge');
+  ok(dr.finished && dr.xi, 'one piece from a pack finishes him and he goes into the Packed XI');
   ok(await pg.evaluate(() => GM.best('packedxi') > 0 && GM.store.get('cards').best > 0), 'a better Packed XI goes on its leaderboard');
+  await pg.evaluate(() => GM.checkGame('pack', 99, { legend: true, finished: ['l'] }));
   ok((await pg.evaluate(() => Object.keys(GM.store.get('album').ach))).includes('collegend'), 'finishing a Legend earns Legendary');
+  // Bronze still finishes from one signing; a Legend can be finished by five packed pieces alone; old finished cards keep their place
+  const rules = await pg.evaluate(() => {
+    const b = GM.players.find(q => GM.cardTier(q) === 'b' && !GM.cardPieces(q)), l = GM.players.find(q => GM.cardTier(q) === 'l' && q.name !== 'Alan Shearer' && !GM.cardPieces(q));
+    GM.cardsFromDraft([b]);
+    const bronze = GM.cardsDone('b') >= 1;
+    const done5 = []; for (let i = 0; i < 5; i++) done5.push(GM.cardPackPiece(l).finished);
+    const c = GM.store.get('cards'); const s = GM.players.find(q => GM.cardTier(q) === 's' && !GM.cardPieces(q));
+    c.p[s.pk] = 2; delete c.k[s.pk]; c.v = 1; GM.store.set('cards', c);   // a Silver finished by signings before this rule
+    return { bronze, done5, grand: GM.cardsOwned().some(q => q.pk === s.pk) };
+  });
+  ok(rules.bronze, 'a Bronze card is still finished by signing him once');
+  ok(rules.done5.join() === 'false,false,false,false,true', `five packed pieces finish a Legend on their own (${rules.done5})`);
+  ok(rules.grand, 'a card finished before the pack rule stays finished');
 
   // three dailies in a day: a bonus pack
   const before = await pg.evaluate(() => GM.store.get('cards').packs);

@@ -449,7 +449,7 @@
         <div class="sets">${SETS.map(st => {
           const m = setMembers[st.id].map(i => GM.players[i]), got = m.filter(has);
           return `<details class="set"><summary><span>${st.icon} ${st.name}</span><span>${got.length}/${m.length}</span>${bar(got.length, m.length)}</summary>
-            <div class="set-list">${m.sort((x, y) => y.fame - x.fame).map(p => `<span class="${has(p) ? 'have' : ''}">${has(p) ? '✅' : '▫️'} ${GM.esc(p.name)}</span>`).join('')}</div></details>`;
+            <div class="set-list">${m.sort((x, y) => y.fame - x.fame).map(p => `<span class="${has(p) ? 'have' : ''}" ${has(p) ? `data-psheet="${GM.esc(p.pk)}"` : ''}>${has(p) ? '✅' : '▫️'} ${GM.esc(p.name)}</span>`).join('')}</div></details>`;
         }).join('')}</div>
         <details class="set clubs-block"><summary><span>🏟️ Clubs</span><span>${clubSets.filter(([, h, n]) => h === n).length}/${clubSets.length} complete</span></summary>
           <div class="sets">${clubSets.map(([c, h, n]) => `<div class="club-set">${GM.clubChip(c)}<span>${GM.esc(c)}</span><span>${h}/${n}</span>${bar(h, n)}</div>`).join('')}</div></details>
@@ -485,7 +485,7 @@
     const rowOf = pos => rows.findIndex(r => r.includes(pos));
     const lines = [0, 1, 2, 3].map(r => xi.map((s, i) => [s, i]).filter(([s]) => rowOf(s.pos) === r));
     const slot = s => s.player
-      ? `<div class="slot filled" title="${GM.esc(s.player.name)}">${GM.avatar(s.player)}<span class="slot-name">${GM.esc(s.player.name.split(' ').slice(-1)[0])}</span><span class="slot-goals">${fmt(s.player[st.key])}</span><span class="slot-pos">${s.pos}</span>${got[s.player.pk] > 1 ? `<span class="slot-times">×${got[s.player.pk]}</span>` : ''}</div>`
+      ? `<div class="slot filled" data-psheet="${GM.esc(s.player.pk)}" title="${GM.esc(s.player.name)}">${GM.avatar(s.player)}<span class="slot-name">${GM.esc(s.player.name.split(' ').slice(-1)[0])}</span><span class="slot-goals">${fmt(s.player[st.key])}</span><span class="slot-pos">${s.pos}</span>${got[s.player.pk] > 1 ? `<span class="slot-times">×${got[s.player.pk]}</span>` : ''}</div>`
       : `<div class="slot empty"><span class="pos pos-${GM.GROUP[s.pos]}">${s.pos}</span></div>`;
     const clubSets = GM.clubs.map(c => {
       const members = list.filter(p => p.clubs.includes(c));

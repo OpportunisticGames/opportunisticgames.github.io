@@ -9,6 +9,34 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 56, label: '5.16', date: '2026-10-02', title: '👀 Watch your opponent live',
+      items: [
+        '👀 Online races: once you’ve finished, you can watch your opponent play. You see the spin they’re on, their signings and, in CHAOS, the CHAOS bar and their latest moment as it happens',
+        '🌪️ CHAOS Races and Target Races no longer score “100–0 match points”: the result just says who had more CHAOS points (or who was closer to the target)',
+      ],
+    },
+    {
+      v: 55, label: '5.15', date: '2026-10-02', title: '🔎 Tap a player to see his sheet',
+      items: [
+        '🔎 Tap any player who’s yours (on your pitch, a pack card, the Players index, your Album and XI, online results) to see his sheet: his card and how far you are with it, every club with its seasons, apps, goals and assists, honours, and how many times you’ve signed him',
+        '🎲 Never on the reels: that would give the game away',
+      ],
+    },
+    {
+      v: 54, label: '5.14', date: '2026-10-02', title: '🎁 Cards now need a pack',
+      items: [
+        '🎁 Silver, Gold and Legend cards need at least one piece from a pack. Signing a player in a game fills his card up to one piece short; the last piece (the ◆ on the card) has to come from a pack',
+        '🟣 Five packed pieces still finish a Legend on their own, and Bronze cards can still be finished by signing a player once',
+        '✅ Cards you’ve already finished stay finished',
+      ],
+    },
+    {
+      v: 53, label: '5.13.3', date: '2026-10-02', title: '🃏 The right club on the card',
+      items: [
+        '🃏 A player’s card now shows the club he’s best known for (the one with the most Premier League seasons), not just the first club he played for: Kane is Spurs, Rio is Man Utd',
+      ],
+    },
+    {
       v: 52, label: '5.13.2', date: '2026-10-02', title: '🏆 Play Games in Settings',
       items: [
         '🏆 In the Play app, Google Play Games now has its own section in Settings, next to Account and Gameplay',
