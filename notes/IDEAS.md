@@ -23,6 +23,19 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### CHAOS: the screen gets messier as the game goes on 💬 *(owner, 2 Oct 2026)*
+- **Owner's words:** "make the screen a little more chaotic as time goes on? E.g if you got the pigeon a little pigeon stays
+  on somewhere around the pitch, an ambulance is there for an injured player, a tornado does wreck things a little etc. There
+  could even be a thing that splatters on your screen or obscures some of your current players' numbers? Like you'd then
+  have to keep track of it yourself … this would obviously be rare."
+- **Notes:** leftovers that stay on the pitch for the rest of the game, one per event (🐦 pigeon on the touchline, 🚑 by the
+  injured player, 🌪️ a bent corner flag and a tilted goal, 🐕 paw prints, 🥧 crumbs by the keeper, 🎺 a vuvuzela on the
+  grass). Purely decoration, kept outside `render()` like the race bar, and never over a number or a button. The rare
+  splat (🥚 / 💩 from the pigeon, a muddy boot print) covers one or two players' numbers until full time, so you track them
+  yourself; the full-time report shows everything. Must stay readable on small phones and never cover the reels.
+- **Questions:** how messy at the end of a wild game (cap at about 6 leftovers)? Can you wipe the splat off (tap 3 times)?
+  Does Daily CHAOS / a race get the same leftovers (yes, it's seeded)?
+
 ### CHAOS: keepers that matter, ways to win points back, more wildcards and managers 💬 *(owner, 2 Oct 2026)*
 - **Owner's words:** "Who ate all the pies" is a dud in goals mode (keepers don't score). Either a flat bonus, or "rework it
   so keepers can actually contribute to the game". Also: "a way for a player to regain the points they have lost, like a

@@ -52,6 +52,9 @@ jobs:
             python goal-machine/tools/build_players.py 1
           python -c "import json,sys; s=open('goal-machine/data/players_all.js').read(); n=len(json.loads(s[s.index('=')+1:s.rindex(';')])['players']); print(n,'players'); sys.exit(n < 4500)"
 
+      - name: Keepers' clean sheets (CHAOS counts them)
+        run: SRC="$RUNNER_TEMP/src" python goal-machine/tools/clean_sheets.py goal-machine/data/players.js goal-machine/data/players_all.js
+
       - name: Build fixtures (matchday features; keeps the old list if this fails)
         continue-on-error: true
         run: SRC="$RUNNER_TEMP/src" OUT=goal-machine/data/fixtures.js python goal-machine/tools/build_fixtures.py

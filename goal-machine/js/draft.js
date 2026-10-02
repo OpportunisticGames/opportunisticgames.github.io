@@ -133,6 +133,8 @@
   // your lowest scorer who's actually scored (a boost on 0 would do nothing); -1 if nobody has
   const underdog = f => { const s0 = f.filter(i => S.xi[i].g > 0).sort((a, b) => S.xi[a].g - S.xi[b].g); return s0.length ? s0[0] : -1; };
   // something that's already happened this game can happen again, just less likely each time (a sixth, then a 36th…)
+  // Postecoglou makes the rare and legendary ones three times as likely
+  const rarW = r => RAR[r] * ((r === 'r' || r === 'l') && mgrIs('ange') ? 3 : 1);
   const again = (seen, k) => Math.pow(1 / 6, (seen || []).filter(x => x === k).length);
   // the CHAOS meter: taking or playing a wildcard (and every storm) charges it; full, the next spin opens with a big
   // CHAOS moment. Now and then a smaller match-day event (above) strikes too. Only ever one thing at a time.
@@ -192,7 +194,28 @@
     hodgson: { icon: '🦁', name: 'Roy Hodgson', perk: 'Three Lions: +12 for every England player', catch: '−4 for every player from anywhere else',
       likes: p => p.nat === 'England', hates: p => p.nat !== 'England',
       lines: x => [[`🦁 Three Lions (${count(x, p => p.nat === 'England')})`, 12 * x.u * count(x, p => p.nat === 'England')], ['🌍 Players from abroad', -4 * x.u * count(x, p => p.nat !== 'England')]] },
+    warnock: { icon: '🗯️', name: 'Neil Warnock', perk: 'Fired up: every signing +25%', catch: '“It’s a conspiracy”: 1 signing in 10 counts for nothing',
+      lines: () => [] },  // both happen as you sign (place)
+    pulis: { icon: '🧢', name: 'Tony Pulis', perk: 'Built to last: no red cards, injuries, hamstrings or slips', catch: 'Route one: your XI −8%',
+      lines: x => [['🧢 Route one: XI −8%', -0.08 * x.slots.reduce((a, s) => a + s.g, 0)]] },
+    ange: { icon: '🦘', name: 'Ange Postecoglou', perk: '“We go again”: rare and legendary moments 3× likelier', catch: 'High line: defenders −25%',
+      hates: p => p.pos === 'D',
+      lines: x => [['🏃 High line: defenders −25%', -0.25 * grpSum(x, ['D'])]] },
+    holloway: { icon: '🤪', name: 'Ian Holloway', perk: 'Bonkers: the CHAOS meter fills twice as fast, +10 per big moment', catch: 'Tornadoes, black holes and great escapes twice as likely',
+      lines: x => [[`🤪 Big moments (${x.big})`, 10 * x.u * x.big]] },
+    dyche: { icon: '🗿', name: 'Sean Dyche', perk: 'Solid: your XI +12%', catch: 'Calm down: the CHAOS meter fills at half speed',
+      lines: x => [['🗿 Solid: XI +12%', 0.12 * x.slots.reduce((a, s) => a + s.g, 0)]] },
+    vangaal: { icon: '📋', name: 'Louis van Gaal', perk: 'Philosophy: any outfield player can play any outfield position', catch: 'Out of position, a player counts 70%',
+      lines: () => [] },  // both happen as you sign (canPlay, place)
+    conte: { icon: '🔥', name: 'Antonio Conte', perk: 'Three at the back: centre-backs +60% (kick-off switches you to 3-4-3)', catch: 'Touchline fury: −8 for every wildcard you play',
+      likes: p => p.poss.includes('CB'),
+      lines: x => [['🧱 Back three: centre-backs +60%', 0.6 * x.slots.filter(s => s.pos === 'CB').reduce((a, s) => a + s.g, 0)], [`😤 Touchline fury (${x.wild} wildcards)`, -8 * x.u * x.wild]] },
+    benitez: { icon: '📝', name: 'Rafa Benítez', perk: 'Facts: wildcards turn up more often, +5 for every one you play', catch: 'Rotation: 🩹 Rotation Risk is back in the deck',
+      lines: x => [[`📝 Facts (${x.wild} wildcards played)`, 5 * x.u * x.wild]] },
   };
+  const mgrIs = k => !!(S && S.rules && S.rules.chaos && S.manager === k);
+  const INJURIES = ['redcard', 'injury', 'hamstring', 'slip'];  // what Pulis keeps away
+  const GRIM = ['tornado', 'blackhole', 'relegation'];          // the big moments Holloway brings on twice as often
   const mgrShort = m => m.name.split(' ').slice(-1)[0];
   // CHAOS bonus points, in "goals": assists and apps games scale them to their stat
   const CHAOS_UNIT = { goals: 1, assists: 0.7, apps: 8 };
@@ -238,7 +261,7 @@
   let S = null; // game state
   let root = null;
 
-  GM.draft = { METER, events: () => Object.keys(EVENTS).concat(Object.keys(XEV), Object.keys(MOMENTS)), start, RULES, WILDCARDS, TARGETS, state: () => S, total: st => scoreFor(st).t, score: st => scoreFor(st), render: () => render(), modeKey: (m, s, h, c, x) => keyFor(m, s, h, c, x) };
+  GM.draft = { METER, MANAGERS: () => MANAGERS, events: () => Object.keys(EVENTS).concat(Object.keys(XEV), Object.keys(MOMENTS)), start, RULES, WILDCARDS, TARGETS, state: () => S, total: st => scoreFor(st).t, score: st => scoreFor(st), render: () => render(), modeKey: (m, s, h, c, x) => keyFor(m, s, h, c, x) };
 
   const statSuffix = s => ({ goals: '', assists: 'ast', apps: 'apps' }[s] || '');
   function keyFor(mode, stat, hard, club, extreme) {
@@ -360,16 +383,21 @@
   // what wildcard descriptions talk about: in the Treble a wildcard affects all three numbers
   const wst = () => S.rules.treble ? { ...S.st, label: 'numbers', bigLabel: 'goals' } : S.st;
   const modeName = () => S.dailyChaos ? 'Daily CHAOS' : S.fx ? `Matchday XI · ${GM.clubShort(S.club)} v ${GM.clubShort(S.club2)}` : S.online && S.mode === 'target' ? `Target Race · ${fmt(S.target)}` : S.mode === 'club' || S.nat || S.extreme ? GM.MODES[modeKey()].name : GM.MODES[S.mode === 'daily' ? 'daily' : (S.rules.treble || S.rules.mystery) ? S.mode : S.mode + statSuffix(S.stat)].name;
-  const val = p => p[S.st.key];
+  // CHAOS: a keeper's clean sheets count too, one point for every three (about a midfielder's goals; tools/clean_sheets.py)
+  const KEEPER_CS = 3;
+  const keeperPts = p => (S && S.rules && S.rules.chaos && p.pos === 'G' && p.cs ? Math.floor(p.cs / KEEPER_CS) : 0);
+  const val = p => pv(p)[S.stat];
   const bothSides = p => p.clubs.includes(S.club) && p.clubs.includes(S.club2);
-  const pv = p => ({ goals: p.goals, assists: p.ast, apps: p.apps });
+  const pv = p => { const k = keeperPts(p); return { goals: p.goals + k, assists: p.ast + Math.floor(k * CHAOS_UNIT.assists), apps: p.apps }; };
   const tot = k => S.xi.reduce((t, s) => t + (s.v ? s.v[k] : 0), 0);
   const total = () => tot(S.stat);
   const openPos = () => [...new Set(S.xi.filter(s => s.p == null).map(s => s.pos))];
   // Extreme and Purist draw from every PL player; everything else from the 50+ app list
   const PL = () => (S && S.rules && S.rules.all ? GM.allPlayers : GM.players);
   const byId = id => PL()[id];
-  const fits = (p, open) => p.poss.some(x => open.includes(x));
+  // van Gaal lets any outfield player play any outfield position (keepers stay in goal)
+  const canPlay = (p, pos) => p.poss.includes(pos) || (mgrIs('vangaal') && pos !== 'GK' && p.pos !== 'G');
+  const fits = (p, open) => open.some(pos => canPlay(p, pos));
   const emptySlots = () => S.xi.filter(s => s.p == null).length;
   const fmt = n => n.toLocaleString();
   const signed = n => (n < 0 ? '−' : '+') + Math.abs(n).toLocaleString();
@@ -402,7 +430,7 @@
     const ok = p => fits(p, open) && !used.has(p.id);
     const wc = special && WILDCARDS[special];
     const n = (wc && wc.reels) || 3;
-    const wildTypes = () => Object.keys(WILDCARDS).filter(t => !S.rules.noWild.includes(t) && (!WILDCARDS[t].chaos || S.rules.chaos) && t !== 'storm');
+    const wildTypes = () => Object.keys(WILDCARDS).filter(t => (!S.rules.noWild.includes(t) || (t === 'rotation' && mgrIs('benitez'))) && (!WILDCARDS[t].chaos || S.rules.chaos) && t !== 'storm');
     // a wildcard storm: every reel is a wildcard (the Storm card, or 1 spin in 10 in CHAOS)
     if ((wc && wc.storm) || (S.rules.chaos && !special && S.spin >= 2 && S.momentSpin !== S.spin && GM.rng(tag + '|storm')() < 0.1)) {
       const rs = GM.rng(tag + '|stormcards'), types = wildTypes(), out = [];
@@ -431,7 +459,8 @@
     // wildcard: reel 1 or 2 on 28% of spins each, decided by the spin number only
     let wildAt = -1, wild = null;
     if (!special && S.spin >= 1 && S.rules.wild !== false) {
-      if (rw() < 0.28) wildAt = 0; else if (rw() < 0.28) wildAt = 1;
+      const wp = mgrIs('benitez') ? 0.38 : 0.28;
+      if (rw() < wp) wildAt = 0; else if (rw() < wp) wildAt = 1;
       wild = rw.weighted(wildTypes(), t => WILDCARDS[t].w);
     }
     const reels = [], taken = new Set();
@@ -492,7 +521,7 @@
 
   function chaosEvent(r, forced) {
     const all = Object.keys(EVENTS).concat(Object.keys(XEV));
-    let e = forced || r.weighted(all, k => RAR[(EVENTS[k] || XEV[k]).rar] * again(S.evSeen, k));
+    let e = forced || r.weighted(all, k => rarW((EVENTS[k] || XEV[k]).rar) * again(S.evSeen, k) * (mgrIs('pulis') && INJURIES.includes(k) ? 0 : 1));
     S.evSeen = (S.evSeen || []).concat(e);
     if (XEV[e]) {
       const x = XEV[e], before = snap(), out = x.go(r) || {};
@@ -556,7 +585,7 @@
   async function bigMoment(forced) {
     const r = GM.rng(`${S.seed}|moment|${S.spin}`), filled = filledIdx(), left = emptySlots();
     const keys = Object.keys(MOMENTS).filter(k => !MOMENTS[k].need || MOMENTS[k].need(filled.length, left));
-    const k = forced || r.weighted(keys, x => RAR[MOMENTS[x].rar] * again(S.bigSeen, x)), m = MOMENTS[k], before = snap();
+    const k = forced || r.weighted(keys, x => rarW(MOMENTS[x].rar) * again(S.bigSeen, x) * (mgrIs('holloway') && GRIM.includes(x) ? 2 : 1)), m = MOMENTS[k], before = snap();
     S.bigSeen = (S.bigSeen || []).concat(k);
     const o = { icon: m.icon, name: m.name, tone: m.tone, before, big: true, rarity: m.rar, ...{ blackhole: { scene: 'lightning', sound: 'spooky' }, relegation: { scene: 'red', sound: 'drumroll', actSound: 'cheer' }, title: { scene: 'party', sound: ['fanfare', 'cheer'] }, unleash: { scene: 'unleash', sound: ['meterfull', 'horn'] }, tornado: { scene: 'storm', sound: 'wind', actSound: 'wind' },
       lightning: { scene: 'lightning', sound: 'thunder' }, parade: { scene: 'party', sound: 'fanfare', actSound: 'cheer' }, deadline: { scene: 'clock', sound: 'tick3' }, sacked: { scene: 'news', sound: 'sacked' } }[k] };
@@ -620,11 +649,18 @@
   function mgrChoices(not) {
     const r = GM.rng(`${S.seed}|mgr|${S.spin}`), out = [];
     const keys = Object.keys(MANAGERS).filter(k => k !== not);
+    const fm = S.forceMgr || GM._forceMgr;  // tests and the balance simulation (tools/test/managers.js)
+    if (fm && MANAGERS[fm] && !not) out.push(fm);
     while (out.length < 3) { const k = keys[Math.floor(r() * keys.length)]; if (!out.includes(k)) out.push(k); }
     return out;
   }
   function appoint(k) {
     S.manager = k; S.log.push('👔');
+    if (k === 'conte' && S.xi.every(x => x.p == null)) {  // only before anyone has signed
+      S.form = ['GK', 'CB', 'CB', 'CB', 'LM', 'CM', 'CM', 'RM', 'ST', 'ST', 'ST'];
+      S.xi = S.form.map(pos => ({ pos, p: null, g: 0, mod: null, as: null }));
+      fitKey = '';
+    }
     if (k === 'redknapp') ['deadline', 'respin'].forEach(w => { if (S.inv.length < 3) S.inv.push(w); });
   }
   function pickManager() {
@@ -768,7 +804,7 @@
   // CHAOS meter
   function charge(n = 1) {
     if (!S.rules.chaos) return;
-    S.meter = (S.meter || 0) + n;
+    S.meter = (S.meter || 0) + n * (mgrIs('holloway') ? 2 : mgrIs('dyche') ? 0.5 : 1);
     if (S.meter >= METER && !S.chaosDue) { S.meter = 0; S.chaosDue = true; setTimeout(() => GM.sound.play('meterfull'), 250); }
     else if (!S.chaosDue) setTimeout(() => GM.sound.play('charge', S.meter), 250);
     if (S.online && GM.online) GM.online.pushRace(S);  // the opponent's view of the CHAOS bar
@@ -852,7 +888,7 @@
     }
   }
 
-  const targetSlots = p => S.xi.map((s, i) => i).filter(i => S.xi[i].p == null && p.poss.includes(S.xi[i].pos));
+  const targetSlots = p => S.xi.map((s, i) => i).filter(i => S.xi[i].p == null && canPlay(p, S.xi[i].pos));
 
   async function place(slotIdx) {
     if (busy || S.pending == null || S.phase !== 'pick') return;
@@ -873,6 +909,10 @@
       mult = heads ? 2 : 0;
       if (heads) S.coinWin = true;
     }
+    let rant = false;
+    if (mgrIs('warnock')) { rant = GM.rng(`${S.seed}|warnock|${S.spin}|${S.respins}`)() < 0.1; mult = rant ? 0 : mult * 1.25; }
+    const outPos = !p.poss.includes(pos);
+    if (outPos) mult *= 0.7;  // van Gaal's philosophy
     const both = S.club2 && bothSides(p);  // Matchday XI: played for both sides, double (on top of everything else)
     if (both) mult *= 2;
     const before = S.modifier === 'coin' ? snap() : null;
@@ -880,7 +920,7 @@
     STAT_KEYS.forEach(k => { v[k] = Math.floor(v[k] * mult); });
     slot.v = v;
     const g = v[S.stat];
-    slot.p = p.id; slot.g = g; slot.mod = S.modifier === 'coin' ? (heads ? 'captain' : 'zero') : S.modifier;
+    slot.p = p.id; slot.g = g; slot.mod = rant ? 'zero' : S.modifier === 'coin' ? (heads ? 'captain' : 'zero') : S.modifier;
     slot.as = pos !== p.poss[0] ? pos : null;
     slot.fresh = true;
     S.modifier = null;
@@ -893,6 +933,8 @@
     // in target modes a blip climbs as the total closes in on the number
     if (S.target && !S.rules.treble) setTimeout(() => GM.sound.play('rise', S.xi.reduce((a, x) => a + x.g, 0) / S.target), 180);
     if (both) setTimeout(() => GM.toast(`🤝 ${GM.esc(p.name)} played for both sides: <b>double points</b>`, 2600), 300);
+    if (rant) setTimeout(() => { GM.toast(`🗯️ “It’s a conspiracy!” ${GM.esc(p.name)} <b>counts for nothing</b>`, 2800); GM.sound.play('boo'); }, 300);
+    else if (outPos && S.rules.chaos) setTimeout(() => GM.toast(`📋 ${GM.esc(p.name)} out of position: <b>70%</b>`, 2200), 300);
     if (p.name === 'Sergio Agüero' && emptySlots() === 0) {  // 🤫 the last signing of the game
       setTimeout(() => { GM.toast('🇦🇷 <b>AGÜEROOOOOOOO!</b> Last-minute winner.', 3200); GM.sound.play('cheer'); }, 400);
     }
@@ -1049,10 +1091,11 @@
     const m = MANAGERS[st.manager];
     if (m && slots.length) {
       const pairs = GM.teamRating(slots).pairs.length;
-      m.lines({ slots, ps, u, pairs }).forEach(([label, pts]) => { pts = Math.round(pts); if (pts) parts.push([label, pts]); });
+      m.lines({ slots, ps, u, pairs, wild: st.wildUsed || 0, big: (st.bigSeen || []).length }).forEach(([label, pts]) => { pts = Math.round(pts); if (pts) parts.push([label, pts]); });
     }
     const bonus = parts.reduce((a, x) => a + x[1], 0);
-    return { total: t + bonus, parts: [[`${GM.STATS[st.stat].icon} PL ${GM.STATS[st.stat].label}`, t], ...parts], diff: null, t, bonus };
+    const gk = st.stat !== 'apps' && slots.some(x => x.player.pos === 'G' && x.player.cs) ? ' + 🧤 clean sheets' : '';
+    return { total: t + bonus, parts: [[`${GM.STATS[st.stat].icon} PL ${GM.STATS[st.stat].label}${gk}`, t], ...parts], diff: null, t, bonus };
   }
 
   async function finish() {
@@ -1117,7 +1160,7 @@
     const reveal = S.revealed;
     const num = S.rules.treble
       ? `<div class="reel-goals treble-num ${reveal ? 'show' : ''}">${STAT_KEYS.map(k => `<span><b>${reveal ? fmt(pv(p)[k]) : '?'}</b> ${GM.STATS[k].icon}</span>`).join('')}</div>`
-      : `<div class="reel-goals ${reveal ? 'show' : ''}">${reveal ? `<b>${fmt(val(p))}</b> ${S.st.label}` : `<b>?</b> ${S.st.label}`}${S.hard ? '' : hintStat(p)}</div>`;
+      : `<div class="reel-goals ${reveal ? 'show' : ''}">${reveal ? `<b>${fmt(val(p))}</b> ${S.st.label}` : `<b>?</b> ${S.st.label}`}${reveal && keeperPts(p) && S.stat !== 'apps' ? `<small>🧤 ${fmt(p.cs)} clean sheets</small>` : S.hard ? '' : hintStat(p)}</div>`;
     if (S.hard) {
       return `${GM.avatar(p, 'lg', true)}
       <div class="reel-name">${GM.esc(p.name)}</div>
@@ -1168,7 +1211,7 @@
       <div class="counter-num"><b>${fmt(t)}</b><span>${S.st.label}</span>${S.rules.chaos ? `<span class="chaos-pts"><b>${signed(scoreFor(S).bonus)}</b> bonus</span>` : ''}</div>
       <div class="bar"><i style="width:${pb ? Math.min(100, t / pb * 100) : 0}%"></i></div>
       <div class="counter-sub">${pb ? (t > pb && !S.rules.chaos ? '🔥 Beating your best (' + fmt(pb) + ')' : `Your best: ${fmt(pb)}${S.rules.chaos ? ' pts' : ''}`) : 'Set your first score'} · ${left} slot${left === 1 ? '' : 's'} left${mod}${S.hot ? ` · <b>🔥 ×1.5 ×${S.hot}</b>` : ''}${S.golden ? ' · <b>⚽ ×3 next</b>' : ''}${S.unleash ? ` · <b>💥 ×2 ×${S.unleash}</b>` : ''}</div>
-      ${S.rules.chaos ? `<div class="chaos-row">${S.manager ? `<button class="dugout" id="dugout">${MANAGERS[S.manager].icon} <b>${mgrShort(MANAGERS[S.manager])}</b></button>` : ''}<div class="chaos-meter ${S.chaosDue ? 'due' : ''}" title="The CHAOS meter: taking or playing wildcards fills it. Full = a CHAOS moment next spin"><span>${S.chaosDue ? 'NEXT SPIN!' : 'CHAOS'}</span>${Array.from({ length: METER }, (_, i) => `<i class="${S.chaosDue || i < (S.meter || 0) ? 'on' : ''}"></i>`).join('')}</div></div>` : ''}
+      ${S.rules.chaos ? `<div class="chaos-row">${S.manager ? `<button class="dugout" id="dugout">${MANAGERS[S.manager].icon} <b>${mgrShort(MANAGERS[S.manager])}</b></button>` : ''}<div class="chaos-meter ${S.chaosDue ? 'due' : ''}" title="The CHAOS meter: taking or playing wildcards fills it. Full = a CHAOS moment next spin"><span>${S.chaosDue ? 'NEXT SPIN!' : 'CHAOS'}</span>${Array.from({ length: METER }, (_, i) => `<i class="${S.chaosDue || i < Math.floor(S.meter || 0) ? 'on' : ''}"></i>`).join('')}</div></div>` : ''}
     </div>`;
     }
     if (S.rules.treble) {
@@ -1320,6 +1363,7 @@
       : r.mystery ? `<p>🎲 <b>Mystery Target:</b> you’re counting <b>${S.st.label}</b>, but the target is secret – somewhere between ${fmt(MYSTERY[S.stat][0])} and ${fmt(MYSTERY[S.stat][1])}. The thermometer tells you how close you are. It’s revealed at full time.</p>`
       : r.chaos ? `<p>🌪️ <b>Ultimate Wildcard CHAOS:</b> build the XI with the most PL ${L}, and then some. Your score is your ${L} <b>plus bonus points</b> for the kind of team you build: teammates who played together (chemistry), your squad rating, PL title medals, Hall of Famers, one-club men, journeymen (5+ clubs) and ten-season veterans.</p>
         <p>👔 <b>Your manager</b> brings a perk and a catch (👍 and 👎 on the reels show who he’d like). He can get the sack.</p>
+        ${S.stat !== 'apps' ? `<p>🧤 <b>Keepers count too:</b> ${S.stat === 'goals' ? 'a goal for every three' : 'an assist for about every four'} Premier League clean sheets.</p>` : ''}
         <p>⚡ <b>The CHAOS meter</b> fills every time you take or play a wildcard. When it’s full, the next spin opens with a big moment: a 🌪️ tornado through your XI, a ⚡ lightning strike, a 🚌 bus parade, ⏰ deadline day, 💥 CHAOS unleashed or a sacking.</p>
         <p>Now and then a <b>match-day event</b> strikes too (🟥 red cards, 🚑 injuries, 📺 VAR, 🧾 the taxman, 💰 TV money), one spin in ten is a <b>🌪️ wildcard storm</b>, and there are riskier wildcards like 🎰 All In (a coin toss: your whole XI ×2 or ×½).</p>`
       : r.max ? `<p>👑 <b>${modeName()}:</b> no target – build the XI with the <b>most Premier League ${L}</b> you can. Every player with 50+ apps is equally likely to turn up, so you’ll mostly see journeymen: spot the big numbers and use your wildcards well.</p>`
