@@ -7,6 +7,7 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Status |
 |---|---|---|
+| 2026-10-02 | CHAOS: van Gaal + a Centurion Throw + Hat-Trick Hero = a guaranteed ×3 on a 100-goal striker in any slot (the simulation: van Gaal +9.5% when you save Centurions for a booster, others +2–4%) | Fixed on the branch for 5.17.1: van Gaal's any-position rule is off on themed spins (now −0.5% with the combo); Pep +70% midfield (he was 8% low) |
 | 2026-10-02 | Wrong person in a photo: Richards (Dean Richards, the Southampton/Spurs defender) showed the rugby coach of the same name. A Commons search fallback trusted any file with his name in it | Fixing: files that aren't the article's own photo or Wikidata's must say football and be dated within his life (`fits_him`); a recheck run goes back over every earlier photo. His photo is removed |
 | 2026-10-02 | Photos that don't fit the circle: Ingimarsson (no face found, so the default crop showed his body) and Laursen (an action shot; the old detector picked the wrong spot) | Fixing: YuNet, OpenCV's neural face detector, on bigger copies of each photo; every face is found again, and again whenever a photo changes |
 
