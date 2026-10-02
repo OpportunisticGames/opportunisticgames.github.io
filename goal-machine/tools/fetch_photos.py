@@ -21,7 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA, ALL, OUT, CHECKED = ROOT / 'data/players.js', ROOT / 'data/players_all.js', ROOT / 'data/photos.js', ROOT / 'data/photos_checked.json'
-MATCHER = 6  # raise when the finder gets better: earlier misses are then tried again at once
+MATCHER = 7  # raise when the finder gets better: earlier misses are then tried again at once
 SRC = os.environ.get('SRC', 'src')
 UA = 'GoalMachinePhotos/1.0 (https://opportunisticgames.github.io/goal-machine/; fan-made quiz game)'
 PL_PHOTO = 'https://resources.premierleague.com/premierleague/photos/players/110x140/p{}.png'
@@ -195,11 +195,27 @@ def named_for(title, name):
             and parts[-1] in t and (len(parts) < 2 or parts[0] in t or parts[0][0] in t.split()))
 
 
-def credit(ii, page_title):
+# a file that isn't the article's own photo or Wikidata's must say it's football (its description or categories), and
+# not another sport or job: that's how the rugby coach Dean Richards got in for the Southampton defender
+OTHER_JOB = re.compile(r'\b(rugby|cricket|boxer|boxing|golf|tennis|basketball|baseball|ice hockey|nfl|politician|mp for|actor|actress|singer|musician|band|wrestler|jockey|cyclist|athlete|coach of the (?:england|wales) rugby)\b')
+
+
+def fits_him(title, ii, p, life):
+    meta = ii.get('extmetadata', {})
+    text = fold(' '.join(re.sub(r'<[^>]+>', ' ', str(meta.get(k, {}).get('value', ''))) for k in ('ImageDescription', 'Categories', 'ObjectName')) + ' ' + title)
+    if OTHER_JOB.search(text) or not re.search(r'football|soccer|\bf ?c\b|premier league|' + '|'.join(map(re.escape, club_tests(p['clubs']))), text):
+        return False
+    # taken while he was alive and old enough to be a footballer
+    when = re.search(r'\b(19[5-9]\d|20[0-3]\d)\b', str(meta.get('DateTimeOriginal', {}).get('value', '')) + ' ' + title)
+    born, died = life
+    return not when or ((not died or int(when.group(1)) <= died) and (not born or int(when.group(1)) >= born + 14))
+
+
+def credit(ii, page_title, src=''):
     meta = ii.get('extmetadata', {})
     lic = meta.get('LicenseShortName', {}).get('value', '')
     artist = re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', '', meta.get('Artist', {}).get('value', 'Unknown')))).strip()
-    return {'w': ii['thumburl'], 'a': artist[:80] or 'Unknown', 'l': lic, 'u': ii['descriptionurl'], 't': page_title}
+    return {'w': ii['thumburl'], 'a': artist[:80] or 'Unknown', 'l': lic, 'u': ii['descriptionurl'], 't': page_title, 's': src}
 
 
 def from_wikipedia(p):
@@ -237,8 +253,11 @@ def from_wikipedia(p):
             continue
         if not (exact and born) and not any(t in text for t in tests):
             continue
-        # it's him. Candidate pictures, best first: the article's lead image, Wikidata's image, other images in the
-        # article and a Commons search (those last three only if the file has his name in it)
+        # his life, for dating photos: "(born 3 June 1974)" or "(9 June 1974 – 26 February 2011)"
+        life = re.search(r'\b(19\d\d|20\d\d)\b[^)]{0,40}?[–-][^)]{0,30}?\b(19\d\d|20\d\d)\b', pg.get('extract', '')[:300])
+        life = (int(life.group(1)), int(life.group(2))) if life else (int(born.group(1)) if born else None, None)
+        # it's him. Candidate pictures, best first: the article's lead image and Wikidata's image (him by definition),
+        # then other images in the article and a Commons search (only if the file has his name in it and fits_him)
         cands = [pg['pageimage']] if pg.get('pageimage') else []
         qid = (pg.get('pageprops') or {}).get('wikibase_item')
         if qid:
@@ -248,15 +267,17 @@ def from_wikipedia(p):
                 if isinstance(v, str):
                     cands.append(v)
         pics = get_json(WAPI + urllib.parse.urlencode({'action': 'query', 'titles': pg['title'], 'prop': 'images', 'imlimit': 50, 'format': 'json'}))
+        sure = {('File:' + c.replace('_', ' ')) if not c.startswith('File:') else c.replace('_', ' ') for c in cands}
         for pp in ((pics or {}).get('query', {}).get('pages') or {}).values():
             cands += [i['title'] for i in pp.get('images', []) if named_for(i['title'], p['name'])]
         found = commons_free(list(dict.fromkeys(c.replace('_', ' ') for c in cands))[:12])
+        found = [(t, ii, 'lead' if t in sure else 'art') for t, ii in found if t in sure or fits_him(t, ii, p, life)]
         if not found:
             sr = get_json(CAPI + urllib.parse.urlencode({'action': 'query', 'list': 'search', 'srsearch': f"{p['name']} footballer", 'srnamespace': 6, 'srlimit': 10, 'format': 'json'}))
             more = [x['title'] for x in (sr or {}).get('query', {}).get('search', []) if named_for(x['title'], p['name'])]
-            found = commons_free(more[:6])
+            found = [(t, ii, 'search') for t, ii in commons_free(more[:6]) if fits_him(t, ii, p, life)]
         if found:
-            return credit(found[0][1], pg['title'])
+            return credit(found[0][1], pg['title'], found[0][2])
     return None
 
 
@@ -297,8 +318,12 @@ def main():
     photos = {k: v for k, v in photos.items() if k in keys}  # forget players who dropped out of the data
     idx = pl_index()
     stale = lambda p: key(p) not in checked or (TODAY - datetime.date.fromisoformat(checked[key(p)])).days >= RETRY_DAYS
+    # RECHECK=1: look again at every photo found before the finder checked where it came from (no 's'), with today's
+    # stricter rules; one that no longer passes is dropped (and tried again later), one that can't be checked is kept
+    recheck = os.environ.get('RECHECK') == '1'
     # the Play app shows only the freely licensed ('w') photos, so everyone without one is looked up, most appearances first
-    todo = [p for p in players if not (photos.get(key(p)) or {}).get('w') and stale(p)]
+    todo = ([p for p in players if (photos.get(key(p)) or {}).get('w') and 's' not in photos[key(p)]] if recheck else
+            [p for p in players if not (photos.get(key(p)) or {}).get('w') and stale(p)])
     todo.sort(key=lambda p: -p['apps'])
     print(f'{len(todo)} players to look up (limit {limit})', file=sys.stderr)
     found, lock, done = {'pl': 0, 'w': 0}, threading.Lock(), [0]
@@ -319,6 +344,12 @@ def main():
         for p, hit, w, failed in ex.map(work, todo[:limit]):
             with lock:
                 done[0] += 1
+                if recheck and not w and not failed:
+                    old = photos.get(key(p)) or {}
+                    print(f'  dropped {p["name"]}: {old.get("u", "")[-60:]}', file=sys.stderr)
+                    keep = {k: v for k, v in old.items() if k == 'pl'}
+                    if keep: photos[key(p)] = keep
+                    else: photos.pop(key(p), None)
                 if hit or w:
                     photos[key(p)] = {**(photos.get(key(p)) or {}), **(hit or {}), **(w or {})}
                     found['pl'] += bool(hit)

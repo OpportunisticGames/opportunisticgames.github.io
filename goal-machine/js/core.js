@@ -179,6 +179,11 @@ GM.$$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 GM.initials = name => name.split(/\s+/).filter(Boolean).map(w => w[0]).join('').slice(0, 3).toUpperCase();
 GM.today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 GM.sleep = ms => new Promise(r => setTimeout(r, ms));
+// Animations: full unless the player picks Calm in Settings. Not the phone's "reduce motion": battery saver switches that
+// on, and then the coin landed instantly and CHAOS just flashed emoji at you
+GM.calm = () => !!GM.store.get('calm', false);
+GM.applyCalm = () => { if (document.body) document.body.classList.toggle('calm', GM.calm()); };
+document.addEventListener('DOMContentLoaded', GM.applyCalm);  // GM.store isn't defined yet here
 // A little tear-off calendar showing today's real date (instead of the emoji's fixed "July 17"); sized in em like an emoji
 GM.calIcon = function () {
   // drawn as SVG so the month and day always fit, whatever font the phone has; textLength squeezes wide months

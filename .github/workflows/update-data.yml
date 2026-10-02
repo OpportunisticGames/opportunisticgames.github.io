@@ -14,7 +14,7 @@ on:
   # changes to the pipeline itself get a dry run on feature branches
   push:
     branches: ['claude/**']
-    paths: ['goal-machine/tools/**', '.github/workflows/update-data.yml']
+    paths: ['goal-machine/tools/**', '!goal-machine/tools/test/**', '.github/workflows/update-data.yml']
 
 permissions:
   contents: write

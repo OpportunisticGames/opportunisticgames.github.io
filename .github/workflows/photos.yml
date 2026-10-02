@@ -7,6 +7,11 @@ on:
   schedule:
     - cron: '0 7 * * 3'
   workflow_dispatch:
+    inputs:
+      recheck:
+        description: 'Look again at photos found before the stricter checks (drops wrong people)'
+        type: boolean
+        default: false
   push:
     branches: ['claude/**']
     paths: ['goal-machine/tools/fetch_photos.py', 'goal-machine/tools/face_points.py', '.github/workflows/photos.yml']
@@ -15,7 +20,9 @@ permissions:
   contents: write
   pages: write
 
-concurrency: update-data
+# its own queue (sharing one with the data update let every dry run cancel a waiting photo run); both only touch their
+# own files and rebase before pushing
+concurrency: photos-${{ github.ref }}
 
 jobs:
   photos:
@@ -32,12 +39,15 @@ jobs:
         run: git clone -q --depth 1 https://github.com/mshodge/epl-stats "$RUNNER_TEMP/src/epl-stats"
 
       - name: Look up photos
-        run: SRC="$RUNNER_TEMP/src" python goal-machine/tools/fetch_photos.py
+        run: SRC="$RUNNER_TEMP/src" RECHECK="${{ inputs.recheck && '1' || '' }}" python goal-machine/tools/fetch_photos.py
 
       - name: Find the faces in them (so avatars zoom onto the face)
         if: always()   # even if the lookups stopped early, what they saved is kept
         run: |
           pip install -q "opencv-python-headless<5" numpy  # 5.x dropped the Haar face detector
+          # YuNet, OpenCV's neural face detector (the Haar cascades are only the fallback now)
+          curl -sSfL -o goal-machine/tools/face_detection_yunet.onnx \
+            https://media.githubusercontent.com/media/opencv/opencv_zoo/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx || true
           python goal-machine/tools/face_points.py
 
       - name: Publish if changed

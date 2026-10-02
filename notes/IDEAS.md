@@ -23,6 +23,18 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### CHAOS: the Centurion Throw + armband / Hat-Trick Hero combos 💬 *(owner, 2 Oct 2026)*
+- **Owner's words:** "the whole centurion throw – hat trick – captain's armband combination is kinda stupid, maybe there needs
+  to be a rework." Ideas: boosters only on the next player; only one of the two in your hand (boosters cost 2 bag slots, the
+  Centurion 1); the armband once, then vice-captain (+50%), then vice-vice…; Hat-Trick does something else entirely (a spin
+  on a club or an era, or only players who scored hat-tricks); or it rolls again and the three players are combined into one
+  (numbers added up), halved if they don't reach 50.
+- **Why it's strong:** every player on a Centurion spin has 100+, so a booster on it can't miss: armband ×2, Hero ×3,
+  guaranteed. Simulation: saving Centurions for a booster gains +2–4% (van Gaal +9.5% before 5.17.1).
+- **Claude's pick:** Hat-Trick becomes its own spin, the three players combined into one (owner's last idea), so it can't
+  sit on a Centurion; the armband passes down in CHAOS (captain ×2, then vice-captain ×1.5, then ×1.25). Skip the bag-slot
+  cost (more to explain). Re-run the manager simulation after.
+
 ### CHAOS: the screen gets messier as the game goes on 🚧 being built in 5.17 *(owner, 2 Oct 2026)*
 - **Owner's words:** "make the screen a little more chaotic as time goes on? E.g if you got the pigeon a little pigeon stays
   on somewhere around the pitch, an ambulance is there for an injured player, a tornado does wreck things a little etc. There

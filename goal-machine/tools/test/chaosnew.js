@@ -9,7 +9,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const b = await chromium.launch(), errs = [];
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
   await ctx.route(/wikimedia|premierleague|transfermarkt|supabase/, r => r.abort());
-  const pg = await ctx.newPage(); pg.on('pageerror', e => errs.push(e.message));
+  const pg = await ctx.newPage(); pg.on('pageerror', e => errs.push(e.message)); pg.on('console', m => m.text().startsWith('{') && console.log('  page:', m.text()));
   await pg.goto(U); await pg.evaluate(() => { localStorage.setItem('gm:seenVersion', '999'); localStorage.setItem('gm:welcomed', '1'); });
   await pg.goto(U);
 
@@ -41,7 +41,8 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(keeper === 67, `Čech counts 67 goals in CHAOS (got ${keeper})`);
 
   // force every new event and the big moments with new animations; check leftovers stay on the pitch
-  for (const ev of ['streaker', 'pigeon', 'splat', 'amnesty', 'tornado', 'blackhole', 'pies']) {
+  let parkedAfterInjury = null;
+  for (const ev of ['streaker', 'pigeon', 'splat', 'amnesty', 'tornado', 'blackhole', 'pies', 'injury', 'arrest', 'aliens']) {
     // give him a few players so the moments have someone to hit
     await pg.evaluate(() => {
       const S = GM.draft.state();
@@ -56,11 +57,15 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     if (ev === 'blackhole') { await pg.click('.cm'); await pg.waitForTimeout(800); ok(!!(await pg.$('.cm-hole')), 'the black hole opens on the pitch'); await pg.screenshot({ path: 'lay/chaos_hole.png' }); }
     for (let k = 0; k < 40 && await pg.$('.cm:not(.out)'); k++) { await pg.click('.cm:not(.out)').catch(() => {}); await pg.waitForTimeout(250); }
     await pg.waitForTimeout(400);
+    if (ev === 'injury') parkedAfterInjury = await pg.evaluate(() => ({ n: Object.values(GM.draft.state().parked || {}).filter(k => k === 'ambulance').length, drawn: document.querySelectorAll('.slot .parked svg').length }));
     // wait out the spin and drop the reels so the next event can go
     for (let k = 0; k < 30; k++) { const ph = await pg.evaluate(() => GM.draft.state().phase); if (ph === 'pick') break; await pg.waitForTimeout(200); }
   }
   const st = await pg.evaluate(() => { const S = GM.draft.state(); return { mess: (S.mess || []).map(m => m.i).join(''), splat: (S.splat || []).length, shown: document.querySelectorAll('.mess i').length, hidden: document.querySelectorAll('.slot-goals.splatted').length, healed: S.xi.filter(x => x.mod === 'healed').length, moments: (S.moments || []).map(m => m.name) }; });
   console.log('  moments:', st.moments.join(' · '));
+  const veh = await pg.evaluate(() => { const S = GM.draft.state(); return { parked: Object.values(S.parked || {}), drawn: document.querySelectorAll('.slot .parked svg').length, ghost: S.ghost, filled: S.xi.filter(x => x.p != null).length }; });
+  ok(parkedAfterInjury && parkedAfterInjury.n >= 1 && parkedAfterInjury.drawn >= 1, `🚑 the ambulance stays parked by the injured player (${parkedAfterInjury && parkedAfterInjury.drawn} drawn)`);
+  ok(veh.ghost == null && st.moments.includes('Arrested!'), `🚔 arrested: his place is empty again (${veh.filled} signed)`);
   ok(st.mess.includes('🩲') && st.mess.includes('🐦'), `leftovers stay on the pitch (${st.mess})`);
   ok(st.shown === [...st.mess].length || st.shown >= 5, `${st.shown} leftovers drawn on the pitch`);
   ok(st.splat >= 1 && st.hidden === st.splat, `the pigeon’s revenge covers ${st.splat} number(s)`);
@@ -82,13 +87,32 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const jok = await pg.evaluate(() => GM.draft.state().inv[0]);
   ok(jok && jok !== 'joker', `🃏 the Joker turned into ${jok}`);
 
-  const hero = await pg.evaluate(() => {
-    const S = GM.draft.state(), big = GM.players.findIndex((p, k) => p.goals >= 80 && p.poss.includes('ST') && !S.xi.some(y => y.p === k));
-    S.modifier = 'hero'; S.reels = [{ id: big }]; S.phase = 'pick'; S.pending = 0; GM.draft.render(); return GM.players[big];
+  // Hat-Trick: a spin of three players for one position, all signed as one with their numbers added up
+  const trio = await pg.evaluate(() => {
+    const S = GM.draft.state(); S.inv = ['hero']; S.phase = 'spin'; S.modifier = null; GM.draft.render(); return true;
   });
-  await pg.click('.slot.target'); await pg.waitForTimeout(2600);
-  const hs = await pg.evaluate(n => GM.draft.state().xi.find(x => x.p != null && GM.players[x.p].name === n), hero.name);
-  ok(hs && hs.g === hero.goals * 3, `🎩 Hat-Trick Hero: ${hero.name} (${hero.goals}) counts ${hs && hs.g}`);
+  await pg.click('.wild-btn[data-w="0"]');
+  for (let k = 0; k < 40; k++) { if (await pg.evaluate(() => GM.draft.state().phase === 'pick')) break; await pg.waitForTimeout(150); }
+  const t3 = await pg.evaluate(() => { const S = GM.draft.state(); return { pos: [...new Set(S.reels.filter(x => !x.wild).map(x => GM.players[x.id].poss.join('/')))], ids: S.reels.filter(x => !x.wild).map(x => x.id), special: S.special }; });
+  await pg.click('.stage .reel[data-reel="0"]'); await pg.waitForTimeout(300);
+  await pg.click('.slot.target'); await pg.waitForTimeout(2800);
+  const ts = await pg.evaluate(ids => { const S = GM.draft.state(), x = S.xi.find(s => s.trio && s.trio.length === 3); const sum = ids.reduce((a, id) => a + GM.players[id].goals + (GM.players[id].pos === 'G' && GM.players[id].cs ? Math.floor(GM.players[id].cs / 3) : 0), 0); return x && { g: x.g, sum, mod: x.mod, used: ids.every(id => S.used.includes(id)) }; }, t3.ids);
+  ok(t3.special === 'hero' && ts && ts.used, `🎩 Hat-Trick: three players signed as one (${t3.pos.join(', ')})`);
+  ok(ts && ts.g === (ts.sum < 50 ? Math.floor(ts.sum * 0.5) : ts.sum), `…their goals added up: ${ts && ts.sum}${ts && ts.sum < 50 ? ', under 50 so half' : ''} → ${ts && ts.g}`);
+
+  // the armband passes down in CHAOS: ×2, then ×1.5, then ×1.25
+  const caps = [];
+  for (let n = 0; n < 3; n++) {
+    const r = await pg.evaluate(() => {
+      const S = GM.draft.state(), id = GM.players.findIndex((p, k) => p.goals >= 20 && p.goals <= 300 && p.poss.some(x => S.xi.some(y => y.p == null && y.pos === x)) && !S.used.includes(k) && !S.xi.some(y => y.p === k));
+      S.inv = ['captain']; S.modifier = null; S.phase = 'spin'; GM.draft.render(); return id;
+    });
+    await pg.click('.wild-btn[data-w="0"]'); await pg.waitForTimeout(200);
+    await pg.evaluate(id => { const S = GM.draft.state(); S.reels = [{ id }]; S.phase = 'pick'; S.pending = 0; GM.draft.render(); }, r);
+    await pg.click('.slot.target'); await pg.waitForTimeout(2700);
+    caps.push(await pg.evaluate(id => { const x = GM.draft.state().xi.find(s => s.p === id); return +(x.g / GM.players[id].goals).toFixed(2); }, r));
+  }
+  ok(caps[0] >= 1.95 && caps[1] >= 1.45 && caps[1] < 1.55 && caps[2] >= 1.2 && caps[2] < 1.3, `©️ the armband passes down: ×${caps.join(', ×')}`);
 
   // van Gaal: a striker can go in defence, at 80%
   await game('vangaal', 'newchaos2');
@@ -98,6 +122,11 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     return { id, g: GM.players[id].goals, cb: [...document.querySelectorAll('.slot.target')].map(e => S.xi[e.dataset.slot].pos) };
   });
   ok(vg.cb.includes('CB') && vg.cb.includes('ST'), `van Gaal: a striker can go anywhere outfield (${[...new Set(vg.cb)].join(' ')})`);
+  const themed = await pg.evaluate(id => {
+    const S = GM.draft.state(); S.special = 'centurion'; GM.draft.render();
+    const t = [...document.querySelectorAll('.slot.target')].map(e => S.xi[e.dataset.slot].pos); S.special = null; GM.draft.render(); return t;
+  }, vg.id);
+  ok(themed.length && themed.every(p => p === 'ST'), `…but not on a Centurion Throw: only up front (${[...new Set(themed)].join(' ')})`);
   await pg.evaluate(() => { const S = GM.draft.state(), i = S.xi.findIndex(x => x.pos === 'CB'); document.querySelector(`.slot[data-slot="${i}"]`).click(); });
   await pg.waitForTimeout(2600);
   const vgs = await pg.evaluate(id => GM.draft.state().xi.find(x => x.p === id), vg.id);
