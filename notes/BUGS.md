@@ -7,7 +7,6 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Status |
 |---|---|---|
-| 2026-10-02 | CHAOS: van Gaal + a Centurion Throw + Hat-Trick Hero = a guaranteed ×3 on a 100-goal striker in any slot (the simulation: van Gaal +9.5% when you save Centurions for a booster, others +2–4%) | Fixed on the branch for 5.17.1: van Gaal's any-position rule is off on themed spins (now −0.5% with the combo); Pep +70% midfield (he was 8% low) |
 | 2026-10-02 | Wrong person in a photo: Richards (Dean Richards, the Southampton/Spurs defender) showed the rugby coach of the same name. A Commons search fallback trusted any file with his name in it | Fixing: files that aren't the article's own photo or Wikidata's must say football and be dated within his life (`fits_him`); a recheck run goes back over every earlier photo. His photo is removed |
 | 2026-10-02 | Photos that don't fit the circle: Ingimarsson (no face found, so the default crop showed his body) and Laursen (an action shot; the old detector picked the wrong spot) | Fixing: YuNet, OpenCV's neural face detector, on bigger copies of each photo; every face is found again, and again whenever a photo changes |
 
@@ -15,6 +14,8 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 2026-10-02 | CHAOS: van Gaal + a Centurion Throw + Hat-Trick Hero = a guaranteed ×3 on a 100-goal striker in any slot | 5.18: van Gaal's any-position rule is off on themed spins; the Hat-Trick is its own spin now; the armband passes down in CHAOS |
+| 2026-10-02 | The coin landed the moment you tapped it and CHAOS effects just appeared (battery saver turns on the phone's "reduce motion") | 5.18: the game's own Animations setting (Full by default) |
 | 2026-10-02 | Cards showed the first club a player played for (Kane = Norwich, Rio = West Ham), not the club he's known for | 5.13.3: the card shows the club with the most Premier League seasons (`p.main`, worked out from the club stints; the first club if a player has none) |
 | 2026-10-02 | Many players have Wikipedia pages but no photo in the Play app (it shows only the freely licensed Wikimedia photos, and the finder only looked at the 2,039 main-pool players, and only at an article's lead image) | Photo finder reworked (see below): everyone, lead image then Wikidata then other article images then a Commons search, 1,500 a run |
 | 2026-10-02 | Play app: opening a pack, player names sat too low and were covered (fine in the Album and in a browser). Reproduced by scaling text 130%: the app's WebView follows the phone's text size, so card text outgrew the cards | 5.11.2 + app build: the app pins text zoom to 100%; the card grid also lets the photo and corner column shrink so the name always stays in place |

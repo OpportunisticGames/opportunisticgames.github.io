@@ -9,6 +9,16 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 59, label: '5.18', date: '2026-10-02', title: '🚑 CHAOS comes alive',
+      items: [
+        '🚑 Real animations: an ambulance drives on with its lights going nee-naw and parks by your injured player, and a flying saucer beams a player up',
+        '🚔 New: Arrested! A police car takes one of your players away, and you sign someone else for his place',
+        '🎩 The Hat-Trick: three players for one position, signed as one with their numbers added up (under 50 between them and he counts half)',
+        '©️ In CHAOS the armband passes down: captain ×2, then vice-captain ×1.5, then ×1.25. And van Gaal can’t put players out of position on a themed spin like a Centurion Throw',
+        '🎬 Settings → Look → Animations: Full or Calm. Battery saver no longer switches the animations off (that’s why the coin landed before it flipped)',
+      ],
+    },
+    {
       v: 58, label: '5.17', date: '2026-10-02', title: '🌪️ More CHAOS: keepers, managers, mess',
       items: [
         '🧤 Keepers count in CHAOS: a goal for every three Premier League clean sheets (Čech is worth 67). 🥧 Who ate all the pies? finally does something',
