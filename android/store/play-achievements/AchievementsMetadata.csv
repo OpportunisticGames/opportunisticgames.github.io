@@ -1,101 +1,100 @@
-Name,Description,Incremental value,Steps Needed,Initial State,Points,List Order
-First XI,Finish your first draft.,FALSE,,Revealed,5,1
-300 Club,Score 300+ goals in Ultimate Wildcard.,FALSE,,Revealed,5,2
-400 Club,Score 400+ goals in Ultimate Wildcard.,FALSE,,Revealed,10,3
-Goal Machine,Score 500+ goals in Ultimate Wildcard.,FALSE,,Revealed,25,4
-Creator,Build an XI with 250+ assists in Ultimate Wildcard.,FALSE,,Revealed,10,5
-Iron Men,"Build an XI with 4,000+ apps in Ultimate Wildcard.",FALSE,,Revealed,10,6
-Bullseye,Hit a Target exactly.,FALSE,,Revealed,10,7
-Treble Winners,"Win the Treble – goals, assists and apps all within 3%.",FALSE,,Revealed,15,8
-Near Miss,Finish within 2% of a Target.,FALSE,,Revealed,5,9
-Title Race,Get a Title contenders squad rating (or better).,FALSE,,Revealed,10,10
-Invincibles,Get an Invincibles squad rating.,FALSE,,Revealed,15,11
-Dead Rubber,Finish with a Relegation certainties squad. It happens.,FALSE,,Revealed,5,12
-Band of Brothers,Have 5+ pairs of former teammates in one XI.,FALSE,,Revealed,5,13
-Hall of Fame XI,Sign 3+ Hall of Famers in one XI.,FALSE,,Revealed,5,14
-World Champions,Sign 2+ World Cup winners in one XI.,FALSE,,Revealed,5,15
-Club Legends,Have 5+ players from the same club in one XI.,FALSE,,Revealed,5,16
-Wildcard Wizard,Use 5 wildcards in one game.,FALSE,,Revealed,5,17
-Fortune Favours,Win a Double or Nothing coin toss.,FALSE,,Revealed,5,18
-Agent of Chaos,Score 500+ points in Ultimate Wildcard CHAOS (goals).,FALSE,,Revealed,10,19
-Proper Fan,Have 6+ players who played for your club in one XI (not in a Club or Matchday XI).,FALSE,,Revealed,5,20
-Lifers,Every player in your XI had a PL career spanning 10+ seasons.,FALSE,,Revealed,10,21
-Total Anarchy,"Score 1,000+ points in CHAOS (goals).",FALSE,,Revealed,15,22
-Vote of No Confidence,Get your manager sacked in CHAOS.,FALSE,,Revealed,5,23
-Once in a Lifetime,See a legendary CHAOS moment.,FALSE,,Revealed,10,24
-Meltdown,Fill the CHAOS meter 3 times in one game.,FALSE,,Revealed,5,25
-Gaffer’s Favourites,Sign 6+ players your manager likes in one CHAOS XI.,FALSE,,Revealed,5,26
-Regular,Play the Daily Ultimate 3 days in a row.,FALSE,,Revealed,5,27
-Seven Up,Play the Daily Ultimate 7 days in a row.,FALSE,,Revealed,5,28
-Globetrotter,Make 10 hops in Club Hopper.,FALSE,,Revealed,5,29
-Frequent Flyer,Make 20 hops in Club Hopper.,FALSE,,Revealed,5,30
-Streaker,Get 10 in a row in Higher or Lower.,FALSE,,Revealed,5,31
-On Fire,Get 25 in a row in Higher or Lower.,FALSE,,Revealed,5,32
-Detective,"Score 3,000+ in Who Am I?",FALSE,,Revealed,10,33
-Full House,Fill a whole Club Grid.,FALSE,,Revealed,5,34
-Human Calculator,Score 700+ in Guess the Tally.,FALSE,,Revealed,10,35
-Card Sharp,Win a game of Hat-Trick.,FALSE,,Hidden,10,36
-Clean Sheet,Make a Nil bid in Hat-Trick.,FALSE,,Hidden,5,37
-Scout,Collect 100 players.,FALSE,,Revealed,5,38
-Chief Scout,Collect 500 players.,FALSE,,Revealed,15,39
-Encyclopedia,"Collect 1,000 players.",FALSE,,Revealed,25,40
-Pantheon,Collect every Hall of Famer.,FALSE,,Revealed,10,41
-Boot Room,Collect every Golden Boot winner.,FALSE,,Revealed,10,42
-Ever Present,Play the Daily Ultimate 14 days in a row.,FALSE,,Revealed,10,43
-Season Ticket Holder,Play the Daily Ultimate 30 days in a row.,FALSE,,Revealed,15,44
-Kick-off,Finish your first online game.,FALSE,,Revealed,5,45
-Away Win,Win an online game.,FALSE,,Revealed,5,46
-Serial Winners,Win 10 online games.,FALSE,,Revealed,5,47
-Beat Them All,Beat 5 different friends online.,FALSE,,Revealed,10,48
-All-Rounder,"Win a Draft Duel, a Live Race and a Transfer Auction.",FALSE,,Revealed,10,49
-Chaos Merchant,Win a CHAOS Race.,FALSE,,Revealed,5,50
-The Magic Number,Build an XI with exactly 442 goals.,FALSE,,Hidden,10,51
-AGÜEROOOO,Sign Sergio Agüero in a draft.,FALSE,,Hidden,5,52
-Parked the Bus,Finish a goals draft with under 40 goals.,FALSE,,Hidden,5,53
-Club Till I Die,Have 8+ players from the same club in one XI.,FALSE,,Hidden,10,54
-Night Owl,Finish a draft between midnight and 4am.,FALSE,,Hidden,5,55
-One-Season Wonders,Have 3+ players who only had one PL season in one XI.,FALSE,,Hidden,10,56
-The Slip,Steven Gerrard finishes a CHAOS game on 0.,FALSE,,Hidden,5,57
-"Dilly Ding, Dilly Dong",Ranieri in the dugout with 3+ Leicester players.,FALSE,,Hidden,10,58
-Fergie Time,Fergie in the dugout with 5+ Man Utd players.,FALSE,,Hidden,10,59
-We Are Not Alone,Witness an alien abduction in CHAOS.,FALSE,,Hidden,5,60
-Pigeon Fancier,A pigeon lands on your pitch in CHAOS.,FALSE,,Hidden,5,61
-Matchday,Play a Matchday XI when your club’s on.,FALSE,,Revealed,5,62
-Split Loyalties,Sign 3+ players who played for both sides in one Matchday XI.,FALSE,,Revealed,5,63
-Twelfth Man,Score 150+ goals in a Matchday XI.,FALSE,,Revealed,5,64
-Matchday Regular,Play the Matchday XI on 5 different matchdays.,FALSE,,Revealed,5,65
-Pundit,Get the pre-match Footle in 3 guesses or fewer.,FALSE,,Revealed,5,66
-Derby Day,Play a Matchday XI on derby day.,FALSE,,Hidden,10,67
-International Duty,Finish an International XI during an international break.,FALSE,,Revealed,5,68
-Golden Generation,Score 250+ goals in an International XI.,FALSE,,Revealed,10,69
-World Tour,Build International XIs for 5 different countries.,FALSE,,Revealed,5,70
-In the Black,Finish a Moneyball season worth £150m or more.,FALSE,,Revealed,10,71
-"Buy Low, Sell High",Sell a player for double what you paid in Moneyball.,FALSE,,Revealed,10,72
-Sold to Madrid,Accept a big-money bid for one of your stars.,FALSE,,Revealed,5,73
-Champions!,Win the league as the Dodgy Owner.,FALSE,,Revealed,10,74
-Unbeaten Season,Go a whole Dodgy Owner season unbeaten.,FALSE,,Revealed,10,75
-Cup Run,Win the Cup as the Dodgy Owner.,FALSE,,Revealed,10,76
-Under Investigation,Finish a Dodgy Owner season with the heat at 80 or more.,FALSE,,Revealed,5,77
-Squeaky Clean,Finish in the top half with no heat at all.,FALSE,,Revealed,10,78
-Owner Out,Get forced out by your own fans.,FALSE,,Hidden,10,79
-Living the Dream,Achieve your owner’s ambition in Dodgy Owner.,FALSE,,Revealed,5,80
-First Blood,Win a Goal Royale battle.,FALSE,,Hidden,10,81
-Big Time,Reach the Premier League arena in Goal Royale.,FALSE,,Hidden,10,82
-Long Live the Owner,Reign for a whole season in Reign Check.,FALSE,,Hidden,10,83
-Statue,Get flattened by your own statue in Reign Check.,FALSE,,Hidden,5,84
-Pack Opener,Open your first pack.,FALSE,,Revealed,5,85
-Walkout,Pull a Legend in a pack.,FALSE,,Revealed,5,86
-Gold Standard,Finish a Gold card.,FALSE,,Revealed,10,87
-Legendary,Finish a Legend card.,FALSE,,Revealed,10,88
-Fully Packed,Fill all 11 places in your Packed XI.,FALSE,,Revealed,10,89
-Home Nations,"Build International XIs for England, Scotland, Wales and Northern Ireland.",FALSE,,Hidden,10,90
-Getting Going,Play 25 games.,FALSE,,Revealed,5,91
-Centurion,Play 100 games.,FALSE,,Revealed,10,92
-Part of the Furniture,Play 500 games.,FALSE,,Revealed,25,93
-Climbing the Pyramid,Reach level 10 (League Two).,FALSE,,Revealed,10,94
-Top Flight,Reach level 30 (Premier League).,FALSE,,Revealed,15,95
-Ballon d’Or,Reach level 50.,FALSE,,Revealed,25,96
-A Hundred Days,Play the Daily Ultimate on 100 different days.,FALSE,,Revealed,25,97
-Pack Mentality,Open 50 packs.,FALSE,,Revealed,15,98
-Extreme Measures,Finish a draft in Extreme.,FALSE,,Revealed,10,99
-Ruthless,Win 25 online games.,FALSE,,Revealed,15,100
+First XI,Finish your first draft.,False,,Revealed,5,1
+300 Club,Score 300+ goals in Ultimate Wildcard.,False,,Revealed,5,2
+400 Club,Score 400+ goals in Ultimate Wildcard.,False,,Revealed,10,3
+Goal Machine,Score 500+ goals in Ultimate Wildcard.,False,,Revealed,25,4
+Creator,Build an XI with 250+ assists in Ultimate Wildcard.,False,,Revealed,10,5
+Iron Men,"Build an XI with 4,000+ apps in Ultimate Wildcard.",False,,Revealed,10,6
+Bullseye,Hit a Target exactly.,False,,Revealed,10,7
+Treble Winners,"Win the Treble – goals, assists and apps all within 3%.",False,,Revealed,15,8
+Near Miss,Finish within 2% of a Target.,False,,Revealed,5,9
+Title Race,Get a Title contenders squad rating (or better).,False,,Revealed,10,10
+Invincibles,Get an Invincibles squad rating.,False,,Revealed,15,11
+Dead Rubber,Finish with a Relegation certainties squad. It happens.,False,,Revealed,5,12
+Band of Brothers,Have 5+ pairs of former teammates in one XI.,False,,Revealed,5,13
+Hall of Fame XI,Sign 3+ Hall of Famers in one XI.,False,,Revealed,5,14
+World Champions,Sign 2+ World Cup winners in one XI.,False,,Revealed,5,15
+Club Legends,Have 5+ players from the same club in one XI.,False,,Revealed,5,16
+Wildcard Wizard,Use 5 wildcards in one game.,False,,Revealed,5,17
+Fortune Favours,Win a Double or Nothing coin toss.,False,,Revealed,5,18
+Agent of Chaos,Score 500+ points in Ultimate Wildcard CHAOS (goals).,False,,Revealed,10,19
+Proper Fan,Have 6+ players who played for your club in one XI (not in a Club or Matchday XI).,False,,Revealed,5,20
+Lifers,Every player in your XI had a PL career spanning 10+ seasons.,False,,Revealed,10,21
+Total Anarchy,"Score 1,000+ points in CHAOS (goals).",False,,Revealed,15,22
+Vote of No Confidence,Get your manager sacked in CHAOS.,False,,Revealed,5,23
+Once in a Lifetime,See a legendary CHAOS moment.,False,,Revealed,10,24
+Meltdown,Fill the CHAOS meter 3 times in one game.,False,,Revealed,5,25
+Gaffer’s Favourites,Sign 6+ players your manager likes in one CHAOS XI.,False,,Revealed,5,26
+Regular,Play the Daily Ultimate 3 days in a row.,False,,Revealed,5,27
+Seven Up,Play the Daily Ultimate 7 days in a row.,False,,Revealed,5,28
+Globetrotter,Make 10 hops in Club Hopper.,False,,Revealed,5,29
+Frequent Flyer,Make 20 hops in Club Hopper.,False,,Revealed,5,30
+Streaker,Get 10 in a row in Higher or Lower.,False,,Revealed,5,31
+On Fire,Get 25 in a row in Higher or Lower.,False,,Revealed,5,32
+Detective,"Score 3,000+ in Who Am I?",False,,Revealed,10,33
+Full House,Fill a whole Club Grid.,False,,Revealed,5,34
+Human Calculator,Score 700+ in Guess the Tally.,False,,Revealed,10,35
+Card Sharp,Win a game of Hat-Trick.,False,,Hidden,10,36
+Clean Sheet,Make a Nil bid in Hat-Trick.,False,,Hidden,5,37
+Scout,Collect 100 players.,True,100,Revealed,5,38
+Chief Scout,Collect 500 players.,True,500,Revealed,15,39
+Encyclopedia,"Collect 1,000 players.",True,1000,Revealed,25,40
+Pantheon,Collect every Hall of Famer.,False,,Revealed,10,41
+Boot Room,Collect every Golden Boot winner.,False,,Revealed,10,42
+Ever Present,Play the Daily Ultimate 14 days in a row.,False,,Revealed,10,43
+Season Ticket Holder,Play the Daily Ultimate 30 days in a row.,False,,Revealed,15,44
+Kick-off,Finish your first online game.,False,,Revealed,5,45
+Away Win,Win an online game.,False,,Revealed,5,46
+Serial Winners,Win 10 online games.,True,10,Revealed,5,47
+Beat Them All,Beat 5 different friends online.,True,5,Revealed,10,48
+All-Rounder,"Win a Draft Duel, a Live Race and a Transfer Auction.",False,,Revealed,10,49
+Chaos Merchant,Win a CHAOS Race.,False,,Revealed,5,50
+The Magic Number,Build an XI with exactly 442 goals.,False,,Hidden,10,51
+AGÜEROOOO,Sign Sergio Agüero in a draft.,False,,Hidden,5,52
+Parked the Bus,Finish a goals draft with under 40 goals.,False,,Hidden,5,53
+Club Till I Die,Have 8+ players from the same club in one XI.,False,,Hidden,10,54
+Night Owl,Finish a draft between midnight and 4am.,False,,Hidden,5,55
+One-Season Wonders,Have 3+ players who only had one PL season in one XI.,False,,Hidden,10,56
+The Slip,Steven Gerrard finishes a CHAOS game on 0.,False,,Hidden,5,57
+"Dilly Ding, Dilly Dong",Ranieri in the dugout with 3+ Leicester players.,False,,Hidden,10,58
+Fergie Time,Fergie in the dugout with 5+ Man Utd players.,False,,Hidden,10,59
+We Are Not Alone,Witness an alien abduction in CHAOS.,False,,Hidden,5,60
+Pigeon Fancier,A pigeon lands on your pitch in CHAOS.,False,,Hidden,5,61
+Matchday,Play a Matchday XI when your club’s on.,False,,Revealed,5,62
+Split Loyalties,Sign 3+ players who played for both sides in one Matchday XI.,False,,Revealed,5,63
+Twelfth Man,Score 150+ goals in a Matchday XI.,False,,Revealed,5,64
+Matchday Regular,Play the Matchday XI on 5 different matchdays.,True,5,Revealed,5,65
+Pundit,Get the pre-match Footle in 3 guesses or fewer.,False,,Revealed,5,66
+Derby Day,Play a Matchday XI on derby day.,False,,Hidden,10,67
+International Duty,Finish an International XI during an international break.,False,,Revealed,5,68
+Golden Generation,Score 250+ goals in an International XI.,False,,Revealed,10,69
+World Tour,Build International XIs for 5 different countries.,True,5,Revealed,5,70
+In the Black,Finish a Moneyball season worth £150m or more.,False,,Revealed,10,71
+"Buy Low, Sell High",Sell a player for double what you paid in Moneyball.,False,,Revealed,10,72
+Sold to Madrid,Accept a big-money bid for one of your stars.,False,,Revealed,5,73
+Champions!,Win the league as the Dodgy Owner.,False,,Revealed,10,74
+Unbeaten Season,Go a whole Dodgy Owner season unbeaten.,False,,Revealed,10,75
+Cup Run,Win the Cup as the Dodgy Owner.,False,,Revealed,10,76
+Under Investigation,Finish a Dodgy Owner season with the heat at 80 or more.,False,,Revealed,5,77
+Squeaky Clean,Finish in the top half with no heat at all.,False,,Revealed,10,78
+Owner Out,Get forced out by your own fans.,False,,Hidden,10,79
+Living the Dream,Achieve your owner’s ambition in Dodgy Owner.,False,,Revealed,5,80
+First Blood,Win a Goal Royale battle.,False,,Hidden,10,81
+Big Time,Reach the Premier League arena in Goal Royale.,False,,Hidden,10,82
+Long Live the Owner,Reign for a whole season in Reign Check.,False,,Hidden,10,83
+Statue,Get flattened by your own statue in Reign Check.,False,,Hidden,5,84
+Pack Opener,Open your first pack.,False,,Revealed,5,85
+Walkout,Pull a Legend in a pack.,False,,Revealed,5,86
+Gold Standard,Finish a Gold card.,False,,Revealed,10,87
+Legendary,Finish a Legend card.,False,,Revealed,10,88
+Fully Packed,Fill all 11 places in your Packed XI.,False,,Revealed,10,89
+Home Nations,"Build International XIs for England, Scotland, Wales and Northern Ireland.",False,,Hidden,10,90
+Getting Going,Play 25 games.,True,25,Revealed,5,91
+Centurion,Play 100 games.,True,100,Revealed,10,92
+Part of the Furniture,Play 500 games.,True,500,Revealed,25,93
+Climbing the Pyramid,Reach level 10 (League Two).,True,10,Revealed,10,94
+Top Flight,Reach level 30 (Premier League).,True,30,Revealed,15,95
+Ballon d’Or,Reach level 50.,True,50,Revealed,25,96
+A Hundred Days,Play the Daily Ultimate on 100 different days.,True,100,Revealed,25,97
+Pack Mentality,Open 50 packs.,True,50,Revealed,15,98
+Extreme Measures,Finish a draft in Extreme.,False,,Revealed,10,99
+Ruthless,Win 25 online games.,True,25,Revealed,15,100

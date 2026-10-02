@@ -225,10 +225,28 @@ public class MainActivity extends Activity {
             return Achievements.AVAILABLE;
         }
 
-        /** Unlocks Play Games achievements by badge name: a JSON array of names, in one go or just one. */
+        /** Sends Play Games achievement progress: a JSON object of badge name -> steps so far (or 1 for earned). */
         @JavascriptInterface
-        public void pgsUnlock(String namesJson) {
-            Achievements.unlock(MainActivity.this, namesJson);
+        public void pgsUpdate(String progressJson) {
+            Achievements.update(MainActivity.this, progressJson);
+        }
+
+        /** Submits a score to the Play Games leaderboard with this name. */
+        @JavascriptInterface
+        public void pgsScore(String boardName, double score) {
+            Achievements.score(MainActivity.this, boardName, (long) score);
+        }
+
+        /** Opens Google's leaderboards screen. */
+        @JavascriptInterface
+        public void pgsBoards() {
+            Achievements.showBoards(MainActivity.this);
+        }
+
+        /** Sends Play Games Game Stats events: a JSON array of {name, props}. */
+        @JavascriptInterface
+        public void pgsStats(String eventsJson) {
+            Achievements.stats(MainActivity.this, eventsJson);
         }
 
         /** Opens Google's achievements screen. */

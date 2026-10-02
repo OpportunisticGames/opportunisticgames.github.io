@@ -1,0 +1,2 @@
+Stat Id,Event Property Name,Stat Display Name,Stat Description,Icon File Name,Good value direction,Unit
+level,currentProgress,Level,"Your Goal Machine level: earn XP for every game, daily and badge.",level.png,INCREASING,

@@ -10,6 +10,10 @@ Google limits: 400 achievements, 2,000 points in total (5-point steps, 200 max e
 
 Owner decisions: "do badly" badges (Dead Rubber, Parked the Bus…) are welcome, a few of them. Secret-game badges (Hat-Trick, Goal Royale, Reign Check) are included as **hidden** achievements, so Play shows no name or description until unlocked.
 
+## 📈 Incremental achievements (16)
+
+The counters are **incremental** in Play (a progress bar; the step count is fixed once published): Getting Going 25 · Centurion 100 · Part of the Furniture 500 (games played) · Climbing the Pyramid 10 · Top Flight 30 · Ballon d’Or 50 (level) · A Hundred Days 100 · Scout 100 · Chief Scout 500 · Encyclopedia 1,000 (players collected) · Pack Mentality 50 · Serial Winners 10 · Ruthless 25 · Beat Them All 5 · Matchday Regular 5 · World Tour 5. Daily streaks stay plain (a streak resets and Play's progress only goes up) and so do set completions (Hall of Fame and Golden Boot can grow when the data refreshes). The steps live in `STEPS` in `js/collection.js`; the CSV's `Incremental value` / `Steps Needed` columns must match.
+
 ## ✂️ Cut (5)
 
 | Badge | Why |
@@ -37,8 +41,8 @@ Owner decisions: "do badly" badges (Dead Rubber, Parked the Bus…) are welcome,
 | 🛋️ **Part of the Furniture** (`g500`): Play 500 games. | H | Games played |
 | 🥉 **Climbing the Pyramid** (`lv10`): Reach level 10 (League Two). | M | `GM.myLevel().n` |
 | 🦁 **Top Flight** (`lv30`): Reach level 30 (Premier League). | H | `GM.myLevel().n` |
-| 🏆 **Ballon d’Or** (`lv50`): Reach level 50. | H | `GM.myLevel().n` |
-| 🗓️ **A Hundred Days** (`daily100`): Play the Daily Ultimate on 100 different days. | H | `dlog` (the Album keeps only 60 days) |
+| 🎖️ **Ballon d’Or** (`lv50`): Reach level 50. | H | `GM.myLevel().n` |
+| 🌅 **A Hundred Days** (`daily100`): Play the Daily Ultimate on 100 different days. | H | `dlog` (the Album keeps only 60 days) |
 | 📦 **Pack Mentality** (`pk50`): Open 50 packs. | H | `cards.opened` |
 | ☠️ **Extreme Measures** (`extreme`): Finish a draft in Extreme. | M | needs an `extreme` flag on the draft event |
 | ⚔️ **Ruthless** (`onwin25`): Win 25 online games. | H | `online.wins` |
@@ -120,8 +124,8 @@ Good ideas that did not fit in 100. Each costs one of the 400 lifetime slots, so
 | 59 | ⌚ Fergie Time (`cxfergie`) | S | 10 | Fergie in the dugout with 5+ Man Utd players. |
 | 60 | 🛸 We Are Not Alone (`cxaliens`) | S | 5 | Witness an alien abduction in CHAOS. |
 | 61 | 🐦 Pigeon Fancier (`cxpigeon`) | S | 5 | A pigeon lands on your pitch in CHAOS. |
-| 62 | 🏟️ Matchday (`mdfirst`) | L | 5 | Play a Matchday XI when your club’s on. |
-| 63 | 🤝 Split Loyalties (`mdboth`) | M | 5 | Sign 3+ players who played for both sides in one Matchday XI. |
+| 62 | 🎫 Matchday (`mdfirst`) | L | 5 | Play a Matchday XI when your club’s on. |
+| 63 | 🔀 Split Loyalties (`mdboth`) | M | 5 | Sign 3+ players who played for both sides in one Matchday XI. |
 | 64 | 📣 Twelfth Man (`md150`) | M | 5 | Score 150+ goals in a Matchday XI. |
 | 65 | 🎟️ Matchday Regular (`mdseason`) | M | 5 | Play the Matchday XI on 5 different matchdays. |
 | 66 | 🔮 Pundit (`mdpundit`) | M | 5 | Get the pre-match Footle in 3 guesses or fewer. |
@@ -132,13 +136,13 @@ Good ideas that did not fit in 100. Each costs one of the 400 lifetime slots, so
 | 71 | 📈 In the Black (`mbprofit`) | M | 10 | Finish a Moneyball season worth £150m or more. |
 | 72 | 💎 Buy Low, Sell High (`mbflip`) | M | 10 | Sell a player for double what you paid in Moneyball. |
 | 73 | 📨 Sold to Madrid (`mbmadrid`) | M | 5 | Accept a big-money bid for one of your stars. |
-| 74 | 🏆 Champions! (`mbchamp`) | H | 10 | Win the league as the Dodgy Owner. |
+| 74 | 🍾 Champions! (`mbchamp`) | H | 10 | Win the league as the Dodgy Owner. |
 | 75 | 🛡️ Unbeaten Season (`mbinvincible`) | H | 10 | Go a whole Dodgy Owner season unbeaten. |
-| 76 | 🏆 Cup Run (`mbcup`) | M | 10 | Win the Cup as the Dodgy Owner. |
-| 77 | 🔥 Under Investigation (`mbheat`) | M | 5 | Finish a Dodgy Owner season with the heat at 80 or more. |
+| 76 | 🏁 Cup Run (`mbcup`) | M | 10 | Win the Cup as the Dodgy Owner. |
+| 77 | 🔍 Under Investigation (`mbheat`) | M | 5 | Finish a Dodgy Owner season with the heat at 80 or more. |
 | 78 | 😇 Squeaky Clean (`mbclean`) | M | 10 | Finish in the top half with no heat at all. |
 | 79 | 📣 Owner Out (`mbout`) | S | 10 | Get forced out by your own fans. |
-| 80 | 🎯 Living the Dream (`mbdream`) | M | 5 | Achieve your owner’s ambition in Dodgy Owner. |
+| 80 | 🌠 Living the Dream (`mbdream`) | M | 5 | Achieve your owner’s ambition in Dodgy Owner. |
 | 81 | ⚔️ First Blood (`mbroyal`) | S | 10 | Win a Goal Royale battle. |
 | 82 | 🦁 Big Time (`mbarena`) | S | 10 | Reach the Premier League arena in Goal Royale. |
 | 83 | 👑 Long Live the Owner (`mbreign`) | S | 10 | Reign for a whole season in Reign Check. |
@@ -154,8 +158,8 @@ Good ideas that did not fit in 100. Each costs one of the 400 lifetime slots, so
 | 93 | 🛋️ Part of the Furniture (`g500`) | H | 25 | Play 500 games. |
 | 94 | 🥉 Climbing the Pyramid (`lv10`) | M | 10 | Reach level 10 (League Two). |
 | 95 | 🦁 Top Flight (`lv30`) | H | 15 | Reach level 30 (Premier League). |
-| 96 | 🏆 Ballon d’Or (`lv50`) | H | 25 | Reach level 50. |
-| 97 | 🗓️ A Hundred Days (`daily100`) | H | 25 | Play the Daily Ultimate on 100 different days. |
+| 96 | 🎖️ Ballon d’Or (`lv50`) | H | 25 | Reach level 50. |
+| 97 | 🌅 A Hundred Days (`daily100`) | H | 25 | Play the Daily Ultimate on 100 different days. |
 | 98 | 📦 Pack Mentality (`pk50`) | H | 15 | Open 50 packs. |
 | 99 | ☠️ Extreme Measures (`extreme`) | M | 10 | Finish a draft in Extreme. |
 | 100 | ⚔️ Ruthless (`onwin25`) | H | 15 | Win 25 online games. |

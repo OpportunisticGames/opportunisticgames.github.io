@@ -900,6 +900,7 @@ GM.recordScore = async function (mode, score, meta = {}, opts = {}) {
   const isBest = score > GM.best(mode);
   if (isBest) GM.store.set('best:' + mode, score);
   GM.store.set('played', GM.store.get('played', 0) + 1);
+  if (GM.pgsRecord && !opts.quiet) GM.pgsRecord(mode, score);  // Play Games leaderboards and stats (the Play app)
   GM.store.set('lastPlayed', GM.today());
   if (GM.notify) GM.notify.sync();  // the app's reminders know you've played (streak, come back)
   GM.backup.save(true);

@@ -9,6 +9,20 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 49, label: '5.13', date: '2026-10-02', title: '🏆 Google Play Games leaderboards and stats',
+      items: [
+        '🏆 In the Google Play app, your Ultimate Wildcard, CHAOS and Purist scores now also go on Google Play Games leaderboards, at Normal, Hard and Extreme',
+        '📈 Your Play Games profile shows your Goal Machine stats: games played, XIs built, best scores, packs opened, badges, online wins and your level',
+      ],
+    },
+    {
+      v: 48, label: '5.12.1', date: '2026-10-02', title: '🏅 A few new badge icons',
+      items: [
+        '🏅 Eight badges that shared an icon with another now have their own',
+        '📈 In the Google Play app, the counting badges (games played, players collected, packs opened, online wins…) show a progress bar on Google Play Games',
+      ],
+    },
+    {
       v: 46, label: '5.12', date: '2026-10-02', title: '🏅 100 badges, and Google Play Games',
       items: [
         '🏅 Badges are now a tidy 100. New ones for the long haul: games played, levels, 50 packs opened, 25 online wins, 100 days of the Daily, and Extreme mode',
