@@ -53,7 +53,9 @@ formations, and badges round 2.
 - **A bio** (a few lines of text) would need a source: Wikipedia's article summary, fetched when the sheet opens (free
   licence, needs credit, needs the network) or pre-fetched into a data file by the weekly job (big: 5,000+ players). Suggest
   starting without a bio, with a "Read on Wikipedia" link.
-- **Questions:** Hard mode behaviour? ⓘ or long-press mid-draft? Bio now (live from Wikipedia) or later?
+- **Owner's answer (2 Oct):** the sheet must **never open on the reels**: it would give the game away. Only once a player is in
+  your team (on the pitch, the result screen, packs, the Players index, the Album). That settles the mid-draft question: no ⓘ
+  on reel cards at all. Still open: Hard mode (probably the same sheet, since the player is already signed), bio now or later.
 
 ### CHAOS moments: make the chaos part of the game, not a pop-up ✅ shipped in 5.4
 - **Owner's words (26 Sep):** "The most fun mode but things pop up all at once and it's quite hard to tell what's
