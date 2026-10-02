@@ -98,6 +98,11 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     return { id, g: GM.players[id].goals, cb: [...document.querySelectorAll('.slot.target')].map(e => S.xi[e.dataset.slot].pos) };
   });
   ok(vg.cb.includes('CB') && vg.cb.includes('ST'), `van Gaal: a striker can go anywhere outfield (${[...new Set(vg.cb)].join(' ')})`);
+  const themed = await pg.evaluate(id => {
+    const S = GM.draft.state(); S.special = 'centurion'; GM.draft.render();
+    const t = [...document.querySelectorAll('.slot.target')].map(e => S.xi[e.dataset.slot].pos); S.special = null; GM.draft.render(); return t;
+  }, vg.id);
+  ok(themed.length && themed.every(p => p === 'ST'), `…but not on a Centurion Throw: only up front (${[...new Set(themed)].join(' ')})`);
   await pg.evaluate(() => { const S = GM.draft.state(), i = S.xi.findIndex(x => x.pos === 'CB'); document.querySelector(`.slot[data-slot="${i}"]`).click(); });
   await pg.waitForTimeout(2600);
   const vgs = await pg.evaluate(id => GM.draft.state().xi.find(x => x.p === id), vg.id);

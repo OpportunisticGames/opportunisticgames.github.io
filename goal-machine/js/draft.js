@@ -184,9 +184,9 @@
     mourinho: { icon: '🚌', name: 'José Mourinho', perk: 'Defenders and keeper +60%, and 🚌 Park the Bus is back in the deck', catch: 'Third-season syndrome: strikers −25%',
       likes: p => ['D', 'G'].includes(p.pos), hates: p => p.pos === 'F', tw: { allow: ['bus'], wild: { bus: 2 } },
       lines: x => [['🚌 Mourinho’s back line +60%', 0.6 * grpSum(x, ['D', 'G'])], ['📉 Third-season syndrome: strikers −25%', -0.25 * grpSum(x, ['F'])]] },
-    pep: { icon: '🧠', name: 'Pep Guardiola', perk: 'Midfielders +60%, and 🧲 Old Teammates cards turn up three times as often', catch: 'Overthinking it: strikers −20%',
+    pep: { icon: '🧠', name: 'Pep Guardiola', perk: 'Midfielders +70%, and 🧲 Old Teammates cards turn up three times as often', catch: 'Overthinking it: strikers −20%',
       likes: p => p.pos === 'M', hates: p => p.pos === 'F', tw: { wild: { magnet: 3 } },
-      lines: x => [['🧠 Pep’s midfield +60%', 0.6 * grpSum(x, ['M'])], ['🤔 Overthinking it: strikers −20%', -0.2 * grpSum(x, ['F'])]] },
+      lines: x => [['🧠 Pep’s midfield +70%', 0.7 * grpSum(x, ['M'])], ['🤔 Overthinking it: strikers −20%', -0.2 * grpSum(x, ['F'])]] },
     klopp: { icon: '🤘', name: 'Jürgen Klopp', perk: 'Heavy metal: +12 for every pair of teammates, and the CHAOS meter starts half full', catch: 'Full throttle: −10 for every ten-season veteran',
       hates: vet, tw: { meter: 2 },
       lines: x => [[`🤘 Heavy metal chemistry (${x.pairs} pair${x.pairs === 1 ? '' : 's'})`, 12 * x.u * x.pairs], ['🏃 Full throttle: veterans', -10 * x.u * count(x, vet)]] },
@@ -225,7 +225,7 @@
     dyche: { icon: '🗿', name: 'Sean Dyche', perk: 'Solid: your XI +12%', catch: 'Calm down: the CHAOS meter fills at half speed',
       tw: { meterX: 0.5 },
       lines: x => [['🗿 Solid: XI +12%', 0.12 * x.slots.reduce((a, s) => a + s.g, 0)]] },
-    vangaal: { icon: '📋', name: 'Louis van Gaal', perk: 'Philosophy: any outfield player can play any outfield position', catch: 'Out of position, a player counts 80%',
+    vangaal: { icon: '📋', name: 'Louis van Gaal', perk: 'Philosophy: any outfield player can play any outfield position (not on themed spins like a Centurion Throw)', catch: 'Out of position, a player counts 80%',
       lines: () => [] },  // both happen as you sign (canPlay, place)
     conte: { icon: '🔥', name: 'Antonio Conte', perk: 'Three at the back: centre-backs +40% (kick-off switches you to 3-4-3)', catch: 'Touchline fury: −8 for every wildcard you play',
       likes: p => p.poss.includes('CB'),
@@ -418,7 +418,9 @@
   const PL = () => (S && S.rules && S.rules.all ? GM.allPlayers : GM.players);
   const byId = id => PL()[id];
   // van Gaal lets any outfield player play any outfield position (keepers stay in goal)
-  const canPlay = (p, pos) => p.poss.includes(pos) || (mgrIs('vangaal') && pos !== 'GK' && p.pos !== 'G');
+  // (not on a themed spin like a Centurion Throw: a 100-goal striker at centre-back with a Hat-Trick Hero was far too much)
+  const themed = () => !!(S.special && WILDCARDS[S.special] && WILDCARDS[S.special].filter);
+  const canPlay = (p, pos) => p.poss.includes(pos) || (mgrIs('vangaal') && pos !== 'GK' && p.pos !== 'G' && !themed());
   const fits = (p, open) => open.some(pos => canPlay(p, pos));
   const emptySlots = () => S.xi.filter(s => s.p == null).length;
   const fmt = n => n.toLocaleString();
