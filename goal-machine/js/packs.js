@@ -49,6 +49,7 @@
   const gameCap = (c, p) => (GM.cardTier(p) === 'b' || packed(c, p) >= 1 ? need(p) : need(p) - 1);
   GM.cardPieces = p => load().p[p.pk] || 0;
   GM.cardPackPieces = p => load().k[p.pk] || 0;
+  GM.cardState = p => { const c = load(); return { tracked: TIER.has(p.pk), t: GM.cardTier(p), have: c.p[p.pk] || 0, need: need(p), pack: packed(c, p), done: done(c, p) }; };
   GM.cardsDone = t => { const c = load(); return POOL[t].filter(p => done(c, p)).length; };
 
   /* ---------------------------------------------------------------- pack types */
@@ -345,6 +346,7 @@
     function finish() {
       const left = GM.packsWaiting(), fin = res.cards.filter(x => x.finished).length;
       el.classList.add('over');
+      el.querySelectorAll('.po-cards .pcard').forEach((card, i) => { const x = res.cards[i]; if (x && x.p) card.dataset.psheet = x.p.pk; });  // tap a card to see the player
       if (res.better) GM.sound.play('sting'); else if (fin) GM.sound.play('good');
       el.querySelector('.po-actions').innerHTML = `<p class="po-better">${fin ? `🧩 ${fin} card${fin > 1 ? 's' : ''} finished` : '🧩 Pieces added'}${res.better ? ` · 🃏 Packed XI up to <b>${res.better.toLocaleString()}</b> goals` : ''}</p>
         ${left ? `<button class="btn big" data-again>🎁 Open another (${left} left)</button>` : ''}<button class="btn ${left ? 'ghost' : 'big'}" data-done>Done</button>`;
@@ -358,7 +360,7 @@
   GM.packedPitch = function (px) {
     const rows = [['ST'], ['LM', 'CM', 'RM'], ['LB', 'CB', 'RB'], ['GK']];
     const slot = s => s.player
-      ? `<div class="slot filled tier-${GM.cardTier(s.player)}" title="${GM.esc(s.player.name)}">${GM.avatar(s.player)}<span class="slot-name">${GM.esc(s.player.name.split(' ').slice(-1)[0])}</span><span class="slot-goals">${s.player.goals}</span><span class="slot-pos">${s.pos}</span></div>`
+      ? `<div class="slot filled tier-${GM.cardTier(s.player)}" data-psheet="${GM.esc(s.player.pk)}" title="${GM.esc(s.player.name)}">${GM.avatar(s.player)}<span class="slot-name">${GM.esc(s.player.name.split(' ').slice(-1)[0])}</span><span class="slot-goals">${s.player.goals}</span><span class="slot-pos">${s.pos}</span></div>`
       : `<div class="slot empty"><span class="pos pos-${GM.GROUP[s.pos]}">${s.pos}</span></div>`;
     return `<div class="pitch packed"><div class="pitch-lines"></div><div class="shape">${px.total.toLocaleString()} goals · ${px.n}/11</div>
       ${rows.map(r => `<div class="pitch-row">${px.xi.filter(s => r.includes(s.pos)).map(slot).join('')}</div>`).join('')}</div>`;
@@ -387,7 +389,7 @@
         <li>🎁 A free pack every day: a 🌍 Nations pack in an international break, a 🏟️ Matchday pack when your club plays. A bonus pack for three daily games in a day, for every new badge and every level, and a 🟣 Legends pack when you go up a rank.</li>
         <li>🃏 Some packs hold a wildcard: pick one of three, a scout’s tip for a card that’s nearly there, or (rarely) a Legend of your choice.</li>
         <li>✍️ Signing a player in any draft gives you a piece of his card, once a day per player. From Silver up, signings fill a card to one piece short: the last one (the ◆) has to come from a pack. Five packed pieces finish a Legend too. Bronze cards can be finished by signing alone.</li></ul></details>
-      ${started.length ? `<div class="card-grid">${started.slice(0, 120).map(p => GM.cardHtml({ p, t: GM.cardTier(p), have: c.p[p.pk], pack: packed(c, p), finished: done(c, p) }, { back: false })).join('')}</div>${started.length > 120 ? `<p class="muted center">…and ${started.length - 120} more</p>` : ''}`
+      ${started.length ? `<div class="card-grid">${started.slice(0, 120).map(p => GM.cardHtml({ p, t: GM.cardTier(p), have: c.p[p.pk], pack: packed(c, p), finished: done(c, p) }, { back: false, attr: ` data-psheet="${GM.esc(p.pk)}"` })).join('')}</div>${started.length > 120 ? `<p class="muted center">…and ${started.length - 120} more</p>` : ''}`
         : '<p class="muted center">No pieces yet. Open a pack, or sign players in any draft.</p>'}`;
   };
 })();

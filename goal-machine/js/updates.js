@@ -9,6 +9,13 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 55, label: '5.15', date: '2026-10-02', title: '🔎 Tap a player to see his sheet',
+      items: [
+        '🔎 Tap any player who’s yours (on your pitch, a pack card, the Players index, your Album and XI, online results) to see his sheet: his card and how far you are with it, every club with its seasons, apps, goals and assists, honours, and how many times you’ve signed him',
+        '🎲 Never on the reels: that would give the game away',
+      ],
+    },
+    {
       v: 54, label: '5.14', date: '2026-10-02', title: '🎁 Cards now need a pack',
       items: [
         '🎁 Silver, Gold and Legend cards need at least one piece from a pack. Signing a player in a game fills his card up to one piece short; the last piece (the ◆ on the card) has to come from a pack',

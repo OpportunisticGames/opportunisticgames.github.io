@@ -2342,3 +2342,20 @@ html.intl-break #app { padding-top: 22px; }
 .pc-photo .avatar > b { font-size: min(1.7em, 30cqh); }
 .pc-top .pc-flag { font-size: min(1.3em, 18cqh); }
 .pc-photo, .pc-top { container-type: size; }
+
+
+/* the player sheet */
+[data-psheet] { cursor: pointer; }
+.ps h3 { margin: 0; } .ps h4 { margin: 14px 0 6px; font: 700 .95rem Oswald, sans-serif; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); }
+.ps-head { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+.ps-head .avatar { flex: none; width: 76px !important; height: 76px !important; font-size: 1.4rem; }
+.ps-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 3px; font-size: .82rem; color: var(--muted); }
+.ps-cardrow { display: flex; gap: 12px; align-items: center; margin: 8px 0; }
+.ps-card { flex: none; width: 112px; font-size: 10px; }
+.ps-card .pcard { width: 100%; font-size: 10px; }
+.ps-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 10px 0; }
+.ps-stats span { display: flex; flex-direction: column; align-items: center; padding: 8px 2px; border-radius: 12px; background: var(--inset); font-size: .62rem; color: var(--muted); text-align: center; }
+.ps-stats b { font: 700 1.25rem Oswald, sans-serif; color: var(--text); }
+.ps-hon { list-style: none; padding: 0 !important; display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; } .ps-hon li { margin: 0 !important; padding: 4px 10px; border-radius: 999px; background: var(--inset); font-size: .8rem; }
+.ps-clubs { list-style: none; padding: 0 !important; margin: 0; } .ps-clubs li { display: flex; gap: 10px; align-items: center; margin: 6px 0; }
+.ps-clubs small { display: block; color: var(--muted); font-size: .72rem; }

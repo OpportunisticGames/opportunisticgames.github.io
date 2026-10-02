@@ -1303,6 +1303,7 @@
     GM.$$('[data-slot]', root).forEach(b => b.onclick = () => {
       if (S.subbing !== false) release(+b.dataset.slot);
       else if (S.pending != null) place(+b.dataset.slot);
+      else { const sl = S.xi[+b.dataset.slot]; if (sl && sl.p != null) GM.playerSheet(byId(sl.p)); }  // a player already on the pitch: his sheet
     });
     const cs = GM.$('#cancel-sub', root); if (cs) cs.onclick = () => { S.subbing = false; render(); };
     const dg = GM.$('#dugout', root); if (dg) dg.onclick = () => { const m = MANAGERS[S.manager]; GM.modal(`<div class="center"><div class="mgr-big">${m.icon}</div><h3>${m.name}</h3></div><p>✅ ${m.perk}</p><p>⚠️ ${m.catch}</p><p class="muted small">👍 and 👎 on the reels show who he’d like or not. It all adds up in your bonus.</p><div class="actions"><button class="btn" data-close>Got it</button></div>`); };

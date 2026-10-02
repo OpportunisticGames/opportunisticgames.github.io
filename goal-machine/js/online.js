@@ -399,7 +399,7 @@
     const f = feed[code]; if (!f) return;
     const st = GM.STATS[f.stat] || GM.STATS.goals, x = f.theirs.x || FORMATION.map(pos => [pos]), lp = f.theirs.lp;
     const cell = ([pos, pk, v]) => { const p = pk && GM.byPk.get(pk);
-      return `<div class="ox ${p ? 'on' : ''} ${lp && pk === lp[1] ? 'latest' : ''}"><span class="pos pos-${GM.GROUP[pos]}">${pos}</span>${p ? `${GM.avatar(p)}<b>${esc(p.name.split(' ').slice(-1)[0])}</b><i>${fmt(v)}</i>` : '<b class="muted">–</b>'}</div>`; };
+      return `<div class="ox ${p ? 'on' : ''} ${lp && pk === lp[1] ? 'latest' : ''}"${p ? ` data-psheet="${esc(p.pk)}"` : ''}><span class="pos pos-${GM.GROUP[pos]}">${pos}</span>${p ? `${GM.avatar(p)}<b>${esc(p.name.split(' ').slice(-1)[0])}</b><i>${fmt(v)}</i>` : '<b class="muted">–</b>'}</div>`; };
     const rows = ['F', 'M', 'D', 'G'].map(g => x.filter(c => GM.GROUP[c[0]] === g)).filter(r => r.length);
     GM.modal(`<h3>${esc(f.opp)}’s XI</h3><p class="muted center small">${f.theirs.n || 0}/11 signed · ${fmt(f.theirs.t || 0)} ${st.label}${f.variant === 'chaos' ? ` · ${fmt(f.theirs.c || 0)} CHAOS pts` : ''}${f.variant === 'target' && f.theirs.n ? ` · ${fmt(f.theirs.d || 0)} off the target` : ''}</p>
       <div class="opp-pitch">${rows.map(r => `<div class="op-row">${r.map(cell).join('')}</div>`).join('')}</div>
@@ -461,7 +461,7 @@
     if (weights[2] && !r.variant) rows.push(['⚡ Quicker XI', weights[2], mmss(A.ms), mmss(B.ms), Math.sign((B.ms || 1e12) - (A.ms || 1e12))]);
     const bothDone = A.done && B.done;
     const pts = r.result ? [r.result[seat], r.result[them]] : null;
-    const side = (t, cls) => `<div class="cmp-xi ${cls}">${t.map(x => `<div class="cx ${x.p ? '' : 'empty'}"><span class="pos pos-${GM.GROUP[x.pos]}">${x.pos}</span>
+    const side = (t, cls) => `<div class="cmp-xi ${cls}">${t.map(x => `<div class="cx ${x.p ? '' : 'empty'}"${x.p ? ` data-psheet="${esc(x.p.pk)}"` : ''}><span class="pos pos-${GM.GROUP[x.pos]}">${x.pos}</span>
         <b>${x.p ? esc(x.p.name.split(' ').slice(-1)[0]) : '–'}</b><i>${x.p ? fmt(x.v) : ''}</i></div>`).join('')}</div>`;
     root.innerHTML = `${top(KIND[gk(r)].name, '#/online')}
       <div class="h2h-board duel-board">
