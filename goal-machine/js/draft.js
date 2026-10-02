@@ -1063,7 +1063,7 @@
         mode: S.mode, stat: S.stat, total: sc.t, points: sc.total, hard: S.hard, xi: xiSlots.map(s => s.player),
         rating: rating.score, pairs: rating.pairs.length, wildUsed: S.wildUsed, coinWin: S.coinWin,
         bull: sc.diff === 0, closeness: sc.closeness != null ? sc.closeness : null, treble: !!(sc.hits && sc.hits.length === 3),
-        slots: xiSlots.map(x => ({ name: x.player.name, g: x.g })), manager: S.manager || null,
+        slots: xiSlots.map(x => ({ name: x.player.name, g: x.g })), manager: S.manager || null, extreme: !!S.extreme,
         moments: (S.moments || []).map(m => m.name), rars: (S.moments || []).map(m => m.rar), bigs: (S.bigSeen || []).length,
         clubs: S.club2 ? [S.club, S.club2] : null, fx: S.fx || null, nat: S.nat || null,
         liked: S.manager && MANAGERS[S.manager].likes ? xiSlots.filter(x => MANAGERS[S.manager].likes(x.player)).length : 0,

@@ -36,9 +36,9 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.evaluate(() => GM.checkOnline({ code: 'R1', kind: 'race', variant: 'chaos', host: 'Alice', guest: 'Bob', result: { winner: 'host' } }, 'host'));
   await pg.goto(U + '#/album?v=badges'); await pg.waitForTimeout(600);
   const cats = await pg.$$eval('.ach-cats a', e => e.map(x => x.textContent));
-  ok(cats.length === 9 && cats.some(c => /CHAOS/.test(c)), 'badge categories (CHAOS and Matchdays & breaks have their own): ' + cats.join(' | '));
+  ok(cats.length === 10 && cats.some(c => /CHAOS/.test(c)), 'badge categories (CHAOS and Matchdays & breaks have their own): ' + cats.join(' | '));
   await pg.goto(U + '#/album?v=badges&c=secret'); await pg.waitForTimeout(400);
-  ok(await pg.$$eval('.ach.secret b', e => e.every(x => x.textContent === '???')) && (await pg.$$('.ach.secret')).length === 9, 'nine secret badges show as ??? (CHAOS keeps its own secrets)');
+  ok(await pg.$$eval('.ach.secret b', e => e.every(x => x.textContent === '???')) && (await pg.$$('.ach.secret')).length === 13, 'thirteen secret badges show as ??? (CHAOS keeps its own secrets)');
   await pg.goto(U + '#/album?v=badges&c=online'); await pg.waitForTimeout(400);
   ok(await pg.$$eval('.ach.got b', e => e.map(x => x.textContent).join()).then(s => /Kick-off/.test(s) && /Away Win/.test(s) && /Chaos Merchant/.test(s)), 'online badges from a won CHAOS Race');
   for (const [v, want] of [['xi', '#/album'], ['cards', 'v=cards'], ['signed', 'v=signed'], ['sets', 'v=signed'], ['stats', 'v=signed']]) { await pg.goto(U + '#/album?v=' + v); await pg.waitForTimeout(300); ok(await pg.$eval('.album-views a.on', e => e.getAttribute('href')).then(h => v === 'xi' ? h === want : h.includes(want)), 'album section ' + v + (v === 'sets' || v === 'stats' ? ' (now under Signed)' : '')); }
