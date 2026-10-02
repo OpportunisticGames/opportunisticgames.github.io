@@ -9,15 +9,12 @@ import com.google.android.gms.games.AchievementsClient;
 import com.google.android.gms.games.PlayGames;
 import com.google.android.gms.games.PlayGamesSdk;
 
-import org.json.JSONArray;
-
-import java.util.HashSet;
-import java.util.Set;
+import org.json.JSONObject;
 
 /**
  * Play Games Services achievements (Google Play version only; the sideload build has a do-nothing copy).
  * The site calls these through the bridge with a badge's name. The name is looked up in the game's achievement list
- * from Play (so no achievement ids live in the code) and unlocked if it isn't already. Signed-out players, or no
+ * from Play (so no achievement ids live in the code), then unlocked, or its steps set for the counters. Signed-out players, or no
  * network, just mean nothing happens: the next sync catches up.
  */
 final class Achievements {
@@ -29,14 +26,15 @@ final class Achievements {
         PlayGamesSdk.initialize(context.getApplicationContext());
     }
 
-    /** Unlocks the achievements with these names (a JSON array), skipping the ones already unlocked. */
-    static void unlock(Activity activity, String namesJson) {
-        final Set<String> wanted = new HashSet<>();
-        try {
-            JSONArray a = new JSONArray(namesJson);
-            for (int i = 0; i < a.length(); i++) wanted.add(a.getString(i));
-        } catch (Exception e) { return; }
-        if (wanted.isEmpty()) return;
+    /**
+     * Sends progress for achievements: a JSON object of badge name -> how far (the steps so far for a counter, or any
+     * number above 0 for a plain badge that has been earned). Counters get setSteps (it only ever goes up, and it
+     * unlocks at the total); plain ones are unlocked unless they already are.
+     */
+    static void update(Activity activity, String progressJson) {
+        final JSONObject wanted;
+        try { wanted = new JSONObject(progressJson); } catch (Exception e) { return; }
+        if (wanted.length() == 0) return;
         activity.runOnUiThread(() -> {
             try {
                 final AchievementsClient client = PlayGames.getAchievementsClient(activity);
@@ -45,7 +43,12 @@ final class Achievements {
                     if (buffer == null) return;
                     try {
                         for (Achievement x : buffer) {
-                            if (wanted.contains(x.getName()) && x.getState() != Achievement.STATE_UNLOCKED) {
+                            int n = wanted.optInt(x.getName(), 0);
+                            if (n <= 0 || x.getState() == Achievement.STATE_UNLOCKED) continue;
+                            if (x.getType() == Achievement.TYPE_INCREMENTAL) {
+                                int steps = Math.min(n, x.getTotalSteps());
+                                if (steps > x.getCurrentSteps()) client.setSteps(x.getAchievementId(), steps);
+                            } else {
                                 client.unlock(x.getAchievementId());
                             }
                         }

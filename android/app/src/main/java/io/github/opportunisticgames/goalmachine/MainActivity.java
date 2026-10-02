@@ -225,10 +225,10 @@ public class MainActivity extends Activity {
             return Achievements.AVAILABLE;
         }
 
-        /** Unlocks Play Games achievements by badge name: a JSON array of names, in one go or just one. */
+        /** Sends Play Games achievement progress: a JSON object of badge name -> steps so far (or 1 for earned). */
         @JavascriptInterface
-        public void pgsUnlock(String namesJson) {
-            Achievements.unlock(MainActivity.this, namesJson);
+        public void pgsUpdate(String progressJson) {
+            Achievements.update(MainActivity.this, progressJson);
         }
 
         /** Opens Google's achievements screen. */

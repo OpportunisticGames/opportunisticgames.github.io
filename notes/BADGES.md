@@ -10,6 +10,10 @@ Google limits: 400 achievements, 2,000 points in total (5-point steps, 200 max e
 
 Owner decisions: "do badly" badges (Dead Rubber, Parked the Bus…) are welcome, a few of them. Secret-game badges (Hat-Trick, Goal Royale, Reign Check) are included as **hidden** achievements, so Play shows no name or description until unlocked.
 
+## 📈 Incremental achievements (16)
+
+The counters are **incremental** in Play (a progress bar; the step count is fixed once published): Getting Going 25 · Centurion 100 · Part of the Furniture 500 (games played) · Climbing the Pyramid 10 · Top Flight 30 · Ballon d’Or 50 (level) · A Hundred Days 100 · Scout 100 · Chief Scout 500 · Encyclopedia 1,000 (players collected) · Pack Mentality 50 · Serial Winners 10 · Ruthless 25 · Beat Them All 5 · Matchday Regular 5 · World Tour 5. Daily streaks stay plain (a streak resets and Play's progress only goes up) and so do set completions (Hall of Fame and Golden Boot can grow when the data refreshes). The steps live in `STEPS` in `js/collection.js`; the CSV's `Incremental value` / `Steps Needed` columns must match.
+
 ## ✂️ Cut (5)
 
 | Badge | Why |

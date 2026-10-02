@@ -223,20 +223,50 @@
       try { ok = x.test(ev, a); } catch (err) { ok = false; }
       if (ok) { a.ach[x.id] = GM.today(); fresh.push(x); }
     }
+    clearTimeout(pgsTimer); pgsTimer = setTimeout(GM.pgsSync, 1500);   // after the album is saved
     return fresh;
   }
 
-  // Google Play Games achievements (the Google Play app only): every badge is one, matched by name. A new badge unlocks
-  // its achievement, and each time the app opens the ones you already have are sent again, so nothing is missed.
-  GM.pgsUnlock = names => { if (names.length && GM.app('pgsAvailable')) GM.app('pgsUnlock', JSON.stringify(names)); };
-  GM.pgsSync = () => { const a = load(); GM.pgsUnlock(A.filter(x => a.ach[x.id]).map(x => x.name)); };
-  setTimeout(GM.pgsSync, 6000);
+  // Google Play Games achievements (the Google Play app only): every badge is one, matched by name. The counters are
+  // INCREMENTAL achievements in Play (a progress bar): [steps in Play, how far you are now]. Steps are fixed once the
+  // achievement is published, so never change a number here without the Play Console to match. Streaks and sets stay
+  // plain unlock-only ones (a streak resets and a set can grow when the data refreshes).
+  const played = () => GM.store.get('played', 0);
+  const STEPS = {
+    g25: [25, played], g100: [100, played], g500: [500, played],
+    lv10: [10, () => GM.myLevel().n], lv30: [30, () => GM.myLevel().n], lv50: [50, () => GM.myLevel().n],
+    daily100: [100, () => Object.values(GM.store.get('dlog', {})).filter(d => d.daily != null).length],
+    col100: [100, a => Object.keys(a.players).length], col500: [500, a => Object.keys(a.players).length], col1000: [1000, a => Object.keys(a.players).length],
+    pk50: [50, () => (GM.store.get('cards', null) || {}).opened || 0],
+    onwin10: [10, a => (a.online || {}).wins || 0], onwin25: [25, a => (a.online || {}).wins || 0], onbeat5: [5, a => ((a.online || {}).beat || []).length],
+    mdseason: [5, a => (a.md || []).length], ibtour: [5, a => (a.nations || []).length],
+  };
+  GM.PGS_STEPS = Object.fromEntries(Object.entries(STEPS).map(([k, v]) => [k, v[0]]));
+  // badge name -> progress (the steps for an earned counter, 1 for an earned plain one, how far along for the rest)
+  const pgsState = a => {
+    const out = {};
+    A.forEach(x => {
+      const st = STEPS[x.id];
+      if (a.ach[x.id]) out[x.name] = st ? st[0] : 1;
+      else if (st) { const n = Math.min(st[0], st[1](a) || 0); if (n > 0) out[x.name] = n; }
+    });
+    return out;
+  };
+  GM.pgsState = pgsState;
+  let pgsSent = null, pgsTimer = 0;   // what this run has already told Play (null until the first, full, send)
+  GM.pgsSync = () => {
+    if (!GM.app('pgsAvailable')) return;
+    const now = pgsState(load()), diff = {};
+    Object.keys(now).forEach(k => { if (!pgsSent || pgsSent[k] !== now[k]) diff[k] = now[k]; });
+    pgsSent = now;
+    if (Object.keys(diff).length) GM.app('pgsUpdate', JSON.stringify(diff));
+  };
+  setTimeout(GM.pgsSync, 6000);   // each time the app opens, everything is sent again so nothing is missed
 
   function celebrate(fresh, newPlayers) {
     let delay = 600;
     if (fresh.length && GM.givePack) GM.givePack(fresh.length, fresh.length > 1 ? 'new badges' : 'new badge');
     if (fresh.length && GM.addXP) GM.addXP(GM.XP.badge * fresh.length);
-    GM.pgsUnlock(fresh.map(x => x.name));
     fresh.forEach(x => { setTimeout(() => GM.toast(`🏅 Badge unlocked: ${x.icon} <b>${x.name}</b>`, 2600), delay); delay += 2800; });
     const stars = newPlayers.filter(p => p.hon.H || p.hon.B || p.goals >= 100);
     if (stars.length) setTimeout(() => GM.toast(`📒 Collected ${stars.slice(0, 2).map(p => GM.esc(p.name)).join(' & ')}${stars.length > 2 ? ` +${stars.length - 2}` : ''}!`, 2600), delay);

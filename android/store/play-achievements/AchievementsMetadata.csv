@@ -35,17 +35,17 @@ Full House,Fill a whole Club Grid.,False,,Revealed,5,34
 Human Calculator,Score 700+ in Guess the Tally.,False,,Revealed,10,35
 Card Sharp,Win a game of Hat-Trick.,False,,Hidden,10,36
 Clean Sheet,Make a Nil bid in Hat-Trick.,False,,Hidden,5,37
-Scout,Collect 100 players.,False,,Revealed,5,38
-Chief Scout,Collect 500 players.,False,,Revealed,15,39
-Encyclopedia,"Collect 1,000 players.",False,,Revealed,25,40
+Scout,Collect 100 players.,True,100,Revealed,5,38
+Chief Scout,Collect 500 players.,True,500,Revealed,15,39
+Encyclopedia,"Collect 1,000 players.",True,1000,Revealed,25,40
 Pantheon,Collect every Hall of Famer.,False,,Revealed,10,41
 Boot Room,Collect every Golden Boot winner.,False,,Revealed,10,42
 Ever Present,Play the Daily Ultimate 14 days in a row.,False,,Revealed,10,43
 Season Ticket Holder,Play the Daily Ultimate 30 days in a row.,False,,Revealed,15,44
 Kick-off,Finish your first online game.,False,,Revealed,5,45
 Away Win,Win an online game.,False,,Revealed,5,46
-Serial Winners,Win 10 online games.,False,,Revealed,5,47
-Beat Them All,Beat 5 different friends online.,False,,Revealed,10,48
+Serial Winners,Win 10 online games.,True,10,Revealed,5,47
+Beat Them All,Beat 5 different friends online.,True,5,Revealed,10,48
 All-Rounder,"Win a Draft Duel, a Live Race and a Transfer Auction.",False,,Revealed,10,49
 Chaos Merchant,Win a CHAOS Race.,False,,Revealed,5,50
 The Magic Number,Build an XI with exactly 442 goals.,False,,Hidden,10,51
@@ -62,12 +62,12 @@ Pigeon Fancier,A pigeon lands on your pitch in CHAOS.,False,,Hidden,5,61
 Matchday,Play a Matchday XI when your club’s on.,False,,Revealed,5,62
 Split Loyalties,Sign 3+ players who played for both sides in one Matchday XI.,False,,Revealed,5,63
 Twelfth Man,Score 150+ goals in a Matchday XI.,False,,Revealed,5,64
-Matchday Regular,Play the Matchday XI on 5 different matchdays.,False,,Revealed,5,65
+Matchday Regular,Play the Matchday XI on 5 different matchdays.,True,5,Revealed,5,65
 Pundit,Get the pre-match Footle in 3 guesses or fewer.,False,,Revealed,5,66
 Derby Day,Play a Matchday XI on derby day.,False,,Hidden,10,67
 International Duty,Finish an International XI during an international break.,False,,Revealed,5,68
 Golden Generation,Score 250+ goals in an International XI.,False,,Revealed,10,69
-World Tour,Build International XIs for 5 different countries.,False,,Revealed,5,70
+World Tour,Build International XIs for 5 different countries.,True,5,Revealed,5,70
 In the Black,Finish a Moneyball season worth £150m or more.,False,,Revealed,10,71
 "Buy Low, Sell High",Sell a player for double what you paid in Moneyball.,False,,Revealed,10,72
 Sold to Madrid,Accept a big-money bid for one of your stars.,False,,Revealed,5,73
@@ -88,13 +88,13 @@ Gold Standard,Finish a Gold card.,False,,Revealed,10,87
 Legendary,Finish a Legend card.,False,,Revealed,10,88
 Fully Packed,Fill all 11 places in your Packed XI.,False,,Revealed,10,89
 Home Nations,"Build International XIs for England, Scotland, Wales and Northern Ireland.",False,,Hidden,10,90
-Getting Going,Play 25 games.,False,,Revealed,5,91
-Centurion,Play 100 games.,False,,Revealed,10,92
-Part of the Furniture,Play 500 games.,False,,Revealed,25,93
-Climbing the Pyramid,Reach level 10 (League Two).,False,,Revealed,10,94
-Top Flight,Reach level 30 (Premier League).,False,,Revealed,15,95
-Ballon d’Or,Reach level 50.,False,,Revealed,25,96
-A Hundred Days,Play the Daily Ultimate on 100 different days.,False,,Revealed,25,97
-Pack Mentality,Open 50 packs.,False,,Revealed,15,98
+Getting Going,Play 25 games.,True,25,Revealed,5,91
+Centurion,Play 100 games.,True,100,Revealed,10,92
+Part of the Furniture,Play 500 games.,True,500,Revealed,25,93
+Climbing the Pyramid,Reach level 10 (League Two).,True,10,Revealed,10,94
+Top Flight,Reach level 30 (Premier League).,True,30,Revealed,15,95
+Ballon d’Or,Reach level 50.,True,50,Revealed,25,96
+A Hundred Days,Play the Daily Ultimate on 100 different days.,True,100,Revealed,25,97
+Pack Mentality,Open 50 packs.,True,50,Revealed,15,98
 Extreme Measures,Finish a draft in Extreme.,False,,Revealed,10,99
-Ruthless,Win 25 online games.,False,,Revealed,15,100
+Ruthless,Win 25 online games.,True,25,Revealed,15,100

@@ -7,7 +7,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const b = await chromium.launch(), errs = [];
   const pg = await b.newPage({ viewport: { width: 390, height: 844 } }); pg.on('pageerror', e => errs.push(e.message));
   await pg.route(/wikimedia|premierleague|transfermarkt|supabase|fonts/, r => r.abort());
-  await pg.addInitScript(() => { window.__pgs = []; window.AndroidApp = { pgsAvailable: () => true, pgsUnlock: j => window.__pgs.push(JSON.parse(j)), pgsShow: () => { window.__shown = 1; }, channel: () => 'play', version: () => 99, nightMode: () => false, pushToken: () => '' }; });
+  await pg.addInitScript(() => { window.__pgs = []; window.AndroidApp = { pgsAvailable: () => true, pgsUpdate: j => window.__pgs.push(JSON.parse(j)), pgsShow: () => { window.__shown = 1; }, channel: () => 'play', version: () => 99, nightMode: () => false, pushToken: () => '' }; });
   await pg.goto(U);
   await pg.evaluate(() => {
     localStorage.clear();
@@ -26,11 +26,14 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const got = await pg.evaluate(() => Object.keys(GM.store.get('album').ach));
   ok(['g25', 'g100'].every(k => got.includes(k)) && !got.includes('g500'), 'Getting Going and Centurion unlock at 120 games, Part of the Furniture does not: ' + got);
   ok(got.includes('lv10') && got.includes('lv30') && !got.includes('lv50'), 'level badges follow the level (20,000 XP is about level 30)');
-  const sent = await pg.evaluate(() => window.__pgs.flat());
-  ok(sent.includes('Getting Going') && sent.includes('Centurion'), 'the Play app is told by name: ' + sent.join(', '));
+  await pg.waitForTimeout(1800);   // the report goes out a moment after the album is saved
+  const sent = Object.assign({}, ...(await pg.evaluate(() => window.__pgs)));
+  ok(sent['Getting Going'] === 25 && sent['Centurion'] === 100, 'the Play app is told by name, earned counters at their full steps: ' + JSON.stringify(sent));
+  ok(sent['Part of the Furniture'] === 120 - 0 && sent['Part of the Furniture'] <= 500, 'a counter you are part-way through reports its progress (Part of the Furniture: ' + sent['Part of the Furniture'] + '/500)');
+  ok(sent['Top Flight'] === 30 && sent['Ballon d’Or'] > 0 && sent['Ballon d’Or'] < 50, 'levels count as steps (Top Flight done, Ballon d’Or ' + sent['Ballon d’Or'] + '/50)');
   await pg.evaluate(() => { window.__pgs.length = 0; GM.pgsSync(); });
-  const sync = await pg.evaluate(() => window.__pgs.flat());
-  ok(sync.includes('First XI') && sync.includes('Getting Going'), 'a sync sends every badge you already have (' + sync.length + ')');
+  ok((await pg.evaluate(() => window.__pgs.length)) === 0, 'nothing is re-sent while nothing has changed');
+  ok(await pg.evaluate(() => { const st = GM.pgsState(GM.store.get('album')), want = Object.keys(GM.PGS_STEPS).length; return Object.keys(GM.PGS_STEPS).every(k => typeof GM.PGS_STEPS[k] === 'number') && want === 16 && st['First XI'] === 1; }), '16 counters are incremental, plain badges send 1');
   // extreme and pack badges
   await pg.evaluate(() => { GM.checkGame('pack', 50, {}); });
   ok((await pg.evaluate(() => Object.keys(GM.store.get('album').ach))).includes('pk50'), 'Pack Mentality at 50 packs opened');
