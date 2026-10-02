@@ -9,6 +9,17 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 60, label: '5.19', date: '2026-10-03', title: '🎰 The pitch remembers everything',
+      items: [
+        '🎰 Betting scandal: pull the fruit machine’s lever. Jackpot and you get bonus points; lose and your player’s fined half his numbers',
+        '🪖 Called up! A tank rolls on and takes a player for national service (his place is empty again, and there’s a medal)',
+        '🌍 Earthquakes crack the pitch, 🌧️ rain pours down in Stoke, 💼 the owner legs it with a briefcase of cash, 💔 break-ups and 💍 weddings (with the car and the tin cans)',
+        '🚁 The helicopter and the 🐦 pigeon are drawn and fly properly, and the 🌪️ tornado is there from the moment it’s announced',
+        '🏃 Some of them stay for the whole game: the streaker keeps running laps with a steward after him, the dog trots up and down, the pigeon waddles about and the flying saucer hovers over the stand',
+        '🧹 Everything that happens leaves its mark: cracks, puddles, flares, police tape, scarves, scorch marks… by full time your pitch has been through it',
+      ],
+    },
+    {
       v: 59, label: '5.18', date: '2026-10-02', title: '🚑 CHAOS comes alive',
       items: [
         '🚑 Real animations: an ambulance drives on with its lights going nee-naw and parks by your injured player, and a flying saucer beams a player up',

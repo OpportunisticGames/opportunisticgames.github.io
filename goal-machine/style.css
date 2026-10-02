@@ -2456,3 +2456,110 @@ html.intl-break #app { padding-top: 22px; }
 .cm-ufo.beaming .beam { height: 92px; animation: beam-hum .25s ease-in-out infinite alternate; }
 @keyframes beam-hum { to { opacity: .6; } }
 body.calm .cm-veh.moving .whl, body.calm .spr .lt, body.calm .cm-veh::after { animation: none; }
+/* 5.19: more drawn CHAOS */
+.mess i.drawn { opacity: .95; font-size: 0; }
+.mess i.drawn svg { display: block; }
+.mess .notes { display: flex; gap: 2px; transform: rotate(-12deg); }
+.mess svg.crack { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.crack polyline { fill: none; stroke: #2a1d12; stroke-width: 1.4; vector-effect: non-scaling-stroke; stroke-linejoin: bevel; filter: drop-shadow(0 1px 0 rgba(255, 255, 255, .25)); }
+.mess svg.crack polyline { stroke-width: 3; }
+.crack.tearing { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
+.crack.tearing polyline, .crack.new polyline { stroke-width: 4; stroke-dasharray: 100; stroke-dashoffset: 100; animation: crack-tear .9s .2s ease-out forwards; }
+@keyframes crack-tear { to { stroke-dashoffset: 0; } }
+#app.quaking { animation: quake .09s linear 16; }
+@keyframes quake { 0% { transform: translate(0, 0); } 25% { transform: translate(-7px, 3px) rotate(-.6deg); } 50% { transform: translate(6px, -4px) rotate(.5deg); } 75% { transform: translate(-4px, -3px); } 100% { transform: translate(5px, 4px); } }
+.slot.wobble { animation: wobble .6s ease-in-out; }
+@keyframes wobble { 20% { transform: rotate(-9deg) translateY(4px); } 50% { transform: rotate(7deg) translateY(-3px); } 80% { transform: rotate(-3deg); } }
+/* rain: drawn drops falling across the pitch */
+.cm-rainfall { position: absolute; inset: 0; z-index: 5; pointer-events: none; background: linear-gradient(rgba(40, 60, 90, .25), rgba(40, 60, 90, .1)); transition: opacity .8s; }
+.cm-rainfall.stopping { opacity: 0; }
+.cm-rainfall i { position: absolute; top: -10%; width: 2px; height: 18px; border-radius: 2px; background: linear-gradient(transparent, rgba(200, 225, 255, .9)); animation: raindrop .6s linear infinite; }
+@keyframes raindrop { to { transform: translate(-18px, 120vh); } }
+/* helicopter: the rotor blurs round */
+.cm-veh.heli .rotor { transform-box: fill-box; transform-origin: center; animation: rotor .12s linear infinite; }
+.cm-veh.heli .trot { transform-box: fill-box; transform-origin: center; animation: wheel-turn .15s linear infinite; }
+@keyframes rotor { 50% { transform: scaleX(.15); } }
+.cm-veh.case { z-index: 7; }
+.cm-note { position: absolute; z-index: 6; pointer-events: none; animation: note-fly 1.6s ease-out forwards; }
+@keyframes note-fly { 0% { transform: translate(-50%, -50%) rotate(0); opacity: 1; } 100% { transform: translate(calc(-50% + 30px), -140px) rotate(320deg); opacity: 0; } }
+/* break-up: the heart cracks and the halves fall apart */
+.cm-heart { position: absolute; z-index: 6; transform: translate(-50%, -50%); pointer-events: none; animation: heart-in .4s ease-out; }
+.cm-heart .hl, .cm-heart .hr { transform-box: fill-box; transform-origin: bottom center; animation: heart-l 1.6s .7s ease-in forwards; }
+.cm-heart .hr { animation-name: heart-r; }
+@keyframes heart-in { from { transform: translate(-50%, -50%) scale(0); } }
+@keyframes heart-l { to { transform: translate(-14px, 40px) rotate(-35deg); opacity: 0; } }
+@keyframes heart-r { to { transform: translate(14px, 40px) rotate(35deg); opacity: 0; } }
+/* confetti: drawn paper bits */
+.cm-confetti { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
+.cm-confetti i { position: absolute; top: -12px; width: 7px; height: 4px; border-radius: 1px; animation: confetti-fall 2.4s ease-in forwards; }
+@keyframes confetti-fall { to { transform: translate(var(--sx, 0), 460px) rotate(720deg); } }
+/* the wedding car's tin cans rattle */
+.spr .can { animation: can-rattle .18s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: right center; }
+.spr .can.c1 { animation-delay: .06s; } .spr .can.c2 { animation-delay: .12s; }
+@keyframes can-rattle { to { transform: rotate(14deg) translateY(-1px); } }
+/* the pigeon: wings flap in flight, pecks when it's landed */
+.pidge .wing { transform-box: fill-box; transform-origin: bottom left; }
+.pidge.flying .wing { animation: flap .14s ease-in-out infinite alternate; }
+@keyframes flap { to { transform: scaleY(-.7) rotate(10deg); } }
+.pidge .head { transform-box: fill-box; transform-origin: bottom left; }
+.pidge.pecking .head { animation: peck 3.2s ease-in-out infinite; }
+@keyframes peck { 0%, 80%, 100% { transform: none; } 86% { transform: rotate(38deg) translate(1px, 2px); } 92% { transform: none; } }
+.cm-fx.fly .spr { width: 64px; height: auto; }
+/* the tornado on the big entrance card */
+.cm-sky .cm-tornado.big { top: 8%; height: 70%; width: 160px; animation: tornado-intro 3s ease-in-out infinite alternate; }
+.cm-sky .cm-tornado.big i { animation-duration: .3s; }
+@keyframes tornado-intro { from { transform: translateX(8vw) rotate(-6deg); } to { transform: translateX(62vw) rotate(6deg); } }
+/* the fruit machine */
+.fruit { display: block; margin: 12px auto 0; padding: 10px 46px 12px 14px; position: relative; border: 0; border-radius: 16px; cursor: pointer; color: inherit; font: inherit;
+  background: linear-gradient(#d4243b, #8f0f22); box-shadow: inset 0 0 0 3px #ffd34d, 0 8px 18px rgba(0, 0, 0, .45); }
+.fruit-top { display: block; font: 800 .9rem Oswald, sans-serif; letter-spacing: .2em; color: #ffe14a; text-shadow: 0 0 8px #ff9b00; margin-bottom: 6px; animation: pop 1s ease-in-out infinite alternate; }
+.fruit-wins { display: flex; gap: 6px; }
+.fruit-win { width: 54px; height: 60px; overflow: hidden; border-radius: 8px; background: #fffaf0; box-shadow: inset 0 6px 8px rgba(0, 0, 0, .35), inset 0 -6px 8px rgba(0, 0, 0, .35); }
+.fruit-strip { display: flex; flex-direction: column; }
+.fruit-strip i { font-style: normal; font-size: 2rem; line-height: 60px; height: 60px; text-align: center; }
+.fruit-win.spinning .fruit-strip { animation: fruit-roll .32s linear infinite; filter: blur(1.2px); }
+@keyframes fruit-roll { to { transform: translateY(-300px); } }
+.fruit-strip.stop i { animation: fruit-stop .35s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes fruit-stop { from { transform: translateY(-30px); } }
+.fruit-lever { position: absolute; right: 12px; top: 16px; width: 8px; height: 64px; border-radius: 4px; background: linear-gradient(90deg, #888, #ddd, #888); transform-origin: bottom center; }
+.fruit-lever i { position: absolute; left: 50%; top: -12px; width: 20px; height: 20px; margin-left: -10px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ff8080, #c00); }
+.cm.pulled .fruit-lever { animation: lever-pull .6s ease-in-out; }
+@keyframes lever-pull { 40% { transform: scaleY(-.6); } }
+.fruit .coin-go { margin-top: 8px; }
+.cm.flipping .fruit .coin-go { visibility: hidden; }
+.fruit.won { animation: jackpot .25s steps(2) 8; }
+@keyframes jackpot { 50% { box-shadow: inset 0 0 0 3px #fff, 0 0 30px #ffe14a; } }
+.cm.act .fruit { display: none; }
+.cm.intro .fruit + .cm-skip { display: none; }
+body.calm .cm-rainfall i, body.calm #app.quaking, body.calm .cm-confetti i, body.calm .pidge .wing, body.calm .pidge .head, body.calm .spr .can, body.calm .cm-veh.heli .rotor { animation: none; }
+.mess .smoke { animation: smoke-puff 2.4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+.mess .smoke.s2 { animation-delay: -1.2s; }
+@keyframes smoke-puff { to { transform: translate(3px, -4px) scale(1.25); opacity: .6; } }
+.mess .ember { animation: ember .9s ease-in-out infinite alternate; }
+.mess .ember.e2 { animation-delay: -.45s; }
+@keyframes ember { to { opacity: .2; } }
+.mess i:not(.drawn) { filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .45)) saturate(1.3); }
+body.calm .mess .smoke, body.calm .mess .ember { animation: none; }
+/* things that stay alive on the pitch (roamHtml): the streaker's laps with a steward after him, the dog, the saucer */
+.roam { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.rm { position: absolute; left: 3%; top: 4%; font-style: normal; animation-timing-function: linear; animation-iteration-count: infinite; filter: drop-shadow(0 3px 2px rgba(0, 0, 0, .4)); }
+.rm-streaker, .rm-steward { animation-name: lap; }
+@keyframes lap { 0% { left: 2%; top: 3%; transform: scaleX(1); } 24.9% { transform: scaleX(1); } 25% { left: 92%; top: 3%; } 50% { left: 92%; top: 88%; transform: scaleX(1); }
+  50.1% { transform: scaleX(-1); } 75% { left: 2%; top: 88%; } 99.9% { transform: scaleX(-1); } 100% { left: 2%; top: 3%; transform: scaleX(1); } }
+.rm-streaker::after { content: ''; position: absolute; left: 6px; top: 19px; width: 9px; height: 4px; background: #111; }
+.runner .leg, .runner .arm { transform-box: fill-box; transform-origin: top center; }
+.runner .leg.l1, .runner .arm.a2 { animation: stride .28s ease-in-out infinite alternate; }
+.runner .leg.l2, .runner .arm.a1 { animation: stride .28s ease-in-out infinite alternate-reverse; }
+@keyframes stride { from { transform: rotate(-28deg); } to { transform: rotate(28deg); } }
+.rm-dog { animation-name: trot; top: 91%; }
+@keyframes trot { 0% { left: 4%; transform: scaleX(1); } 49.9% { transform: scaleX(1); } 50% { left: 86%; transform: scaleX(-1); } 100% { left: 4%; transform: scaleX(-1); } }
+.dog .leg { transform-box: fill-box; transform-origin: top center; }
+.dog .leg.l1 { animation: stride .22s ease-in-out infinite alternate; } .dog .leg.l2 { animation: stride .22s ease-in-out infinite alternate-reverse; }
+.dog .tail { transform-box: fill-box; transform-origin: bottom right; animation: wag .25s ease-in-out infinite alternate; }
+@keyframes wag { to { transform: rotate(-30deg); } }
+.rm-ufo { animation-name: hover; top: 0; animation-timing-function: ease-in-out; animation-direction: alternate; }
+.rm-ufo .spr { width: 52px; height: auto; }
+@keyframes hover { 0% { left: 6%; transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(8px) rotate(3deg); } 100% { left: 78%; transform: translateY(0) rotate(-3deg); } }
+.mess i.drawn .pidge.pecking { animation: waddle 6s ease-in-out infinite; }
+@keyframes waddle { 0%, 100% { transform: translateX(0); } 40% { transform: translateX(14px); } 45% { transform: translateX(14px) scaleX(-1); } 85% { transform: translateX(0) scaleX(-1); } 90% { transform: none; } }
+body.calm .rm, body.calm .runner .leg, body.calm .runner .arm, body.calm .dog .leg, body.calm .dog .tail, body.calm .mess i.drawn .pidge.pecking { animation: none; }

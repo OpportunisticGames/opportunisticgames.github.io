@@ -42,7 +42,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
 
   // force every new event and the big moments with new animations; check leftovers stay on the pitch
   let parkedAfterInjury = null;
-  for (const ev of ['streaker', 'pigeon', 'splat', 'amnesty', 'tornado', 'blackhole', 'pies', 'injury', 'arrest', 'aliens']) {
+  for (const ev of ['streaker', 'pigeon', 'splat', 'amnesty', 'tornado', 'blackhole', 'pies', 'injury', 'arrest', 'aliens', 'gamble', 'conscript', 'quake', 'fraud', 'breakup', 'wedding', 'stoke']) {
     // give him a few players so the moments have someone to hit
     await pg.evaluate(() => {
       const S = GM.draft.state();
@@ -55,6 +55,8 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     await pg.waitForTimeout(ev === 'tornado' || ev === 'blackhole' ? 1700 : 900);
     if (ev === 'tornado') { await pg.click('.cm'); await pg.waitForTimeout(1300); ok(!!(await pg.$('.cm-tornado')), 'the tornado is a real spinning funnel'); await pg.screenshot({ path: 'lay/chaos_tornado.png' }); }
     if (ev === 'blackhole') { await pg.click('.cm'); await pg.waitForTimeout(800); ok(!!(await pg.$('.cm-hole')), 'the black hole opens on the pitch'); await pg.screenshot({ path: 'lay/chaos_hole.png' }); }
+    if (ev === 'gamble') { await pg.waitForSelector('.fruit'); await pg.click('.fruit'); await pg.waitForTimeout(2600); ok(await pg.$$eval('.fruit-strip.stop', e => e.length) === 3, '🎰 the fruit machine spins and stops on three symbols'); }
+    if (ev === 'quake') { await pg.click('.cm'); await pg.waitForTimeout(900); ok(!!(await pg.$('.crack.tearing')), '🌍 the earthquake tears a crack across the pitch'); }
     for (let k = 0; k < 40 && await pg.$('.cm:not(.out)'); k++) { await pg.click('.cm:not(.out)').catch(() => {}); await pg.waitForTimeout(250); }
     await pg.waitForTimeout(400);
     if (ev === 'injury') parkedAfterInjury = await pg.evaluate(() => ({ n: Object.values(GM.draft.state().parked || {}).filter(k => k === 'ambulance').length, drawn: document.querySelectorAll('.slot .parked svg').length }));
@@ -66,7 +68,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const veh = await pg.evaluate(() => { const S = GM.draft.state(); return { parked: Object.values(S.parked || {}), drawn: document.querySelectorAll('.slot .parked svg').length, ghost: S.ghost, filled: S.xi.filter(x => x.p != null).length }; });
   ok(parkedAfterInjury && parkedAfterInjury.n >= 1 && parkedAfterInjury.drawn >= 1, `🚑 the ambulance stays parked by the injured player (${parkedAfterInjury && parkedAfterInjury.drawn} drawn)`);
   ok(veh.ghost == null && st.moments.includes('Arrested!'), `🚔 arrested: his place is empty again (${veh.filled} signed)`);
-  ok(st.mess.includes('🩲') && st.mess.includes('🐦'), `leftovers stay on the pitch (${st.mess})`);
+  ok(st.mess.includes('🩲') && st.mess.includes('#pigeon') && st.mess.includes('#crack'), `leftovers stay on the pitch (${st.mess})`);
   ok(st.shown === [...st.mess].length || st.shown >= 5, `${st.shown} leftovers drawn on the pitch`);
   ok(st.splat >= 1 && st.hidden === st.splat, `the pigeon’s revenge covers ${st.splat} number(s)`);
   await pg.screenshot({ path: 'lay/chaos_mess.png' });

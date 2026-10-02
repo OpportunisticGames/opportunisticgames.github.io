@@ -74,6 +74,50 @@
       <ellipse cx="45" cy="18" rx="17" ry="13" fill="url(#ufo-dome)" stroke="#5aa9cc"/><ellipse cx="45" cy="26" rx="43" ry="11" fill="#9aa4b5" stroke="#5e6878"/>
       <ellipse cx="45" cy="23" rx="43" ry="5" fill="#c3cad6"/><circle class="lt a" cx="17" cy="28" r="3" fill="#7dff6b"/><circle class="lt b" cx="31" cy="31" r="3" fill="#ff5ec8"/>
       <circle class="lt a" cx="45" cy="32" r="3" fill="#ffe14a"/><circle class="lt b" cx="59" cy="31" r="3" fill="#7dff6b"/><circle class="lt a" cx="73" cy="28" r="3" fill="#ff5ec8"/></svg>`,
+    // a London pigeon: wings flap while it flies, it pecks once it has landed
+    pigeon: `<svg class="spr pidge" viewBox="0 0 44 34" width="44" height="34"><path class="wing" d="M17 14q9-13 21-9-7 5-10 13z" fill="#7d8694"/>
+      <ellipse cx="21" cy="20" rx="13" ry="8" fill="#9aa2ae"/><path d="M8 18l-7-3 2 6z" fill="#6f7782"/><g class="head"><circle cx="33" cy="13" r="5.5" fill="#7a8390"/>
+      <path d="M30 17q4 3 8-1" stroke="#5fae86" stroke-width="2.4" fill="none"/><path d="M38 12l4 1.5-4 1z" fill="#e7b9a3"/><circle cx="34.6" cy="11.8" r="1.2" fill="#e8642c"/></g>
+      <path d="M19 27v5M24 27v5" stroke="#e48a7c" stroke-width="1.6"/></svg>`,
+    heli: `<svg class="spr" viewBox="0 0 110 52" width="110" height="52"><rect class="rotor" x="8" y="2" width="84" height="3" rx="1.5" fill="#2b2f36"/><rect x="48" y="4" width="4" height="8" fill="#2b2f36"/>
+      <path d="M30 14h36q14 0 16 14v4H30q-8 0-8-9t8-9z" fill="#1d4ed8" stroke="#163a9e"/><path d="M64 16h4q10 1 12 11H64z" fill="#9fd8ff"/><path d="M30 20h-28v4h28z" fill="#1d4ed8"/>
+      <circle class="trot" cx="4" cy="20" r="6" fill="none" stroke="#2b2f36" stroke-width="2" stroke-dasharray="3 3"/><text x="42" y="28" font-size="8" font-weight="900" font-family="Arial" fill="#fff">££</text>
+      <path d="M30 40h46M36 32v8M70 32v8" stroke="#2b2f36" stroke-width="2.5"/></svg>`,
+    tank: `<svg class="spr" viewBox="0 0 104 50" width="104" height="50"><rect x="6" y="30" width="88" height="14" rx="7" fill="#2f3324"/>
+      <path d="M10 22h80l6 9H4z" fill="#5d6b3a" stroke="#3f4a26"/><path d="M34 10h30l6 12H28z" fill="#6c7c45" stroke="#3f4a26"/><rect x="64" y="13" width="38" height="4" rx="2" fill="#4c5730"/>
+      <path d="M46 14l1.6 3.4 3.7.4-2.8 2.5.8 3.7L46 22.2l-3.3 1.8.8-3.7-2.8-2.5 3.7-.4z" fill="#f2f2e6"/>
+      ${[16, 30, 44, 58, 72, 86].map(x => `<g transform="translate(${x} 37)"><g class="whl"><circle r="5" fill="#555c45"/><rect x="-0.8" y="-4.5" width="1.6" height="9" fill="#2f3324"/></g></g>`).join('')}</svg>`,
+    wedding: `<svg class="spr" viewBox="0 0 120 46" width="120" height="46"><path d="M2 30l-0 0" />${[4, 14, 24].map((x, k) => `<g class="can c${k}"><path d="M${x + 22} 30L${x + 8} 33" stroke="#999" stroke-width="0.8"/><rect x="${x}" y="31" width="7" height="6" rx="1" fill="#c9ced6"/></g>`).join('')}
+      <path d="M34 34V24q0-4 4-4h12l8-8h24l10 9h14q8 1 8 7v6z" fill="#fbfbf7" stroke="#b9c0c9"/><path d="M60 14h20v7H55z" fill="#8fd0ff"/><path d="M82 14h6l7 7H82z" fill="#8fd0ff"/>
+      <path d="M40 24h60" stroke="#ff7eb6" stroke-width="2"/><path d="M98 18l6-6M104 18l-6-6" stroke="#ff7eb6" stroke-width="2"/>
+      <text x="66" y="31" font-size="5.5" font-weight="900" font-family="Arial" fill="#e0457b" text-anchor="middle">JUST MARRIED</text>${WHEEL(48)}${WHEEL(98)}</svg>`,
+    briefcase: `<svg class="spr" viewBox="0 0 44 34" width="44" height="34"><path d="M16 6h12v5h-3V9h-6v2h-3z" fill="#4a3018"/><rect x="3" y="10" width="38" height="22" rx="3" fill="#7a4b22" stroke="#4a3018"/>
+      <rect x="3" y="17" width="38" height="3" fill="#5c3818"/><rect x="19" y="15" width="6" height="7" rx="1" fill="#d8b44a"/></svg>`,
+  };
+  // little drawn leftovers (CHAOS leaves its mark): a key starting with # in MESS is drawn, not an emoji
+  const NOTE = `<svg viewBox="0 0 30 16" width="26" height="14"><rect width="30" height="16" rx="2" fill="#5fae6e" stroke="#2f7a42"/><circle cx="15" cy="8" r="4.5" fill="#8fd39b"/><text x="15" y="10.6" font-size="7" font-weight="900" font-family="Arial" fill="#1e5a2e" text-anchor="middle">£</text></svg>`;
+  const LEFT = {
+    pigeon: () => SPRITE.pigeon.replace('class="spr pidge"', 'class="spr pidge pecking"'),
+    debris: () => `<svg viewBox="0 0 40 26" width="40" height="26"><path d="M2 20l14-8 3 4-14 8z" fill="#8a6a44"/><path d="M20 22l12-14 3 2-11 14z" fill="#a07a50"/><path d="M8 8l6 2-2 4z" fill="#ccc"/><circle cx="33" cy="20" r="3" fill="#9aa"/></svg>`,
+    pad: () => `<svg viewBox="0 0 44 44" width="40" height="40"><circle cx="22" cy="22" r="19" fill="none" stroke="#ffe14a" stroke-width="3"/><text x="22" y="30" font-size="22" font-weight="900" font-family="Arial" fill="#ffe14a" text-anchor="middle">H</text></svg>`,
+    puddle: () => `<svg viewBox="0 0 60 22" width="54" height="20"><ellipse cx="30" cy="11" rx="28" ry="9" fill="rgba(110,170,230,.55)"/><ellipse cx="22" cy="9" rx="10" ry="3" fill="rgba(255,255,255,.35)"/></svg>`,
+    confetti: () => `<svg viewBox="0 0 40 30" width="40" height="30">${['#ff5ec8', '#ffe14a', '#5ec8ff', '#7dff6b', '#fff'].map((c, k) => `<rect x="${3 + k * 7}" y="${(k * 11) % 22 + 2}" width="5" height="3" fill="${c}" transform="rotate(${k * 37} ${5 + k * 7} ${(k * 11) % 22 + 3})"/>`).join('')}</svg>`,
+    notes: () => `<span class="notes">${NOTE}${NOTE}</span>`,
+    tracks: () => `<svg viewBox="0 0 70 20" width="66" height="18"><path d="M0 4h70M0 16h70" stroke="#4a3b2a" stroke-width="5" stroke-dasharray="3 3" opacity=".55"/></svg>`,
+    tape: () => `<svg viewBox="0 0 70 16" width="64" height="15"><rect width="70" height="16" fill="#ffd400"/><path d="M6 0l10 16M22 0l10 16M38 0l10 16M54 0l10 16" stroke="#111" stroke-width="6"/><text x="35" y="11.5" font-size="7.5" font-weight="900" font-family="Arial" fill="#111" text-anchor="middle" style="paint-order:stroke" stroke="#ffd400" stroke-width="3">POLICE</text></svg>`,
+    flare: () => `<svg viewBox="0 0 30 40" width="26" height="36"><circle class="smoke" cx="15" cy="12" r="11" fill="rgba(255,60,60,.45)"/><circle class="smoke s2" cx="10" cy="7" r="7" fill="rgba(255,120,80,.35)"/><rect x="12" y="20" width="6" height="16" rx="2" fill="#d22"/><circle cx="15" cy="20" r="3.5" fill="#ffd34d"/></svg>`,
+    ball: () => `<svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="10.5" fill="#ffd34d" stroke="#a67c00"/><path d="M12 6l4 3-1.6 4.6h-4.8L8 9z" fill="#7a5900"/></svg>`,
+    tv: () => `<svg viewBox="0 0 40 30" width="34" height="26"><rect x="2" y="3" width="36" height="22" rx="3" fill="#1b1f2a" stroke="#555"/><rect x="5" y="6" width="30" height="16" fill="#2c7be5"/><text x="20" y="18" font-size="8" font-weight="900" font-family="Arial" fill="#fff" text-anchor="middle">VAR</text><path d="M14 25l-4 4M26 25l4 4" stroke="#555" stroke-width="2"/></svg>`,
+    scarf: () => `<svg viewBox="0 0 54 16" width="50" height="15">${[0, 1, 2, 3, 4, 5].map(k => `<rect x="${3 + k * 8}" y="3" width="8" height="10" fill="${k % 2 ? '#fff' : 'var(--cb, #d22)'}"/>`).join('')}<path d="M3 3l-3 2M3 8l-3 0M3 13l-3-2M51 3l3 2M51 8l3 0M51 13l3-2" stroke="#ddd"/></svg>`,
+    bucket: () => `<svg viewBox="0 0 30 30" width="26" height="26"><path d="M5 10h20l-3 18H8z" fill="#3a86ff" stroke="#1d4fa8"/><path d="M5 10q10-10 20 0" fill="none" stroke="#888" stroke-width="1.5"/><ellipse cx="20" cy="9" rx="6" ry="3.5" fill="#ffd34d"/></svg>`,
+    paper: () => `<svg viewBox="0 0 26 32" width="22" height="27"><path d="M2 2h16l6 6v22H2z" fill="#fff" stroke="#aaa"/><path d="M6 12h14M6 17h14M6 22h9" stroke="#999" stroke-width="1.5"/></svg>`,
+    card: () => `<svg viewBox="0 0 20 28" width="16" height="22"><rect x="1" y="1" width="18" height="26" rx="2" fill="#e3262f" stroke="#8a0d13"/></svg>`,
+    scorch: () => `<svg viewBox="0 0 44 30" width="40" height="28"><ellipse cx="22" cy="15" rx="20" ry="12" fill="rgba(30,20,10,.55)"/><ellipse cx="22" cy="15" rx="10" ry="6" fill="rgba(10,5,0,.6)"/><circle class="ember" cx="16" cy="13" r="1.6" fill="#ff8a3d"/><circle class="ember e2" cx="27" cy="17" r="1.4" fill="#ffd34d"/></svg>`,
+    ring: () => `<svg viewBox="0 0 50 24" width="48" height="23"><ellipse cx="25" cy="12" rx="23" ry="10" fill="none" stroke="rgba(160,255,120,.8)" stroke-width="2.5"/><ellipse cx="25" cy="12" rx="14" ry="5" fill="rgba(160,255,120,.25)"/></svg>`,
+    chip: () => `<svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="10.5" fill="#d22" stroke="#fff" stroke-width="2" stroke-dasharray="4 3"/><circle cx="12" cy="12" r="5" fill="#fff"/></svg>`,
+    cross: () => `<svg viewBox="0 0 22 22" width="18" height="18"><rect x="1" y="1" width="20" height="20" rx="4" fill="#fff" stroke="#ccc"/><path d="M8 4h6v4h4v6h-4v4H8v-4H4V8h4z" fill="#e3262f"/></svg>`,
+    coin: () => `<svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="10" fill="#f2c230" stroke="#8a6406" stroke-width="2"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#b98a0c"/></svg>`,
+    heart: () => `<svg viewBox="0 0 30 28" width="24" height="22"><path d="M15 26L3 13q-5-7 2-11 6-3 10 4l-3 5 4 4z" fill="#e3262f"/><path d="M15 26l12-13q5-7-2-11-6-3-10 4l3 5-4 4z" fill="#c21b24" transform="translate(3 2) rotate(8 15 15)"/></svg>`,
   };
   // the Hat-Trick's bar (the three together), per stat; the armband in CHAOS, use by use
   const HAT = { goals: 50, assists: 30, apps: 400 };
@@ -96,7 +140,7 @@
   // more match-day nonsense. go(r) changes the game and returns { note, run }; look = [scene, sound]
   const XEV = {
     pigeon: { rar: 'c', icon: '🐦', name: 'Pitch invader', tone: 'weird', look: ['kickoff', 'wild'], go: () => { S.bonus.push(['🐦 A pigeon', 1]); return { note: 'A pigeon lands on the pitch. It’s just a pigeon. It’s staying. <b>+1</b> bonus point, for the pigeon.', run: c => c.fly('🐦') }; } },
-    streaker: { rar: 'c', icon: '🏃', name: 'Streaker', tone: 'good', look: ['party', ['whistle', 'cheer']], go: () => { const p = pts(6); S.bonus.push(['🏃 The streaker', p]); return { note: `Someone’s run on with nothing on. Best laugh of the season: <b>+${p}</b> bonus. He’s left his pants behind.`, run: c => c.dash('🏃') }; } },
+    streaker: { rar: 'c', icon: '🏃', name: 'Streaker', tone: 'good', look: ['party', ['whistle', 'cheer']], go: () => { roam('streaker'); const p = pts(6); S.bonus.push(['🏃 The streaker', p]); return { note: `Someone’s run on with nothing on. Best laugh of the season: <b>+${p}</b> bonus. He’s still out there, with a steward after him.`, run: c => c.dash('🏃') }; } },
     amnesty: { rar: 'r', icon: '📺', name: 'VAR overturns it all', tone: 'good', look: ['tv', ['var', 'cheer']], go: () => {
       const hurt = filledIdx().filter(i => HURT.includes(S.xi[i].mod));
       if (!hurt.length) { const p = pts(10); S.bonus.push(['📺 Nothing to overturn', p]); return { note: `VAR looks at everything and finds nothing wrong with your XI: <b>+${p}</b> bonus.` }; }
@@ -114,6 +158,7 @@
       if (i < 0) return { note: 'Your keeper hasn’t signed yet, so the pies go to waste.' };
       scale(S.xi[i], 2, 'boosted'); return { note: `${nm(i)} has eaten all the pies and now fills the whole goal: his numbers <b>double</b>.`, run: c => c.visit(i, '🥧') }; } },
     dog: { rar: 'c', icon: '🐕', name: 'Dog on the pitch', tone: 'good', look: ['kickoff', 'box'], go: r => {
+      roam('dog');
       if (S.inv.length >= 3) return { note: 'A dog runs on, looks at your full wildcard bag and runs off again.' };
       const cards = Object.keys(WILDCARDS).filter(k => !WILDCARDS[k].chaos && !S.rules.noWild.includes(k)), w = cards[Math.floor(r() * cards.length)];
       S.inv.push(w); return { note: `A dog runs on and fetches you a wildcard: ${WILDCARDS[w].icon} <b>${WILDCARDS[w].name}</b>!`, run: c => c.bag('🐕') }; } },
@@ -134,7 +179,7 @@
       return { note: `The physio runs on with a cold sponge and ${nm(i)} is a new man: <b>×2</b>.`, run: c => c.visit(i, '🧽') }; } },
     stoke: { rar: 'u', icon: '🌧️', name: 'A cold wet night in Stoke', tone: 'weird', look: ['storm', 'rain'], go: () => {
       S.xi.forEach(x => { if (x.p == null) return; const g = GM.GROUP[x.pos]; if (g === 'D' || g === 'G') scale(x, 1.5, 'boosted'); else if (g === 'F') scale(x, 0.8, 'halved'); });
-      return { note: 'Can they do it here? Defenders and keeper <b>+50%</b>, strikers <b>−20%</b>.', run: c => c.sweep('🌧️') }; } },
+      return { note: 'Can they do it here? Defenders and keeper <b>+50%</b>, strikers <b>−20%</b>.', run: c => c.rainfall() }; } },
     swapdeal: { rar: 'u', icon: '🔀', name: 'Swap deal', tone: 'weird', look: ['casino', 'swoosh'], go: r => {
       const f = filledIdx(); if (f.length < 2) return { note: 'Nobody to swap yet.' };
       const a = f[Math.floor(r() * f.length)], rest = f.filter(i => i !== a), b2 = rest[Math.floor(r() * rest.length)];
@@ -143,11 +188,11 @@
     retro: { rar: 'u', icon: '📼', name: 'Retro kit launch', tone: 'good', look: ['gold', 'sting'], go: () => { S.forceSpecial = 'throwback'; return { note: 'Everyone’s in 90s shirts: this spin is <b>all 90s players</b>.' }; } },
     testimonial: { rar: 'u', icon: '❤️', name: 'Testimonial match', tone: 'good', look: ['gold', 'sting'], go: () => { S.forceSpecial = 'oneclub'; return { note: 'A night for the loyal: this spin is <b>one-club men</b> only.' }; } },
     loanarmy: { rar: 'u', icon: '🧳', name: 'The loan army', tone: 'good', look: ['gold', 'sting'], go: () => { S.forceSpecial = 'journeyman'; return { note: 'They’re back from loan: this spin is <b>journeymen</b> with 4+ clubs.' }; } },
-    helicopter: { rar: 'r', icon: '🚁', name: 'Helicopter on the lawn', tone: 'good', look: ['money', 'wind'], go: () => { S.forceSpecial = 'centurion'; return { note: 'A billionaire lands with a chequebook: this spin is <b>100+ goal</b> players only.' }; } },
+    helicopter: { rar: 'r', icon: '🚁', name: 'Helicopter on the lawn', tone: 'good', look: ['money', 'heli'], go: () => { S.forceSpecial = 'centurion'; return { run: c => c.heli(), note: 'A billionaire lands with a chequebook: this spin is <b>100+ goal</b> players only.' }; } },
     aliens: { rar: 'r', icon: '🛸', name: 'Alien abduction', tone: 'weird', look: ['lightning', 'spooky'], go: r => {
       const f = filledIdx(); if (!f.length) return { note: 'The aliens look around, find nobody worth taking, and leave.' };
       const fw = f.filter(i => GM.GROUP[S.xi[i].pos] === 'F'), pool = fw.length ? fw : f, i = pool[Math.floor(r() * pool.length)], p = pts(40);
-      scale(S.xi[i], 0, 'halved'); S.bonus.push(['🛸 Documentary rights', p]);
+      scale(S.xi[i], 0, 'halved'); S.bonus.push(['🛸 Documentary rights', p]); roam('ufo');
       return { note: `${nm(i)} is beamed up mid-warm-up: he counts for <b>nothing</b>. The documentary rights pay <b>+${p}</b> bonus.`, run: c => c.abduct(i) }; } },
     arrest: { rar: 'u', icon: '🚔', name: 'Arrested!', tone: 'bad', look: ['red', 'siren'], go: r => {
       const f = filledIdx().filter(i => S.xi[i].pos !== 'GK'); if (!f.length) return { note: 'The police have a look round, find nothing to nick, and leave.' };
@@ -156,6 +201,39 @@
       x.p = null; x.g = 0; x.v = null; x.mod = null; x.as = null; unpark(i);
       if (S.splat) S.splat = S.splat.filter(k => k !== i);
       return { note: `${nm2(S.ghost.p)} is arrested and taken away. His place is empty: <b>sign someone else</b> for it.`, run: c => c.arrest(i), done: () => { S.ghost = null; } }; } },
+    gamble: { rar: 'u', icon: '🎰', name: 'Betting scandal', tone: 'weird', look: ['casino', 'drumroll'], go: r => {
+      const f = filledIdx(); if (!f.length) return { note: 'The papers have nobody to accuse yet.' };
+      const i = f[Math.floor(r() * f.length)], win = r() < 0.4, SYM = ['⚽', '🏆', '🍒', '7️⃣', '💰'];
+      const a = Math.floor(r() * SYM.length), sym = win ? [a, a, a] : [a, (a + 1 + Math.floor(r() * 4)) % 5, Math.floor(r() * 5)];
+      if (!win && sym[2] === sym[0] && sym[1] === sym[0]) sym[2] = (sym[0] + 2) % 5;
+      const p = pts(30), n = nm(i);
+      if (win) S.bonus.push(['🎰 Jackpot', p]); else scale(S.xi[i], 0.5, 'halved');
+      return { note: `${n} is accused of gambling. He swears it was one go on a fruit machine. Pull the lever…`, slot: sym.map(k => SYM[k]), win,
+        after: win ? `<b>JACKPOT!</b> All charges dropped and <b>+${p}</b> bonus.` : `No luck. ${n} is fined: his numbers are <b>halved</b>.`,
+        run: c => c.visit(i, win ? '💰' : '🧾', 'pop') }; } },
+    conscript: { rar: 'r', icon: '🪖', name: 'Called up!', tone: 'weird', look: ['red', 'drumroll'], go: r => {
+      const f = filledIdx().filter(i => S.xi[i].pos !== 'GK'); if (!f.length) return { note: 'The army comes looking, finds nobody and goes home.' };
+      const i = f[Math.floor(r() * f.length)], x = S.xi[i], p = pts(20);
+      S.ghost = { i, p: x.p, g: x.g, mod: x.mod };
+      x.p = null; x.g = 0; x.v = null; x.mod = null; x.as = null; unpark(i); if (S.splat) S.splat = S.splat.filter(k => k !== i);
+      S.bonus.push(['🎖️ A medal for service', p]);
+      return { note: `${nm2(S.ghost.p)} is called up for national service and the tank comes to collect him. His place is empty, but there’s a medal: <b>+${p}</b>.`,
+        run: c => c.drive('tank', i, { wait: 1100, sound: 'rumble', then: () => { const el = c.slot(i); if (el) el.classList.add('nicked'); } }), done: () => { S.ghost = null; } }; } },
+    quake: { rar: 'u', icon: '🌍', name: 'Earthquake!', tone: 'weird', look: ['dark', 'quake'], go: r => {
+      const f = filledIdx(); if (!f.length) return { note: 'The ground shakes. Luckily nobody’s on the pitch yet.' };
+      let up = 0; f.forEach(i => { const k = 0.75 + r() * 0.55; scale(S.xi[i], k, k >= 1 ? 'boosted' : 'halved'); up += k >= 1; });
+      return { note: `The ground opens up! Everyone’s shaken: <b>${up}</b> up, <b>${f.length - up}</b> down. The crack stays.`, run: c => c.quake() }; } },
+    fraud: { rar: 'u', icon: '💼', name: 'The owner’s done a runner', tone: 'bad', look: ['money', 'siren'], go: () => {
+      const p = pts(15); S.bonus.push(['💼 Points deduction', -p]);
+      return { note: `Your owner has been using the club as a piggy bank and legs it with a briefcase of cash: a points deduction of <b>−${p}</b>.`, run: c => c.runner() }; } },
+    breakup: { rar: 'c', icon: '💔', name: 'Messy break-up', tone: 'bad', look: ['news', 'boo'], go: r => {
+      const f = filledIdx(); if (!f.length) return { note: 'Nobody’s heart to break yet.' };
+      const i = f[Math.floor(r() * f.length)]; scale(S.xi[i], 0.8, 'halved');
+      return { note: `${nm(i)}’s break-up is all over the papers. His head’s gone: <b>−20%</b>.`, run: c => c.heartbreak(i) }; } },
+    wedding: { rar: 'u', icon: '💍', name: 'Wedding of the year', tone: 'good', look: ['party', 'bell'], go: r => {
+      const f = filledIdx(); if (!f.length) return { note: 'The wedding goes ahead without any of your players. Lovely day for it.' };
+      const i = f[Math.floor(r() * f.length)]; scale(S.xi[i], 1.4, 'boosted');
+      return { note: `${nm(i)} gets married and plays like a man in love: <b>+40%</b>.`, run: c => { c.confetti(); c.drive('wedding', i, { sound: 'bell', wait: 700 }); } }; } },
     royal: { rar: 'r', icon: '👑', name: 'Royal visit', tone: 'good', look: ['gold', 'fanfare'], go: () => { const p = pts(50); S.bonus.push(['👑 Royal visit', p]); return { note: `Everyone’s on their best behaviour: <b>+${p}</b> bonus points.`, run: c => c.rain('👑') }; } },
     oligarch: { rar: 'r', icon: '💸', name: 'Takeover!', tone: 'good', look: ['money', 'cash'], go: r => {
       const cards = Object.keys(WILDCARDS).filter(k => WILDCARDS[k].chaos), got = [];
@@ -575,15 +653,47 @@
   // how much a hurt player has lost (0 if he isn't hurt)
   const hurtBy = i => { const x = S.xi[i]; return x.p != null && HURT.includes(x.mod) ? Math.max(0, pv(byId(x.p))[S.stat] - x.g) : 0; };
   // CHAOS leaves its mark: things that stay on the pitch for the rest of the game (decoration only, under the players)
-  const MESS = { pigeon: '🐦', streaker: '🩲', dog: '🐾', vuvuzela: '🎺', pies: '🥧', redcard: '🟥', slip: '🍌',
-    interview: '🎤', taxman: '🧾', windfall: '💷', chant: '🧣', tornado: '🪵', lightning: '🔥', blackhole: '🕳️', parade: '🎊', title: '🏆',
-    relegation: '🪂', helicopter: '🚁', unleash: '💥', amnesty: '📺', box: '📦', retro: '👕', alien: '🛸', royal: '👑', takeover: '💰' };
+  // every moment leaves its mark on the pitch for the rest of the game (# = drawn, see LEFT; the rest are stickers)
+  const MESS = {
+    pigeon: '#pigeon', streaker: '🩲', stoke: '#puddle', quake: '#crack', wedding: '#confetti', fraud: '#notes', conscript: '#tracks', breakup: '#heart',
+    gamble: '#chip', dog: '🐾', vuvuzela: '🎺', pies: '🥧', redcard: '#card', slip: '🍌', interview: '#paper', taxman: '🧾', windfall: '#notes', chant: '#scarf',
+    tornado: '#debris', lightning: '#scorch', blackhole: '🕳️', parade: '#confetti', title: '🏆', relegation: '🪂', helicopter: '#pad', unleash: '#scorch',
+    amnesty: '#tv', box: '📦', retro: '👕', aliens: '#ring', royal: '👑', oligarch: '💰', arrest: '#tape', derby: '#flare', golden: '#ball',
+    'var+': '#tv', 'var-': '#tv', masked: '🎭', handofgod: '🧤', sponge: '#bucket', swapdeal: '🔀', testimonial: '#scarf', loanarmy: '🧳', helicopter2: '#pad',
+    fairytale: '🦊', lastminute: '⏱️', splat: '💩', deadline: '#paper', sacked: '#paper', injury: '#cross', hamstring: '#cross', coin: '#coin', hero: '#ball', physio: '#cross',
+  };
+  // things that stay ALIVE on the pitch for the rest of the game: the streaker doing laps with a steward after him, the
+  // dog trotting up and down, the saucer hovering over the stand. Their animations run on the clock (a negative delay),
+  // so re-drawing the pitch after every tap doesn't send them back to the start.
+  const roam = k => { if (S.rules.chaos && !(S.roam || []).includes(k)) S.roam = (S.roam || []).concat(k); };
+  const PERSON = (skin, top, legs, cls) => `<svg class="spr ${cls}" viewBox="0 0 20 34" width="20" height="34"><circle cx="10" cy="5" r="4" fill="${skin}"/>
+    <path d="M10 9v12" stroke="${top}" stroke-width="5" stroke-linecap="round"/><g class="arm a1"><path d="M10 11l-6 6" stroke="${top === '#ffd400' ? '#ffd400' : skin}" stroke-width="2.4" stroke-linecap="round"/></g>
+    <g class="arm a2"><path d="M10 11l6 6" stroke="${top === '#ffd400' ? '#ffd400' : skin}" stroke-width="2.4" stroke-linecap="round"/></g>
+    <g class="leg l1"><path d="M10 21l-4 11" stroke="${legs}" stroke-width="2.8" stroke-linecap="round"/></g><g class="leg l2"><path d="M10 21l4 11" stroke="${legs}" stroke-width="2.8" stroke-linecap="round"/></g></svg>`;
+  const DOG = `<svg class="spr dog" viewBox="0 0 40 26" width="40" height="26"><path class="tail" d="M6 10q-5-6-4-9" stroke="#8a5a2b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <ellipse cx="17" cy="13" rx="12" ry="6" fill="#a8703a"/><circle cx="31" cy="9" r="5.5" fill="#a8703a"/><path d="M28 5l-2-4 4 2z" fill="#6b4220"/><circle cx="33" cy="8" r="1" fill="#111"/><circle cx="36.5" cy="10" r="1.3" fill="#111"/>
+    <g class="leg l1"><path d="M10 17v8" stroke="#8a5a2b" stroke-width="2.5"/></g><g class="leg l2"><path d="M14 17v8" stroke="#8a5a2b" stroke-width="2.5"/></g>
+    <g class="leg l1"><path d="M22 17v8" stroke="#8a5a2b" stroke-width="2.5"/></g><g class="leg l2"><path d="M26 17v8" stroke="#8a5a2b" stroke-width="2.5"/></g></svg>`;
+  const ROAM = {
+    streaker: { dur: 14, html: () => PERSON('#f2c4a0', '#f2c4a0', '#f2c4a0', 'runner') },
+    steward: { dur: 14, lag: 1.1, html: () => PERSON('#e8b48a', '#ffd400', '#222', 'runner') },
+    dog: { dur: 9, html: () => DOG },
+    ufo: { dur: 7, html: () => SPRITE.ufo },
+  };
+  const roamHtml = () => {
+    const ks = (S.roam || []).flatMap(k => k === 'streaker' ? ['streaker', 'steward'] : [k]).filter(k => ROAM[k]);
+    if (!ks.length) return '';
+    const now = Date.now() / 1000;
+    return `<div class="roam" aria-hidden="true">${ks.map(k => { const d = ROAM[k].dur; return `<i class="rm rm-${k}" style="animation-duration:${d}s;animation-delay:-${((now - (ROAM[k].lag || 0)) % d).toFixed(2)}s">${ROAM[k].html()}</i>`; }).join('')}</div>`;
+  };
   function leave(key) {
     const icon = MESS[key]; if (!icon || !S.rules.chaos) return;
     const r = GM.rng(`${S.seed}|mess|${(S.mess || []).length}|${key}`);
     // along the touchlines and in the gaps between the lines of players, never in the middle of a slot
     const edge = r() < 0.6, x = edge ? (r() < 0.5 ? 3 + r() * 7 : 90 + r() * 7) : 12 + r() * 76, y = edge ? 6 + r() * 88 : [4, 27, 50, 73, 96][Math.floor(r() * 5)] + (r() - 0.5) * 4;
-    S.mess = (S.mess || []).concat([{ i: icon, x: +x.toFixed(1), y: +y.toFixed(1), r: Math.round((r() - 0.5) * 50), t: Date.now() }]).slice(-9);
+    // an earthquake leaves a crack right across the pitch: a jagged line, drawn over the whole pitch
+    const crack = icon === '#crack' ? Array.from({ length: 9 }, (_, k) => `${(k * 12.5).toFixed(1)},${(30 + r() * 40).toFixed(1)}`).join(' ') : null;
+    S.mess = (S.mess || []).concat([{ i: icon, x: +x.toFixed(1), y: +y.toFixed(1), r: Math.round((r() - 0.5) * 50), t: Date.now(), ...(crack ? { c: crack } : {}) }]).slice(-18);
   }
   const scale = (x, f, mod) => { STAT_KEYS.forEach(k => { x.v[k] = Math.floor(x.v[k] * f); }); x.g = x.v[S.stat]; if (mod) x.mod = mod; };
   const nm = i => GM.esc(byId(S.xi[i].p).name);
@@ -599,7 +709,7 @@
     if (XEV[e]) {
       const x = XEV[e], before = snap(), out = x.go(r) || {};
       S.log.push(x.icon); S.chaosCount = (S.chaosCount || 0) + 1; leave(e);
-      return moment({ icon: x.icon, name: x.name, text: out.note, tone: x.tone, before, run: out.run, onDone: out.done, small: true, scene: x.look[0], sound: x.look[1], rarity: x.rar });
+      return moment({ icon: x.icon, name: x.name, text: out.note, tone: x.tone, before, run: out.run, onDone: out.done, slot: out.slot, win: out.win, after: out.after, small: true, scene: x.look[0], sound: x.look[1], rarity: x.rar });
     }
     const ev = EVENTS[e];
     const before = snap();
@@ -662,7 +772,7 @@
     const k = forced || r.weighted(keys, x => rarW(MOMENTS[x].rar) * again(S.bigSeen, x) * ((tw().big || {})[x] || 1)), m = MOMENTS[k], before = snap();
     S.bigSeen = (S.bigSeen || []).concat(k);
     const o = { icon: m.icon, name: m.name, tone: m.tone, before, big: true, rarity: m.rar, ...{ blackhole: { scene: 'lightning', sound: 'spooky' }, relegation: { scene: 'red', sound: 'drumroll', actSound: 'cheer' }, title: { scene: 'party', sound: ['fanfare', 'cheer'] }, unleash: { scene: 'unleash', sound: ['meterfull', 'horn'] }, tornado: { scene: 'storm', sound: 'wind', actSound: 'wind' },
-      lightning: { scene: 'lightning', sound: 'thunder' }, parade: { scene: 'party', sound: 'fanfare', actSound: 'cheer' }, deadline: { scene: 'clock', sound: 'tick3' }, sacked: { scene: 'news', sound: 'sacked' } }[k] };
+      tornado: { scene: 'twister', sound: 'wind' }, lightning: { scene: 'lightning', sound: 'thunder' }, parade: { scene: 'party', sound: 'fanfare', actSound: 'cheer' }, deadline: { scene: 'clock', sound: 'tick3' }, sacked: { scene: 'news', sound: 'sacked' } }[k] };
     S.lastBig = S.spin;
     S.chaosCount = (S.chaosCount || 0) + 1; S.log.push(m.icon);
     if (k === 'unleash') {
@@ -765,11 +875,15 @@
       const flash = () => { if (!el.isConnected) return; sky.classList.remove('flash'); void sky.offsetWidth; sky.classList.add('flash'); if (n++ < 2) GM.sound.play('thunder'); timers.push(setTimeout(flash, 900 + Math.random() * 1500)); };
       timers.push(setTimeout(flash, 250));
     }
+    if (kind === 'twister') { sky.insertAdjacentHTML('beforeend', '<div class="cm-tornado big"><i></i><i></i><i></i><i></i><i></i><i></i><b>🍃</b><b>📰</b><b>🧢</b><b>🍃</b></div>'); GM.sound.play('wind'); }
     if (kind === 'party') bits(40, 'cm-confetti');
     if (kind === 'money') bits(22, 'cm-coin', ['💰', '🪙', '💷']);
     if (kind === 'unleash') bits(18, 'cm-coin', ['💥', '⚡', '🔥']);
   }
   const coinHtml = heads => `<button class="coin-wrap" aria-label="Flip the coin"><div class="coin" data-end="${heads ? 1440 : 1620}">${'<i class="coin-rim"></i>'.repeat(7)}<div class="coin-f h">⚽<b>HEADS</b></div><div class="coin-f t">🧤<b>TAILS</b></div></div><i class="coin-shadow"></i><span class="coin-go">👆 Tap to flip</span></button>`;
+  // a fruit machine: three windows of spinning symbols and a lever to pull
+  const FRUIT = ['⚽', '🏆', '🍒', '7️⃣', '💰'];
+  const fruitHtml = () => `<button class="fruit" aria-label="Pull the lever"><span class="fruit-top">JACKPOT</span><span class="fruit-wins">${[0, 1, 2].map(k => `<span class="fruit-win"><span class="fruit-strip">${FRUIT.concat(FRUIT, FRUIT).map(x => `<i>${x}</i>`).join('')}</span></span>`).join('')}</span><span class="fruit-lever"><i></i></span><span class="coin-go">👆 Pull the lever</span></button>`;
   const mgrCard = k => { const m = MANAGERS[k]; return `<button class="mgr" data-mgr="${k}"><span class="mgr-ico">${m.icon}</span><b>${m.name}</b><small class="up">✅ ${m.perk}</small><small class="down">⚠️ ${m.catch}</small></button>`; };
   /* A moment in three acts. 1: the entrance, full screen with its own scene and sound (you flip the coin here, or pick
      a manager). 2: the action, as the card drops to the bottom and whatever it is happens on your pitch while the
@@ -823,7 +937,8 @@
         // something flies in and lands (where it'll stay: the last leftover)
         fly(icon) {
           const m = (S.mess || []).slice(-1)[0]; if (!pitch || !m) return;
-          const W = pitch.clientWidth, H = pitch.clientHeight, tx = W * m.x / 100, ty = H * m.y / 100, e = fxEl('fly', icon, tx, ty); if (!e) return;
+          const W = pitch.clientWidth, H = pitch.clientHeight, tx = W * m.x / 100, ty = H * m.y / 100, e = fxEl('fly', '', tx, ty); if (!e) return;
+          e.innerHTML = icon === '🐦' ? SPRITE.pigeon.replace('class="spr pidge"', 'class="spr pidge flying"') : icon;
           GM.sound.play('swoosh');
           // in from the left, a loop over the pitch, then down onto its spot (where the leftover stays)
           const at = (x, y, more = '') => `translate(${(x - tx).toFixed(0)}px, ${(y - ty).toFixed(0)}px) translate(-50%, -50%) ${more}`;
@@ -870,6 +985,54 @@
           later(1300, () => { u.classList.add('beaming'); el.classList.add('beamed'); hit(i); });
           later(2800, () => u.classList.remove('beaming'));
         },
+        slot: slotEl,
+        // the ground shakes, a crack tears across the pitch (and stays: the leftover), players wobble
+        quake() {
+          if (!pitch) return; GM.sound.play('quake');
+          const app = document.getElementById('app'); app.classList.remove('quaking'); void app.offsetWidth; app.classList.add('quaking'); later(1600, () => app.classList.remove('quaking'));
+          const m = (S.mess || []).filter(x => x.c).slice(-1)[0];
+          if (m) { const sv = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); sv.setAttribute('viewBox', '0 0 100 100'); sv.setAttribute('preserveAspectRatio', 'none'); sv.setAttribute('class', 'crack tearing'); sv.innerHTML = `<polyline points="${m.c}" pathLength="100"/>`; pitch.appendChild(sv); }
+          changed.forEach((i, k) => later(300 + k * 90, () => { const el = slotEl(i); if (el) { el.classList.remove('wobble'); void el.offsetWidth; el.classList.add('wobble'); } hit(i); }));
+        },
+        // a downpour over the pitch, and puddles
+        rainfall() {
+          if (!pitch) return; GM.sound.play('rain');
+          const w = document.createElement('div'); w.className = 'cm-rainfall';
+          w.innerHTML = Array.from({ length: 70 }, () => `<i style="left:${(Math.random() * 100).toFixed(1)}%;animation-delay:${(Math.random() * 0.8).toFixed(2)}s;animation-duration:${(0.45 + Math.random() * 0.3).toFixed(2)}s"></i>`).join('');
+          pitch.appendChild(w); later(3200, () => w.classList.add('stopping'));
+          changed.forEach((i, k) => later(500 + k * 120, () => hit(i)));
+        },
+        // a helicopter swoops in, lands on the centre spot (the H stays) and takes off again
+        heli() {
+          if (!pitch || !pitch.animate) return; GM.sound.play('heli');
+          const W = pitch.clientWidth, H = pitch.clientHeight, v = document.createElement('div'); v.className = 'cm-veh heli'; v.innerHTML = SPRITE.heli; pitch.appendChild(v);
+          v.style.left = (W / 2) + 'px'; v.style.top = (H / 2) + 'px';
+          v.animate([{ transform: `translate(-50%, -50%) translate(${-W / 2 - 120}px, ${-H / 2 - 40}px) rotate(-14deg)` }, { transform: 'translate(-50%, -50%) translateY(-30px) rotate(-6deg)', offset: 0.4 },
+            { transform: 'translate(-50%, -50%)', offset: 0.55 }, { transform: 'translate(-50%, -50%)', offset: 0.75 }, { transform: `translate(-50%, -50%) translate(${W / 2 + 140}px, ${-H / 2 - 60}px) rotate(-12deg)` }],
+            { duration: 4200, easing: 'ease-in-out', fill: 'forwards' });
+        },
+        // the owner legs it with a briefcase, banknotes flying out behind him
+        runner() {
+          if (!pitch || !pitch.animate) return; GM.sound.play('siren');
+          const W = pitch.clientWidth, H = pitch.clientHeight, v = document.createElement('div'); v.className = 'cm-veh case'; v.innerHTML = SPRITE.briefcase; pitch.appendChild(v);
+          v.style.left = '0px'; v.style.top = (H * 0.55) + 'px';
+          v.animate([{ transform: 'translate(-60px, -50%) rotate(-8deg)' }, { transform: `translate(${W * 0.5}px, -70%) rotate(8deg)`, offset: 0.5 }, { transform: `translate(${W + 60}px, -50%) rotate(-8deg)` }], { duration: 2400, easing: 'linear', fill: 'forwards' });
+          for (let k = 0; k < 12; k++) later(200 + k * 160, () => { const n = document.createElement('div'); n.className = 'cm-note'; n.innerHTML = NOTE; n.style.left = (W * (0.08 + k * 0.075)) + 'px'; n.style.top = (H * 0.5) + 'px'; pitch.appendChild(n); });
+        },
+        // a heart cracks in two over player i
+        heartbreak(i) {
+          const el = slotEl(i); if (!el || !pitch) return; const [x, y] = at(i);
+          const h = document.createElement('div'); h.className = 'cm-heart'; h.style.left = x + 'px'; h.style.top = (y - 20) + 'px';
+          h.innerHTML = '<svg viewBox="0 0 60 54" width="70" height="63"><path class="hl" d="M30 50L6 26Q-4 12 8 4q12-6 22 8l-6 10 8 8z" fill="#e3262f"/><path class="hr" d="M30 50l24-24q10-14-2-22-12-6-22 8l6 10-8 8z" fill="#c21b24"/></svg>';
+          pitch.appendChild(h); GM.sound.play('boo'); later(1300, () => hit(i));
+        },
+        // drawn confetti falling over the pitch
+        confetti() {
+          if (!pitch) return; const w = document.createElement('div'); w.className = 'cm-confetti';
+          const C = ['#ff5ec8', '#ffe14a', '#5ec8ff', '#7dff6b', '#ffffff', '#ff8a3d'];
+          w.innerHTML = Array.from({ length: 60 }, (_, k) => `<i style="left:${(Math.random() * 100).toFixed(1)}%;background:${C[k % C.length]};animation-delay:${(Math.random() * 1.2).toFixed(2)}s;--sx:${((Math.random() - 0.5) * 80).toFixed(0)}px"></i>`).join('');
+          pitch.appendChild(w);
+        },
         // someone legs it across the pitch
         dash(icon) { const e = fxEl('dash', icon); if (e) { e.style.top = (25 + Math.random() * 50) + '%'; GM.sound.play('cheer'); } },
       };
@@ -877,7 +1040,7 @@
       const el = document.createElement('div');
       el.className = `cm intro cm-${o.tone || 'weird'} ${o.big ? 'cm-big' : ''} ${o.pick ? 'cm-pick' : ''}`;
       el.innerHTML = `<div class="cm-card ${o.rarity ? 'rar-' + o.rarity : ''}">${RAR_NAME[o.rarity] ? `<div class="cm-rar">${o.rarity === 'l' ? '✨ ' : ''}${RAR_NAME[o.rarity]}${o.rarity === 'l' ? ' ✨' : ''}</div>` : ''}<div class="cm-icon">${o.icon}</div><div class="cm-name">${o.name}</div><div class="cm-text">${o.text || ''}</div>
-        ${o.coin != null ? coinHtml(o.coin) : ''}${o.pick ? `<div class="mgr-list">${o.pick.map(mgrCard).join('')}</div>` : '<small class="cm-skip">Tap to carry on</small>'}</div>`;
+        ${o.coin != null ? coinHtml(o.coin) : ''}${o.slot ? fruitHtml() : ''}${o.pick ? `<div class="mgr-list">${o.pick.map(mgrCard).join('')}</div>` : '<small class="cm-skip">Tap to carry on</small>'}</div>`;
       document.body.appendChild(el);
       scene(el, o.scene, timers);
       if (o.sound) [].concat(o.rarity === 'l' || o.rarity === 'r' ? ['wild'] : [], o.sound).forEach((snd, k) => later(k * 450, () => GM.sound.play(snd)));
@@ -913,7 +1076,22 @@
         if (o.reveal) later(t0 + 1400, () => { setText(o.reveal.text, o.reveal.tone); if (o.reveal.sound) GM.sound.play(o.reveal.sound); });
         later(t0 + (o.run ? 2900 : 1300), () => { stage = 'result'; later(1700, finish); });
       };
-      el.onclick = () => { if (stage === 'intro') { if (o.coin != null && !flipped) return flip(); act(); } else finish(); };
+      el.onclick = () => { if (stage === 'intro') { if ((o.coin != null || o.slot) && !flipped) return o.slot ? pull() : flip(); act(); } else finish(); };
+      // the fruit machine: pull the lever, the reels spin and stop one by one on the symbols already decided
+      const pull = () => {
+        if (flipped) return; flipped = true;
+        el.classList.add('flipping', 'pulled'); GM.sound.play('slotspin');
+        const wins = [...el.querySelectorAll('.fruit-win')], T = GM.calm() ? 0 : 1;
+        wins.forEach(w => w.classList.add('spinning'));
+        wins.forEach((w, k) => later(T * (900 + k * 450), () => {
+          w.classList.remove('spinning'); w.innerHTML = `<span class="fruit-strip stop"><i>${o.slot[k]}</i></span>`; GM.sound.play('land');
+        }));
+        later(T * 1900 + 200, () => {
+          el.classList.add('landed'); if (o.win) el.querySelector('.fruit').classList.add('won');
+          GM.sound.play(o.win ? 'jackpot' : 'boo'); setText(o.after, o.win ? 'good' : 'bad');
+          later(2000, act);
+        });
+      };
       // the coin waits for you to flip it
       let flipped = false;
       const flip = () => {
@@ -940,7 +1118,7 @@
           later(2000, act);
         });
       };
-      if (o.coin == null) later(onPitch ? (o.small ? 2600 : 3000) : 3600, act);
+      if (o.coin == null && !o.slot) later(onPitch ? (o.small ? 2600 : 3000) : 3600, act);
     });
   }
   // CHAOS meter
@@ -1091,6 +1269,8 @@
     if (p.name === 'Sergio Agüero' && emptySlots() === 0) {  // 🤫 the last signing of the game
       setTimeout(() => { GM.toast('🇦🇷 <b>AGÜEROOOOOOOO!</b> Last-minute winner.', 3200); GM.sound.play('cheer'); }, 400);
     }
+    if (before) leave('coin');
+    if (trio) leave('hero');
     if (before) {  // Double or Nothing: a real coin toss before he takes his place
       await moment({ icon: '🎲', name: 'Double or nothing', tone: 'weird', before, coin: heads, scene: 'casino', sound: 'drumroll', text: `${GM.esc(p.name)}: heads he counts double, tails he counts for nothing…`,
         after: heads ? `<b>Heads!</b> ${GM.esc(p.name)} counts double.` : `<b>Tails…</b> ${GM.esc(p.name)} counts for nothing.` });
@@ -1148,7 +1328,7 @@
         const heads = GM.rng(`${S.seed}|allin|${S.spin}|${S.wildUsed}`)() < 0.5, before = snap();
         filled.forEach(x => scale(x, heads ? 2 : 0.5, heads ? 'boosted' : 'halved'));
         if (heads) S.coinWin = true;
-        consume();
+        consume(); leave('coin');
         moment({ icon: '🎰', name: 'ALL IN', tone: 'weird', before, coin: heads, scene: 'casino', sound: 'drumroll', text: 'Heads, your whole XI doubles. Tails, it’s halved…',
           after: heads ? '<b>Heads!</b> It pays off: your whole XI doubles.' : '<b>Tails…</b> It’s gone wrong: your whole XI is halved.', run: c => c.sweep(heads ? '💰' : '💸'), actSound: heads ? 'cash' : 'taxman', big: true });
         return;
@@ -1156,7 +1336,7 @@
       case 'heal': {
         const i = filledIdx().sort((a, b) => hurtBy(b) - hurtBy(a))[0];
         if (i == null || !hurtBy(i)) { GM.toast('Nobody’s hurt – keep the physio for later'); return; }
-        const before = snap(); heal(i); consume();
+        const before = snap(); heal(i); consume(); leave('physio');
         moment({ icon: '🏥', name: 'Physio Room', tone: 'good', before, scene: 'kickoff', sound: 'ambulance', text: `${nm(i)} is back from the treatment table: <b>full ${S.st.label}</b> again.`, run: c => c.drive('ambulance', i) });
         return;
       }
@@ -1353,7 +1533,9 @@
   // the pigeon's revenge hides a number until full time
   const splatted = i => S.phase !== 'done' && (S.splat || []).includes(i);
   // CHAOS leftovers on the pitch (a new one drops in)
-  const messHtml = () => (S.mess || []).length ? `<div class="mess" aria-hidden="true">${S.mess.map(m => `<i class="${Date.now() - m.t < 2500 ? 'new' : ''}" style="left:${m.x}%;top:${m.y}%;--r:${m.r}deg">${m.i}</i>`).join('')}</div>` : '';
+  const messHtml = () => (S.mess || []).length ? `<div class="mess" aria-hidden="true">${S.mess.map(m => m.c
+    ? `<svg class="crack ${Date.now() - m.t < 2500 ? 'new' : ''}" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${m.c}" pathLength="100"/></svg>`
+    : `<i class="${Date.now() - m.t < 2500 ? 'new' : ''} ${m.i[0] === '#' ? 'drawn' : ''}" style="left:${m.x}%;top:${m.y}%;--r:${m.r}deg">${m.i[0] === '#' && LEFT[m.i.slice(1)] ? LEFT[m.i.slice(1)]() : m.i}</i>`).join('')}</div>` : '';
   function slotHtml(s, i) {
     const gh = S.ghost && S.ghost.i === i ? S.ghost : null;
     if (gh) s = { ...s, p: gh.p, g: gh.g, mod: gh.mod };
@@ -1375,7 +1557,7 @@
       .sort((a, b) => lat(a[1]) - lat(b[1]) || a[1] - b[1])).filter(r => r.length);
     const shape = rows.slice(0, -1).reverse().map(r => r.length).join('-');
     return `<div class="pitch ${S.subbing !== false ? 'subbing' : ''} ${S.pending != null ? 'placing' : ''}">
-      <div class="pitch-lines"></div><div class="shape">${shape}</div>${S.rules.chaos ? messHtml() : ''}
+      <div class="pitch-lines"></div><div class="shape">${shape}</div>${S.rules.chaos ? messHtml() + roamHtml() : ''}
       ${rows.map(r => `<div class="pitch-row ${r.length > 4 ? 'crowded' : ''}">${r.map(([s, i]) => slotHtml(s, i)).join('')}</div>`).join('')}
     </div>`;
   }

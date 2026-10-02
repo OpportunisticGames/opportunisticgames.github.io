@@ -105,6 +105,10 @@
   const SOUNDS = {
     // CHAOS: a crash for disasters, a siren for storms, a jackpot run for good fortune
     boom: t => { tone(140, { t, to: 38, glide: 0.45, dur: 0.55, vol: 0.34 }); noise({ t, dur: 0.45, freq: 500, vol: 0.2 }); },
+    rumble: t => { for (let i = 0; i < 6; i++) { noise({ t: t + i * 0.25, dur: 0.3, type: 'lowpass', freq: 220, vol: 0.35 }); tone(55, { t: t + i * 0.25, dur: 0.25, type: 'square', lp: 300, vol: 0.06 }); } },
+    quake: t => { noise({ t, dur: 1.6, type: 'lowpass', freq: 160, to: 90, vol: 0.6 }); tone(40, { t, to: 28, dur: 1.5, type: 'sawtooth', lp: 200, vol: 0.12 }); noise({ t: t + 0.3, dur: 0.2, freq: 900, q: 2, vol: 0.2 }); },
+    heli: t => { for (let i = 0; i < 22; i++) noise({ t: t + i * 0.11, dur: 0.07, type: 'lowpass', freq: 500, vol: 0.32 }); },
+    slotspin: t => { for (let i = 0; i < 18; i++) tone(900 + (i % 3) * 120, { t: t + i * 0.1, dur: 0.04, type: 'square', lp: 2500, vol: 0.04 }); },
     // CHAOS vehicles: a police wail, brakes, handcuffs and a flying saucer's wobble
     police: t => { for (let i = 0; i < 2; i++) { tone(620, { t: t + i * 0.9, to: 1250, glide: 0.42, dur: 0.45, type: 'sawtooth', lp: 2400, vol: 0.05 }); tone(1250, { t: t + i * 0.9 + 0.45, to: 620, glide: 0.42, dur: 0.45, type: 'sawtooth', lp: 2400, vol: 0.05 }); } },
     screech: t => { noise({ t, dur: 0.35, freq: 3200, to: 2200, q: 8, vol: 0.12 }); tone(2100, { t, to: 1700, dur: 0.3, type: 'sawtooth', lp: 3500, vol: 0.02 }); },
