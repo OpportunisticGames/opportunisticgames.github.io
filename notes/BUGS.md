@@ -12,6 +12,13 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 2026-10-02 | Pack opening: players' names were hard to read on the cards (light text on bronze and gold, the shine sat over the name) and long names were cut off | 5.11.1: dark ink, the shine sits under the text, names shrink to fit (a test checks all 2,000+ fit on a 360px phone) |
+| 2026-10-02 | Pack cards: the COMPLETE label at the bottom was clipped by the card's shape | 5.11.1: a ✓ badge in the corner |
+| 2026-10-02 | Small phones: tile icons overlapped tile titles, and wide tiles' corner icons sat on their first line of text | 5.11.1: smaller icons on narrow screens; wide tiles keep their text clear |
+| 2026-10-02 | Small phones: "Appearances" didn't fit its stat button | 5.11.1: it says "Apps" |
+| 2026-10-02 | Draft: the title ("👑 Ultimate Wil…") and the empty wildcards hint were cut off on a 360px phone | 5.11.1: the title wraps onto two lines; a shorter hint |
+| 2026-10-02 | Goal Royale: long surnames ran into the edges of the small deck cards | 5.11.1: they shrink to fit |
+| 2026-10-02 | International break: the bunting covered the top of the logo | 5.11.1: the page drops a little to make room |
 | 2026-10-02 | Dodgy Owner: with Everton as your favourite club, Everton was always one of the three clubs to buy | 5.11: your club turns up about a third of the time |
 | 2026-10-02 | Dodgy Owner: the live commentary flashed over and over (the whole screen redrew four times a second, replaying every line's animation) | 5.11: the screen's built once; only the numbers change, and new lines slide in once and stay |
 | 2026-10-02 | Dodgy Owner: you could sell a player and instantly buy him back | 5.11: anyone you sell or release can't be signed again that season (and isn't in the search) |

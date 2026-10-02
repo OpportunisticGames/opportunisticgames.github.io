@@ -9,6 +9,15 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 44, label: '5.11.1', date: '2026-10-02', title: '🧹 A tidy-up',
+      items: [
+        '🃏 Pack cards are easier to read: darker names that always fit (long ones shrink instead of being cut off), bigger stats, and a ✓ badge for a finished card',
+        '📱 Neater on small phones: tile icons no longer sit on titles, the stat buttons don’t squash, and the draft title wraps instead of being cut off',
+        '⚔️ Goal Royale: every player’s name fits on the deck cards',
+        '🎏 In an international break the bunting no longer covers the logo',
+      ],
+    },
+    {
       v: 43, label: '5.11', date: '2026-10-02', title: '🤫 A third secret game',
       items: [
         '🤫 A new secret game is hiding in the Quick & more tab. To unlock it, finish a Legend card from your packs. (It’s worth it: your packed players finally get to fight.)',

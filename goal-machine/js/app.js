@@ -186,7 +186,7 @@
     const statBtn = (m, s, label) => {
       const st = GM.STATS[s], key = m === 'club' ? GM.draft.modeKey(m, s, false, club) : GM.draft.modeKey(m, s, false), best = m === 'club' ? GM.best(key) : pb(key);
       const pct = best && GM.pctOf(key, (GM.store.get('hist:' + (hard && GM.HARD_MODES.includes(key) ? key + 'h' : extreme && GM.extremeKey(key) || key), [])[0] || {}).m);
-      return `<a class="stat-btn" href="#/draft?m=${m}&s=${s}${m === 'club' ? '&c=' + encodeURIComponent(club) : ''}"><i class="sb-ico">${st.icon}</i>${label || st.name}${best ? `<small>PB ${pct || best.toLocaleString()}</small>` : ''}</a>`;
+      return `<a class="stat-btn" href="#/draft?m=${m}&s=${s}${m === 'club' ? '&c=' + encodeURIComponent(club) : ''}"><i class="sb-ico">${st.icon}</i>${label || st.short || st.name}${best ? `<small>PB ${pct || best.toLocaleString()}</small>` : ''}</a>`;
     };
     // NEW on the newest modes until you've opened them
     const newTag = k => GM.gameTag(k);

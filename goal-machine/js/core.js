@@ -81,7 +81,7 @@ GM.posBadges = p => p.poss.map(x => `<span class="pos pos-${GM.GROUP[x]}" title=
 GM.STATS = {
   goals: { key: 'goals', label: 'goals', one: 'goal', icon: '⚽', name: 'Goals' },
   assists: { key: 'ast', label: 'assists', one: 'assist', icon: '🅰️', name: 'Assists' },
-  apps: { key: 'apps', label: 'apps', one: 'app', icon: '🏃', name: 'Appearances' },
+  apps: { key: 'apps', label: 'apps', one: 'app', icon: '🏃', name: 'Appearances', short: 'Apps' },  // short: on the small stat buttons
 };
 
 /** Were a and b teammates? Known club-season overlap, or a Transfermarkt "played with" link. */

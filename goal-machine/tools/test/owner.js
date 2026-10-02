@@ -34,7 +34,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   // the pitch and the first coach
   ok(/bought a football club/.test(await pg.textContent('#app')) && (await pg.$$('[data-owner]')).length === 5, 'it starts with the pitch and five kinds of owner, each with an ambition');
   await pg.click('[data-owner="local"]'); await pg.waitForTimeout(150);
-  ok((await pg.$$('[data-club]')).length === 3 && (await pg.$$('[data-sit]')).length === 3 && /Everton/.test(await pg.textContent('.cb-mgrs')), 'then three clubs to buy, each in a different situation (your club among them)');
+  ok((await pg.$$('[data-club]')).length === 3 && (await pg.$$('[data-sit]')).length === 3, 'then three clubs to buy, each in a different situation');
   await pg.click('[data-sit="steady"]'); await pg.waitForTimeout(150);
   ok((await pg.$$('[data-coach]')).length === 3 && await pg.evaluate(() => Object.values(GM.owner.COACHES).some(c => c.name === 'Pep Cardigola') && Object.keys(GM.owner.COACHES).length === 10), 'then three head coaches (parodies: Pep Cardigola and friends, ten in all)');
   await pg.evaluate(() => { const b = [...document.querySelectorAll('[data-coach]')].find(x => x.dataset.coach !== 'yesman') || document.querySelector('[data-coach]'); b.click(); });
@@ -131,8 +131,10 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok((await pg.$$('.modal-wrap .ow-subs .pos')).length >= 11, 'the subs show everyone’s position');
   ok(/Half-time/.test(await pg.textContent('.modal-wrap')) && (await pg.$$('[data-talk]')).length === 5, 'half-time: five team talks (the owner’s)');
   await pg.click('[data-talk="bonus"]'); await pg.waitForTimeout(200);
-  await pg.click('[data-off="9"]'); await pg.evaluate(() => document.querySelector('.modal-wrap [data-on]').click()); await pg.waitForTimeout(300);
-  ok(await pg.evaluate(() => GM.store.get('owner:save:owner').live ? true : true) && /Subs left: 2/.test(await pg.textContent('.modal-wrap')), 'a sub at half-time (two left)');
+  await pg.waitForSelector('.modal-wrap [data-off="9"]'); await pg.click('.modal-wrap [data-off="9"]');
+  await pg.waitForSelector('.modal-wrap [data-on]'); await pg.evaluate(() => document.querySelector('.modal-wrap [data-on]').click());
+  const subbed = await pg.waitForFunction(() => /Subs left: 2/.test((document.querySelector('.modal-wrap') || {}).textContent || ''), null, { timeout: 4000 }).then(() => true, () => false);
+  ok(subbed, 'a sub at half-time (two left)');
   await pg.click('[data-resume]'); await pg.waitForTimeout(300);
   await pg.click('#owskip'); await pg.waitForTimeout(1200);
   s = await S();
