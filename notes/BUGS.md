@@ -12,6 +12,7 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 2026-10-02 | Play app: opening a pack, player names sat too low and were covered (fine in the Album and in a browser). Reproduced by scaling text 130%: the app's WebView follows the phone's text size, so card text outgrew the cards | 5.11.2 + app build: the app pins text zoom to 100%; the card grid also lets the photo and corner column shrink so the name always stays in place |
 | 2026-10-02 | Pack opening: players' names were hard to read on the cards (light text on bronze and gold, the shine sat over the name) and long names were cut off | 5.11.1: dark ink, the shine sits under the text, names shrink to fit (a test checks all 2,000+ fit on a 360px phone) |
 | 2026-10-02 | Pack cards: the COMPLETE label at the bottom was clipped by the card's shape | 5.11.1: a ✓ badge in the corner |
 | 2026-10-02 | Small phones: tile icons overlapped tile titles, and wide tiles' corner icons sat on their first line of text | 5.11.1: smaller icons on narrow screens; wide tiles keep their text clear |

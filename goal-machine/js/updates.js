@@ -9,6 +9,12 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 45, label: '5.11.2', date: '2026-10-02', title: '🃏 Pack names, fixed',
+      items: [
+        '🃏 Opening a pack: player names no longer sit too low and get covered when your phone’s text size is bigger than normal',
+      ],
+    },
+    {
       v: 44, label: '5.11.1', date: '2026-10-02', title: '🧹 A tidy-up',
       items: [
         '🃏 Pack cards are easier to read: darker names that always fit (long ones shrink instead of being cut off), bigger stats, and a ✓ badge for a finished card',

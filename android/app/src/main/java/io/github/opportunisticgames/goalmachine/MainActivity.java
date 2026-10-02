@@ -57,6 +57,7 @@ public class MainActivity extends Activity {
         s.setDomStorageEnabled(true);   // scores, album and settings live in localStorage
         s.setDatabaseEnabled(true);
         s.setMediaPlaybackRequiresUserGesture(false);
+        s.setTextZoom(100);   // the site is laid out for normal text; the phone's big-text setting pushed card names off the cards
 
         web.setWebChromeClient(new WebChromeClient() {
             // lets <input type="file"> work (e.g. picking a photo), for features that may want it later

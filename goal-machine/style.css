@@ -2332,3 +2332,12 @@ html.intl-break #app { padding-top: 22px; }
 .gr-card { padding-left: 2px; padding-right: 2px; }
 .gr-card b { font-size: clamp(.64rem, 3vw, .76rem); letter-spacing: -.01em; }
 .gr-card b.long { font-size: clamp(.56rem, 2.5vw, .68rem); }
+
+/* cards under big system text (the Play app's WebView scales px text): the photo and the corner column give way so the
+   name and stats always sit in the card, never pushed down and clipped */
+.pc-front { grid-template-rows: minmax(0, 1fr) auto auto auto; }
+.pc-top, .pc-photo { min-height: 0; overflow: hidden; }
+.pc-photo .avatar { height: min(5.2em, 100%) !important; width: auto !important; aspect-ratio: 1; }
+.pc-photo .avatar > b { font-size: min(1.7em, 30cqh); }
+.pc-top .pc-flag { font-size: min(1.3em, 18cqh); }
+.pc-photo, .pc-top { container-type: size; }
