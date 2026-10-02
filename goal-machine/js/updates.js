@@ -9,7 +9,7 @@
 (function () {
   GM.UPDATES = [
     {
-      v: 57, label: '5.17', date: '2026-10-02', title: '🌪️ More CHAOS: keepers, managers, mess',
+      v: 58, label: '5.17', date: '2026-10-02', title: '🌪️ More CHAOS: keepers, managers, mess',
       items: [
         '🧤 Keepers count in CHAOS: a goal for every three Premier League clean sheets (Čech is worth 67). 🥧 Who ate all the pies? finally does something',
         '👔 Eight new managers: Warnock, Pulis, Postecoglou, Holloway, Dyche, van Gaal, Conte and Benítez. Every manager now changes the CHAOS too (Fergie time, Klopp’s meter, Mourinho’s bus, Ranieri’s 5000–1…), and they’re balanced so none is miles better',
