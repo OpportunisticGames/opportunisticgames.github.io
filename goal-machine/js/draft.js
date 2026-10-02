@@ -784,7 +784,21 @@
         // a black hole opens in the middle of the pitch
         hole() { if (!pitch) return; const h = document.createElement('div'); h.className = 'cm-hole'; pitch.appendChild(h); GM.sound.play('spooky'); later(2400, () => h.remove()); },
         // something flies in and lands (where it'll stay: the last leftover)
-        fly(icon) { const m = (S.mess || []).slice(-1)[0]; if (!pitch || !m) return; const e = fxEl('fly', icon, pitch.clientWidth * m.x / 100, pitch.clientHeight * m.y / 100); if (e) GM.sound.play('swoosh'); },
+        fly(icon) {
+          const m = (S.mess || []).slice(-1)[0]; if (!pitch || !m) return;
+          const W = pitch.clientWidth, H = pitch.clientHeight, tx = W * m.x / 100, ty = H * m.y / 100, e = fxEl('fly', icon, tx, ty); if (!e) return;
+          GM.sound.play('swoosh');
+          // in from the left, a loop over the pitch, then down onto its spot (where the leftover stays)
+          const at = (x, y, more = '') => `translate(${(x - tx).toFixed(0)}px, ${(y - ty).toFixed(0)}px) translate(-50%, -50%) ${more}`;
+          if (e.animate) e.animate([
+            { transform: at(-40, H * 0.35, 'scaleX(-1)') },
+            { transform: at(W * 0.6, H * 0.12, 'scaleX(-1) rotate(12deg)'), offset: 0.35 },
+            { transform: at(W * 0.75, H * 0.45, 'rotate(-10deg)'), offset: 0.55 },
+            { transform: at(tx, ty - 50, 'scaleX(-1) scale(1.1)'), offset: 0.8 },
+            { transform: at(tx, ty, 'scaleX(-1) scale(1, .85)'), offset: 0.9 },
+            { transform: at(tx, ty, 'scaleX(-1) scale(.6)'), opacity: 0 },
+          ], { duration: 2400, easing: 'ease-in-out', fill: 'forwards' });
+        },
         // someone legs it across the pitch
         dash(icon) { const e = fxEl('dash', icon); if (e) { e.style.top = (25 + Math.random() * 50) + '%'; GM.sound.play('cheer'); } },
       };

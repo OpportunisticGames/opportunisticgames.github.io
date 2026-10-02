@@ -2374,7 +2374,7 @@ html.intl-break #app { padding-top: 22px; }
 
 /* CHAOS leaves its mark: leftovers stay on the pitch, under the players (js/draft.js leave / messHtml) */
 .mess { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
-.mess i { position: absolute; font-style: normal; font-size: 1.25rem; line-height: 1; opacity: .85; transform: translate(-50%, -50%) rotate(var(--r, 0deg)); filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35)); }
+.mess i { position: absolute; font-style: normal; font-size: 1.45rem; line-height: 1; opacity: .85; transform: translate(-50%, -50%) rotate(var(--r, 0deg)); filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35)); }
 .mess i.new { animation: mess-drop .7s cubic-bezier(.2, 1.4, .4, 1) both; }
 @keyframes mess-drop { from { transform: translate(-50%, -160%) rotate(0) scale(1.8); opacity: 0; } to { transform: translate(-50%, -50%) rotate(var(--r, 0deg)); opacity: .85; } }
 .pitch-row { z-index: 1; }
@@ -2423,9 +2423,8 @@ html.intl-break #app { padding-top: 22px; }
 .cm-fx.visit.suck { animation-name: cm-suck; }
 @keyframes cm-suck { 0% { transform: translate(-50%, -50%) scale(1.6) rotate(0); opacity: 0; } 30% { opacity: 1; } 100% { transform: translate(-50%, -50%) scale(.1) rotate(720deg); opacity: 0; } }
 /* a pigeon flies in and lands; a streaker legs it across */
-.cm-fx.fly { font-size: 1.6rem; transform: translate(-50%, -50%); animation: cm-fly 1.6s ease-out forwards; }
-@keyframes cm-fly { 0% { transform: translate(-260px, -220px) scaleX(-1) rotate(-20deg); } 70% { transform: translate(-50%, -60%) scaleX(-1) rotate(8deg); } 100% { transform: translate(-50%, -50%) scaleX(-1); opacity: 0; } }
-.cm-fx.dash { left: 0; font-size: 2.6rem; animation: cm-dash 1.7s linear forwards; }
+.cm-fx.fly { font-size: 2.8rem; animation: none; }  /* flown by js (moment fly) */
+.cm-fx.dash { left: 0; font-size: 3.4rem; animation: cm-dash 1.7s linear forwards; }
 @keyframes cm-dash { 0% { transform: translate(-60px, -50%); } 20% { transform: translate(20vw, -60%); } 40% { transform: translate(40vw, -45%); } 60% { transform: translate(55vw, -60%); }
   80% { transform: translate(78vw, -45%); } 100% { transform: translate(calc(100vw + 40px), -55%); } }
 @media (prefers-reduced-motion: reduce) { .cm-tornado, .cm-hole, .slot.spun, .pitch.windy, .mess i.new { animation-duration: .01s !important; animation-iteration-count: 1 !important; } }
