@@ -21,7 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA, ALL, OUT, CHECKED = ROOT / 'data/players.js', ROOT / 'data/players_all.js', ROOT / 'data/photos.js', ROOT / 'data/photos_checked.json'
-MATCHER = 2  # raise when the finder gets better: earlier misses are then tried again at once
+MATCHER = 3  # raise when the finder gets better: earlier misses are then tried again at once
 SRC = os.environ.get('SRC', 'src')
 UA = 'GoalMachinePhotos/1.0 (https://opportunisticgames.github.io/goal-machine/; fan-made quiz game)'
 PL_PHOTO = 'https://resources.premierleague.com/premierleague/photos/players/110x140/p{}.png'
@@ -144,28 +144,42 @@ def club_tests(clubs):
     return tests
 
 
-def commons_free(titles):
-    """Files on Commons with a free licence, in the order asked: [(title, imageinfo)]."""
-    titles = [t if t.startswith('File:') else 'File:' + t for t in titles]
-    out = []
+def image_infos(api, titles):
+    """imageinfo (url and licence) for these 'File:' titles from one wiki: {title: info}."""
+    out = {}
     for i in range(0, len(titles), 10):
         chunk = titles[i:i + 10]
-        img = get_json(CAPI + urllib.parse.urlencode({
+        img = get_json(api + urllib.parse.urlencode({
             'action': 'query', 'titles': '|'.join(chunk), 'prop': 'imageinfo', 'iiprop': 'url|extmetadata',
             'iiurlwidth': 220, 'format': 'json'}))
         q = (img or {}).get('query', {})
         norm = {n['from']: n['to'] for n in q.get('normalized', [])}
         by = {pg.get('title'): pg for pg in q.get('pages', {}).values()}
         for t in chunk:
-            pg = by.get(norm.get(t, t))
-            ii = ((pg or {}).get('imageinfo') or [None])[0]
-            if not ii:
-                continue  # not on Commons (e.g. a non-free local file)
-            meta = ii.get('extmetadata', {})
-            lic = meta.get('LicenseShortName', {}).get('value', '')
-            if not FREE.match(lic.strip()) or re.search(r'\bN[CD]\b', lic):
-                continue
-            out.append((t, ii))
+            ii = ((by.get(norm.get(t, t)) or {}).get('imageinfo') or [None])[0]
+            if ii:
+                out[t] = ii
+    return out
+
+
+def commons_free(titles):
+    """Files with a free licence, in the order asked: [(title, imageinfo)]. A file can live on Wikimedia Commons or be
+    uploaded to English Wikipedia itself (many freely licensed photos are), so both are asked; a file that is only
+    there under a fair-use rationale has a non-free licence and is dropped."""
+    titles = [t if t.startswith('File:') else 'File:' + t for t in titles]
+    found = image_infos(CAPI, titles)
+    missing = [t for t in titles if t not in found]
+    if missing:
+        found.update(image_infos(WAPI, missing))
+    out = []
+    for t in titles:
+        ii = found.get(t)
+        if not ii:
+            continue
+        lic = ii.get('extmetadata', {}).get('LicenseShortName', {}).get('value', '')
+        if not FREE.match(lic.strip()) or re.search(r'\bN[CD]\b', lic):
+            continue
+        out.append((t, ii))
     return out
 
 
@@ -203,7 +217,7 @@ def from_wikipedia(p):
     tests = club_tests(p['clubs'])
     for pg in pages:
         text = fold(pg.get('extract', ''))
-        if 'football' not in fold(pg.get('description', '')) + ' ' + text[:300]:
+        if not re.search(r'football|soccer', fold(pg.get('description', '')) + ' ' + text[:300]):  # Australian, American and Canadian articles say "soccer"
             continue
         if not any(t in text for t in tests):
             continue
