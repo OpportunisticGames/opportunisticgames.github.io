@@ -23,6 +23,15 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### CHAOS: more events, every one leaves a mark ✅ 5.19 *(owner, 3 Oct 2026)*
+- **Owner's words:** a gambling scandal with a slot machine (win bonus, lose points); military conscription with a tank;
+  proper helicopter and pigeon animations; the tornado showed only jagged lines; an earthquake; rain doing something small;
+  a fraud/dodgy owner, a break-up, a wedding. "By the end the screen should feel lived in… everything that happens should
+  make a physical mark on the board, with fun animations and sound effects and colour."
+- **Shipped in 5.19:** Betting scandal (fruit machine), Called up! (tank), Earthquake (crack stays), rain in Stoke (puddles),
+  the owner's done a runner, Messy break-up, Wedding of the year; drawn pigeon and helicopter; the tornado on the entrance
+  card; a drawn or sticker mark for every moment (MESS / LEFT in draft.js), up to 18 on the pitch.
+
 ### CHAOS: the Centurion Throw + armband / Hat-Trick Hero combos 💬 *(owner, 2 Oct 2026)*
 - **Owner's words:** "the whole centurion throw – hat trick – captain's armband combination is kinda stupid, maybe there needs
   to be a rework." Ideas: boosters only on the next player; only one of the two in your hand (boosters cost 2 bag slots, the
