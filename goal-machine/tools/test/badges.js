@@ -1,0 +1,45 @@
+// Badges: 100 of them (each one a Google Play Games achievement), the new progress ones unlock, retired ones vanish,
+// and the Play app is told about each unlock by name.
+const { chromium } = require(require('child_process').execSync('npm root -g').toString().trim() + '/playwright');
+const U = 'http://localhost:8765/goal-machine/';
+const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) process.exitCode = 1; };
+(async () => {
+  const b = await chromium.launch(), errs = [];
+  const pg = await b.newPage({ viewport: { width: 390, height: 844 } }); pg.on('pageerror', e => errs.push(e.message));
+  await pg.route(/wikimedia|premierleague|transfermarkt|supabase|fonts/, r => r.abort());
+  await pg.addInitScript(() => { window.__pgs = []; window.AndroidApp = { pgsAvailable: () => true, pgsUnlock: j => window.__pgs.push(JSON.parse(j)), pgsShow: () => { window.__shown = 1; }, channel: () => 'play', version: () => 99, nightMode: () => false, pushToken: () => '' }; });
+  await pg.goto(U);
+  await pg.evaluate(() => {
+    localStorage.clear();
+    const set = (k, v) => localStorage.setItem('gm:' + k, JSON.stringify(v));
+    set('seenVersion', 999); set('welcomed', 1); set('sfx', false);
+    // a retired badge, an old save, and enough games and XP for the progress badges
+    set('album', { players: {}, days: [], by: { goals: {}, assists: {}, apps: {} }, ach: { hard: '2026-09-01', mystery: '2026-09-01', first: '2026-09-01' } });
+    set('played', 120); set('xp', 20000);
+  });
+  await pg.reload(); await pg.waitForTimeout(800);
+  const s = await pg.evaluate(() => GM.albumSummary());
+  ok(s.totalBadges === 100, 'there are 100 badges: ' + s.totalBadges);
+  ok(s.badges === 1, 'retired badges (No Clues, Mystery Solved) no longer count: ' + s.badges);
+  await pg.evaluate(() => GM.checkGame('hopper', 1, {}));
+  await pg.waitForTimeout(300);
+  const got = await pg.evaluate(() => Object.keys(GM.store.get('album').ach));
+  ok(['g25', 'g100'].every(k => got.includes(k)) && !got.includes('g500'), 'Getting Going and Centurion unlock at 120 games, Part of the Furniture does not: ' + got);
+  ok(got.includes('lv10') && got.includes('lv30') && !got.includes('lv50'), 'level badges follow the level (20,000 XP is about level 30)');
+  const sent = await pg.evaluate(() => window.__pgs.flat());
+  ok(sent.includes('Getting Going') && sent.includes('Centurion'), 'the Play app is told by name: ' + sent.join(', '));
+  await pg.evaluate(() => { window.__pgs.length = 0; GM.pgsSync(); });
+  const sync = await pg.evaluate(() => window.__pgs.flat());
+  ok(sync.includes('First XI') && sync.includes('Getting Going'), 'a sync sends every badge you already have (' + sync.length + ')');
+  // extreme and pack badges
+  await pg.evaluate(() => { GM.checkGame('pack', 50, {}); });
+  ok((await pg.evaluate(() => Object.keys(GM.store.get('album').ach))).includes('pk50'), 'Pack Mentality at 50 packs opened');
+  // the Album shows the Google Play Games button inside the app
+  await pg.goto(U + '#/album?v=badges'); await pg.waitForTimeout(600);
+  ok(!!(await pg.$('#pgs-show')), 'the badges page has the Google Play Games button in the Play app');
+  await pg.click('#pgs-show');
+  ok(await pg.evaluate(() => window.__shown === 1), 'and it opens the Play Games screen');
+  ok(await pg.evaluate(() => [...document.querySelectorAll('.ach-cats a')].some(a => /Progress/.test(a.textContent))), 'a Progress category');
+  ok(errs.length === 0, 'no page errors ' + errs.join('|'));
+  await b.close();
+})();

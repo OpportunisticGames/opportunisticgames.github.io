@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The Play Games Services project id (Play Console > Play Games Services > Configuration). Public, like the app id. -->
+    <string translatable="false" name="game_services_project_id">518524300267</string>
+</resources>

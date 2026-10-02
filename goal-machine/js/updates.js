@@ -9,6 +9,21 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 46, label: '5.12', date: '2026-10-02', title: '🏅 100 badges, and Google Play Games',
+      items: [
+        '🏅 Badges are now a tidy 100. New ones for the long haul: games played, levels, 50 packs opened, 25 online wins, 100 days of the Daily, and Extreme mode',
+        '🚀 A new Progress tab in the Album’s badges, and the Hat-Trick, Goal Royale and Reign Check badges are secrets until you find them',
+        '✏️ A few renames so no two badges share a name (Seven Up, Matchday Regular, Unbeaten Season); a handful of niche ones retired',
+        '🏆 In the Google Play app, every badge is also a Google Play Games achievement, with a button in the Album to see them',
+      ],
+    },
+    {
+      v: 45, label: '5.11.2', date: '2026-10-02', title: '🃏 Pack names, fixed',
+      items: [
+        '🃏 Opening a pack: player names no longer sit too low and get covered when your phone’s text size is bigger than normal',
+      ],
+    },
+    {
       v: 44, label: '5.11.1', date: '2026-10-02', title: '🧹 A tidy-up',
       items: [
         '🃏 Pack cards are easier to read: darker names that always fit (long ones shrink instead of being cut off), bigger stats, and a ✓ badge for a finished card',

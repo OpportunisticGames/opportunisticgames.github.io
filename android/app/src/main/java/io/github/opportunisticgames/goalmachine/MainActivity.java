@@ -52,11 +52,13 @@ public class MainActivity extends Activity {
         web = new WebView(this);
         web.setBackgroundColor(0xFF07261D);
 
+        Achievements.init(this);   // Play Games Services (a do-nothing in the sideload APK)
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);   // scores, album and settings live in localStorage
         s.setDatabaseEnabled(true);
         s.setMediaPlaybackRequiresUserGesture(false);
+        s.setTextZoom(100);   // the site is laid out for normal text; the phone's big-text setting pushed card names off the cards
 
         web.setWebChromeClient(new WebChromeClient() {
             // lets <input type="file"> work (e.g. picking a photo), for features that may want it later
@@ -215,6 +217,24 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public String channel() {
             return BuildConfig.CHANNEL;  // "play" or "sideload"
+        }
+
+        /** Whether this build has Play Games achievements (the Google Play version). */
+        @JavascriptInterface
+        public boolean pgsAvailable() {
+            return Achievements.AVAILABLE;
+        }
+
+        /** Unlocks Play Games achievements by badge name: a JSON array of names, in one go or just one. */
+        @JavascriptInterface
+        public void pgsUnlock(String namesJson) {
+            Achievements.unlock(MainActivity.this, namesJson);
+        }
+
+        /** Opens Google's achievements screen. */
+        @JavascriptInterface
+        public void pgsShow() {
+            Achievements.show(MainActivity.this);
         }
 
         @JavascriptInterface

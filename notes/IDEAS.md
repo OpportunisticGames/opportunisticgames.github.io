@@ -23,6 +23,17 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### Google Play Games: achievements and Sidekick 💬 *(owner, 2 Oct 2026)*
+- **Owner's words:** Sidekick is switched on in Play Console; wants our badges to count as Google Play achievements
+  (Play Points, the Play Games profile, Sidekick).
+- **What it needs:** Play Games Services v2 (`play-services-games-v2`) in the Android app, one achievement per badge
+  created in Play Console (Grow > Play Games Services > Achievements, each gets an ID and points; 1,000 points max
+  in total), and a bridge call from `GM.app(...)` when a badge unlocks. Play version only.
+- **Owner's decision (2 Oct):** ALL badges become achievements, kept in step as badges are added or removed.
+- **Limits (Play docs):** 400 achievements, 2,000 points in total (5-point steps, 200 max each). A published achievement can't be deleted and its hidden/visible state can't change. Plan: ~100 at launch for under half the points, so it can grow towards 250. See `notes/BADGES.md`.
+- **Questions (old):** which badges become achievements (all, or about 30 of the best)? Icons (512x512) and descriptions
+  for each. Sign-in: PGS v2 signs in automatically, so no extra button, but we should say what it shares.
+
 ### CHAOS moments: make the chaos part of the game, not a pop-up ✅ shipped in 5.4
 - **Owner's words (26 Sep):** "The most fun mode but things pop up all at once and it's quite hard to tell what's
   going on… I dont want it to be less fun, but maybe prevent a million things happening at once. Like if my entire

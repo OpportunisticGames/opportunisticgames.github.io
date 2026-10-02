@@ -13,6 +13,7 @@
     // by: the players signed in each stat's games, with how many times (so the goals Dream XI needs goals-mode signings).
     // Albums from before v4.2 didn't record the stat, so everyone collected then counts once in all three.
     if (!a.by) { const once = Object.fromEntries(Object.keys(a.players).map(k => [k, 1])); a.by = { goals: { ...once }, assists: { ...once }, apps: { ...once } }; }
+    if (book === 'album' && a.ach) Object.keys(a.ach).forEach(k => { if (!A.some(x => x.id === k)) delete a.ach[k]; });  // badges that were retired
     const keys = Object.keys(a.players);
     if (book === 'album' && keys.length && keys.every(k => /^\d+$/.test(k))) {
       const moved = {};
@@ -30,11 +31,11 @@
   // ev: { type: 'draft', mode, stat, total, hard, xi: [players], rating, pairs, wildUsed, coinWin, bull, closeness }
   //  or { type: 'game', mode, score, extra }
   // badge categories, in the order the Album shows them
-  const CATS = [['draft', '🎯 Scores'], ['squad', '🧩 Squads'], ['chaos', '🌪️ CHAOS'], ['events', '🏟️ Matchdays & breaks'], ['daily', '📅 Dailies'], ['games', '⚡ Quick games'], ['online', '🌐 Online'], ['collect', '📒 Collecting'], ['secret', '🤫 Secret']];
+  const CATS = [['draft', '🎯 Scores'], ['progress', '🚀 Progress'], ['squad', '🧩 Squads'], ['chaos', '🌪️ CHAOS'], ['events', '🏟️ Matchdays & breaks'], ['daily', '📅 Dailies'], ['games', '⚡ Quick games'], ['online', '🌐 Online'], ['collect', '📒 Collecting'], ['secret', '🤫 Secret']];
   // CHAOS has its own challenges, some of them secret (shown as ??? in the CHAOS list until found)
-  const CAT_OF = (id, secret) => /^(cx|chaos$)/.test(id) ? 'chaos' : /^(md|ib)/.test(id) ? 'events' : secret ? 'secret' : /^daily/.test(id) ? 'daily' : /^on/.test(id) ? 'online'
-    : /^(col|hofall|gball)/.test(id) ? 'collect' : /^(hop|hilo|who|grid|tally|ht|mb)/.test(id) ? 'games'
-    : /^(first|contenders|invincible|relegated|chem5|hof3|wc2|club5|wild5|coin|hard|fan6|lifers|down5)$/.test(id) ? 'squad' : 'draft';
+  const CAT_OF = (id, secret) => /^(cx|chaos$)/.test(id) ? 'chaos' : /^(g\d|lv\d)/.test(id) ? 'progress' : /^(md|ib)/.test(id) ? 'events' : secret ? 'secret' : /^daily/.test(id) ? 'daily' : /^on/.test(id) ? 'online'
+    : /^(col|hofall|gball|pk\d)/.test(id) ? 'collect' : /^(hop|hilo|who|grid|tally|ht|mb)/.test(id) ? 'games'
+    : /^(first|contenders|invincible|relegated|chem5|hof3|wc2|club5|wild5|coin|hard|fan6|lifers|extreme)$/.test(id) ? 'squad' : 'draft';
   const A = [
     // drafts
     ['first', '🥅', 'First XI', 'Finish your first draft.', e => e.type === 'draft'],
@@ -45,7 +46,6 @@
     ['apps4000', '🏃', 'Iron Men', 'Build an XI with 4,000+ apps in Ultimate Wildcard.', e => ult(e, 'apps') && e.total >= 4000],
     ['bull', '🎯', 'Bullseye', 'Hit a Target exactly.', e => e.type === 'draft' && e.bull && e.mode === 'target'],
     ['treble', '🏆', 'Treble Winners', 'Win the Treble – goals, assists and apps all within 3%.', e => e.type === 'draft' && e.treble],
-    ['mystery', '🎲', 'Mystery Solved', 'Finish within 2% of a Mystery Target.', e => e.type === 'draft' && e.mode === 'mystery' && e.closeness <= 10],
     ['close', '📏', 'Near Miss', 'Finish within 2% of a Target.', e => e.type === 'draft' && e.mode === 'target' && e.closeness != null && e.closeness <= 10],
     ['contenders', '🏆', 'Title Race', 'Get a Title contenders squad rating (or better).', e => e.type === 'draft' && e.rating >= 80],
     ['invincible', '👑', 'Invincibles', 'Get an Invincibles squad rating.', e => e.type === 'draft' && e.rating >= 88],
@@ -57,10 +57,8 @@
     ['wild5', '🃏', 'Wildcard Wizard', 'Use 5 wildcards in one game.', e => e.type === 'draft' && e.wildUsed >= 5],
     ['coin', '🎲', 'Fortune Favours', 'Win a Double or Nothing coin toss.', e => e.type === 'draft' && e.coinWin],
     ['chaos', '🌪️', 'Agent of Chaos', 'Score 500+ points in Ultimate Wildcard CHAOS (goals).', e => chaos(e) && e.stat === 'goals' && e.points >= 500],
-    ['hard', '🥵', 'No Clues', 'Finish a draft in Hard mode.', e => e.type === 'draft' && e.hard],
     ['fan6', '🧣', 'Proper Fan', 'Have 6+ players who played for your club in one XI (not in a Club or Matchday XI).', e => e.type === 'draft' && e.mode !== 'club' && e.mode !== 'match' && GM.favClub() && e.xi.filter(p => p.clubs.includes(GM.favClub())).length >= 6],
     ['lifers', '🗓️', 'Lifers', 'Every player in your XI had a PL career spanning 10+ seasons.', e => e.type === 'draft' && e.xi.length === 11 && e.xi.every(p => plSeasons(p) >= 10)],
-    ['down5', '📉', 'Going Down', 'Have 5+ players who were relegated from the PL in one XI.', e => e.type === 'draft' && e.xi.filter(relegated).length >= 5],
     // CHAOS challenges
     ['cx1000', '💥', 'Total Anarchy', 'Score 1,000+ points in CHAOS (goals).', e => chaos(e) && e.stat === 'goals' && e.points >= 1000],
     ['cxsack', '📰', 'Vote of No Confidence', 'Get your manager sacked in CHAOS.', e => chaos(e) && (e.moments || []).includes('Manager sacked!')],
@@ -68,7 +66,7 @@
     ['cxmeter', '⚡', 'Meltdown', 'Fill the CHAOS meter 3 times in one game.', e => chaos(e) && e.bigs >= 3],
     ['cxgaffer', '👍', 'Gaffer’s Favourites', 'Sign 6+ players your manager likes in one CHAOS XI.', e => chaos(e) && e.liked >= 6],
     ['daily3', '📅', 'Regular', 'Play the Daily Ultimate 3 days in a row.', (e, a) => streak(a.days) >= 3],
-    ['daily7', '🗓️', 'Season Ticket', 'Play the Daily Ultimate 7 days in a row.', (e, a) => streak(a.days) >= 7],
+    ['daily7', '🗓️', 'Seven Up', 'Play the Daily Ultimate 7 days in a row.', (e, a) => streak(a.days) >= 7],
     // other games
     ['hop10', '🦘', 'Globetrotter', 'Make 10 hops in Club Hopper.', e => game(e, 'hopper') && e.score >= 10],
     ['hop20', '✈️', 'Frequent Flyer', 'Make 20 hops in Club Hopper.', e => game(e, 'hopper') && e.score >= 20],
@@ -77,8 +75,8 @@
     ['who3000', '🕵️', 'Detective', 'Score 3,000+ in Who Am I?', e => game(e, 'whoami') && e.score >= 3000],
     ['grid', '#️⃣', 'Full House', 'Fill a whole Club Grid.', e => game(e, 'grid') && e.extra && e.extra.full],
     ['tally700', '🔢', 'Human Calculator', 'Score 700+ in Guess the Tally.', e => game(e, 'tally') && e.score >= 700],
-    ['htwin', '🃏', 'Card Sharp', 'Win a game of Hat-Trick.', e => game(e, 'hattrick') && e.extra && e.extra.won],
-    ['htnil', '🤐', 'Clean Sheet', 'Make a Nil bid in Hat-Trick.', e => game(e, 'hattrick') && e.extra && e.extra.nil],
+    ['htwin', '🃏', 'Card Sharp', 'Win a game of Hat-Trick.', e => game(e, 'hattrick') && e.extra && e.extra.won, true],
+    ['htnil', '🤐', 'Clean Sheet', 'Make a Nil bid in Hat-Trick.', e => game(e, 'hattrick') && e.extra && e.extra.nil, true],
     // collecting
     ['col100', '📒', 'Scout', 'Collect 100 players.', (e, a) => Object.keys(a.players).length >= 100],
     ['col500', '🔭', 'Chief Scout', 'Collect 500 players.', (e, a) => Object.keys(a.players).length >= 500],
@@ -101,7 +99,6 @@
     ['sbus', '🚌', 'Parked the Bus', 'Finish a goals draft with under 40 goals.', e => e.type === 'draft' && e.stat === 'goals' && e.total < 40, true],
     ['sloyal', '💙', 'Club Till I Die', 'Have 8+ players from the same club in one XI.', e => e.type === 'draft' && maxSameClub(e.xi) >= 8, true],
     ['sowl', '🦉', 'Night Owl', 'Finish a draft between midnight and 4am.', e => e.type === 'draft' && new Date().getHours() < 4, true],
-    ['sdown', '🪂', 'Yo-Yo Club', 'Every player in your XI was relegated from the PL at some point.', e => e.type === 'draft' && e.xi.length === 11 && e.xi.every(relegated), true],
     ['sonce', '☄️', 'One-Season Wonders', 'Have 3+ players who only had one PL season in one XI.', e => e.type === 'draft' && e.xi.filter(p => plSeasons(p) === 1).length >= 3, true],
     ['cxslip', '🍌', 'The Slip', 'Steven Gerrard finishes a CHAOS game on 0.', e => chaos(e) && (e.slots || []).some(x => x.name === 'Steven Gerrard' && x.g === 0), true],
     ['cxdilly', '🦊', 'Dilly Ding, Dilly Dong', 'Ranieri in the dugout with 3+ Leicester players.', e => chaos(e) && e.manager === 'ranieri' && e.xi.filter(p => p.clubs.includes('Leicester City')).length >= 3, true],
@@ -112,30 +109,29 @@
     ['mdfirst', '🏟️', 'Matchday', 'Play a Matchday XI when your club’s on.', e => md(e)],
     ['mdboth', '🤝', 'Split Loyalties', 'Sign 3+ players who played for both sides in one Matchday XI.', e => md(e) && e.clubs && e.xi.filter(p => e.clubs.every(c => p.clubs.includes(c))).length >= 3],
     ['md150', '📣', 'Twelfth Man', 'Score 150+ goals in a Matchday XI.', e => md(e) && e.total >= 150],
-    ['mdseason', '🎟️', 'Season Ticket', 'Play the Matchday XI on 5 different matchdays.', (e, a) => md(e) && (a.md || []).length >= 5],
+    ['mdseason', '🎟️', 'Matchday Regular', 'Play the Matchday XI on 5 different matchdays.', (e, a) => md(e) && (a.md || []).length >= 5],
     ['mdpundit', '🔮', 'Pundit', 'Get the pre-match Footle in 3 guesses or fewer.', e => game(e, 'mfootle') && e.score >= 1 && e.score <= 3],
     ['mdderby', '🔥', 'Derby Day', 'Play a Matchday XI on derby day.', e => md(e) && e.clubs && GM.isDerby(e.clubs[0], e.clubs[1]), true],
     ['ibfirst', '🌍', 'International Duty', 'Finish an International XI during an international break.', e => intl(e)],
     ['ib250', '🌟', 'Golden Generation', 'Score 250+ goals in an International XI.', e => intl(e) && e.stat === 'goals' && e.total >= 250],
     ['ibtour', '🧳', 'World Tour', 'Build International XIs for 5 different countries.', (e, a) => intl(e) && (a.nations || []).length >= 5],
-    ['ibclub', '⚔️', 'Club v Country', 'Have 3+ players from your club in an International XI.', e => intl(e) && GM.favClub() && e.xi.filter(p => p.clubs.includes(GM.favClub())).length >= 3, true],
     // Moneyball (the quick games list)
     ['mbprofit', '📈', 'In the Black', 'Finish a Moneyball season worth £150m or more.', e => game(e, 'money') && e.score >= 150],
     ['mbflip', '💎', 'Buy Low, Sell High', 'Sell a player for double what you paid in Moneyball.', e => game(e, 'money') && e.extra && e.extra.flip >= 2],
     ['mbmadrid', '📨', 'Sold to Madrid', 'Accept a big-money bid for one of your stars.', e => game(e, 'money') && e.extra && e.extra.bid],
     // Dodgy Owner
     ['mbchamp', '🏆', 'Champions!', 'Win the league as the Dodgy Owner.', e => game(e, 'owner') && e.extra && e.extra.pos === 1],
-    ['mbinvincible', '🛡️', 'Invincibles', 'Go a whole Dodgy Owner season unbeaten.', e => game(e, 'owner') && e.extra && e.extra.unbeaten],
+    ['mbinvincible', '🛡️', 'Unbeaten Season', 'Go a whole Dodgy Owner season unbeaten.', e => game(e, 'owner') && e.extra && e.extra.unbeaten],
     ['mbcup', '🏆', 'Cup Run', 'Win the Cup as the Dodgy Owner.', e => game(e, 'owner') && e.extra && e.extra.cup],
     ['mbheat', '🔥', 'Under Investigation', 'Finish a Dodgy Owner season with the heat at 80 or more.', e => game(e, 'owner') && e.extra && e.extra.heat >= 80],
     ['mbclean', '😇', 'Squeaky Clean', 'Finish in the top half with no heat at all.', e => game(e, 'owner') && e.extra && e.extra.heat === 0 && e.extra.pos <= 10],
     ['mbout', '📣', 'Owner Out', 'Get forced out by your own fans.', e => game(e, 'owner') && e.extra && e.extra.sacked, true],
     ['mbdream', '🎯', 'Living the Dream', 'Achieve your owner’s ambition in Dodgy Owner.', e => game(e, 'owner') && e.extra && e.extra.amb],
     // Goal Royale (a secret game)
-    ['mbroyal', '⚔️', 'First Blood', 'Win a Goal Royale battle.', e => game(e, 'royale') && e.extra && e.extra.res === 'win'],
-    ['mbarena', '🦁', 'Big Time', 'Reach the Premier League arena in Goal Royale.', e => game(e, 'royale') && e.extra && e.extra.arena >= 3],
+    ['mbroyal', '⚔️', 'First Blood', 'Win a Goal Royale battle.', e => game(e, 'royale') && e.extra && e.extra.res === 'win', true],
+    ['mbarena', '🦁', 'Big Time', 'Reach the Premier League arena in Goal Royale.', e => game(e, 'royale') && e.extra && e.extra.arena >= 3, true],
     // Reign Check (a secret game)
-    ['mbreign', '👑', 'Long Live the Owner', 'Reign for a whole season in Reign Check.', e => game(e, 'reign') && e.extra && e.extra.weeks >= 38],
+    ['mbreign', '👑', 'Long Live the Owner', 'Reign for a whole season in Reign Check.', e => game(e, 'reign') && e.extra && e.extra.weeks >= 38, true],
     ['mbstatue', '🗿', 'Statue', 'Get flattened by your own statue in Reign Check.', e => game(e, 'reign') && e.extra && e.extra.end === 'f100', true],
     // packs (the collect list)
     ['colpack', '🎁', 'Pack Opener', 'Open your first pack.', e => game(e, 'pack')],
@@ -144,6 +140,17 @@
     ['collegend', '🟣', 'Legendary', 'Finish a Legend card.', () => GM.cardsDone('l') >= 1],
     ['colxi', '🃏', 'Fully Packed', 'Fill all 11 places in your Packed XI.', () => GM.packedXI().n === 11],
     ['ibhome', '🏴', 'Home Nations', 'Build International XIs for England, Scotland, Wales and Northern Ireland.', (e, a) => intl(e) && HOME.every(n => (a.nations || []).includes(n)), true],
+    // progress: how long you've played (the hidden/visible split and the points live in notes/BADGES.md)
+    ['g25', '🎮', 'Getting Going', 'Play 25 games.', () => GM.store.get('played', 0) >= 25],
+    ['g100', '💯', 'Centurion', 'Play 100 games.', () => GM.store.get('played', 0) >= 100],
+    ['g500', '🛋️', 'Part of the Furniture', 'Play 500 games.', () => GM.store.get('played', 0) >= 500],
+    ['lv10', '🥉', 'Climbing the Pyramid', 'Reach level 10 (League Two).', () => GM.myLevel().n >= 10],
+    ['lv30', '🦁', 'Top Flight', 'Reach level 30 (Premier League).', () => GM.myLevel().n >= 30],
+    ['lv50', '🏆', 'Ballon d’Or', 'Reach level 50.', () => GM.myLevel().n >= 50],
+    ['daily100', '🗓️', 'A Hundred Days', 'Play the Daily Ultimate on 100 different days.', () => Object.values(GM.store.get('dlog', {})).filter(d => d.daily != null).length >= 100],
+    ['pk50', '📦', 'Pack Mentality', 'Open 50 packs.', e => game(e, 'pack') && e.score >= 50],
+    ['extreme', '☠️', 'Extreme Measures', 'Finish a draft in Extreme.', e => e.type === 'draft' && e.extreme],
+    ['onwin25', '⚔️', 'Ruthless', 'Win 25 online games.', (e, a) => e.type === 'online' && (a.online || {}).wins >= 25],
   ].map(([id, icon, name, desc, test, secret]) => ({ id, icon, name, desc, test, secret: !!secret, cat: CAT_OF(id, secret) }));
 
   const chaos = e => e.type === 'draft' && (e.mode === 'chaos' || e.mode === 'chaosx');
@@ -219,10 +226,17 @@
     return fresh;
   }
 
+  // Google Play Games achievements (the Google Play app only): every badge is one, matched by name. A new badge unlocks
+  // its achievement, and each time the app opens the ones you already have are sent again, so nothing is missed.
+  GM.pgsUnlock = names => { if (names.length && GM.app('pgsAvailable')) GM.app('pgsUnlock', JSON.stringify(names)); };
+  GM.pgsSync = () => { const a = load(); GM.pgsUnlock(A.filter(x => a.ach[x.id]).map(x => x.name)); };
+  setTimeout(GM.pgsSync, 6000);
+
   function celebrate(fresh, newPlayers) {
     let delay = 600;
     if (fresh.length && GM.givePack) GM.givePack(fresh.length, fresh.length > 1 ? 'new badges' : 'new badge');
     if (fresh.length && GM.addXP) GM.addXP(GM.XP.badge * fresh.length);
+    GM.pgsUnlock(fresh.map(x => x.name));
     fresh.forEach(x => { setTimeout(() => GM.toast(`🏅 Badge unlocked: ${x.icon} <b>${x.name}</b>`, 2600), delay); delay += 2800; });
     const stars = newPlayers.filter(p => p.hon.H || p.hon.B || p.goals >= 100);
     if (stars.length) setTimeout(() => GM.toast(`📒 Collected ${stars.slice(0, 2).map(p => GM.esc(p.name)).join(' & ')}${stars.length > 2 ? ` +${stars.length - 2}` : ''}!`, 2600), delay);
@@ -365,6 +379,7 @@
       ${view === 'cards' ? GM.cardsSection(tier) : ''}
 
       ${view === 'badges' ? `<div class="ach-cats">${CATS.map(([c, label]) => { const lst = A.filter(x => x.cat === c); return `<a class="${c === cat ? 'on' : ''}" href="#/album?v=badges&c=${c}">${label}<small>${lst.filter(x => a.ach[x.id]).length}/${lst.length}</small></a>`; }).join('')}</div>
+      ${GM.app('pgsAvailable') ? '<button class="btn ghost" id="pgs-show">🏆 See them on Google Play Games</button>' : ''}
       <div class="ach-grid">${A.filter(x => x.cat === cat).map(x => {
           const hide = x.secret && !a.ach[x.id];
           return `<div class="ach ${a.ach[x.id] ? 'got' : ''} ${hide ? 'secret' : ''}" title="${hide ? 'A secret badge' : GM.esc(x.desc)}">
@@ -381,6 +396,8 @@
         <details class="set clubs-block"><summary><span>🏟️ Clubs</span><span>${clubSets.filter(([, h, n]) => h === n).length}/${clubSets.length} complete</span></summary>
           <div class="sets">${clubSets.map(([c, h, n]) => `<div class="club-set">${GM.clubChip(c)}<span>${GM.esc(c)}</span><span>${h}/${n}</span>${bar(h, n)}</div>`).join('')}</div></details>
         <h3 class="section-title">📊 Who you pick</h3>${picksHtml()}` : ''}`;
+    const pg = GM.$('#pgs-show', root);
+    if (pg) pg.onclick = () => GM.app('pgsShow');
     const ob = GM.$('#openpack', root);
     const reopen = () => albumHub(root, view, cat, tier, false);
     if (ob) ob.onclick = () => GM.packOpening(reopen);
