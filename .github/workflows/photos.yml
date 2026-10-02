@@ -47,6 +47,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Update player photos"
+          git pull --rebase -q origin "$GITHUB_REF_NAME"  # the branch may have moved while the lookups ran
           git push
           if [ "${{ github.ref }}" = "refs/heads/master" ]; then
             curl -sS -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github+json" \
