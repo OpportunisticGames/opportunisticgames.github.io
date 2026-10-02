@@ -9,6 +9,14 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 54, label: '5.14', date: '2026-10-02', title: '🎁 Cards now need a pack',
+      items: [
+        '🎁 Silver, Gold and Legend cards need at least one piece from a pack. Signing a player in a game fills his card up to one piece short; the last piece (the ◆ on the card) has to come from a pack',
+        '🟣 Five packed pieces still finish a Legend on their own, and Bronze cards can still be finished by signing a player once',
+        '✅ Cards you’ve already finished stay finished',
+      ],
+    },
+    {
       v: 53, label: '5.13.3', date: '2026-10-02', title: '🃏 The right club on the card',
       items: [
         '🃏 A player’s card now shows the club he’s best known for (the one with the most Premier League seasons), not just the first club he played for: Kane is Spurs, Rio is Man Utd',

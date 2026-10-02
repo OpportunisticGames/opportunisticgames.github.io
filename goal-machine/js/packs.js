@@ -1,8 +1,9 @@
 /* Goal Machine – packs: player cards you finish piece by piece, and the Packed XI you build from finished cards.
    Every player with 50+ PL apps is a card: 🟫 Bronze (1 piece), ⚪ Silver (2), 🟡 Gold (3) or 🟣 Legend (5), by how
    well known he is (Hall of Famers are always Legends). Pieces come from packs and from signing him in a draft, once a
-   day per player, so the stars that turn up all the time still take a while. The Packed XI is the best XI of
-   finished cards, with its own leaderboard.
+   day per player, so the stars that turn up all the time still take a while. From Silver up, signings can only fill a
+   card to one piece short: the last has to come from a pack (c.k counts a card's pack pieces; five packed pieces also
+   finish a Legend). The Packed XI is the best XI of finished cards, with its own leaderboard.
    Packs: a free one every day (a 🌍 Nations pack in an international break, a 🏟️ Matchday pack on your club's
    matchday), a bonus one for three dailies in a day or a new badge, and a 🟣 Legends pack for moving up a rank.
    Sometimes a card is a 🃏 wildcard and you choose: Pick one (1 of 3 Silver/Gold), Scout's tip (a piece for one of
@@ -31,13 +32,23 @@
   const load = () => {
     const c = GM.store.get('cards', null) || { p: {}, packs: 0, daily: '', seen: {}, seenDay: '', opened: 0, best: 0 };
     if (!c.extra) c.extra = [];  // special packs earned (Legends)
+    if (!c.k) c.k = {};          // pack pieces per card
+    if (c.v !== 2) {             // from 5.14 a card needs a pack piece: cards finished before keep their place
+      for (const [pk, n] of Object.entries(c.p)) if (n >= TIERS[TIER.get(pk) || 'b'].need) c.k[pk] = c.k[pk] || 1;
+      c.v = 2;
+    }
     if (c.seenDay !== GM.today()) { c.seen = {}; c.seenDay = GM.today(); }
     return c;
   };
   const save = c => GM.store.set('cards', c);
   const need = p => TIERS[GM.cardTier(p)].need;
-  const done = (c, p) => (c.p[p.pk] || 0) >= need(p);
+  const packed = (c, p) => c.k[p.pk] || 0;
+  // finished: all the pieces, and (Silver and up) at least one of them from a pack
+  const done = (c, p) => (c.p[p.pk] || 0) >= need(p) && (GM.cardTier(p) === 'b' || packed(c, p) >= 1);
+  // the most signings can add: one short of full until a pack piece is in
+  const gameCap = (c, p) => (GM.cardTier(p) === 'b' || packed(c, p) >= 1 ? need(p) : need(p) - 1);
   GM.cardPieces = p => load().p[p.pk] || 0;
+  GM.cardPackPieces = p => load().k[p.pk] || 0;
   GM.cardsDone = t => { const c = load(); return POOL[t].filter(p => done(c, p)).length; };
 
   /* ---------------------------------------------------------------- pack types */
@@ -79,17 +90,20 @@
 
   // a piece for each player you sign (once a day each); called when a draft finishes
   GM.cardsFromDraft = function (xi) {
-    const c = load(), finished = [];
+    const c = load(), finished = [], waiting = [];
     xi.forEach(p => {
       if (!p || !TIER.has(p.pk) || c.seen[p.pk]) return;
       c.seen[p.pk] = 1;
-      const was = done(c, p);
-      c.p[p.pk] = Math.min(need(p), (c.p[p.pk] || 0) + 1);
+      const was = done(c, p), had = c.p[p.pk] || 0, cap = gameCap(c, p);
+      c.p[p.pk] = Math.min(cap, had + 1);
       if (!was && done(c, p)) finished.push(p);
+      else if (c.p[p.pk] === cap && had < cap && cap < need(p)) waiting.push(p);  // all but the pack piece
     });
     save(c);
     finished.filter(p => GM.cardTier(p) !== 'b').slice(0, 2).forEach((p, i) =>
       setTimeout(() => GM.toast(`🧩 ${TIERS[GM.cardTier(p)].icon} <b>${GM.esc(p.name)}</b> card complete!`, 2600), 3400 + i * 2800));
+    waiting.slice(0, 2).forEach((p, i) =>
+      setTimeout(() => GM.toast(`🎁 ${TIERS[GM.cardTier(p)].icon} <b>${GM.esc(p.name)}</b> just needs a piece from a pack`, 2600), 3400 + (finished.length + i) * 2800));
     updateXI();
     return finished;
   };
@@ -118,6 +132,10 @@
     for (const k of tiers) {
       const list = theme ? theme.filter(p => GM.cardTier(p) === k) : POOL[k];
       if (!list.length) continue;
+      if (k !== 'b' && r() < 0.35) {  // now and then, a card that's all but done and only needs a pack piece
+        const wait = list.filter(q => (c.p[q.pk] || 0) > 0 && !packed(c, q) && !done(c, q) && !taken.has(q.pk));
+        if (wait.length) return r.pick(wait);
+      }
       for (let i = 0; i < 40; i++) { const q = r.pick(list); if (!done(c, q) && !taken.has(q.pk)) return q; }
       const q = r.pick(list); if (!taken.has(q.pk)) return q;
     }
@@ -164,9 +182,13 @@
   }
   function apply(c, x) {
     if (done(c, x.p)) { x.spare = true; return; }
-    c.p[x.p.pk] = (c.p[x.p.pk] || 0) + 1;
-    x.have = c.p[x.p.pk]; x.need = need(x.p); x.finished = x.have >= x.need;
+    x.firstPack = !packed(c, x.p);
+    c.p[x.p.pk] = Math.min(need(x.p), (c.p[x.p.pk] || 0) + 1);
+    c.k[x.p.pk] = packed(c, x.p) + 1;
+    x.have = c.p[x.p.pk]; x.need = need(x.p); x.pack = c.k[x.p.pk]; x.finished = done(c, x.p);
   }
+  // a piece from a pack for one card (the packs and Scout's tip use this; so do the tests)
+  GM.cardPackPiece = function (p) { const c = load(), x = { p, t: GM.cardTier(p) }; apply(c, x); save(c); updateXI(); return x; };
   GM.openPack = function () {
     const c = load(), type = nextType(c);
     if (!type) return null;
@@ -209,7 +231,12 @@
       return `<div class="pcard tier-w"><div class="pc-inner">${backHtml}<div class="pc-front pc-wild"><span class="pw-joker">🃏</span><b>WILDCARD</b><span class="pw-kind">${W.icon} ${W.name}</span></div></div></div>`;
     }
     const p = x.p, t = x.t || GM.cardTier(p), n = TIERS[t].need, have = x.have != null ? x.have : (x.spare ? n : 0);
-    const pips = Array.from({ length: n }, (_, i) => `<i class="${i < have ? 'on' : ''}${i === have - 1 && x.fresh !== false && !x.spare && opts.fresh ? ' new' : ''}"></i>`).join('');
+    // Silver and up: the last pip is the pack piece (a diamond), the rest are any piece
+    const gift = t !== 'b', pk = x.spare ? 1 : (x.pack != null ? x.pack : 0), fill = x.spare ? n : have;
+    const anyOn = Math.min(gift ? n - 1 : n, gift && pk >= 1 ? Math.max(0, fill - 1) : fill);
+    const pips = Array.from({ length: n }, (_, i) => gift && i === n - 1
+      ? `<i class="gift${pk >= 1 ? ' on' : ''}${pk >= 1 && x.firstPack && opts.fresh && !x.spare ? ' new' : ''}"></i>`
+      : `<i class="${i < anyOn ? 'on' : ''}${i === anyOn - 1 && !x.firstPack && opts.fresh && !x.spare ? ' new' : ''}"></i>`).join('');
     return `<div class="pcard tier-${t}${x.finished ? ' finished' : ''}${opts.cls ? ' ' + opts.cls : ''}"${opts.attr || ''}><div class="pc-inner">${backHtml}
       <div class="pc-front"><span class="pc-sheen"></span>
         <div class="pc-top"><b class="pc-num">${p.goals}</b><small>GLS</small><span class="pc-pos">${p.poss[0]}</span><span class="pc-flag">${GM.flag(p.nat)}</span></div>
@@ -278,7 +305,7 @@
       function choose(x, i, then) {
         const W = WILDS[x.wild.kind], box2 = el.querySelector('.po-choice'), c = load();
         box2.innerHTML = `<div class="pch-head"><span>${W.icon}</span><b>${W.name}</b><small>${W.text}</small></div>
-          <div class="pch-cards">${x.wild.options.map((p, k) => GM.cardHtml({ p, t: GM.cardTier(p), have: c.p[p.pk] || 0 }, { back: false, attr: ` data-pick="${k}"` })).join('')}</div>`;
+          <div class="pch-cards">${x.wild.options.map((p, k) => GM.cardHtml({ p, t: GM.cardTier(p), have: c.p[p.pk] || 0, pack: packed(c, p) }, { back: false, attr: ` data-pick="${k}"` })).join('')}</div>`;
         el.classList.add('choosing'); GM.sound.play('box');
         GM.$$('[data-pick]', box2).forEach(b => b.onclick = () => {
           const p = x.wild.options[+b.dataset.pick];
@@ -359,8 +386,8 @@
         <li>Every player with 50+ PL apps is a card: 🟫 Bronze needs 1 piece, ⚪ Silver 2, 🟡 Gold 3 and 🟣 Legend 5. Finished cards go into your 🃏 XI.</li>
         <li>🎁 A free pack every day: a 🌍 Nations pack in an international break, a 🏟️ Matchday pack when your club plays. A bonus pack for three daily games in a day, for every new badge and every level, and a 🟣 Legends pack when you go up a rank.</li>
         <li>🃏 Some packs hold a wildcard: pick one of three, a scout’s tip for a card that’s nearly there, or (rarely) a Legend of your choice.</li>
-        <li>✍️ Signing a player in any draft gives you a piece of his card, once a day per player.</li></ul></details>
-      ${started.length ? `<div class="card-grid">${started.slice(0, 120).map(p => GM.cardHtml({ p, t: GM.cardTier(p), have: c.p[p.pk], finished: done(c, p) }, { back: false })).join('')}</div>${started.length > 120 ? `<p class="muted center">…and ${started.length - 120} more</p>` : ''}`
+        <li>✍️ Signing a player in any draft gives you a piece of his card, once a day per player. From Silver up, signings fill a card to one piece short: the last one (the ◆) has to come from a pack. Five packed pieces finish a Legend too. Bronze cards can be finished by signing alone.</li></ul></details>
+      ${started.length ? `<div class="card-grid">${started.slice(0, 120).map(p => GM.cardHtml({ p, t: GM.cardTier(p), have: c.p[p.pk], pack: packed(c, p), finished: done(c, p) }, { back: false })).join('')}</div>${started.length > 120 ? `<p class="muted center">…and ${started.length - 120} more</p>` : ''}`
         : '<p class="muted center">No pieces yet. Open a pack, or sign players in any draft.</p>'}`;
   };
 })();

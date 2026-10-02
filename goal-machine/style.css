@@ -1648,6 +1648,7 @@ html.intl-break body::after { content: ''; position: fixed; top: 0; left: 0; rig
 .pc-pips { display: flex; gap: .25em; }
 .pc-pips i { width: .75em; height: .75em; border-radius: 50%; border: .12em solid currentColor; opacity: .45; }
 .pc-pips i.on { background: currentColor; opacity: 1; }
+.pc-pips i.gift { border-radius: .12em; transform: rotate(45deg) scale(.95); }  /* the pack piece: a diamond */
 .pc-pips i.new { animation: pip-new .8s ease-out 1.2s backwards; }
 @keyframes pip-new { 0% { transform: scale(2.6); box-shadow: 0 0 0 .4em #fde047; } }
 .pc-pips em { font: 800 .6em Inter, sans-serif; font-style: normal; opacity: .75; }
