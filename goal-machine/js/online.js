@@ -46,7 +46,12 @@
   const outcome = (g, seat) => {
     if (!g.result) return null;
     const w = g.result.winner, mine = g.result[seat], theirs = g.result[other(seat)];
-    return { icon: w === 'draw' ? '🤝' : w === seat ? '🏆' : '😬', text: w === 'draw' ? 'Drew' : w === seat ? 'Won' : 'Lost', score: `${fmt(mine)}–${fmt(theirs)}`, resigned: g.result.resigned };
+    // CHAOS and Target Races have no match-points split: more CHAOS points wins, or the closest to the target
+    const sm = g.sums || g.race || {}, a = sm[seat] || {}, b = sm[other(seat)] || {};
+    let score = `${fmt(mine)}–${fmt(theirs)}`, unit = 'match points';
+    if (g.variant === 'chaos' && a.c != null && b.c != null) { score = `${fmt(a.c)}–${fmt(b.c)}`; unit = 'CHAOS points'; }
+    else if (g.variant === 'target' && a.d != null && b.d != null) { score = `${a.d === 0 ? 'bullseye' : fmt(a.d) + ' off'} v ${b.d === 0 ? 'bullseye' : fmt(b.d) + ' off'}`; unit = ''; }
+    return { icon: w === 'draw' ? '🤝' : w === seat ? '🏆' : '😬', text: w === 'draw' ? 'Drew' : w === seat ? 'Won' : 'Lost', score, unit, resigned: g.result.resigned };
   };
   const myMove = (g, seat) => g.status !== 'done' && (g.kind === 'duel' ? g.turn === seat
     : g.kind === 'auction' ? (g.turn === 'both' || g.turn === seat) && !(g.bids_in || []).includes(seat)
@@ -362,7 +367,7 @@
     if (onReport) {
       const res = GM.$('#race-result', root);
       if (res) res.innerHTML = r.result ? `<div class="banner race-final">${resultLine(r, seat)}</div>`
-        : `<div class="banner">⏳ ${opp ? `${esc(opp)} is on ${theirs.n || 0}/11 – tap below to watch their XI` : 'Waiting for someone to join'}</div>`;
+        : `<div class="banner">⏳ ${opp ? `${esc(opp)} is on ${theirs.n || 0}/11 – watch them below, or tap for their XI` : 'Waiting for someone to join'}</div>${opp ? watchPanel(r, theirs, opp) : ''}`;
       if (r.result && !root.dataset.played) { root.dataset.played = 1; GM.sound.play(r.result.winner === seat ? 'fanfare' : 'fulltime'); if (GM.checkOnline) GM.checkOnline(r, seat); }
       return;
     }
@@ -414,23 +419,52 @@
     const now = Date.now();
     o.ms = (o.ms || 0) + Math.min(90000, Math.max(0, now - (o.lastT || now)));  // time spent playing, not time away
     o.lastT = now;
-    const xi = S.xi.filter(s => s.p != null).map(s => ({ pos: s.pos, player: GM.players[s.p] }));
-    const sc = GM.draft.score(S);
-    const sum = { t: sc.t, n: xi.length, done: S.phase === 'done', r: xi.length ? GM.teamRating(xi).score : 0, ms: o.ms,
-      ...(S.mode === 'target' ? { tg: S.target, d: Math.abs(S.target - sc.t) } : S.mode === 'chaos' ? { c: sc.total } : {}),
-      x: S.xi.map(s => (s.p != null ? [s.pos, GM.players[s.p].pk, s.g] : [s.pos])) };
-    const ls = S.last != null && S.xi.find(s => s.p === S.last);
-    if (ls) sum.lp = [ls.pos, GM.players[ls.p].pk, ls.g];  // your latest signing, for your opponent's live feed
     GM.store.set('racep:' + o.code, { ...S, rules: undefined });
-    rpc('online_move', { ...auth(), p_code: o.code, p_seq: 0, p_move: null, p_sum: sum, p_turn: null })
-      .then(() => GM.online.refresh && GM.online.refresh()).catch(() => { });
+    // sent at once at full time, otherwise at most every ~0.7s (a spin, a wildcard and a moment can come close together)
+    clearTimeout(o.tm);
+    const send = () => {
+      const xi = S.xi.filter(s => s.p != null).map(s => ({ pos: s.pos, player: GM.players[s.p] }));
+      const sc = GM.draft.score(S);
+      const sum = { t: sc.t, n: xi.length, done: S.phase === 'done', r: xi.length ? GM.teamRating(xi).score : 0, ms: o.ms,
+        ...(S.mode === 'target' ? { tg: S.target, d: Math.abs(S.target - sc.t) } : S.mode === 'chaos' ? { c: sc.total } : {}),
+        x: S.xi.map(s => (s.p != null ? [s.pos, GM.players[s.p].pk, s.g] : [s.pos])) };
+      const ls = S.last != null && S.xi.find(s => s.p === S.last);
+      if (ls) sum.lp = [ls.pos, GM.players[ls.p].pk, ls.g];  // your latest signing, for your opponent's live feed
+      // for the Watch panel: the spin you're looking at, the CHAOS bar and your latest moment
+      if (S.phase !== 'done') {
+        sum.sp = S.spin + 1;
+        sum.rl = (S.reels || []).slice(0, 3).map(r => (r.wild ? ['w', r.wild] : [GM.players[r.id] ? GM.players[r.id].pk : '']));
+      }
+      if (S.mode === 'chaos') {
+        sum.mt = [S.meter || 0, S.chaosDue ? 1 : 0];
+        const mo = (S.moments || [])[(S.moments || []).length - 1];
+        if (mo) sum.ev = [mo.icon, mo.name, (S.moments || []).length];
+      }
+      rpc('online_move', { ...auth(), p_code: o.code, p_seq: 0, p_move: null, p_sum: sum, p_turn: null })
+        .then(() => GM.online.refresh && GM.online.refresh()).catch(() => { });
+    };
+    if (S.phase === 'done') send(); else o.tm = setTimeout(send, 700);
   };
 
   const resultLine = (r, seat) => {
     const o = outcome(r, seat), opp = r[other(seat)];
     return o.resigned ? (o.resigned === seat ? `🏳️ You resigned – ${esc(opp)} wins` : `🏆 ${esc(opp)} resigned – you win`)
-      : `${o.icon} ${o.text === 'Won' ? 'You win' : o.text === 'Lost' ? `${esc(opp)} wins` : 'A draw'} · ${o.score} match points`;
+      : `${o.icon} ${o.text === 'Won' ? 'You win' : o.text === 'Lost' ? `${esc(opp)} wins` : 'A draw'} · ${o.score}${o.unit ? ' ' + o.unit : ''}`;
   };
+
+  // 👀 Watch: once you've finished a race, your opponent's spin, the CHAOS bar and their latest moment, live
+  function watchPanel(r, theirs, opp) {
+    if (theirs.done || !theirs.n && !theirs.rl) return '';
+    const reels = (theirs.rl || []).map(([k, w]) => {
+      if (k === 'w') return `<div class="wr wild"><span>🃏</span><b>Wildcard</b><small>${esc((GM.draft.WILDCARDS[w] || {}).name || '')}</small></div>`;
+      const p = GM.byPk.get(k);
+      return p ? `<div class="wr" data-psheet="${esc(p.pk)}"><b>${esc(p.name.split(' ').slice(-1)[0])}</b><small>${p.poss[0]} · ${esc(GM.clubShort(p.main))}</small></div>` : '';
+    }).join('');
+    const meter = theirs.mt ? `<div class="chaos-meter watch-meter ${theirs.mt[1] ? 'due' : ''}"><span>${theirs.mt[1] ? 'NEXT SPIN!' : 'CHAOS'}</span>${Array.from({ length: GM.draft.METER }, (_, i) => `<i class="${theirs.mt[1] || i < theirs.mt[0] ? 'on' : ''}"></i>`).join('')}</div>` : '';
+    return `<div class="watch"><div class="watch-head">👀 <b>Watching ${esc(opp)}</b><small>${theirs.n || 0}/11 signed${theirs.sp ? ` · spin ${theirs.sp}` : ''}</small></div>
+      ${meter}${theirs.ev ? `<p class="watch-ev">${theirs.ev[0]} <b>${esc(theirs.ev[1])}</b></p>` : ''}
+      ${reels ? `<div class="watch-reels"><small>Their options</small><div>${reels}</div></div>` : ''}</div>`;
+  }
 
   /* ---------------------------------------------------------------- the comparison (both games) */
   function summary(root, r, seat) {
@@ -460,19 +494,21 @@
     ];
     if (weights[2] && !r.variant) rows.push(['⚡ Quicker XI', weights[2], mmss(A.ms), mmss(B.ms), Math.sign((B.ms || 1e12) - (A.ms || 1e12))]);
     const bothDone = A.done && B.done;
-    const pts = r.result ? [r.result[seat], r.result[them]] : null;
+    const single = r.variant === 'chaos' || r.variant === 'target';   // one thing decides it: no points out of 100
+    const pts = r.result && !single ? [r.result[seat], r.result[them]] : null;
     const side = (t, cls) => `<div class="cmp-xi ${cls}">${t.map(x => `<div class="cx ${x.p ? '' : 'empty'}"${x.p ? ` data-psheet="${esc(x.p.pk)}"` : ''}><span class="pos pos-${GM.GROUP[x.pos]}">${x.pos}</span>
         <b>${x.p ? esc(x.p.name.split(' ').slice(-1)[0]) : '–'}</b><i>${x.p ? fmt(x.v) : ''}</i></div>`).join('')}</div>`;
     root.innerHTML = `${top(KIND[gk(r)].name, '#/online')}
       <div class="h2h-board duel-board">
-        <div class="h2h-team p1">${GM.userPic(me(), 'board')}<b>You</b><strong>${pts ? fmt(pts[0]) : fmt(r.variant === 'chaos' ? A.c : A.t)}</strong><small>${pts ? 'points' : `${A.n}/11`}</small></div>
+        <div class="h2h-team p1">${GM.userPic(me(), 'board')}<b>You</b><strong>${pts ? fmt(pts[0]) : fmt(r.variant === 'chaos' ? A.c : A.t)}</strong><small>${pts ? 'points' : single && r.result ? (r.variant === 'chaos' ? 'CHAOS points' : off(A)) : `${A.n}/11`}</small></div>
         <div class="h2h-mid"><small>${r.variant === 'target' && tg ? `🎯 ${fmt(tg)} ${st.label}` : `${st.icon} ${st.name}`}</small><span>VS</span><small id="orec"></small></div>
-        <div class="h2h-team p2">${r[them] ? GM.userPic(opp, 'board') : ''}<b>${esc(opp)}</b><strong>${pts ? fmt(pts[1]) : fmt(r.variant === 'chaos' ? B.c : B.t)}</strong><small>${pts ? 'points' : `${B.n}/11${B.done ? ' ✓' : ''}`}</small></div></div>
+        <div class="h2h-team p2">${r[them] ? GM.userPic(opp, 'board') : ''}<b>${esc(opp)}</b><strong>${pts ? fmt(pts[1]) : fmt(r.variant === 'chaos' ? B.c : B.t)}</strong><small>${pts ? 'points' : single && r.result ? (r.variant === 'chaos' ? 'CHAOS points' : off(B)) : `${B.n}/11${B.done ? ' ✓' : ''}`}</small></div></div>
       ${r.result ? `<div class="banner race-final">${resultLine(r, seat)}</div>`
         : `<div class="banner">⏳ ${r.guest ? `${esc(opp)} is still building their XI (${B.n}/11). You can watch it fill up here.` : 'Nobody has joined yet.'}</div>`}
       ${inviteBar(r)}
-      <table class="cmp-points"><tr><th></th><th>You</th><th>${esc(opp)}</th><th>Pts</th></tr>
-        ${rows.map(([label, w, a, b, s]) => `<tr><td>${label}</td><td class="${bothDone && s > 0 ? 'won' : ''}">${a}</td><td class="${bothDone && s < 0 ? 'won' : ''}">${b}</td><td>${w}</td></tr>`).join('')}</table>
+      ${r.kind === 'race' && A.done && !r.result && r.race[them] ? watchPanel(r, r.race[them], opp) : ''}
+      <table class="cmp-points"><tr><th></th><th>You</th><th>${esc(opp)}</th>${single ? '' : '<th>Pts</th>'}</tr>
+        ${rows.map(([label, w, a, b, s]) => `<tr><td>${label}</td><td class="${bothDone && s > 0 ? 'won' : ''}">${a}</td><td class="${bothDone && s < 0 ? 'won' : ''}">${b}</td>${single ? '' : `<td>${w}</td>`}</tr>`).join('')}</table>
       <div class="cmp"><div><h4>You</h4>${side(team(seat), 'p1')}</div><div><h4>${esc(opp)}</h4>${side(team(them), 'p2')}</div></div>
       <div class="actions col">
         ${r.result && r.guest ? `<button class="btn big" id="orematch">🔁 Rematch ${esc(opp)}</button><button class="btn ghost" id="oshareres">📤 Share the result</button>` : ''}

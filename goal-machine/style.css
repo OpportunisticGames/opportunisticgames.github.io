@@ -2359,3 +2359,14 @@ html.intl-break #app { padding-top: 22px; }
 .ps-hon { list-style: none; padding: 0 !important; display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; } .ps-hon li { margin: 0 !important; padding: 4px 10px; border-radius: 999px; background: var(--inset); font-size: .8rem; }
 .ps-clubs { list-style: none; padding: 0 !important; margin: 0; } .ps-clubs li { display: flex; gap: 10px; align-items: center; margin: 6px 0; }
 .ps-clubs small { display: block; color: var(--muted); font-size: .72rem; }
+
+/* watching an opponent's race live */
+.watch { margin: 10px 0; padding: 12px; border-radius: 16px; background: var(--card); border: 2px solid var(--line); }
+.watch-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; } .watch-head small { color: var(--muted); }
+.watch-meter { margin: 8px 0 4px; }
+.watch-ev { margin: 4px 0; }
+.watch-reels > small { display: block; margin: 8px 0 4px; color: var(--muted); }
+.watch-reels > div { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.wr { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 12px; background: var(--inset); text-align: center; min-width: 0; }
+.wr b { font: 700 .95rem Oswald, sans-serif; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .wr small { font-size: .68rem; color: var(--muted); }
+.wr.wild { background: rgba(250, 204, 21, .15); } .wr.wild span { font-size: 1.3rem; }

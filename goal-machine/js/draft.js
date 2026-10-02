@@ -238,7 +238,7 @@
   let S = null; // game state
   let root = null;
 
-  GM.draft = { events: () => Object.keys(EVENTS).concat(Object.keys(XEV), Object.keys(MOMENTS)), start, RULES, WILDCARDS, TARGETS, state: () => S, total: st => scoreFor(st).t, score: st => scoreFor(st), render: () => render(), modeKey: (m, s, h, c, x) => keyFor(m, s, h, c, x) };
+  GM.draft = { METER, events: () => Object.keys(EVENTS).concat(Object.keys(XEV), Object.keys(MOMENTS)), start, RULES, WILDCARDS, TARGETS, state: () => S, total: st => scoreFor(st).t, score: st => scoreFor(st), render: () => render(), modeKey: (m, s, h, c, x) => keyFor(m, s, h, c, x) };
 
   const statSuffix = s => ({ goals: '', assists: 'ast', apps: 'apps' }[s] || '');
   function keyFor(mode, stat, hard, club, extreme) {
@@ -472,6 +472,7 @@
     await animateReels();
     S.phase = 'pick';
     render();
+    if (S.online && GM.online) GM.online.pushRace(S);  // so your opponent can watch the spin you've got
   }
 
   // before a spin: a big moment if the meter's full, otherwise (now and then) a match-day event; never both, and
@@ -716,7 +717,9 @@
         el.classList.add('out'); setTimeout(() => el.remove(), 300);
         busy = false;
         if (S.rules.chaos && (o.text || o.reveal)) S.moments = (S.moments || []).concat([{ icon: o.icon, name: o.name, text: (o.after || (o.reveal && o.reveal.text) || o.text).replace(/<[^>]+>/g, ''), rar: o.rarity || '' }]);
-        render(); done();
+        render();
+        if (S.rules.chaos && S.online && GM.online) GM.online.pushRace(S);
+        done();
       };
       window.addEventListener('hashchange', finish);
       if (o.pick) { GM.$$('[data-mgr]', el).forEach(bt => bt.onclick = e => { e.stopPropagation(); o.onPick(bt.dataset.mgr); GM.sound.play('sting'); finish(); }); return; }
@@ -768,6 +771,7 @@
     S.meter = (S.meter || 0) + n;
     if (S.meter >= METER && !S.chaosDue) { S.meter = 0; S.chaosDue = true; setTimeout(() => GM.sound.play('meterfull'), 250); }
     else if (!S.chaosDue) setTimeout(() => GM.sound.play('charge', S.meter), 250);
+    if (S.online && GM.online) GM.online.pushRace(S);  // the opponent's view of the CHAOS bar
   }
   function fx(kind, icon, rain = 0) {
     if (!S.rules.chaos) return;
@@ -1356,7 +1360,7 @@
       ${GM.report ? GM.report(xi, S.st, S.rules.treble) : ''}
       ${pitchHtml()}
       <div class="actions col">
-        ${S.online ? `<div id="race-result"></div><a class="btn big" href="#/online?room=${S.online.code}&v=1">🆚 Compare teams & match points</a>` : S.fx ? `<a class="btn big" href="#/matchday">🏟️ Back to matchday</a>` : S.mode !== 'daily' && !S.dailyChaos ? `<button class="btn big" id="again">🔁 Play again</button>` : `<div class="muted">New Daily ${S.dailyChaos ? 'CHAOS' : 'Ultimate'} tomorrow</div>`}
+        ${S.online ? `<div id="race-result"></div><a class="btn big" href="#/online?room=${S.online.code}&v=1">🆚 Compare teams${S.mode === 'chaos' || S.mode === 'target' ? '' : ' & match points'}</a>` : S.fx ? `<a class="btn big" href="#/matchday">🏟️ Back to matchday</a>` : S.mode !== 'daily' && !S.dailyChaos ? `<button class="btn big" id="again">🔁 Play again</button>` : `<div class="muted">New Daily ${S.dailyChaos ? 'CHAOS' : 'Ultimate'} tomorrow</div>`}
         ${S.fx ? '' : '<button class="btn" id="challenge">⚔️ Challenge a friend (same spins)</button>'}
         <button class="btn ghost" id="share">📤 Share result</button>
         <button class="btn ghost" id="sharepic">🖼️ Share a picture of your XI</button>
