@@ -46,12 +46,12 @@ const STEP = () => {
   const combo = window.GM_STRAT === 'combo', btn = t => [...document.querySelectorAll('.wild-btn')].find(b => S.inv[b.dataset.w] === t);
   const late = S.xi.filter(x => x.p != null).length >= 9;
   if (combo && spin && !spin.disabled && btn('centurion')) {
-    if (!S.modifier && (btn('hero') || btn('captain'))) { (btn('hero') || btn('captain')).click(); return 'combo-boost'; }
-    if (S.modifier === 'hero' || S.modifier === 'captain' || late) { btn('centurion').click(); return 'combo-centurion'; }
+    if (!S.modifier && btn('captain')) { btn('captain').click(); return 'combo-boost'; }
+    if (S.modifier === 'captain' || late) { btn('centurion').click(); return 'combo-centurion'; }
   }
   if (spin && !spin.disabled) {
     // a special spin or a respin from the bag now and then before spinning
-    const w = [...document.querySelectorAll('.wild-btn')].find(b => !['sub', 'captain', 'coin', 'rotation', 'allin', 'hot', 'hero'].concat(combo ? ['centurion'] : []).includes(S.inv[b.dataset.w]));
+    const w = [...document.querySelectorAll('.wild-btn')].find(b => !['sub', 'captain', 'coin', 'rotation', 'allin', 'hot'].concat(combo ? ['centurion'] : []).includes(S.inv[b.dataset.w]));
     if (w && Math.random() < 0.5) { w.click(); return 'wild-spin'; }
     spin.click(); return 'spin';
   }
@@ -70,15 +70,15 @@ const STEP = () => {
   const best = players[0];
   // play a boost or a gamble from the bag on a good signing
   if (best && worth(best.p) >= 20) {
-    const w = [...document.querySelectorAll('.wild-btn')].find(b => (combo ? ['hot', 'coin'] : ['captain', 'hot', 'coin', 'hero']).includes(S.inv[b.dataset.w]));
+    const w = [...document.querySelectorAll('.wild-btn')].find(b => (combo ? ['hot', 'coin'] : ['captain', 'hot', 'coin']).includes(S.inv[b.dataset.w]));
     if (w && !S.modifier && Math.random() < 0.7) { w.click(); return 'wild-boost'; }
   }
   const allin = [...document.querySelectorAll('.wild-btn')].find(b => S.inv[b.dataset.w] === 'allin');
   if (allin && S.xi.filter(x => x.p != null).length >= 7 && Math.random() < 0.5) { allin.click(); return 'allin'; }
   const subW = [...document.querySelectorAll('.wild-btn')].find(b => S.inv[b.dataset.w] === 'sub');
   if (subW && best && S.xi.some(x => x.p != null && x.g < 2) && worth(best.p) > 15 && Math.random() < 0.5) { subW.click(); return 'sub-card'; }
-  const wildReel = (combo && reels.find(r => ['centurion', 'hero', 'captain'].includes(S.reels[r.dataset.reel].wild))) || reels.find(r => S.reels[r.dataset.reel].wild);
-  if (wildReel && S.inv.length < 3 && (!best || worth(best.p) < 10 || Math.random() < 0.25 || (combo && ['centurion', 'hero', 'captain'].includes(S.reels[wildReel.dataset.reel].wild) && worth(best.p) < 60))) { wildReel.click(); return 'take-wild'; }
+  const wildReel = (combo && reels.find(r => ['centurion', 'captain'].includes(S.reels[r.dataset.reel].wild))) || reels.find(r => S.reels[r.dataset.reel].wild);
+  if (wildReel && S.inv.length < 3 && (!best || worth(best.p) < 10 || Math.random() < 0.25 || (combo && ['centurion', 'captain'].includes(S.reels[wildReel.dataset.reel].wild) && worth(best.p) < 60))) { wildReel.click(); return 'take-wild'; }
   (best ? best.r : reels[0]).click(); return 'pick';
 };
 

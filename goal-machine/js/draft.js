@@ -36,7 +36,10 @@
     centurion: { icon: '💯', name: 'Centurion Throw', w: 1.5, kind: 'special', desc: st => `A free spin of players with ${BIG[st.id]}+ PL ${st.bigLabel || st.label}.`, filter: (p, st) => p[st.key] >= BIG[st.id] },
     gegenpress: { icon: '⚡', name: 'Gegenpress', w: 1.5, kind: 'formation', desc: () => 'Your empty LM and RM slots push up and become strikers.' },
     bus: { icon: '🚌', name: 'Park the Bus', w: 1.5, kind: 'formation', desc: () => 'Two empty attacking slots drop back to centre-back.' },
-    captain: { icon: '©️', name: "Captain's Armband", w: 1.5, kind: 'modifier', desc: st => `Your next signing’s ${st.label} count double.` },
+    captain: { icon: '©️', name: "Captain's Armband", w: 1.5, kind: 'modifier', desc: st => {
+      // in CHAOS the armband passes down: captain ×2, then vice-captain ×1.5, then ×1.25 (no endless armband + Centurion Throw)
+      const n = S && S.rules && S.rules.chaos ? Math.min(S.capN || 0, 2) : 0;
+      return `${['Captain', 'Vice-captain', 'Vice-vice-captain'][n]}: your next signing’s ${st.label} count ×${CAP[n]}.`; } },
     rotation: { icon: '🩹', name: 'Rotation Risk', w: 1.5, kind: 'modifier', desc: st => `Your next signing’s ${st.label} count half (rounded down).` },
     coin: { icon: '🎲', name: 'Double or Nothing', w: 1, kind: 'modifier', desc: st => `Coin toss on your next signing: his ${st.label} count ×2… or ×0.` },
     deadline: { icon: '⏰', name: 'Deadline Day', w: 1.5, kind: 'special', desc: () => 'A free spin with FIVE players to choose from.', reels: 5 },
@@ -52,7 +55,8 @@
     storm: { icon: '🌪️', name: 'Wildcard Storm', w: 1, chaos: true, kind: 'special', desc: () => 'A free spin of nothing but wildcards.', storm: true },
     physio: { icon: '🏥', name: 'Physio Room', w: 1, chaos: true, kind: 'heal', desc: st => `Your most-hurt player gets his full ${st.label} back.` },
     joker: { icon: '🃏', name: 'Joker', w: 1, chaos: true, kind: 'joker', desc: () => 'Turns into a random CHAOS wildcard.' },
-    hero: { icon: '🎩', name: 'Hat-Trick Hero', w: 1, chaos: true, kind: 'modifier', desc: st => `Your next signing: ${HERO[st.id] || 50}+ PL ${st.label} and he counts TRIPLE. Fewer, and he counts half.` },
+    // (kept as 'hero' so games saved with the old Hat-Trick Hero still load)
+    hero: { icon: '🎩', name: 'Hat-Trick', w: 1, chaos: true, kind: 'special', trio: true, desc: st => `A spin of three players for one position: sign them ALL as one, their ${st.label} added up. Under ${HAT[st.id] || 50} between them and he counts half.` },
   };
   // drawn vehicles for CHAOS moments (side on, facing right; wheels turn while they drive, lights flash)
   const WHEEL = x => `<g transform="translate(${x} 37)"><g class="whl"><circle r="7" fill="#1d1f24"/><circle r="3.4" fill="#c4c9d2"/><rect x="-0.9" y="-6.4" width="1.8" height="12.8" fill="#6b717c"/></g></g>`;
@@ -71,8 +75,9 @@
       <ellipse cx="45" cy="23" rx="43" ry="5" fill="#c3cad6"/><circle class="lt a" cx="17" cy="28" r="3" fill="#7dff6b"/><circle class="lt b" cx="31" cy="31" r="3" fill="#ff5ec8"/>
       <circle class="lt a" cx="45" cy="32" r="3" fill="#ffe14a"/><circle class="lt b" cx="59" cy="31" r="3" fill="#7dff6b"/><circle class="lt a" cx="73" cy="28" r="3" fill="#ff5ec8"/></svg>`,
   };
-  // Hat-Trick Hero's bar, per stat
-  const HERO = { goals: 50, assists: 25, apps: 250 };
+  // the Hat-Trick's bar (the three together), per stat; the armband in CHAOS, use by use
+  const HAT = { goals: 50, assists: 30, apps: 400 };
+  const CAP = [2, 1.5, 1.25];
   // CHAOS events: now and then, something happens to you before a spin (seeded, so a challenge gets the same chaos)
   const EVENTS = {
     redcard: { rar: 'c', icon: '🟥', name: 'Red card', w: 1, desc: st => `Your next signing’s ${st.label} count half.` },
@@ -473,10 +478,11 @@
   function makeReels(special) {
     const tag = `${S.seed}|${S.stat}|${S.spin}|${S.spinRespins || 0}|${special || ''}`;
     const r = GM.rng(tag), rw = GM.rng(tag + '|wild');
-    const open = openPos();
+    const wc = special && WILDCARDS[special];
+    // a Hat-Trick spin: three players for one open position (seeded)
+    const open = wc && wc.trio ? (o => [o[GM.rng(tag + '|trio').int(o.length)]])(openPos()) : openPos();
     const used = new Set(S.used.concat(S.xi.filter(s => s.p != null).map(s => s.p)));
     const ok = p => fits(p, open) && !used.has(p.id);
-    const wc = special && WILDCARDS[special];
     const n = (wc && wc.reels) || 3;
     const wildTypes = () => Object.keys(WILDCARDS).filter(t => (!S.rules.noWild.includes(t) || (tw().allow || []).includes(t)) && (!WILDCARDS[t].chaos || S.rules.chaos) && t !== 'storm');
     // a wildcard storm: every reel is a wildcard (the Storm card, or 1 spin in 10 in CHAOS)
@@ -569,7 +575,7 @@
   // how much a hurt player has lost (0 if he isn't hurt)
   const hurtBy = i => { const x = S.xi[i]; return x.p != null && HURT.includes(x.mod) ? Math.max(0, pv(byId(x.p))[S.stat] - x.g) : 0; };
   // CHAOS leaves its mark: things that stay on the pitch for the rest of the game (decoration only, under the players)
-  const MESS = { pigeon: '🐦', streaker: '🩲', dog: '🐾', vuvuzela: '🎺', pies: '🥧', hamstring: '🩼', injury: '🚑', redcard: '🟥', slip: '🍌',
+  const MESS = { pigeon: '🐦', streaker: '🩲', dog: '🐾', vuvuzela: '🎺', pies: '🥧', redcard: '🟥', slip: '🍌',
     interview: '🎤', taxman: '🧾', windfall: '💷', chant: '🧣', tornado: '🪵', lightning: '🔥', blackhole: '🕳️', parade: '🎊', title: '🏆',
     relegation: '🪂', helicopter: '🚁', unleash: '💥', amnesty: '📺', box: '📦', retro: '👕', alien: '🛸', royal: '👑', takeover: '💰' };
   function leave(key) {
@@ -1035,10 +1041,13 @@
     const pos = slot.pos;
     // every signing stores goals/assists/apps; modifiers apply to all three
     let mult = 1, heads = true;
-    if (S.modifier === 'captain') mult = 2;
+    if (S.modifier === 'captain') mult = S.capMult || 2;
     if (S.modifier === 'rotation') mult = 0.5;
-    const heroHit = S.modifier === 'hero' ? pv(p)[S.stat] >= (HERO[S.stat] || 50) : null;
-    if (heroHit != null) mult = heroHit ? 3 : 0.5;
+    // a Hat-Trick: all three on the reels signed as one, their numbers added; under the bar he counts half
+    const trio = S.special === 'hero' ? S.reels.filter(x => !x.wild).map(x => byId(x.id)) : null;
+    const base = trio ? trio.reduce((a, q) => { const w = pv(q); STAT_KEYS.forEach(k => { a[k] += w[k]; }); return a; }, { goals: 0, assists: 0, apps: 0 }) : pv(p);
+    const short = trio ? base[S.stat] < (HAT[S.stat] || 50) : false;
+    if (short) mult *= 0.5;
     if (S.hot > 0) { mult *= 1.5; S.hot--; }
     if (S.golden) { mult *= 3; S.golden = false; }
     if (S.unleash > 0) { mult *= 2; S.unleash--; }
@@ -1056,14 +1065,16 @@
     const both = S.club2 && bothSides(p);  // Matchday XI: played for both sides, double (on top of everything else)
     if (both) mult *= 2;
     const before = S.modifier === 'coin' ? snap() : null;
-    const v = pv(p);
+    const v = { ...base };
     STAT_KEYS.forEach(k => { v[k] = Math.floor(v[k] * mult); });
     slot.v = v;
     const g = v[S.stat];
-    slot.p = p.id; slot.g = g; slot.mod = rant ? 'zero' : S.modifier === 'coin' ? (heads ? 'captain' : 'zero') : heroHit != null ? (heroHit ? 'boosted' : 'halved') : S.modifier;
+    slot.p = p.id; slot.g = g; slot.mod = rant ? 'zero' : S.modifier === 'coin' ? (heads ? 'captain' : 'zero') : short ? 'halved' : S.modifier === 'hero' ? null : S.modifier;
+    slot.trio = trio ? trio.map(q => q.id) : null;
+    if (trio) trio.forEach(q => { if (q.id !== p.id) S.used.push(q.id); });
     slot.as = pos !== p.poss[0] ? pos : null;
     slot.fresh = true;
-    S.modifier = null;
+    S.modifier = null; S.capMult = null;
     S.last = p.id;
     S.used.push(p.id);
     if (!S.readonly && GM.trackPick) GM.trackPick(p, S.reels.filter(x => !x.wild).map(x => byId(x.id)));
@@ -1075,7 +1086,7 @@
     if (both) setTimeout(() => GM.toast(`🤝 ${GM.esc(p.name)} played for both sides: <b>double points</b>`, 2600), 300);
     if (rant) setTimeout(() => { GM.toast(`🗯️ “It’s a conspiracy!” ${GM.esc(p.name)} <b>counts for nothing</b>`, 2800); GM.sound.play('boo'); }, 300);
     else if (outPos && S.rules.chaos) setTimeout(() => GM.toast(`📋 ${GM.esc(p.name)} out of position: <b>80%</b>`, 2200), 300);
-    if (heroHit != null) setTimeout(() => { GM.toast(heroHit ? `🎩 ${GM.esc(p.name)} is a hero: <b>TRIPLE</b>!` : `🎩 ${GM.esc(p.name)} falls short: <b>half</b>`, 2600); GM.sound.play(heroHit ? 'cheer' : 'boo'); }, 300);
+    if (trio) setTimeout(() => { GM.toast(`🎩 Hat-trick! ${trio.map(q => GM.esc(q.name.split(' ').slice(-1)[0])).join(' + ')} = <b>${fmt(base[S.stat])}</b> ${S.st.label}${short ? ` – under ${HAT[S.stat]}, so <b>half</b>` : ''}`, 3400); GM.sound.play(short ? 'boo' : 'cheer'); }, 300);
     if (fergieTime && !rant) setTimeout(() => { GM.toast(`⌚ <b>Fergie time!</b> ${GM.esc(p.name)} counts double`, 2800); GM.sound.play('cheer'); }, 300);
     if (p.name === 'Sergio Agüero' && emptySlots() === 0) {  // 🤫 the last signing of the game
       setTimeout(() => { GM.toast('🇦🇷 <b>AGÜEROOOOOOOO!</b> Last-minute winner.', 3200); GM.sound.play('cheer'); }, 400);
@@ -1163,7 +1174,10 @@
       case 'modifier':
         if (S.modifier) { GM.toast('A modifier is already active'); return; }
         S.modifier = w;
-        GM.toast(`${wc.icon} ${wc.name} active on your next signing`);
+        if (w === 'captain' && S.rules.chaos) {
+          const n = Math.min(S.capN || 0, 2); S.capMult = CAP[n]; S.capN = (S.capN || 0) + 1;
+          GM.toast(`©️ ${['Captain', 'Vice-captain', 'Vice-vice-captain'][n]}: your next signing counts ×${CAP[n]}`);
+        } else GM.toast(`${wc.icon} ${wc.name} active on your next signing`);
         break;
       case 'formation': {
         const idx = w === 'gegenpress'
@@ -1348,7 +1362,7 @@
       return `<div class="slot empty ${s.pos !== baseForm()[i] ? 'moved' : ''} ${tgt ? 'target' : ''}" data-slot="${i}" title="${GM.POS_NAME[s.pos]}"><span class="pos pos-${GM.GROUP[s.pos]}">${s.pos}</span></div>`;
     }
     const p = byId(s.p);
-    const surname = p.name.includes(' ') ? p.name.split(' ').slice(1).join(' ') : p.name;
+    const surname = (p.name.includes(' ') ? p.name.split(' ').slice(1).join(' ') : p.name) + (s.trio && s.trio.length > 1 ? ` +${s.trio.length - 1}` : '');
     const pk = S.parked && S.parked[i] && SPRITE[S.parked[i]] ? `<i class="parked ${(SIDE[baseForm()[i]] ?? 1) === 2 ? 'r' : ''}" aria-hidden="true">${SPRITE[S.parked[i]]}</i>` : '';
     return `<div class="slot filled ${s.fresh ? 'fresh' : ''}" data-slot="${i}" title="${GM.esc(p.name)}">${pk}
       ${GM.avatar(p)}<span class="slot-name">${GM.esc(surname)}</span>
