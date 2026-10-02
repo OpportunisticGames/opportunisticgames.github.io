@@ -36,6 +36,18 @@ formations, and badges round 2.
   - *Wildcards and managers:* ideas to pick from when we talk it through.
 - **Questions:** keeper stat (flat bonus or clean sheets)? Is "restore" only the damage, or the damage plus a bonus? Should
   Second Chance be a wildcard you can hold or a random event? How many new wildcards and managers (suggest 4 each)?
+- **Decided so far (owner, 2 Oct):** keepers get a **scaled** clean-sheet stat, so pies becomes a real event.
+  FPL data (vaastav, `players_raw.csv` per season, 2016-17 on) has `clean_sheets`; 28 keepers whose whole career is in that
+  window: median 31, mean 41, 90th percentile 98, max 123 (Ederson). About 0.25 clean sheets per 90. Goals today: midfielder
+  median 10, 90th percentile 37; so **one point per 3 clean sheets** lands keepers level with midfielders. Gap: careers before
+  2016 (FPL `history_past` goes back to 2006-07; before that, estimate 0.25 × apps and say so).
+- **Manager ideas (real managers, each needs a perk and a catch; balance by simulating many bot drafts so no one is more than
+  about 5% from the average):** Warnock (1 in 10 signings counts for nothing, the rest +25%), Pulis (no injuries/red cards,
+  every signing −5%), Postecoglou (rare events 3x likelier, defenders −25%), Redknapp (meter charges double, big moments pay a
+  bonus, bad ones likelier), Dyche (meter half speed, steady +8%), Van Gaal (any outfielder can play any outfield slot, but
+  out-of-position counts 75%), Conte (back three: centre-backs +25%, formation shifts), Benitez (wildcards likelier, rotation risk
+  likelier).
+
 
 ### Google Play Games: achievements and Sidekick 💬 *(owner, 2 Oct 2026)*
 - **Owner's words:** Sidekick is switched on in Play Console; wants our badges to count as Google Play achievements
