@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Google Play version only: tells Play Games Services which game this is (the id is in res/values/games_ids.xml). -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application>
+    <application android:name=".GoalMachineApp">
         <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/game_services_project_id" />
     </application>
 </manifest>

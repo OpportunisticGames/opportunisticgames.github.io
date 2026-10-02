@@ -11,6 +11,10 @@ final class Achievements {
 
     static void init(Context context) { }
 
+    static String status() { return "Only in the Google Play version"; }
+
+    static void checkSignIn(Activity activity, boolean interactive) { }
+
     static void update(Activity activity, String progressJson) { }
 
     static void show(Activity activity) { }

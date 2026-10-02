@@ -9,6 +9,12 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 50, label: '5.13.1', date: '2026-10-02', title: '🎮 Play Games sign-in',
+      items: [
+        '🎮 Settings has a Google Play Games section in the Play app: who you’re signed in as, a Sign in button, and shortcuts to your achievements and leaderboards',
+      ],
+    },
+    {
       v: 49, label: '5.13', date: '2026-10-02', title: '🏆 Google Play Games leaderboards and stats',
       items: [
         '🏆 In the Google Play app, your Ultimate Wildcard, CHAOS and Purist scores now also go on Google Play Games leaderboards, at Normal, Hard and Extreme',

@@ -365,6 +365,9 @@
             <label><span><b>📅 Daily reminder</b><small>A nudge to play the daily games, if you haven't yet</small></span><select class="input" id="s-ndaily"><option value="">Off</option>${Array.from({ length: 31 }, (_, i) => { const t = String(7 + Math.floor(i / 2)).padStart(2, '0') + (i % 2 ? ':30' : ':00'); return `<option ${GM.notify.prefs().daily === t ? 'selected' : ''}>${t}</option>`; }).join('')}</select></label></div>
           <div id="s-nstatus" class="nstatus"></div>
           <div class="setting-btns"><button class="btn ghost small" id="s-ntest">🔔 Send a test</button><button class="btn ghost small" id="s-ncheck">🔄 Check now</button><button class="btn ghost small" id="s-notif">⚙️ Phone settings</button></div></div>`) : ''}
+        ${inApp && GM.app('pgsAvailable') ? grp('notify', `<div class="setting"><b>🎮 Google Play Games</b><small>Your badges, scores and stats go to your Play Games profile when you’re signed in.</small>
+          <div id="s-pgs" class="nstatus"><span>Checking…</span></div>
+          <div class="setting-btns"><button class="btn ghost small" id="s-pgsin">🔑 Sign in</button><button class="btn ghost small" id="s-pgsbadges">🏅 My achievements</button><button class="btn ghost small" id="s-pgsboards">🏆 Leaderboards</button></div></div>`) : ''}
         ${grp('play', `<div class="setting"><b>Difficulty</b><small>Hard hides clubs, years and appearances: names and positions only, and in the Target games big-name players turn up less often. Extreme brings in every one of the 5,000+ PL players, not just the 50+ app ones, in the Main event, CHAOS, the Target and money games, Higher or Lower and Guess the Tally. Where you type names (Who Am I?, the Club Grid, Club Hopper) every PL player always counts, and Extreme turns the suggestions off: type the whole name. The daily games stay the same for everyone. Each level has its own leaderboards</small>${seg('s-level', Object.fromEntries(Object.entries(GM.LEVELS).map(([k, [i, n]]) => [k, i + ' ' + n])), GM.level())}</div>`)}
       </section>
       <section class="settings links" ${sub ? 'hidden' : ''}>
@@ -405,6 +408,11 @@
         <span>${ago == null ? 'No check yet' : `Last check ${mins(st.lastRun)}: ${GM.esc(st.lastResult)}${st.lastCount >= 0 ? ` · ${st.lastCount} waiting` : ''}`}</span>`;
     };
     nstatus();
+    const pgsLine = () => { const el = GM.$('#s-pgs'); if (el) el.innerHTML = `<span>${GM.esc(GM.app('pgsStatus') || 'Update the app to see this')}</span>`; };
+    if (GM.$('#s-pgs')) { pgsLine(); setTimeout(pgsLine, 2500); }
+    const pi = GM.$('#s-pgsin'); if (pi) pi.onclick = () => { GM.app('pgsSignIn'); [1500, 4000, 8000].forEach(t => setTimeout(pgsLine, t)); };
+    const pb = GM.$('#s-pgsbadges'); if (pb) pb.onclick = () => GM.app('pgsShow');
+    const pl = GM.$('#s-pgsboards'); if (pl) pl.onclick = () => GM.app('pgsBoards');
     const nt = GM.$('#s-ntest');
     if (nt) nt.onclick = () => {
       if (GM.app('notificationsAllowed') === false) { GM.app('askNotifications'); GM.app('openNotificationSettings'); return; }

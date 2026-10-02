@@ -52,7 +52,7 @@ public class MainActivity extends Activity {
         web = new WebView(this);
         web.setBackgroundColor(0xFF07261D);
 
-        Achievements.init(this);   // Play Games Services (a do-nothing in the sideload APK)
+        Achievements.checkSignIn(this, false);   // Play Games Services (a do-nothing in the sideload APK)
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);   // scores, album and settings live in localStorage
@@ -229,6 +229,19 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void pgsUpdate(String progressJson) {
             Achievements.update(MainActivity.this, progressJson);
+        }
+
+        /** Play Games sign-in, for Settings: "Signed in as …" or why not. */
+        @JavascriptInterface
+        public String pgsStatus() {
+            Achievements.checkSignIn(MainActivity.this, false);   // refreshes it for next time
+            return Achievements.status();
+        }
+
+        /** Asks the player to sign in to Play Games (the Sign in button). */
+        @JavascriptInterface
+        public void pgsSignIn() {
+            Achievements.checkSignIn(MainActivity.this, true);
         }
 
         /** Submits a score to the Play Games leaderboard with this name. */
