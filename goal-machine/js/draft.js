@@ -418,10 +418,11 @@
     return fresh;
   }
   function managersModal() {
+    if (GM.CFX) GM.CFX.loadFaces();
     const have = mgrUnlocked();
     GM.modal(`<h3>👔 CHAOS managers</h3><p class="muted small">${have.length} of ${Object.keys(MANAGERS).length} unlocked. Do the feat in a CHAOS game to unlock the rest.</p>
       <div class="mgr-all">${MGR_START.concat(Object.keys(UNLOCK), Object.keys(MANAGERS)).filter((k, n, a) => MANAGERS[k] && a.indexOf(k) === n).map(k => { const m = MANAGERS[k], on = have.includes(k);
-        return `<div class="mgr-row ${on ? '' : 'locked'}"><span class="mgr-ico">${on ? m.icon : '🔒'}</span><div><b>${m.name}</b>${on ? `<small class="up">✅ ${m.perk}</small><small class="down">⚠️ ${m.catch}</small>` : `<small>🔓 ${UNLOCK[k] ? UNLOCK[k][0] : ''}</small>`}</div></div>`; }).join('')}</div>
+        return `<div class="mgr-row ${on ? '' : 'locked'}">${on ? mgrIco(k) : '<span class="mgr-ico">🔒</span>'}<div><b>${m.name}</b>${on ? `<small class="up">✅ ${m.perk}</small><small class="down">⚠️ ${m.catch}</small>` : `<small>🔓 ${UNLOCK[k] ? UNLOCK[k][0] : ''}</small>`}</div></div>`; }).join('')}</div>
       <div class="actions"><button class="btn" data-close>Done</button></div>`);
   }
   const mgrIs = k => !!(S && S.rules && S.rules.chaos && S.manager === k);
@@ -488,6 +489,7 @@
   function start(el, mode, opts = {}) {
     fitKey = '';  // a new page: size the pitch again
     // CHAOS: get the effects layer and its animations ready in the background, so the first moment isn't late
+    if (mode === 'chaos' && GM.CFX) GM.CFX.loadFaces();
     if (mode === 'chaos') setTimeout(() => { GM.sound.recordings(true); if (GM.FX && GM.CFX) { GM.FX.preload(Object.keys(GM.CFX.LOT)); GM.FX.makeStill('ambulance', 0.5); } }, 1200);
     root = el;
     if (!RULES[mode]) mode = 'ultimate';
@@ -944,7 +946,7 @@
       o.pick = mgrChoices(S.manager);
       o.onPick = n => { appoint(n); hired(); };
       // he clears his desk and walks off with his box before you pick the next one
-      if (GM.CFX) { busy = true; GM.CFX.play('sacked', GM.$('.pitch', root), GM.esc(old.name)); await GM.sleep(GM.calm() ? 400 : 2400); busy = false; if (!onThisGame()) return; }
+      if (GM.CFX) { busy = true; GM.CFX.play('sacked', GM.$('.pitch', root), GM.esc(old.name), S.manager); await GM.sleep(GM.calm() ? 400 : 2400); busy = false; if (!onThisGame()) return; }
     }
     if (!o.pick) S.event = { icon: m.icon, name: m.name, note: o.text.replace(/<[^>]+>/g, '') };
     leave(k);
@@ -961,7 +963,7 @@
     return out;
   }
   // the new manager walks on to the touchline, waving (after the pick, once the pitch is back)
-  const hired = () => setTimeout(() => { if (GM.CFX && onThisGame()) GM.CFX.play('hired', GM.$('.pitch', root)); }, 450);
+  const hired = () => setTimeout(() => { if (GM.CFX && onThisGame() && S.manager) GM.CFX.play('hired', GM.$('.pitch', root), S.manager, GM.esc(MANAGERS[S.manager].name)); }, 450);
   function appoint(k) {
     S.manager = k; S.log.push('👔');
     if (k === 'conte' && S.xi.every(x => x.p == null)) {  // only before anyone has signed
@@ -1010,7 +1012,8 @@
   // a fruit machine: three windows of spinning symbols and a lever to pull
   const FRUIT = ['⚽', '🏆', '🍒', '7️⃣', '💰'];
   const fruitHtml = () => `<button class="fruit" aria-label="Pull the lever"><span class="fruit-top">JACKPOT</span><span class="fruit-wins">${[0, 1, 2].map(k => `<span class="fruit-win"><span class="fruit-strip">${FRUIT.concat(FRUIT, FRUIT).map(x => `<i>${x}</i>`).join('')}</span></span>`).join('')}</span><span class="fruit-lever"><i></i></span><span class="coin-go">👆 Pull the lever</span></button>`;
-  const mgrCard = k => { const m = MANAGERS[k]; return `<button class="mgr" data-mgr="${k}"><span class="mgr-ico">${m.icon}</span><b>${m.name}</b><small class="up">✅ ${m.perk}</small><small class="down">⚠️ ${m.catch}</small></button>`; };
+  const mgrIco = k => (GM.CFX && GM.CFX.hasFace(k) ? `<span class="mgr-ico ph">${GM.CFX.faceImg(k, 0.55)}</span>` : `<span class="mgr-ico">${MANAGERS[k].icon}</span>`);
+  const mgrCard = k => { const m = MANAGERS[k]; return `<button class="mgr" data-mgr="${k}">${mgrIco(k)}<b>${m.name}</b><small class="up">✅ ${m.perk}</small><small class="down">⚠️ ${m.catch}</small></button>`; };
   /* A moment in three acts. 1: the entrance, full screen with its own scene and sound (you flip the coin here, or pick
      a manager). 2: the action, as the card drops to the bottom and whatever it is happens on your pitch while the
      numbers count to their new values. 3: the result, held long enough to read. A tap moves it on a step. */

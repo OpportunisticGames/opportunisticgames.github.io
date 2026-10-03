@@ -18,6 +18,7 @@
         '🐕 The dog and the pigeon that stay all game are animated, and so are the taxman, the TV van, the mystery box on its parachute and the loan army’s coach',
         '🌪️ The tornado is a spinning funnel of dust and turf',
         '🔊 Real sounds: a referee’s whistle, a stadium crowd, booing, sirens, the helicopter, thunder, a cash register, the fruit machine, fireworks and more (free recordings, credited on the credits page)',
+        '👔 Managers have their photos now: on their cards, fading up over the pitch when they’re appointed, and greyed out with a SACKED stamp when they’re not',
         '🔋 Calm mode (Settings → Look) turns all the visuals off'
       ],
     },

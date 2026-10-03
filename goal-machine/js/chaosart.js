@@ -119,9 +119,24 @@
     // drawn things raining down (trophies, bursts, money bags)
     shower: kind => [`<div class="sc-rain">${Array.from({ length: 10 }, (_, k) => `<i style="left:${5 + k * 9.5}%;animation-delay:${(k % 5) * 0.12}s">${(LEFT[kind] || LEFT.burst)().replace(/width="\d+"/, 'width="34"').replace(/height="\d+"/, 'height="34"')}</i>`).join('')}</div>`, 2200, null],
     // the sacked manager walks off with his box of things; the new one walks on, waving
-    sacked: name => [`<div class="sc-walk off">${SUIT}<i class="held">${LEFT.crate()}</i></div><div class="sc-p45">P45${name ? `<small>${name}</small>` : ''}</div>`, 3000, ['sacked']],
-    hired: () => [`<div class="sc-walk on">${walk(PERSON('#e8b48a', '#1d2a44', '#2b2f36', 'wave'))}</div>`, 2600, ['applause']],
+    // the manager's portrait fades up over the pitch (greyed out and stamped when he's sacked); the drawn one if there's no photo
+    sacked: (name, key) => [portrait(key) ? `<div class="sc-portrait sad">${portrait(key)}<b class="stamp">SACKED</b></div><div class="sc-p45">P45${name ? `<small>${name}</small>` : ''}</div>`
+      : `<div class="sc-walk off">${SUIT}<i class="held">${LEFT.crate()}</i></div><div class="sc-p45">P45${name ? `<small>${name}</small>` : ''}</div>`, 3000, ['sacked']],
+    hired: (key, name) => [portrait(key) ? `<div class="sc-portrait new">${portrait(key)}<b class="banner">NEW MANAGER<small>${name || ''}</small></b></div>`
+      : `<div class="sc-walk on">${walk(PERSON('#e8b48a', '#1d2a44', '#2b2f36', 'wave'))}</div>`, 2800, ['applause']],
   };
+  /* ---------------------------------------------------------------- the managers' portraits (fx/mgr/, credits.json)
+     Free-licence photos from Wikipedia, with where the face is, so it can be centred and sized the same for everyone. */
+  let FACES = null;
+  const loadFaces = () => FACES || (FACES = fetch('fx/mgr/credits.json').then(r => r.ok ? r.json() : {}).then(j => { FACES = j; return j; }).catch(() => (FACES = {})));
+  const faceOf = key => (FACES && !(FACES instanceof Promise) && FACES[key] && FACES[key].face && FACES[key].face.length >= 3 ? FACES[key] : null);
+  // an <img> placed so his face sits in the middle of whatever box it's in, about `fill` of its width
+  const faceImg = (key, fill = 0.42) => {
+    const f = faceOf(key); if (!f) return '';
+    const [cx, cy, fw] = f.face, w = Math.max(100, Math.min(420, fill / (fw / 100) * 100));
+    return `<img class="mgr-photo" src="fx/mgr/${key}.jpg" alt="" style="width:${w.toFixed(0)}%;transform:translate(-${cx}%,-${cy}%)">`;
+  };
+  const portrait = key => faceOf(key) ? `<span class="ph">${faceImg(key, 0.36)}</span>` : '';
   const scarf = () => `<svg viewBox="0 0 54 16" width="54" height="16">${[0, 1, 2, 3, 4, 5].map(k => `<rect x="${3 + k * 8}" y="3" width="8" height="10" fill="${k % 2 ? '#fff' : '#d22'}"/>`).join('')}</svg>`;
 
   /* ---------------------------------------------------------------- wildcards: a short drawn flourish when you play one */
@@ -216,7 +231,7 @@
   const SWAP = { tvvan: st => swap(st, '.sc-van', 'tvvan'), taxman: st => swap(st, '.sc-tax', 'taxman', '.held'), box: st => swap(st, '.sc-crate', 'crate'), coach: st => swap(st, '.sc-coach', 'coach') };
   const fxOn = (table, kind, pitch, args) => { const f = FX(); if (f && pitch && table[kind]) try { table[kind](f, pitch.getBoundingClientRect(), ...args); } catch (e) { /* decoration only */ } };
 
-  GM.CFX = { PERSON, SPRITE, LEFT, SCENES, WILD, WEATHER, WX_W, weatherHtml, LOT,
+  GM.CFX = { PERSON, SPRITE, LEFT, SCENES, WILD, WEATHER, WX_W, weatherHtml, LOT, loadFaces, faceImg, hasFace: k => !!faceOf(k),
     // play a scene or a wildcard flourish over the pitch
     play(kind, pitch, ...args) {
       const f = SCENES[kind] || WILD[kind]; if (!f) return null;

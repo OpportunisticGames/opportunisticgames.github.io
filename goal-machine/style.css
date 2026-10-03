@@ -2894,3 +2894,26 @@ body.calm .wx, body.calm .wx i, body.calm .pitch.wx-windy .pitch-row { animation
 #roam-fx .rmp { position: absolute; width: 44px; height: 44px; transform: translate(-50%, -60%); }
 body.calm #roam-fx { display: none; }
 .cm-tornado.fxd i, .cm-tornado.fxd b, .cm-tornado.fxd::before, .cm-tornado.fxd::after { display: none; }
+
+/* the managers' portraits (chaosart.js): fading up over the pitch when one's appointed or sacked, and on their cards */
+.mgr-photo { position: absolute; left: 50%; top: 44%; max-width: none; height: auto; }
+.sc-portrait { left: 50%; top: 40%; width: 62%; aspect-ratio: 4 / 5; transform: translate(-50%, -50%); }
+.sc-portrait .ph { position: absolute; inset: 0; overflow: hidden; border-radius: 50% / 46%;
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 48%, #000 58%, transparent 74%); mask-image: radial-gradient(ellipse 50% 50% at 50% 48%, #000 58%, transparent 74%); }
+.sc-portrait.new .ph { animation: mgr-up 2.8s ease-out forwards; filter: drop-shadow(0 0 18px rgba(255, 211, 77, .7)); }
+.sc-portrait.sad .ph { animation: mgr-sad 3s ease-in forwards; filter: grayscale(1) contrast(1.1) brightness(.9); }
+@keyframes mgr-up { 0% { opacity: 0; transform: scale(1.12); filter: blur(6px) drop-shadow(0 0 18px rgba(255, 211, 77, .7)); } 25% { opacity: .9; transform: scale(1); filter: blur(0) drop-shadow(0 0 18px rgba(255, 211, 77, .7)); }
+  75% { opacity: .85; transform: scale(1.03); } 100% { opacity: 0; transform: scale(1.06); } }
+@keyframes mgr-sad { 0% { opacity: 0; transform: translateY(-10px); } 20% { opacity: .85; transform: none; } 70% { opacity: .8; transform: translateY(8px) rotate(-2deg); } 100% { opacity: 0; transform: translateY(60px) rotate(-6deg); } }
+.sc-portrait .stamp { position: absolute; left: 50%; top: 55%; transform: translate(-50%, -50%) rotate(-14deg) scale(3); opacity: 0; padding: 4px 12px; border: 4px solid #e3262f; border-radius: 6px;
+  color: #e3262f; font: 900 1.9rem Oswald, Impact, sans-serif; letter-spacing: .06em; background: rgba(255, 255, 255, .85); animation: stamp-slam 3s ease-out forwards; }
+@keyframes stamp-slam { 0%, 22% { opacity: 0; transform: translate(-50%, -50%) rotate(-14deg) scale(3); } 30% { opacity: 1; transform: translate(-50%, -50%) rotate(-14deg) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, 0) rotate(-20deg) scale(1); } }
+.sc-portrait .banner { position: absolute; left: 50%; bottom: -6%; transform: translateX(-50%); white-space: nowrap; padding: 4px 12px; border-radius: 8px; background: #ffd34d; color: #3a2a00;
+  font: 900 .95rem Oswald, Impact, sans-serif; letter-spacing: .08em; text-align: center; opacity: 0; animation: banner-up 2.8s ease-out forwards; box-shadow: 0 6px 18px rgba(0, 0, 0, .35); }
+.sc-portrait .banner small { display: block; font: 800 .8rem Inter, Arial, sans-serif; letter-spacing: 0; }
+@keyframes banner-up { 0%, 20% { opacity: 0; transform: translate(-50%, 14px); } 32%, 80% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
+body.calm .sc-portrait .ph, body.calm .sc-portrait .stamp, body.calm .sc-portrait .banner { animation-duration: .01s !important; }
+.mgr-ico.ph { position: relative; display: inline-block; width: 2.6rem; height: 2.6rem; border-radius: 50%; overflow: hidden; background: #223; vertical-align: middle; }
+.mgr-ico.ph .mgr-photo { top: 46%; }
+.scn-sacked .sc-p45 { top: 10%; font-size: 1.3rem; }
+.sc-portrait .stamp { top: 70%; }
