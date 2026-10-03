@@ -1,5 +1,5 @@
 {
- "_note": "key: [max seconds, search terms...]. tools/fetch_sfx.py (run by sounds.yml) searches Wikimedia Commons for free-licence recordings and puts candidates in fx/sfx/cand/.",
+ "_note": "key: [max seconds, search terms...]. tools/fetch_sfx.py (run by sounds.yml) searches Wikimedia Commons for free-licence recordings and puts candidates in fx/sfx/cand/. Every sound here has been picked (fx/sfx/<key>.mp3); add a new key to look for another.",
  "whistle": [
   2.0,
   "referee whistle",
@@ -13,22 +13,10 @@
   "crowd cheer",
   "audience cheering"
  ],
- "groan": [
-  2.5,
-  "crowd groan",
-  "crowd aww",
-  "disappointed crowd"
- ],
  "applause": [
   3.5,
   "applause crowd",
   "clapping audience"
- ],
- "chant": [
-  5.0,
-  "football chant",
-  "crowd chanting",
-  "stadium crowd singing"
  ],
  "boo": [
   3.0,
@@ -140,23 +128,6 @@
   "glass break",
   "glass shatter"
  ],
- "horn": [
-  1.5,
-  "car horn",
-  "horn honk"
- ],
- "tank": [
-  3.0,
-  "tank",
-  "heavy machinery",
-  "tracks rumble"
- ],
- "ufo": [
-  3.0,
-  "ufo",
-  "sci-fi",
-  "spaceship hum"
- ],
  "boing": [
   1.0,
   "boing",
@@ -166,10 +137,5 @@
   1.0,
   "whoosh",
   "swoosh"
- ],
- "sting": [
-  2.0,
-  "fanfare",
-  "victory jingle"
  ]
 }
