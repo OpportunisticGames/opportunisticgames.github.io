@@ -54,7 +54,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     await pg.waitForSelector('.cm', { timeout: 5000 }).catch(() => {});
     await pg.waitForTimeout(ev === 'tornado' || ev === 'blackhole' ? 1700 : 900);
     if (ev === 'tornado') { await pg.click('.cm'); await pg.waitForTimeout(1300); ok(!!(await pg.$('.cm-tornado')), 'the tornado is a real spinning funnel'); await pg.screenshot({ path: 'lay/chaos_tornado.png' }); }
-    if (ev === 'blackhole') { await pg.click('.cm'); await pg.waitForTimeout(800); ok(!!(await pg.$('.cm-hole')), 'the black hole opens on the pitch'); await pg.screenshot({ path: 'lay/chaos_hole.png' }); }
+    if (ev === 'blackhole') { await pg.click('.cm'); await pg.waitForTimeout(800); ok(!!(await pg.$('.cm-hole')) || await pg.evaluate(() => GM.FX && GM.FX.on && GM.FX._alive() > 0), 'the black hole opens on the pitch'); await pg.screenshot({ path: 'lay/chaos_hole.png' }); }
     if (ev === 'gamble') { await pg.waitForSelector('.fruit'); await pg.click('.fruit'); await pg.waitForTimeout(2600); ok(await pg.$$eval('.fruit-strip.stop', e => e.length) === 3, '🎰 the fruit machine spins and stops on three symbols'); }
     if (ev === 'quake') { await pg.click('.cm'); await pg.waitForTimeout(900); ok(!!(await pg.$('.crack.tearing')), '🌍 the earthquake tears a crack across the pitch'); }
     for (let k = 0; k < 40 && await pg.$('.cm:not(.out)'); k++) { await pg.click('.cm:not(.out)').catch(() => {}); await pg.waitForTimeout(250); }

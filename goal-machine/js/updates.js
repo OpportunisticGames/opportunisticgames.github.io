@@ -9,6 +9,15 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 64, label: '5.21', date: '2026-10-03', title: '✨ CHAOS, properly animated',
+      items: [
+        '🚑 The ambulance, police car, flying saucer, helicopter, tank, dog and pigeon are proper animations now, made by artists on LottieFiles, and the ambulance that parks by your injured player is the same one',
+        '✨ A new effects engine: lightning that really strikes, a black hole that swallows the light, flares that spit sparks and smoke, a tornado full of flying turf, rain that splashes, confetti, fireworks and money raining down',
+        '💥 Every number that changes gets a burst of sparks (or a puff of smoke)',
+        '🔋 Calm mode (Settings → Look) turns all of it off',
+      ],
+    },
+    {
       v: 63, label: '5.20.1', date: '2026-10-03', title: '📸 Better photos',
       items: [
         '📸 More players have photos, and a new face finder lines the face up in 2,500 of them (more to come), so fewer foreheads and shoulders',

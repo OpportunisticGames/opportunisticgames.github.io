@@ -159,16 +159,65 @@
   // the weather's own layer on the pitch (rain streaks, falling snow, drifting fog, sunlight, gusts)
   const weatherHtml = w => WEATHER[w] ? `<div class="wx wx-${w}" aria-hidden="true">${w === 'wind' ? '<i class="leaf"></i><i class="leaf l2"></i>' : ''}</div>` : '';
 
-  GM.CFX = { PERSON, SPRITE, LEFT, SCENES, WILD, WEATHER, WX_W, weatherHtml,
+  /* ---------------------------------------------------------------- the effects layer (js/fx.js) on top
+     Lottie animations (fx/lottie/) stand in for the drawn vehicles and characters when the effects layer is on: how
+     big each one is on the pitch and which way it faces as drawn (so it can be turned round to face where it's going). */
+  const LOT = {
+    ambulance: { w: 92, h: 70, faces: 'right' }, police: { w: 112, h: 56, faces: 'left' }, tank: { w: 124, h: 62, faces: 'right' },
+    heli: { w: 140, h: 140, faces: 'right' }, ufo: { w: 190, h: 190, speed: 2 }, dog: { w: 74, h: 74, faces: 'left' }, pigeon: { w: 74, h: 74 },
+    runner: { w: 76, h: 76, faces: 'left' }, trophy: { w: 170, h: 170 }, heartbreak: { w: 100, h: 100 }, tornado: { w: 170, h: 170 },
+  };
+  const FX = () => (GM.FX && GM.FX.on ? GM.FX : null);
+  const at = (r, fx, fy) => [r.left + fx * r.width, r.top + fy * r.height];
+  // PixiJS on top of a scene: particles, light and Lottie, played alongside the drawn scene (pitch = the pitch element)
+  const PX = {
+    tvvan: (f, r) => setTimeout(() => f.money(r, 40), 1300),
+    derby: (f, r) => [[0.08, 0.04], [0.28, 0.96], [0.72, 0.04], [0.92, 0.96]].forEach(([x, y], k) => setTimeout(() => f.flare(...at(r, x, y), 2700), k * 160)),
+    shower: (f, r, kind) => kind === 'burst' ? (f.flash(0xffd34d, 0.45), f.burst(...at(r, 0.5, 0.5), 0xff8a3d), setTimeout(() => f.burst(...at(r, 0.25, 0.3)), 250), setTimeout(() => f.burst(...at(r, 0.75, 0.7)), 450))
+      : kind === 'trophy' ? (f.lottie('trophy', { x: r.left + r.width / 2, y: r.top + r.height * 0.42, w: LOT.trophy.w }), f.fireworks(r, 6), f.confetti(r, 160))
+      : f.money(r, 36),
+    golden: (f, r) => { for (let k = 0; k < 5; k++) setTimeout(() => f.sparks(...at(r, 0.1 + k * 0.17, 0.25 + (k % 2) * 0.4), { n: 18, tint: 0xffd34d, speed: 260 }), 200 + k * 380); },
+    box: (f, r) => setTimeout(() => { f.sparks(...at(r, 0.5, 0.62), { n: 40, tint: 0xffe14a }); f.shockwave(...at(r, 0.5, 0.62), 0xffe14a, 0.8); }, 1900),
+    ref: (f, r) => setTimeout(() => f.flash(0xff2a2a, 0.25), 1150),
+    chant: (f, r) => f.confetti(r, 90),
+    press: (f, r) => [0.6, 0.9, 1.2, 1.45, 1.7].forEach(t => setTimeout(() => f.flash(0xffffff, 0.35), t * 1000)),
+    vhs: (f, r) => f.flash(0xa46bff, 0.3),
+    parade: (f, r) => { f.confetti(r, 160); f.fireworks(r, 3); },
+    honour: (f, r) => f.confetti(r, 70),
+    chutes: (f, r) => f.smoke(...at(r, 0.5, 1), { ms: 1200, tint: 0xff8a3d, alpha: 0.25 }),
+    sacked: (f, r) => setTimeout(() => f.sparks(...at(r, 0.5, 0.18), { n: 16, tint: 0xffffff, speed: 200 }), 300),
+    hired: (f, r) => setTimeout(() => f.confetti({ left: r.left, top: r.top, width: r.width * 0.6, height: r.height }, 50), 1600),
+    streak: () => {},
+  };
+  const PXW = {
+    centurion: (f, r) => { f.burst(...at(r, 0.5, 0.5), 0xffd34d); f.sparks(...at(r, 0.5, 0.5), { n: 60, tint: 0xffd34d, speed: 520 }); },
+    hot: (f, r) => { for (let k = 0; k < 7; k++) f.fire(...at(r, 0.07 + k * 0.143, 0.99), 1600); },
+    coin: (f, r) => setTimeout(() => f.sparks(...at(r, 0.5, 0.45), { n: 24, tint: 0xf2c230 }), 600),
+    storm: (f, r) => f.twister(r, 1900),
+    trophy: (f, r) => { f.lottie('trophy', { x: r.left + r.width / 2, y: r.top + r.height / 2, w: 150 }); f.sparks(...at(r, 0.5, 0.5), { n: 30, tint: 0xffd34d }); },
+    hero: (f, r) => setTimeout(() => f.sparks(...at(r, 0.5, 0.4), { n: 40, tint: 0xffffff }), 300),
+    captain: (f, r) => setTimeout(() => f.sparks(...at(r, 0.5, 0.5), { n: 30, tint: 0xffd34d, speed: 300 }), 700),
+    gegenpress: (f, r) => f.dust([0.15, 0.35, 0.55, 0.75, 0.9].map(x => at(r, x, 0.95))),
+    oneclub: (f, r) => f.sparks(...at(r, 0.5, 0.5), { n: 30, tint: 0xff5e7a }),
+    deadline: (f, r) => f.flash(0xffd400, 0.3),
+    magnet: (f, r) => f.shockwave(...at(r, 0.5, 0.5), 0x5ec8ff, 1),
+    joker: (f, r) => f.sparks(...at(r, 0.5, 0.5), { n: 30, tint: 0xa46bff }),
+    bus: (f, r) => setTimeout(() => f.smoke(...at(r, 0.32, 0.86), { ms: 900, tint: 0x888888, alpha: 0.4 }), 400),
+  };
+  const fxOn = (table, kind, pitch, args) => { const f = FX(); if (f && pitch && table[kind]) try { table[kind](f, pitch.getBoundingClientRect(), ...args); } catch (e) { /* decoration only */ } };
+
+  GM.CFX = { PERSON, SPRITE, LEFT, SCENES, WILD, WEATHER, WX_W, weatherHtml, LOT,
     // play a scene or a wildcard flourish over the pitch
     play(kind, pitch, ...args) {
       const f = SCENES[kind] || WILD[kind]; if (!f) return null;
       const [html, ms, sound] = f(...args);
+      fxOn(PX, kind, pitch, args);
       return stage(pitch, 'scn-' + kind, html, ms, sound);
     },
     wild(kind, pitch, ...args) {
       const f = WILD[kind]; if (!f) return null;
       const [html, ms, sound] = f(...args);
+      fxOn(PXW, kind, pitch, args);
       return stage(pitch, 'wc wc-' + kind, html, ms, sound);
     },
   };

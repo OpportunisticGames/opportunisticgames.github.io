@@ -61,6 +61,13 @@ game mode for players; this file is about how to work on it.
   Two jokers (`Jsub` wins the trick, `Jvar` gives it to the lowest of the suit led; playable any time, not as a lead); the lowest Defender and Midfielder make way. Cards: kit per suit, number/suit/name in the left strip (`.htc-edge`) so a fanned hand reads. Online (`GM.hattrickOnline`): a duel room with variant `hattrick`; only the humans' moves are stored ({t:'b',n} / {t:'p',c}, s = host/guest), and `replay` rebuilds the game from the room seed with the computers (seats 2, 3) on the never-random Hard play, so both phones agree. The final mover posts both team scores (p_all) and gm_finalise gives the higher 100–0.
 - `chaosart.js` – CHAOS artwork (`GM.CFX`): drawn scenes over the pitch for events (`play`), wildcard flourishes (`wild`),
   the weather (`WEATHER`, set per game at kick-off), extra sprites and drawn leftovers. Calm mode skips the scenes.
+- `fx.js` – the effects layer for every game (`GM.FX`): a PixiJS canvas over the page for particles and light
+  (`sparks`, `smoke`, `flare`, `burst`, `lightning`, `vortex`, `twister`, `rain`, `confetti`, `money`, `fireworks`…) and
+  `GM.FX.lottie(name, …)` for LottieFiles animations in `fx/lottie/` (credits in `fx/lottie/credits.json`, shown on the
+  credits page). The libraries (`js/vendor/`) load on first use; `GM.FX.on` is false in Calm mode or without WebGL, so keep a
+  fallback. Canvas at resolution 1 (sharper cost too much on phones). **Getting Lottie files:** sessions can search
+  LottieFiles (its MCP) but not download, so list candidates in `fx/lottie/candidates.json` and push: the `lottie.yml`
+  workflow downloads them into `fx/lottie/cand/`; preview, copy the picks out, add credits, empty the list, delete `cand/`.
 - `modes.js` – quick games (Club Hopper, Higher or Lower, Who Am I?, Club Grid, Guess the Tally); `h2h.js` – pass-the-phone series.
 - `daily.js` – Today page, Footle, daily streaks. `collection.js` – Album, badges, Dream XIs. `report.js` – full-time report.
 - `picture.js` – share-a-picture of your XI. `audio.js` – synthesised sound + music. `updates.js` – changelog.
@@ -121,6 +128,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
      compares average points (`node managers.js 150 "" 6`, ~25 min; `SIM_URL` points it at a frozen copy so you can keep
      editing). Keep every manager within about 5% of the average.
    - `chaosfx.js` – every CHAOS scene and wildcard flourish is drawn, weather, the parked bus, sacking, replay and the CHAOS picture.
+   - `chaospixi.js` – the effects layer in CHAOS: Lottie vehicles and characters, PixiJS particles, the parked ambulance, Calm off.
    - `layout.js` – plays whole drafts and checks the pitch never changes size (`node layout.js "chaos:1,ultimate:0" 360x740`).
    Screenshots land in `./lay/` (ignored by git). Block photo hosts with `ctx.route(...)` to keep runs fast.
 3. Tests set `gm:welcomed` and `gm:seenVersion` in localStorage so the welcome and What's New pop-ups stay out of the way.

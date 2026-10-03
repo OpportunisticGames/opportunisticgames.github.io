@@ -2869,3 +2869,14 @@ body.calm .wx, body.calm .wx i, body.calm .pitch.wx-windy .pitch-row { animation
 .cm-coin > svg { width: 1.3em; height: 1.3em; display: block; }
 .sc-press > *, .sc-guard > *, .sc-vhs > *, .sc-flares > *, .sc-rain > i, .sc-vuvu > i, .wc-press > i, .wc-flames > i, .sc-crate .sparkle { position: absolute; }
 .sc-press .board { height: 22%; }
+
+/* the effects layer (js/fx.js): PixiJS canvas and Lottie animations over the page, never in the way of a tap */
+.fx-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 94; }
+.fx-lottie { position: fixed; pointer-events: none; z-index: 94; }
+.fx-lot { width: 100%; height: 100%; }
+.fx-lot.flip { transform: scaleX(-1); }
+.cm-veh.lot { overflow: visible; }
+.cm-veh.lot .held-case { position: absolute; right: 18%; top: 48%; width: 22px; }
+.cm-veh.lot .held-case .spr { width: 22px; height: auto; }
+.cm-tornado b > svg { width: 1em; height: 1em; }
+.parked .lot-still { width: 100%; height: auto; display: block; }

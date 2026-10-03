@@ -684,7 +684,13 @@
     app.innerHTML = `<div class="topbar"><a href="#/about" class="back">‹</a><h2>📸 Photo credits</h2><span></span></div>
       <p class="muted">These photos come from Wikimedia Commons under the licences shown. Tap one to see the original file and its full licence.${GM.playSafe ? '' : ' Other photos are from premierleague.com and Transfermarkt.'}</p>
       <div class="plist">${list.length ? list.map(p => `<a class="prow credit" href="${GM.esc(p.photo.u)}" target="_blank" rel="noopener">${GM.avatar(p)}<div><b>${GM.esc(p.name)}</b>
-        <small>📷 ${GM.esc(p.photo.a)} · ${GM.esc(p.photo.l)}</small></div></a>`).join('') : '<div class="muted">No Wikimedia photos in use yet.</div>'}</div>`;
+        <small>📷 ${GM.esc(p.photo.a)} · ${GM.esc(p.photo.l)}</small></div></a>`).join('') : '<div class="muted">No Wikimedia photos in use yet.</div>'}</div>
+      <h3>🎬 Animations</h3><p class="muted">The ambulances, police cars, flying saucers and friends in CHAOS are free animations from <a href="https://lottiefiles.com" target="_blank" rel="noopener">LottieFiles</a>, by these artists. Effects are drawn with <a href="https://pixijs.com" target="_blank" rel="noopener">PixiJS</a>.</p>
+      <div class="plist" id="lot-credits"></div>`;
+    fetch('fx/lottie/credits.json').then(r => r.json()).then(c => {
+      const el = GM.$('#lot-credits'); if (!el) return;
+      el.innerHTML = Object.keys(c).map(k => `<a class="prow credit" href="${GM.esc(c[k].source)}" target="_blank" rel="noopener"><div><b>${GM.esc(k[0].toUpperCase() + k.slice(1))}</b><small>🎬 ${GM.esc(c[k].creator.replace(/^.*lottiefiles\.com\/+/, ''))} · LottieFiles</small></div></a>`).join('');
+    }).catch(() => {});
   }
 
   window.addEventListener('hashchange', route);
