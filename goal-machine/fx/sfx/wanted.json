@@ -1,0 +1,141 @@
+{
+ "_note": "key: [max seconds, search terms...]. tools/fetch_sfx.py (run by sounds.yml) searches Wikimedia Commons for free-licence recordings and puts candidates in fx/sfx/cand/. Every sound here has been picked (fx/sfx/<key>.mp3); add a new key to look for another.",
+ "whistle": [
+  2.0,
+  "referee whistle",
+  "whistle blow sound",
+  "pea whistle"
+ ],
+ "cheer": [
+  4.0,
+  "crowd cheering",
+  "stadium crowd",
+  "crowd cheer",
+  "audience cheering"
+ ],
+ "applause": [
+  3.5,
+  "applause crowd",
+  "clapping audience"
+ ],
+ "boo": [
+  3.0,
+  "crowd booing",
+  "audience boo",
+  "booing crowd"
+ ],
+ "ambulance": [
+  3.5,
+  "ambulance siren uk",
+  "ambulance siren",
+  "two tone siren"
+ ],
+ "police": [
+  3.5,
+  "police siren",
+  "police car siren"
+ ],
+ "heli": [
+  4.0,
+  "helicopter",
+  "helicopter flyby"
+ ],
+ "thunder": [
+  4.0,
+  "thunder clap",
+  "thunder"
+ ],
+ "rain": [
+  5.0,
+  "rain heavy",
+  "rain"
+ ],
+ "wind": [
+  4.0,
+  "wind howling",
+  "wind",
+  "storm wind"
+ ],
+ "coin": [
+  1.5,
+  "coin flip",
+  "coin",
+  "coins drop"
+ ],
+ "cash": [
+  2.0,
+  "cash register",
+  "coins jackpot",
+  "money"
+ ],
+ "slot": [
+  3.0,
+  "slot machine",
+  "casino win",
+  "jackpot"
+ ],
+ "camera": [
+  1.5,
+  "camera shutter",
+  "camera click"
+ ],
+ "vuvuzela": [
+  3.0,
+  "vuvuzela",
+  "horn blast stadium"
+ ],
+ "bang": [
+  2.5,
+  "explosion",
+  "big explosion",
+  "boom"
+ ],
+ "firework": [
+  4.0,
+  "fireworks",
+  "firework launch explode"
+ ],
+ "bells": [
+  4.0,
+  "church bells wedding",
+  "church bells"
+ ],
+ "screech": [
+  1.5,
+  "tire screech",
+  "car skid",
+  "brakes squeal"
+ ],
+ "engine": [
+  3.0,
+  "engine idle",
+  "truck engine",
+  "bus"
+ ],
+ "dog": [
+  1.5,
+  "dog bark",
+  "dog barking"
+ ],
+ "pigeon": [
+  2.5,
+  "pigeon",
+  "dove cooing",
+  "bird wings flap"
+ ],
+ "smash": [
+  1.5,
+  "glass break",
+  "glass shatter"
+ ],
+ "boing": [
+  1.0,
+  "boing",
+  "cartoon spring"
+ ],
+ "whoosh": [
+  1.0,
+  "whoosh",
+  "swoosh"
+ ]
+}

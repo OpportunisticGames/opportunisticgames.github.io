@@ -119,9 +119,24 @@
     // drawn things raining down (trophies, bursts, money bags)
     shower: kind => [`<div class="sc-rain">${Array.from({ length: 10 }, (_, k) => `<i style="left:${5 + k * 9.5}%;animation-delay:${(k % 5) * 0.12}s">${(LEFT[kind] || LEFT.burst)().replace(/width="\d+"/, 'width="34"').replace(/height="\d+"/, 'height="34"')}</i>`).join('')}</div>`, 2200, null],
     // the sacked manager walks off with his box of things; the new one walks on, waving
-    sacked: name => [`<div class="sc-walk off">${SUIT}<i class="held">${LEFT.crate()}</i></div><div class="sc-p45">P45${name ? `<small>${name}</small>` : ''}</div>`, 3000, ['sacked']],
-    hired: () => [`<div class="sc-walk on">${walk(PERSON('#e8b48a', '#1d2a44', '#2b2f36', 'wave'))}</div>`, 2600, ['applause']],
+    // the manager's portrait fades up over the pitch (greyed out and stamped when he's sacked); the drawn one if there's no photo
+    sacked: (name, key) => [portrait(key) ? `<div class="sc-portrait sad">${portrait(key)}<b class="stamp">SACKED</b></div><div class="sc-p45">P45${name ? `<small>${name}</small>` : ''}</div>`
+      : `<div class="sc-walk off">${SUIT}<i class="held">${LEFT.crate()}</i></div><div class="sc-p45">P45${name ? `<small>${name}</small>` : ''}</div>`, 3000, ['sacked']],
+    hired: (key, name) => [portrait(key) ? `<div class="sc-portrait new">${portrait(key)}<b class="banner">NEW MANAGER<small>${name || ''}</small></b></div>`
+      : `<div class="sc-walk on">${walk(PERSON('#e8b48a', '#1d2a44', '#2b2f36', 'wave'))}</div>`, 2800, ['applause']],
   };
+  /* ---------------------------------------------------------------- the managers' portraits (fx/mgr/, credits.json)
+     Free-licence photos from Wikipedia, with where the face is, so it can be centred and sized the same for everyone. */
+  let FACES = null;
+  const loadFaces = () => FACES || (FACES = fetch('fx/mgr/credits.json').then(r => r.ok ? r.json() : {}).then(j => { FACES = j; return j; }).catch(() => (FACES = {})));
+  const faceOf = key => (FACES && !(FACES instanceof Promise) && FACES[key] && FACES[key].face && FACES[key].face.length >= 3 ? FACES[key] : null);
+  // an <img> placed so his face sits in the middle of whatever box it's in, about `fill` of its width
+  const faceImg = (key, fill = 0.42) => {
+    const f = faceOf(key); if (!f) return '';
+    const [cx, cy, fw] = f.face, w = Math.max(100, Math.min(420, fill / (fw / 100) * 100));
+    return `<img class="mgr-photo" src="fx/mgr/${key}.jpg" alt="" style="width:${w.toFixed(0)}%;transform:translate(-${cx}%,-${cy}%)">`;
+  };
+  const portrait = key => faceOf(key) ? `<span class="ph">${faceImg(key, 0.36)}</span>` : '';
   const scarf = () => `<svg viewBox="0 0 54 16" width="54" height="16">${[0, 1, 2, 3, 4, 5].map(k => `<rect x="${3 + k * 8}" y="3" width="8" height="10" fill="${k % 2 ? '#fff' : '#d22'}"/>`).join('')}</svg>`;
 
   /* ---------------------------------------------------------------- wildcards: a short drawn flourish when you play one */
@@ -159,16 +174,77 @@
   // the weather's own layer on the pitch (rain streaks, falling snow, drifting fog, sunlight, gusts)
   const weatherHtml = w => WEATHER[w] ? `<div class="wx wx-${w}" aria-hidden="true">${w === 'wind' ? '<i class="leaf"></i><i class="leaf l2"></i>' : ''}</div>` : '';
 
-  GM.CFX = { PERSON, SPRITE, LEFT, SCENES, WILD, WEATHER, WX_W, weatherHtml,
+  /* ---------------------------------------------------------------- the effects layer (js/fx.js) on top
+     Lottie animations (fx/lottie/) stand in for the drawn vehicles and characters when the effects layer is on: how
+     big each one is on the pitch and which way it faces as drawn (so it can be turned round to face where it's going). */
+  const LOT = {
+    ambulance: { w: 92, h: 70, faces: 'right' }, police: { w: 112, h: 56, faces: 'left' }, tank: { w: 124, h: 62, faces: 'right' },
+    heli: { w: 140, h: 140, faces: 'right' }, ufo: { w: 190, h: 190, speed: 2 }, dog: { w: 74, h: 74, faces: 'left' }, pigeon: { w: 74, h: 74 },
+    runner: { w: 76, h: 76, faces: 'left' }, trophy: { w: 170, h: 170 }, heartbreak: { w: 100, h: 100 }, tornado: { w: 170, h: 170 },
+    taxman: { w: 66, h: 66, faces: 'right' }, crate: { w: 96, h: 96 }, coach: { w: 150, h: 150, faces: 'right' }, tvvan: { w: 120, h: 120, faces: 'right' },
+  };
+  const FX = () => (GM.FX && GM.FX.on ? GM.FX : null);
+  const at = (r, fx, fy) => [r.left + fx * r.width, r.top + fy * r.height];
+  // PixiJS on top of a scene: particles, light and Lottie, played alongside the drawn scene (pitch = the pitch element)
+  const PX = {
+    tvvan: (f, r) => setTimeout(() => f.money(r, 40), 1300),
+    derby: (f, r) => [[0.08, 0.04], [0.28, 0.96], [0.72, 0.04], [0.92, 0.96]].forEach(([x, y], k) => setTimeout(() => f.flare(...at(r, x, y), 2700), k * 160)),
+    shower: (f, r, kind) => kind === 'burst' ? (f.flash(0xffd34d, 0.45), f.burst(...at(r, 0.5, 0.5), 0xff8a3d), setTimeout(() => f.burst(...at(r, 0.25, 0.3)), 250), setTimeout(() => f.burst(...at(r, 0.75, 0.7)), 450))
+      : kind === 'trophy' ? (f.lottie('trophy', { x: r.left + r.width / 2, y: r.top + r.height * 0.42, w: LOT.trophy.w }), f.fireworks(r, 6), f.confetti(r, 160), GM.sound.play('firework'))
+      : f.money(r, 36),
+    golden: (f, r) => { for (let k = 0; k < 5; k++) setTimeout(() => f.sparks(...at(r, 0.1 + k * 0.17, 0.25 + (k % 2) * 0.4), { n: 18, tint: 0xffd34d, speed: 260 }), 200 + k * 380); },
+    box: (f, r) => setTimeout(() => { f.sparks(...at(r, 0.5, 0.62), { n: 40, tint: 0xffe14a }); f.shockwave(...at(r, 0.5, 0.62), 0xffe14a, 0.8); }, 1900),
+    ref: (f, r) => setTimeout(() => f.flash(0xff2a2a, 0.25), 1150),
+    chant: (f, r) => f.confetti(r, 90),
+    press: (f, r) => [0.6, 0.9, 1.2, 1.45, 1.7].forEach(t => setTimeout(() => { f.flash(0xffffff, 0.35); GM.sound.play('camera'); }, t * 1000)),
+    vhs: (f, r) => f.flash(0xa46bff, 0.3),
+    parade: (f, r) => { f.confetti(r, 160); f.fireworks(r, 3); },
+    honour: (f, r) => f.confetti(r, 70),
+    chutes: (f, r) => f.smoke(...at(r, 0.5, 1), { ms: 1200, tint: 0xff8a3d, alpha: 0.25 }),
+    sacked: (f, r) => setTimeout(() => f.sparks(...at(r, 0.5, 0.18), { n: 16, tint: 0xffffff, speed: 200 }), 300),
+    hired: (f, r) => setTimeout(() => f.confetti({ left: r.left, top: r.top, width: r.width * 0.6, height: r.height }, 50), 1600),
+    streak: () => {},
+  };
+  const PXW = {
+    centurion: (f, r) => { f.burst(...at(r, 0.5, 0.5), 0xffd34d); f.sparks(...at(r, 0.5, 0.5), { n: 60, tint: 0xffd34d, speed: 520 }); },
+    hot: (f, r) => { for (let k = 0; k < 7; k++) f.fire(...at(r, 0.07 + k * 0.143, 0.99), 1600); },
+    coin: (f, r) => setTimeout(() => f.sparks(...at(r, 0.5, 0.45), { n: 24, tint: 0xf2c230 }), 600),
+    storm: (f, r) => f.twister(r, 1900),
+    trophy: (f, r) => { f.lottie('trophy', { x: r.left + r.width / 2, y: r.top + r.height / 2, w: 150 }); f.sparks(...at(r, 0.5, 0.5), { n: 30, tint: 0xffd34d }); },
+    hero: (f, r) => setTimeout(() => f.sparks(...at(r, 0.5, 0.4), { n: 40, tint: 0xffffff }), 300),
+    captain: (f, r) => setTimeout(() => f.sparks(...at(r, 0.5, 0.5), { n: 30, tint: 0xffd34d, speed: 300 }), 700),
+    gegenpress: (f, r) => f.dust([0.15, 0.35, 0.55, 0.75, 0.9].map(x => at(r, x, 0.95))),
+    oneclub: (f, r) => f.sparks(...at(r, 0.5, 0.5), { n: 30, tint: 0xff5e7a }),
+    deadline: (f, r) => f.flash(0xffd400, 0.3),
+    magnet: (f, r) => f.shockwave(...at(r, 0.5, 0.5), 0x5ec8ff, 1),
+    joker: (f, r) => f.sparks(...at(r, 0.5, 0.5), { n: 30, tint: 0xa46bff }),
+    bus: (f, r) => setTimeout(() => f.smoke(...at(r, 0.32, 0.86), { ms: 900, tint: 0x888888, alpha: 0.4 }), 400),
+  };
+  const swap = (st, sel, kind, keep) => {
+    const f = FX(), el = st && st.querySelector(sel), L = LOT[kind]; if (!f || !el || !L) return;
+    const held = keep ? el.querySelector(keep) : null;
+    el.innerHTML = ''; el.classList.add('lot'); Object.assign(el.style, { width: L.w + 'px', height: L.h + 'px' });
+    f.lottie(kind, { into: el, loop: true, flip: L.faces === 'left' });
+    if (held) el.appendChild(held);
+  };
+  // the drawn vehicles and people in a scene that have a proper animation
+  const SWAP = { tvvan: st => swap(st, '.sc-van', 'tvvan'), taxman: st => swap(st, '.sc-tax', 'taxman', '.held'), box: st => swap(st, '.sc-crate', 'crate'), coach: st => swap(st, '.sc-coach', 'coach') };
+  const fxOn = (table, kind, pitch, args) => { const f = FX(); if (f && pitch && table[kind]) try { table[kind](f, pitch.getBoundingClientRect(), ...args); } catch (e) { /* decoration only */ } };
+
+  GM.CFX = { PERSON, SPRITE, LEFT, SCENES, WILD, WEATHER, WX_W, weatherHtml, LOT, loadFaces, faceImg, hasFace: k => !!faceOf(k),
     // play a scene or a wildcard flourish over the pitch
     play(kind, pitch, ...args) {
       const f = SCENES[kind] || WILD[kind]; if (!f) return null;
       const [html, ms, sound] = f(...args);
-      return stage(pitch, 'scn-' + kind, html, ms, sound);
+      fxOn(PX, kind, pitch, args);
+      const st = stage(pitch, 'scn-' + kind, html, ms, sound);
+      if (SWAP[kind]) try { SWAP[kind](st); } catch (e) { /* the drawing stays */ }
+      return st;
     },
     wild(kind, pitch, ...args) {
       const f = WILD[kind]; if (!f) return null;
       const [html, ms, sound] = f(...args);
+      fxOn(PXW, kind, pitch, args);
       return stage(pitch, 'wc wc-' + kind, html, ms, sound);
     },
   };

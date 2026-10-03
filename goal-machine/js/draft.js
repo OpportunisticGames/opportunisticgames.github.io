@@ -154,7 +154,7 @@
   const RAR_NAME = { u: 'Uncommon', r: 'Rare', l: 'Legendary' };
   // more match-day nonsense. go(r) changes the game and returns { note, run }; look = [scene, sound]
   const XEV = {
-    pigeon: { rar: 'c', icon: '🐦', name: 'Pitch invader', tone: 'weird', look: ['kickoff', 'wild'], go: () => { S.bonus.push(['🐦 A pigeon', 1]); return { note: 'A pigeon lands on the pitch. It’s just a pigeon. It’s staying. <b>+1</b> bonus point, for the pigeon.', run: c => c.fly('🐦') }; } },
+    pigeon: { rar: 'c', icon: '🐦', name: 'Pitch invader', tone: 'weird', look: ['kickoff', 'wild'], go: () => { S.bonus.push(['🐦 A pigeon', 1]); return { note: 'A pigeon lands on the pitch. It’s just a pigeon. It’s staying. <b>+1</b> bonus point, for the pigeon.', run: c => { c.fly('🐦'); setTimeout(() => GM.sound.play('pigeon'), 1800); } }; } },
     streaker: { rar: 'c', icon: '🏃', name: 'Streaker', tone: 'good', look: ['party', ['whistle', 'cheer']], go: () => { roam('streaker'); const p = pts(6); S.bonus.push(['🏃 The streaker', p]); return { note: `Someone’s run on with nothing on. Best laugh of the season: <b>+${p}</b> bonus. He’s still out there, with a steward after him.`, run: c => c.scene('streak') }; } },
     amnesty: { rar: 'r', icon: '📺', name: 'VAR overturns it all', tone: 'good', look: ['tv', ['var', 'cheer']], go: () => {
       const hurt = filledIdx().filter(i => HURT.includes(S.xi[i].mod));
@@ -166,7 +166,7 @@
       if (!f.length) return { note: 'A pigeon circles, finds nothing worth aiming at and flies off.' };
       const hit = []; while (hit.length < Math.min(2, f.length)) { const i = f[Math.floor(r() * f.length)]; if (!hit.includes(i)) hit.push(i); }
       S.splat = (S.splat || []).concat(hit);
-      return { note: `Splat. ${hit.map(nm).join(' and ')} ${hit.length > 1 ? 'are' : 'is'} covered: you can’t see ${hit.length > 1 ? 'their numbers' : 'his number'} until full time. Keep track yourself!`, run: c => hit.forEach((i, k) => c.visit(i, ART('poo'), 'strike', k * 500, 'boo')) }; } },
+      return { note: `Splat. ${hit.map(nm).join(' and ')} ${hit.length > 1 ? 'are' : 'is'} covered: you can’t see ${hit.length > 1 ? 'their numbers' : 'his number'} until full time. Keep track yourself!`, run: c => { hit.forEach((i, k) => c.visit(i, ART('poo'), 'strike', k * 500, 'boo')); c.lotAt('pigeon', hit[0], -54, 2600); } }; } },
     chant: { rar: 'c', icon: '📣', name: 'Terrace anthem', tone: 'good', look: ['party', 'cheer'], go: () => { const p = pts(10); S.bonus.push(['📣 Terrace anthem', p]); return { note: `The away end sing your name for 90 minutes: <b>+${p}</b> bonus points.`, run: c => c.scene('chant') }; } },
     pies: { rar: 'c', icon: '🥧', name: 'Who ate all the pies?', tone: 'good', look: ['gold', 'cheer'], go: () => {
       const i = S.xi.findIndex(x => x.p != null && x.pos === 'GK');
@@ -176,7 +176,7 @@
       roam('dog');
       if (S.inv.length >= 3) return { note: 'A dog runs on, looks at your full wildcard bag and runs off again.' };
       const cards = Object.keys(WILDCARDS).filter(k => !WILDCARDS[k].chaos && !S.rules.noWild.includes(k)), w = cards[Math.floor(r() * cards.length)];
-      S.inv.push(w); return { note: `A dog runs on and fetches you a wildcard: ${WILDCARDS[w].icon} <b>${WILDCARDS[w].name}</b>!`, run: c => c.bag() }; } },
+      S.inv.push(w); return { note: `A dog runs on and fetches you a wildcard: ${WILDCARDS[w].icon} <b>${WILDCARDS[w].name}</b>!`, run: c => { c.cross('dog', 0.82, 2600); c.bag(); setTimeout(() => GM.sound.play('dog'), 500); } }; } },
     vuvuzela: { rar: 'c', icon: '🎺', name: 'Vuvuzelas', tone: 'weird', look: ['fire', 'horn'], go: () => { charge(); return { note: 'Nothing happens, very loudly. The CHAOS meter goes up one.', run: c => c.scene('vuvuzela') }; } },
     hamstring: { rar: 'c', icon: '🦵', name: 'Hamstring twang', tone: 'bad', look: ['red', 'bad'], go: r => {
       const f = filledIdx(); if (!f.length) return { note: 'Nobody to pull a hamstring yet.' };
@@ -264,10 +264,10 @@
       const f = filledIdx(); if (!f.length) return { note: 'Nobody to slip yet.' };
       const sg = f.find(k => byId(S.xi[k].p).name === 'Steven Gerrard');  // 🤫 of course it's him
       const i = sg != null ? sg : f.slice().sort((a, b) => S.xi[b].g - S.xi[a].g)[0]; scale(S.xi[i], 0.5, 'halved'); mark(i, '#banana');
-      return { note: sg != null ? 'Steven Gerrard slips. Of course he does. <b>Halved</b>.' : `${nm(i)} slips at the worst possible moment: <b>halved</b>.`, run: c => c.visit(i, ART('banana'), 'drive') }; } },
+      return { note: sg != null ? 'Steven Gerrard slips. Of course he does. <b>Halved</b>.' : `${nm(i)} slips at the worst possible moment: <b>halved</b>.`, run: c => { c.visit(i, ART('banana'), 'drive'); setTimeout(() => GM.sound.play('boing'), 500); } }; } },
     lastminute: { rar: 'l', icon: '⏱️', name: '93:20', tone: 'good', look: ['unleash', ['horn', 'cheer']], go: () => {
       filledIdx().forEach(i => scale(S.xi[i], 1.5, 'boosted'));
-      return { note: 'Last-minute madness! The whole ground goes up: your <b>whole XI ×1.5</b>!', run: c => { c.confetti(); c.sweep(ART('party')); } }; } },
+      return { note: 'Last-minute madness! The whole ground goes up: your <b>whole XI ×1.5</b>!', run: c => { c.confetti(); c.fireworks(); c.sweep(ART('party')); } }; } },
   };
   const pts = n => Math.round(n * CHAOS_UNIT[S.stat]);
   // your lowest scorer who's actually scored (a boost on 0 would do nothing); -1 if nobody has
@@ -418,10 +418,11 @@
     return fresh;
   }
   function managersModal() {
+    if (GM.CFX) GM.CFX.loadFaces();
     const have = mgrUnlocked();
     GM.modal(`<h3>👔 CHAOS managers</h3><p class="muted small">${have.length} of ${Object.keys(MANAGERS).length} unlocked. Do the feat in a CHAOS game to unlock the rest.</p>
       <div class="mgr-all">${MGR_START.concat(Object.keys(UNLOCK), Object.keys(MANAGERS)).filter((k, n, a) => MANAGERS[k] && a.indexOf(k) === n).map(k => { const m = MANAGERS[k], on = have.includes(k);
-        return `<div class="mgr-row ${on ? '' : 'locked'}"><span class="mgr-ico">${on ? m.icon : '🔒'}</span><div><b>${m.name}</b>${on ? `<small class="up">✅ ${m.perk}</small><small class="down">⚠️ ${m.catch}</small>` : `<small>🔓 ${UNLOCK[k] ? UNLOCK[k][0] : ''}</small>`}</div></div>`; }).join('')}</div>
+        return `<div class="mgr-row ${on ? '' : 'locked'}">${on ? mgrIco(k) : '<span class="mgr-ico">🔒</span>'}<div><b>${m.name}</b>${on ? `<small class="up">✅ ${m.perk}</small><small class="down">⚠️ ${m.catch}</small>` : `<small>🔓 ${UNLOCK[k] ? UNLOCK[k][0] : ''}</small>`}</div></div>`; }).join('')}</div>
       <div class="actions"><button class="btn" data-close>Done</button></div>`);
   }
   const mgrIs = k => !!(S && S.rules && S.rules.chaos && S.manager === k);
@@ -487,6 +488,9 @@
 
   function start(el, mode, opts = {}) {
     fitKey = '';  // a new page: size the pitch again
+    // CHAOS: get the effects layer and its animations ready in the background, so the first moment isn't late
+    if (mode === 'chaos' && GM.CFX) GM.CFX.loadFaces();
+    if (mode === 'chaos') setTimeout(() => { GM.sound.recordings(true); if (GM.FX && GM.CFX) { GM.FX.preload(Object.keys(GM.CFX.LOT)); GM.FX.makeStill('ambulance', 0.5); } }, 1200);
     root = el;
     if (!RULES[mode]) mode = 'ultimate';
     const extreme = !!opts.extreme && !!RULES_X[mode] && !opts.online;
@@ -763,8 +767,33 @@
     dog: { dur: 9, html: () => DOG },
     ufo: { dur: 7, html: () => SPRITE.ufo },
   };
+  // roamers with a proper animation, drawn on their own layer over the pitch (so redrawing the pitch on every tap doesn't
+  // start them again): the dog trotting up and down, and the pigeon that's settled in
+  const LROAM = { dog: 'dog' };
+  const fxRoam = () => !!(GM.FX && GM.FX.on && GM.CFX && GM.CFX.LOT);
+  function roamLayer() {
+    let lay = document.getElementById('roam-fx');
+    const pitch = S && S.rules && S.rules.chaos && fxRoam() ? GM.$$('.pitch', root).slice(-1)[0] : null;
+    const want = pitch ? (S.roam || []).filter(k => LROAM[k]) : [], pigeons = pitch ? (S.mess || []).filter(m => m.i === '#pigeon') : [];
+    if (!want.length && !pigeons.length) { if (lay) lay.remove(); return; }
+    if (!lay) { lay = document.createElement('div'); lay.id = 'roam-fx'; lay.setAttribute('aria-hidden', 'true'); document.body.appendChild(lay); }
+    const r = pitch.getBoundingClientRect();
+    Object.assign(lay.style, { left: (r.left + scrollX) + 'px', top: (r.top + scrollY) + 'px', width: r.width + 'px', height: r.height + 'px' });
+    want.forEach(k => {
+      if (lay.querySelector('.rmx-' + k)) return;
+      const d = ROAM[k].dur, el = document.createElement('i'); el.className = `rm rm-${k} rmx-${k}`;
+      el.style.animationDuration = d + 's'; el.style.animationDelay = -((Date.now() / 1000) % d).toFixed(2) + 's';
+      lay.appendChild(el); GM.FX.lottie(LROAM[k], { into: el, loop: true, flip: GM.CFX.LOT[LROAM[k]].faces === 'left' });
+    });
+    pigeons.forEach((m, n) => {
+      if (lay.querySelector('.rmp-' + n)) return;
+      const el = document.createElement('i'); el.className = 'rmp rmp-' + n; Object.assign(el.style, { left: m.x + '%', top: m.y + '%' });
+      lay.appendChild(el); GM.FX.lottie('pigeon', { into: el, loop: true });
+    });
+  }
+  window.addEventListener('hashchange', () => { const l = document.getElementById('roam-fx'); if (l) l.remove(); });
   const roamHtml = () => {
-    const ks = (S.roam || []).flatMap(k => k === 'streaker' ? ['streaker', 'steward'] : [k]).filter(k => ROAM[k]);
+    const ks = (S.roam || []).flatMap(k => k === 'streaker' ? ['streaker', 'steward'] : [k]).filter(k => ROAM[k] && !(LROAM[k] && fxRoam()));
     if (!ks.length) return '';
     const now = Date.now() / 1000;
     return `<div class="roam" aria-hidden="true">${ks.map(k => { const d = ROAM[k].dur; return `<i class="rm rm-${k}" style="animation-duration:${d}s;animation-delay:-${((now - (ROAM[k].lag || 0)) % d).toFixed(2)}s">${ROAM[k].html()}</i>`; }).join('')}</div>`;
@@ -917,7 +946,7 @@
       o.pick = mgrChoices(S.manager);
       o.onPick = n => { appoint(n); hired(); };
       // he clears his desk and walks off with his box before you pick the next one
-      if (GM.CFX) { busy = true; GM.CFX.play('sacked', GM.$('.pitch', root), GM.esc(old.name)); await GM.sleep(GM.calm() ? 400 : 2400); busy = false; if (!onThisGame()) return; }
+      if (GM.CFX) { busy = true; GM.CFX.play('sacked', GM.$('.pitch', root), GM.esc(old.name), S.manager); await GM.sleep(GM.calm() ? 400 : 2400); busy = false; if (!onThisGame()) return; }
     }
     if (!o.pick) S.event = { icon: m.icon, name: m.name, note: o.text.replace(/<[^>]+>/g, '') };
     leave(k);
@@ -934,7 +963,7 @@
     return out;
   }
   // the new manager walks on to the touchline, waving (after the pick, once the pitch is back)
-  const hired = () => setTimeout(() => { if (GM.CFX && onThisGame()) GM.CFX.play('hired', GM.$('.pitch', root)); }, 450);
+  const hired = () => setTimeout(() => { if (GM.CFX && onThisGame() && S.manager) GM.CFX.play('hired', GM.$('.pitch', root), S.manager, GM.esc(MANAGERS[S.manager].name)); }, 450);
   function appoint(k) {
     S.manager = k; S.log.push('👔');
     if (k === 'conte' && S.xi.every(x => x.p == null)) {  // only before anyone has signed
@@ -969,12 +998,12 @@
     const sky = document.createElement('div'); sky.className = 'cm-sky sky-' + (kind || 'dark'); el.prepend(sky);
     const bits = (n, cls, chars) => { for (let k = 0; k < n; k++) { const b = document.createElement('i'); b.className = cls; const ch = chars ? chars[k % chars.length] : ''; if (ch[0] === '<') b.innerHTML = ch; else b.textContent = ch; b.style.left = Math.random() * 100 + '%'; b.style.animationDelay = (Math.random() * 1.6).toFixed(2) + 's'; b.style.animationDuration = (1.4 + Math.random() * 1.4).toFixed(2) + 's'; if (!chars) b.style.background = ['#ff2bd6', '#ffe600', '#39ff88', '#00f0ff', '#fff'][k % 5]; sky.appendChild(b); } };
     if (kind === 'storm' || kind === 'lightning') {
-      if (kind === 'storm') { sky.insertAdjacentHTML('beforeend', '<div class="cm-rain"></div><div class="cm-rain far"></div>'); GM.sound.play('rain'); }
+      if (kind === 'storm') { if (GM.FX && GM.FX.on) { GM.FX.raise(2800); GM.FX.rain({ left: 0, top: 0, width: innerWidth, height: innerHeight }, 2600); } else sky.insertAdjacentHTML('beforeend', '<div class="cm-rain"></div><div class="cm-rain far"></div>'); GM.sound.play('rain'); }
       let n = 0;
       const flash = () => { if (!el.isConnected) return; sky.classList.remove('flash'); void sky.offsetWidth; sky.classList.add('flash'); if (n++ < 2) GM.sound.play('thunder'); timers.push(setTimeout(flash, 900 + Math.random() * 1500)); };
       timers.push(setTimeout(flash, 250));
     }
-    if (kind === 'twister') { sky.insertAdjacentHTML('beforeend', '<div class="cm-tornado big"><i></i><i></i><i></i><i></i><i></i><i></i><b>🍃</b><b>📰</b><b>🧢</b><b>🍃</b></div>'); GM.sound.play('wind'); }
+    if (kind === 'twister') { sky.insertAdjacentHTML('beforeend', '<div class="cm-tornado big"><i></i><i></i><i></i><i></i><i></i><i></i>' + [ART('paper'), ART('receipt'), ART('shirt'), ART('paper')].map(x => `<b>${x}</b>`).join('') + '</div>'); GM.sound.play('wind'); }
     if (kind === 'party') bits(40, 'cm-confetti');
     if (kind === 'money') bits(22, 'cm-coin', [ART('moneybag'), ART('coin'), NOTE]);
     if (kind === 'unleash') bits(18, 'cm-coin', [ART('burst'), ART('bolt'), ART('scorch')]);
@@ -983,7 +1012,8 @@
   // a fruit machine: three windows of spinning symbols and a lever to pull
   const FRUIT = ['⚽', '🏆', '🍒', '7️⃣', '💰'];
   const fruitHtml = () => `<button class="fruit" aria-label="Pull the lever"><span class="fruit-top">JACKPOT</span><span class="fruit-wins">${[0, 1, 2].map(k => `<span class="fruit-win"><span class="fruit-strip">${FRUIT.concat(FRUIT, FRUIT).map(x => `<i>${x}</i>`).join('')}</span></span>`).join('')}</span><span class="fruit-lever"><i></i></span><span class="coin-go">👆 Pull the lever</span></button>`;
-  const mgrCard = k => { const m = MANAGERS[k]; return `<button class="mgr" data-mgr="${k}"><span class="mgr-ico">${m.icon}</span><b>${m.name}</b><small class="up">✅ ${m.perk}</small><small class="down">⚠️ ${m.catch}</small></button>`; };
+  const mgrIco = k => (GM.CFX && GM.CFX.hasFace(k) ? `<span class="mgr-ico ph">${GM.CFX.faceImg(k, 0.55)}</span>` : `<span class="mgr-ico">${MANAGERS[k].icon}</span>`);
+  const mgrCard = k => { const m = MANAGERS[k]; return `<button class="mgr" data-mgr="${k}">${mgrIco(k)}<b>${m.name}</b><small class="up">✅ ${m.perk}</small><small class="down">⚠️ ${m.catch}</small></button>`; };
   /* A moment in three acts. 1: the entrance, full screen with its own scene and sound (you flip the coin here, or pick
      a manager). 2: the action, as the card drops to the bottom and whatever it is happens on your pitch while the
      numbers count to their new values. 3: the result, held long enough to read. A tap moves it on a step. */
@@ -1005,6 +1035,7 @@
         const el = slotEl(i); if (!el) return;
         el.classList.add(S.xi[i].g > b.g[i] ? 'hit-up' : 'hit-down');
         countTo(GM.$('.sg', el), b.g[i], S.xi[i].g, 800);
+        if (FX) { const [px, py] = pg(i); if (S.xi[i].g > b.g[i]) FX.sparks(px, py, { n: 16, tint: 0x7cc0ff, speed: 220, up: 120 }); else FX.smoke(px, py, { n: 8, ms: 200, tint: 0xe66767, alpha: 0.35 }); }
         GM.sound.play(S.xi[i].g > b.g[i] ? 'good' : 'bad');
         // the crowd reacts (once a moment): a groan when one of yours turns red, an "ooh" when one turns blue
         const tn = toneOf(i);
@@ -1013,6 +1044,17 @@
       let crowd = false;
       const fxEl = (cls, txt, x, y) => { if (!pitch) return null; const e = document.createElement('span'); e.className = 'cm-fx ' + cls; if (String(txt)[0] === '<') e.innerHTML = txt; else e.textContent = txt; if (x != null) { e.style.left = x + 'px'; e.style.top = y + 'px'; } pitch.appendChild(e); return e; };
       const at = i => { const el = slotEl(i), pr = pitch.getBoundingClientRect(), r = el.getBoundingClientRect(); return [r.left - pr.left + r.width / 2, r.top - pr.top + r.height / 2, (r.left + r.width / 2 - pr.left) / pr.width]; };
+      // the effects layer (js/fx.js): page coordinates of a player, and the Lottie version of a vehicle or character
+      const FX = GM.FX && GM.FX.on ? GM.FX : null, LOT = GM.CFX && GM.CFX.LOT || {};
+      const pg = i => { const el = slotEl(i), r = el && el.getBoundingClientRect(); return r ? [r.left + r.width / 2, r.top + r.height / 2] : [0, 0]; };
+      const pr = () => (pitch ? pitch.getBoundingClientRect() : { left: 0, top: 0, width: innerWidth, height: innerHeight });
+      // put a Lottie in an element that's moving about (a vehicle), facing the way it's going; false if there isn't one
+      const lotInto = (el, kind, facingRight = true) => {
+        const L = FX && LOT[kind]; if (!L) return false;
+        el.innerHTML = ''; el.classList.add('lot'); el.style.width = L.w + 'px'; el.style.height = L.h + 'px';
+        FX.lottie(kind, { into: el, loop: true, speed: L.speed, flip: (L.faces === 'left') === facingRight });
+        return true;
+      };
       const c = {
         // something crosses the whole pitch, hitting each changed player as it passes
         sweep(icon, ms = 1800) {
@@ -1022,10 +1064,24 @@
         },
         // something arrives at one player
         visit(i, icon, kind = 'pop', delay = 0, sound) {
-          later(delay, () => { if (!slotEl(i)) return; const [x, y] = at(i); fxEl('visit ' + kind, icon, x, y); if (sound) GM.sound.play(sound); if (kind === 'strike') flashApp(); });
+          later(delay, () => {
+            if (!slotEl(i)) return; const [x, y] = at(i); fxEl('visit ' + kind, icon, x, y); if (sound) GM.sound.play(sound); if (kind === 'strike') flashApp();
+            if (FX && kind === 'strike') { const [px, py] = pg(i); if (sound === 'crack') { FX.lightning(px, py, pr().top - 20); FX.fire(px, py + 10, 1400); } else FX.sparks(px, py, { n: 30, tint: sound === 'good' ? 0xffe14a : 0xffffff }); }
+          });
           later(delay + (kind === 'frame' ? 1400 : 700), () => hit(i));
         },
         bag(icon) { const inv = GM.$('.inv', root); if (inv) { inv.classList.remove('robbed'); void inv.offsetWidth; inv.classList.add('robbed'); } if (icon) fxEl('visit pop', icon, pitch ? pitch.clientWidth / 2 : 0, pitch ? pitch.clientHeight - 30 : 0); },
+        // a Lottie animation by player i for a while (dy: how far above him), if the effects layer is on
+        lotAt(kind, i, dy = 0, ms = 2400) { const L = FX && LOT[kind]; if (!L || i == null || !slotEl(i)) return; const [px, py] = pg(i); FX.lottie(kind, { x: px, y: py + dy, w: L.w, loop: true, speed: L.speed }).then(h => h && setTimeout(() => h.remove(), ms)); },
+        // a Lottie character running right across the pitch (y: how far down, 0-1)
+        cross(kind, y = 0.5, ms = 2600) {
+          const L = FX && LOT[kind]; if (!L || !pitch) return;
+          const r = pr(), box = document.createElement('div'); box.className = 'fx-lottie'; Object.assign(box.style, { left: (r.left - L.w) + 'px', top: (r.top + r.height * y - L.h / 2) + 'px', width: L.w + 'px', height: L.h + 'px' });
+          document.body.appendChild(box); FX.lottie(kind, { into: box, loop: true, flip: L.faces === 'left' });
+          box.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${r.width + L.w * 2}px)` }], { duration: ms, easing: 'linear', fill: 'forwards' });
+          later(ms + 100, () => box.remove()); setTimeout(() => box.remove(), ms + 400);
+        },
+        fireworks() { if (FX) FX.fireworks(pr(), 5); GM.sound.play('firework'); },
         // a drawn scene over the pitch (chaosart.js)
         scene(kind, ...args) { if (GM.CFX) GM.CFX.play(kind, pitch, ...args); },
         rain(icon) { if (!pitch) return; for (let k = 0; k < 9; k++) { const e = fxEl('rain', icon, Math.random() * pitch.clientWidth, -30); if (e) e.style.animationDelay = (k * 0.09) + 's'; } },
@@ -1033,8 +1089,9 @@
         tornado(ms = 2400) {
           if (!pitch) return;
           const t = document.createElement('div'); t.className = 'cm-tornado'; t.style.animationDuration = ms + 'ms';
-          t.innerHTML = '<i></i><i></i><i></i><i></i><i></i><i></i><b>🍃</b><b>📰</b><b>🧢</b><b>🍃</b>';
+          t.innerHTML = '<i></i><i></i><i></i><i></i><i></i><i></i>' + [ART('paper'), ART('receipt'), ART('shirt'), ART('paper')].map(x => `<b>${x}</b>`).join('');
           pitch.appendChild(t); GM.sound.play('wind'); pitch.classList.add('windy'); later(ms, () => pitch.classList.remove('windy'));
+          if (FX) { FX.twister(pr(), ms); t.classList.add('fxd'); }
           changed.forEach(i => { const [, , f] = at(i); later(ms * (0.1 + 0.8 * f), () => { const el = slotEl(i); if (el) { el.classList.remove('spun'); void el.offsetWidth; el.classList.add('spun'); } hit(i); }); });
         },
         // the two players' numbers are sucked into the hole and spat out at each other
@@ -1055,7 +1112,11 @@
           later(2200, () => { hit(a); hit(b); });
         },
         // a black hole opens in the middle of the pitch
-        hole() { if (!pitch) return; const h = document.createElement('div'); h.className = 'cm-hole'; pitch.appendChild(h); GM.sound.play('spooky'); later(3100, () => h.remove()); },
+        hole() {
+          if (!pitch) return; GM.sound.play('spooky');
+          if (FX) { const r = pr(); FX.vortex(r.left + r.width / 2, r.top + r.height / 2, 3100, Math.min(r.width, r.height) * 0.45); return; }
+          const h = document.createElement('div'); h.className = 'cm-hole'; pitch.appendChild(h); later(3100, () => h.remove());
+        },
         // something flies in and lands (where it'll stay: the last leftover)
         fly(icon) {
           const m = (S.mess || []).slice(-1)[0]; if (!pitch || !m) return;
@@ -1080,6 +1141,7 @@
           const W = pitch.clientWidth, [x, y] = at(i), sw = el.offsetWidth, left = x > W / 2;
           const stopX = left ? x - sw * 0.3 : x + sw * 0.3, from = left ? -110 : W + 110;  // pulls up against him, from the near touchline
           const v = document.createElement('div'); v.className = 'cm-veh moving' + (left ? '' : ' flip'); v.innerHTML = SPRITE[kind];
+          lotInto(v, kind, true);
           v.style.left = stopX + 'px'; v.style.top = (y + 6) + 'px'; pitch.appendChild(v);
           GM.sound.play(o.sound || kind);
           const tx = d => `translate(-50%, -50%) translateX(${d}px)`;
@@ -1100,6 +1162,12 @@
         // a flying saucer hovers over player i, beams him up and zooms off
         abduct(i) {
           const el = slotEl(i); if (!pitch || !el || !el.animate) return;
+          if (FX && LOT.ufo) {  // the drawn-by-an-artist saucer, beam and all
+            const [px, py] = pg(i); GM.sound.play('ufo');
+            FX.lottie('ufo', { x: px, y: py - 50, w: LOT.ufo.w, speed: LOT.ufo.speed });
+            later(1300, () => { el.classList.add('beamed'); hit(i); FX.sparks(px, py, { n: 24, tint: 0x9dff8a, speed: 220 }); });
+            return;
+          }
           const [x, y] = at(i), u = document.createElement('div'); u.className = 'cm-ufo'; u.innerHTML = SPRITE.ufo + '<i class="beam"></i>';
           u.style.left = x + 'px'; u.style.top = Math.max(34, y - 70) + 'px'; pitch.appendChild(u); GM.sound.play('ufo');
           u.animate([{ transform: 'translate(-50%, -50%) translate(-260px, -140px) rotate(-12deg)' }, { transform: 'translate(-50%, -50%) rotate(6deg)', offset: 0.35 },
@@ -1113,6 +1181,7 @@
           if (!pitch) return; GM.sound.play('quake');
           const app = document.getElementById('app'); app.classList.remove('quaking'); void app.offsetWidth; app.classList.add('quaking'); later(1600, () => app.classList.remove('quaking'));
           const m = (S.mess || []).filter(x => x.c).slice(-1)[0];
+          if (m && FX) { const r = pr(); FX.dust(m.c.split(' ').map(q => q.split(',').map(Number)).map(([x, y]) => [r.left + x / 100 * r.width, r.top + y / 100 * r.height])); }
           if (m) { const sv = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); sv.setAttribute('viewBox', '0 0 100 100'); sv.setAttribute('preserveAspectRatio', 'none'); sv.setAttribute('class', 'crack tearing'); sv.innerHTML = `<polyline points="${m.c}" pathLength="100"/>`; pitch.appendChild(sv); }
           changed.forEach((i, k) => later(300 + k * 90, () => { const el = slotEl(i); if (el) { el.classList.remove('wobble'); void el.offsetWidth; el.classList.add('wobble'); } hit(i); }));
         },
@@ -1120,7 +1189,8 @@
         rainfall() {
           if (!pitch) return; GM.sound.play('rain');
           const w = document.createElement('div'); w.className = 'cm-rainfall';
-          w.innerHTML = Array.from({ length: 70 }, () => `<i style="left:${(Math.random() * 100).toFixed(1)}%;animation-delay:${(Math.random() * 0.8).toFixed(2)}s;animation-duration:${(0.45 + Math.random() * 0.3).toFixed(2)}s"></i>`).join('');
+          if (FX) FX.rain(pr(), 3400);
+          w.innerHTML = FX ? '' : Array.from({ length: 70 }, () => `<i style="left:${(Math.random() * 100).toFixed(1)}%;animation-delay:${(Math.random() * 0.8).toFixed(2)}s;animation-duration:${(0.45 + Math.random() * 0.3).toFixed(2)}s"></i>`).join('');
           pitch.appendChild(w); later(3200, () => w.classList.add('stopping'));
           changed.forEach((i, k) => later(500 + k * 120, () => hit(i)));
         },
@@ -1128,6 +1198,7 @@
         heli() {
           if (!pitch || !pitch.animate) return; GM.sound.play('heli');
           const W = pitch.clientWidth, H = pitch.clientHeight, v = document.createElement('div'); v.className = 'cm-veh heli'; v.innerHTML = SPRITE.heli; pitch.appendChild(v);
+          if (lotInto(v, 'heli', true)) later(1700, () => { const r = pr(); FX.smoke(r.left + r.width / 2, r.top + r.height / 2 + 30, { ms: 1400, tint: 0xc8b48a, alpha: 0.35, n: 30 }); });
           v.style.left = (W / 2) + 'px'; v.style.top = (H / 2) + 'px';
           v.animate([{ transform: `translate(-50%, -50%) translate(${-W / 2 - 120}px, ${-H / 2 - 40}px) rotate(-14deg)` }, { transform: 'translate(-50%, -50%) translateY(-30px) rotate(-6deg)', offset: 0.4 },
             { transform: 'translate(-50%, -50%)', offset: 0.55 }, { transform: 'translate(-50%, -50%)', offset: 0.75 }, { transform: `translate(-50%, -50%) translate(${W / 2 + 140}px, ${-H / 2 - 60}px) rotate(-12deg)` }],
@@ -1137,6 +1208,7 @@
         runner() {
           if (!pitch || !pitch.animate) return; GM.sound.play('siren');
           const W = pitch.clientWidth, H = pitch.clientHeight, v = document.createElement('div'); v.className = 'cm-veh case'; v.innerHTML = SPRITE.briefcase; pitch.appendChild(v);
+          if (lotInto(v, 'runner', true)) v.insertAdjacentHTML('beforeend', `<i class="held-case">${SPRITE.briefcase}</i>`);
           v.style.left = '0px'; v.style.top = (H * 0.55) + 'px';
           v.animate([{ transform: 'translate(-60px, -50%) rotate(-8deg)' }, { transform: `translate(${W * 0.5}px, -70%) rotate(8deg)`, offset: 0.5 }, { transform: `translate(${W + 60}px, -50%) rotate(-8deg)` }], { duration: 2400, easing: 'linear', fill: 'forwards' });
           for (let k = 0; k < 12; k++) later(200 + k * 160, () => { const n = document.createElement('div'); n.className = 'cm-note'; n.innerHTML = NOTE; n.style.left = (W * (0.08 + k * 0.075)) + 'px'; n.style.top = (H * 0.5) + 'px'; pitch.appendChild(n); });
@@ -1144,13 +1216,14 @@
         // a heart cracks in two over player i
         heartbreak(i) {
           const el = slotEl(i); if (!el || !pitch) return; const [x, y] = at(i);
+          if (FX && LOT.heartbreak) { const [px, py] = pg(i); FX.lottie('heartbreak', { x: px, y: py - 24, w: LOT.heartbreak.w }); GM.sound.play('boo'); later(1100, () => { hit(i); FX.sparks(px, py - 24, { n: 18, tint: 0xff4a4a, speed: 200 }); }); return; }
           const h = document.createElement('div'); h.className = 'cm-heart'; h.style.left = x + 'px'; h.style.top = (y - 20) + 'px';
           h.innerHTML = '<svg viewBox="0 0 60 54" width="70" height="63"><path class="hl" d="M30 50L6 26Q-4 12 8 4q12-6 22 8l-6 10 8 8z" fill="#e3262f"/><path class="hr" d="M30 50l24-24q10-14-2-22-12-6-22 8l6 10-8 8z" fill="#c21b24"/></svg>';
           pitch.appendChild(h); GM.sound.play('boo'); later(1300, () => hit(i));
         },
         // drawn confetti falling over the pitch
         confetti() {
-          if (!pitch) return; const w = document.createElement('div'); w.className = 'cm-confetti';
+          if (!pitch) return; if (FX) { FX.confetti(pr(), 160); return; } const w = document.createElement('div'); w.className = 'cm-confetti';
           const C = ['#ff5ec8', '#ffe14a', '#5ec8ff', '#7dff6b', '#ffffff', '#ff8a3d'];
           w.innerHTML = Array.from({ length: 60 }, (_, k) => `<i style="left:${(Math.random() * 100).toFixed(1)}%;background:${C[k % C.length]};animation-delay:${(Math.random() * 1.2).toFixed(2)}s;--sx:${((Math.random() - 0.5) * 80).toFixed(0)}px"></i>`).join('');
           pitch.appendChild(w);
@@ -1248,7 +1321,7 @@
   function charge(n = 1) {
     if (!S.rules.chaos) return;
     S.meter = (S.meter || 0) + n * (tw().meterX || 1);
-    if (S.meter >= METER && !S.chaosDue) { S.meter = 0; S.chaosDue = true; setTimeout(() => { GM.sound.play('meterfull'); GM.sound.play('alarm'); }, 250); }
+    if (S.meter >= METER && !S.chaosDue) { S.meter = 0; S.chaosDue = true; setTimeout(() => { GM.sound.play('meterfull'); GM.sound.play('alarm'); if (GM.FX) GM.FX.flash(0xff2bd6, 0.3); }, 250); }
     else if (!S.chaosDue) setTimeout(() => GM.sound.play('charge', S.meter), 250);
     if (S.online && GM.online) GM.online.pushRace(S);  // the opponent's view of the CHAOS bar
   }
@@ -1677,7 +1750,7 @@
   // CHAOS leftovers on the pitch (a new one drops in)
   const messHtml = () => (S.mess || []).length ? `<div class="mess" aria-hidden="true">${S.mess.map(m => m.c
     ? `<svg class="crack ${m.k || 'crack'} ${Date.now() - m.t < 2500 ? 'new' : ''}" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${m.c}" pathLength="100"/></svg>`
-    : `<i class="${Date.now() - m.t < 2500 ? 'new' : ''} ${m.i[0] === '#' ? 'drawn' : ''}" style="left:${m.x}%;top:${m.y}%;--r:${m.r}deg">${m.i[0] === '#' && LEFT[m.i.slice(1)] ? LEFT[m.i.slice(1)]() : m.i}</i>`).join('')}</div>` : '';
+    : m.i === '#pigeon' && fxRoam() ? '<i hidden></i>' : `<i class="${Date.now() - m.t < 2500 ? 'new' : ''} ${m.i[0] === '#' ? 'drawn' : ''}" style="left:${m.x}%;top:${m.y}%;--r:${m.r}deg">${m.i[0] === '#' && LEFT[m.i.slice(1)] ? LEFT[m.i.slice(1)]() : m.i}</i>`).join('')}</div>` : '';
   function slotHtml(s, i) {
     const gh = S.ghost && S.ghost.i === i ? S.ghost : null;
     if (gh) s = { ...s, p: gh.p, g: gh.g, mod: gh.mod };
@@ -1687,7 +1760,7 @@
     }
     const p = byId(s.p);
     const surname = (p.name.includes(' ') ? p.name.split(' ').slice(1).join(' ') : p.name) + (s.trio && s.trio.length > 1 ? ` +${s.trio.length - 1}` : '');
-    const pk = S.parked && S.parked[i] && SPRITE[S.parked[i]] ? `<i class="parked ${(SIDE[baseForm()[i]] ?? 1) === 2 ? 'r' : ''}" aria-hidden="true">${SPRITE[S.parked[i]]}</i>` : '';
+    const pk = S.parked && S.parked[i] && SPRITE[S.parked[i]] ? `<i class="parked ${(SIDE[baseForm()[i]] ?? 1) === 2 ? 'r' : ''}" aria-hidden="true">${(GM.FX && GM.FX.on && GM.FX.still(S.parked[i])) || SPRITE[S.parked[i]]}</i>` : '';
     // CHAOS: the card's colour says how he's doing against his own numbers (blue up, red down, grey as he was)
     let tone = '', pct = '';
     if (S.rules.chaos && !S.rules.treble && !splatted(i)) {
@@ -1719,7 +1792,7 @@
     const rows = ['F', 'M', 'D', 'G'].map(g => S.xi.map((s, i) => [s, i]).filter(([s]) => GM.GROUP[s.pos] === g)
       .sort((a, b) => lat(a[1]) - lat(b[1]) || a[1] - b[1])).filter(r => r.length);
     const shape = rows.slice(0, -1).reverse().map(r => r.length).join('-');
-    const wxc = S.rules.chaos && S.weather ? { snow: 'wx-snowy', sun: 'wx-sunny', wind: 'wx-windy' }[S.weather] || '' : '';
+    const wxc = S.rules.chaos && S.weather ? ({ snow: 'wx-snowy', sun: 'wx-sunny', wind: 'wx-windy' }[S.weather] || '') + (GM.FX && GM.FX.on ? ' fxw' : '') : '';
     return `<div class="pitch ${S.subbing !== false ? 'subbing' : ''} ${S.pending != null ? 'placing' : ''} ${wxc}">
       <div class="pitch-lines"></div><div class="shape">${shape}</div>${S.rules.chaos ? chaosPitch() + messHtml() + roamHtml() : ''}
       ${rows.map(r => `<div class="pitch-row ${r.length > 4 ? 'crowded' : ''}">${r.map(([s, i]) => slotHtml(s, i)).join('')}</div>`).join('')}
@@ -1962,10 +2035,11 @@
   function render() {
     if (!S || !onThisGame()) return;
     if (S.phase === 'done') return renderDone();
-    requestAnimationFrame(() => { fitPitch(); fitReels(); });
+    requestAnimationFrame(() => { fitPitch(); fitReels(); roamLayer(); });
     if (!S.readonly && saveKey()) GM.store.set(saveKey(), { ...S, rules: undefined });  // saved on every move
     if (S.revealStage === 'intro') return mysteryIntro();
     if (GM.sound.heat) GM.sound.heat(S.rules.chaos ? (S.chaosDue ? 1 : (S.meter || 0) / METER) : 0);  // Mayhem builds with the meter
+    if (GM.FX) GM.FX.weather(S.rules.chaos && S.weather ? S.weather : null, () => GM.$('.pitch', root));  // rain, snow, fog… all game
     const icon = S.nat ? GM.flag(S.nat) : S.mode === 'club' ? '🏟️' : GM.MODES[S.mode === 'daily' ? 'daily' : S.mode].icon;
     const nReels = Math.max(3, S.reels.length);
     const sp = S.special && WILDCARDS[S.special];
@@ -2026,6 +2100,7 @@
   }
 
   function renderDone() {
+    requestAnimationFrame(roamLayer);
     const sc = S.final || scoreFor(S);
     const best = GM.best(S.mode === 'daily' ? 'daily' : modeKey());
     const icon = S.nat ? GM.flag(S.nat) : S.mode === 'club' ? '🏟️' : GM.MODES[S.mode === 'daily' ? 'daily' : S.mode].icon;

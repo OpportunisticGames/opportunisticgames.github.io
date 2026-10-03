@@ -36,6 +36,13 @@ formations, and badges round 2.
   CHAOS players' bests). Older players keep what they'd have earned, guessed from their saved CHAOS games (`mgrLegacy`).
   Shared games (Daily CHAOS, races, online) still offer every manager so nobody's stuck.
 
+### Proper rendering: PixiJS effects + LottieFiles animations ✅ 5.21 in CHAOS *(owner, 3 Oct 2026)*
+> "Why are all the animations so shit? … they look like drawings" → "use a rendering engine and then free lottie assets"
+- Built a shared effects layer (`js/fx.js`) so other games can use it next (Hat-Trick, Dodgy Owner, Goal Royale, level-ups,
+  packs). Measured: about 60 fps for most effects with the CPU slowed 4× in software rendering; flares about 34.
+- Lottie picks: ambulance, police, ufo, heli, tank, dog, pigeon, runner, trophy, heartbreak (tornado downloaded, not used yet).
+- Next: roll out game by game once the owner has played it; maybe Rive later for characters that react.
+
 ### CHAOS: animate everything that's left, the music, weather, replay and a share card ✅ 5.20 *(Claude's list, owner: "Could you do them all?", 3 Oct 2026)*
 - The nine original events and the six plain newer ones have drawn scenes (`js/chaosart.js`, `GM.CFX.play`), and every
   wildcard has a short flourish (`GM.CFX.wild`). The bus stays parked (`S.bus`). No emojis thrown on the pitch any more:

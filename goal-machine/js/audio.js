@@ -5,7 +5,7 @@
   const store = GM.store;
   // X is the "studio": the audio context plus its buses. It can be swapped for an OfflineAudioContext to render
   // sounds to a file (see GM.sound.renderDemo), so every sound is written against X rather than a global context.
-  let X = null, live = null;
+  let X = null, live = null, recOn = false, recWant = false;
   const now = () => X.ctx.currentTime;
 
   function makeStudio(ctx) {
@@ -233,6 +233,36 @@
     // the stock exchange bell: three rings of a bright, clangy bell
     bell: t => [0, 0.22, 0.44].forEach(d => [1, 2.76, 5.4].forEach((m, i) => tone(740 * m, { t: t + d, dur: 1.2 - i * 0.3, type: 'sine', vol: [0.13, 0.05, 0.025][i] }))),
   };
+  /* ---------------------------------------------------------------- recorded sounds (fx/sfx/, credits in fx/sfx/credits.json)
+     Real recordings for the big moments, loaded when a game asks (CHAOS does at kick-off). A sound with a recording
+     plays that instead of its synthesised version (which stays as the fallback until it's loaded, or if it won't load).
+     from/dur pick a bit of the recording, vol its level, rate its pitch/speed. */
+  const REC = {
+    whistle: { f: 'whistle', dur: 0.9 }, redwhistle: { f: 'whistle' }, fulltime: { f: 'whistle', rate: 0.97 },
+    cheer: { f: 'cheer', vol: 0.8 }, boo: { f: 'boo', vol: 0.8 }, applause: { f: 'applause', vol: 0.7 },
+    ambulance: { f: 'ambulance', vol: 0.6 }, police: { f: 'police', vol: 0.55 }, siren: { f: 'police', dur: 1.4, vol: 0.5 },
+    heli: { f: 'heli', vol: 0.8 }, thunder: { f: 'thunder' }, rain: { f: 'rain', vol: 0.6 }, wind: { f: 'wind', vol: 0.7 },
+    coinland: { f: 'coin', vol: 0.8 }, cash: { f: 'cash', vol: 0.7 }, slotspin: { f: 'slot', vol: 0.6 }, camera: { f: 'camera' },
+    vuvuzela: { f: 'vuvuzela', vol: 0.55 }, boom: { f: 'bang', vol: 0.8 }, firework: { f: 'firework', vol: 0.8 }, bell: { f: 'bells', vol: 0.6 },
+    screech: { f: 'screech', vol: 0.6 }, bus: { f: 'engine', vol: 0.6 }, dog: { f: 'dog', vol: 0.7 }, pigeon: { f: 'pigeon' },
+    smash: { f: 'smash', vol: 0.7 }, boing: { f: 'boing', vol: 0.7 }, swoosh: { f: 'whoosh', vol: 0.6 },
+  };
+  const BUF = {}, LOADING = {};
+  function loadRec(files) {
+    if (!live) return;  // nothing to decode with until the first tap; play() asks again
+    files.forEach(f => {
+      if (BUF[f] || LOADING[f]) return;
+      LOADING[f] = fetch('fx/sfx/' + f + '.mp3').then(r => r.ok ? r.arrayBuffer() : Promise.reject(f))
+        .then(b => new Promise((res, rej) => live.ctx.decodeAudioData(b, res, rej))).then(buf => { BUF[f] = buf; }).catch(() => { /* the synth one plays */ });
+    });
+  }
+  function playRec(t, o) {
+    const buf = BUF[o.f], c = X.ctx, src = c.createBufferSource(), g = c.createGain();
+    src.buffer = buf; if (o.rate) src.playbackRate.value = o.rate;
+    const vol = o.vol == null ? 0.9 : o.vol, dur = Math.min(o.dur || buf.duration, buf.duration - (o.from || 0));
+    g.gain.setValueAtTime(vol, t); g.gain.setValueAtTime(vol, t + Math.max(0, dur - 0.12)); g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    src.connect(g); g.connect(X.sfx); src.start(t, o.from || 0, dur + 0.05);
+  }
   // a blip that climbs as you close in on a target (frac 0..1)
   const rise = (t, frac) => tone(380 + 900 * Math.min(1, Math.max(0, frac)), { t, dur: 0.12, type: 'triangle', vol: 0.1 });
 
@@ -526,6 +556,7 @@
       if (!AC) return;
       live = makeStudio(new AC());
       applyVolumes();
+      if (recWant) GM.sound.recordings(true);
     }
     if (live.ctx.state === 'suspended') live.ctx.resume();
     syncBg();
@@ -556,8 +587,15 @@
       if (!live || !store.get('sfx', true) || document.hidden) return;
       if (live.ctx.state !== 'running') return;
       X = live;
-      try { name === 'rise' ? rise(now(), arg) : SOUNDS[name] && SOUNDS[name](now(), arg); } catch (e) { }
+      try {
+        const rec = recOn && REC[name];
+        if (rec && BUF[rec.f]) playRec(now(), rec);
+        else name === 'rise' ? rise(now(), arg) : SOUNDS[name] && SOUNDS[name](now(), arg);
+      } catch (e) { }
     },
+    // load the recordings (a game calls this when it opens); off switches back to the synthesised sounds
+    recordings(on = true) { recOn = on; if (on) { recWant = true; loadRec([...new Set(Object.values(REC).map(r => r.f))]); } },
+    _rec: () => Object.keys(BUF),  // (tests)
     // Renders every sound (and a few seconds of each background) to a WAV, for checking them without a speaker
     async renderDemo(names = Object.keys(SOUNDS), gap = 1.6, bgSeconds = 0) {
       const sfxEnd = names.length * gap + 2, rate = 44100;

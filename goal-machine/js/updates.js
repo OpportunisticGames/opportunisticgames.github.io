@@ -9,6 +9,26 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 64, label: '5.21', date: '2026-10-03', title: '✨ CHAOS, properly animated',
+      items: [
+        '🚑 The ambulance, police car, flying saucer, helicopter, tank, dog and pigeon are proper animations now, made by artists on LottieFiles, and the ambulance that parks by your injured player is the same one',
+        '✨ A new effects engine: lightning that really strikes, a black hole that swallows the light, flares that spit sparks and smoke, a tornado full of flying turf, rain that splashes, confetti, fireworks and money raining down',
+        '💥 Every number that changes gets a burst of sparks (or a puff of smoke)',
+        '🌦️ The weather is real now: rain that splashes, snow drifting down, fog rolling across in banks, gales full of leaves, and sunshine you can see',
+        '🐕 The dog and the pigeon that stay all game are animated, and so are the taxman, the TV van, the mystery box on its parachute and the loan army’s coach',
+        '🌪️ The tornado is a spinning funnel of dust and turf',
+        '🔊 Real sounds: a referee’s whistle, a stadium crowd, booing, sirens, the helicopter, thunder, a cash register, the fruit machine, fireworks and more (free recordings, credited on the credits page)',
+        '👔 Managers have their photos now: on their cards, fading up over the pitch when they’re appointed, and greyed out with a SACKED stamp when they’re not',
+        '🔋 Calm mode (Settings → Look) turns all the visuals off'
+      ],
+    },
+    {
+      v: 63, label: '5.20.1', date: '2026-10-03', title: '📸 Better photos',
+      items: [
+        '📸 More players have photos, and a new face finder lines the face up in 2,500 of them (more to come), so fewer foreheads and shoulders',
+      ],
+    },
+    {
       v: 62, label: '5.20', date: '2026-10-03', title: '📈 CHAOS you can read',
       items: [
         '🟦 Your cards change colour: blue when a player’s doing better than his real numbers, red when CHAOS has knocked him down, with the % on the card',
