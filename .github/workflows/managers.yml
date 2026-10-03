@@ -1,0 +1,39 @@
+name: Find manager portraits
+
+# The cloud sessions can't reach Wikipedia, so this fetches the CHAOS managers' portraits (free licences only) into
+# goal-machine/fx/mgr/ with where each face is, and commits them back to the branch.
+on:
+  push:
+    branches: ['claude/**']
+    paths: ['goal-machine/tools/fetch_managers.py', '.github/workflows/managers.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency: managers-${{ github.ref }}
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Fetch the portraits
+        run: |
+          pip install -q "opencv-python-headless<5" numpy
+          curl -sSfL -o goal-machine/tools/face_detection_yunet.onnx \
+            https://media.githubusercontent.com/media/opencv/opencv_zoo/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx || true
+          python goal-machine/tools/fetch_managers.py
+      - name: Commit
+        run: |
+          git add goal-machine/fx/mgr
+          if git diff --cached --quiet; then echo "Nothing new"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Manager portraits"
+          git pull --rebase -q origin "$GITHUB_REF_NAME"
+          git push
