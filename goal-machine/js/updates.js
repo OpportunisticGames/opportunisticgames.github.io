@@ -9,6 +9,13 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 66, label: '5.22.1', date: '2026-10-03', title: '📸 Faces in focus',
+      items: [
+        '📸 The new face finder has now looked at 4,800 player photos (up from 2,700), so far more avatars zoom in on the face rather than a shoulder or the crowd',
+        '🖼️ A few more players have photos',
+      ],
+    },
+    {
       v: 65, label: '5.22', date: '2026-10-03', title: '💣 Don’t stop playing',
       items: [
         '▶️ CHAOS doesn’t stop for anything: once a moment starts you can carry on spinning and picking while the ambulance is still parking, and tapping never cuts an animation short',
