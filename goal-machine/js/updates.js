@@ -9,6 +9,12 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 61, label: '5.19.1', date: '2026-10-03', title: '👔 Managers rebalanced',
+      items: [
+        '👔 After thousands of simulated CHAOS games with the new rules: Allardyce +10 per journeyman, Ranieri +45 per Leicester player, Klopp +15 per pair of teammates, Mourinho’s back line +70%, and Postecoglou plays Angeball (strikers +15%, rare moments six times as likely)',
+      ],
+    },
+    {
       v: 60, label: '5.19', date: '2026-10-03', title: '🎰 The pitch remembers everything',
       items: [
         '🎰 Betting scandal: pull the fruit machine’s lever. Jackpot and you get bonus points; lose and your player’s fined half his numbers',
