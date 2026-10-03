@@ -11,7 +11,9 @@ OUT = ROOT / 'fx/sfx/cand'
 OUT.mkdir(parents=True, exist_ok=True)
 API = 'https://commons.wikimedia.org/w/api.php'
 UA = {'User-Agent': 'GoalMachineSfx/1.0 (https://opportunisticgames.github.io; opportunisticyp@gmail.com)'}
-FREE = re.compile(r'^(cc0|cc[- ]by(-sa)?[- ]?[0-9.]*|public domain|pd.*)', re.I)
+FREE = re.compile(r'^(cc0|cc[- ]by(-sa)?[- ]?[0-9.]*|public domain|pd.*|oga-by.*)', re.I)
+# Commons is full of word pronunciations ("boo", "whistle-blower"): not sound effects
+SPOKEN = re.compile(r'^File:(LL-|[A-Za-z]{2,3}(-[a-z]{2,4})?-[^ ]|.*pronunciation)|pronunciation|pronounc|spoken|male voice|female voice|accent', re.I)
 
 
 def get(url):
@@ -28,11 +30,34 @@ def search(q):
         meta = ii.get('extmetadata', {})
         lic = (meta.get('LicenseShortName', {}) or {}).get('value', '')
         length = next((float(m['value']) for m in (ii.get('metadata') or []) if m.get('name') == 'length' and str(m.get('value', '')).replace('.', '', 1).isdigit()), None)
-        if not FREE.match(lic.strip()) or not ii.get('url'):
+        desc = re.sub('<[^>]+>', '', (meta.get('ImageDescription', {}) or {}).get('value', ''))
+        if not FREE.match(lic.strip()) or not ii.get('url') or SPOKEN.search(pg['title']) or SPOKEN.search(desc[:300]):
             continue
         out.append({'title': pg['title'], 'url': ii['url'], 'page': ii.get('descriptionurl'), 'licence': lic, 'length': length,
                     'author': re.sub('<[^>]+>', '', (meta.get('Artist', {}) or {}).get('value', ''))[:120],
                     'desc': re.sub('<[^>]+>', '', (meta.get('ImageDescription', {}) or {}).get('value', ''))[:200], 'size': ii.get('size', 0)})
+    return out
+
+
+def oga(q):
+    """OpenGameArt sound effects for a search: [{title, url, page, licence, author, length None}]"""
+    html = get('https://opengameart.org/art-search-advanced?' + urllib.parse.urlencode({'keys': q, 'field_art_type_tid[]': 13, 'sort_by': 'count', 'sort_order': 'DESC'})).decode('utf-8', 'ignore')
+    pages = list(dict.fromkeys(re.findall(r'href="(/content/[a-z0-9-]+)"', html)))[:6]
+    out = []
+    for p in pages:
+        try:
+            h = get('https://opengameart.org' + p).decode('utf-8', 'ignore')
+        except Exception:
+            continue
+        lic = ' '.join(re.findall(r'class="license-name">([^<]+)<', h)) or ' '.join(re.findall(r'(CC0|CC-BY-SA [0-9.]+|CC-BY [0-9.]+|OGA-BY [0-9.]+)', h)[:1])
+        lic = lic.strip()
+        if not re.search(r'CC0|CC-BY 3|CC-BY 4|OGA-BY|CC-BY-SA', lic):
+            continue
+        title = (re.findall(r'<h2[^>]*>([^<]+)</h2>', h) or [p])[0].strip()
+        author = (re.findall(r'Author:.*?<a [^>]*>([^<]+)</a>', h, re.S) or [''])[0].strip()
+        for f in re.findall(r'href="(https://opengameart.org/sites/default/files/[^"]+\.(?:ogg|wav|mp3|flac))"', h)[:3]:
+            out.append({'title': 'OGA: ' + title + ' / ' + urllib.parse.unquote(f.rsplit('/', 1)[1]), 'url': f, 'page': 'https://opengameart.org' + p,
+                        'licence': lic.replace('CC-BY', 'CC BY'), 'author': author, 'desc': '', 'size': 0, 'length': None})
     return out
 
 
@@ -44,7 +69,7 @@ for key, spec in WANT.items():
     seen, cands = set(), []
     for t in terms:
         try:
-            for c in search(t):
+            for c in search(t) + oga(t):
                 if c['url'] in seen or c['size'] > 25_000_000:
                     continue
                 if c['length'] is not None and not (0.3 <= c['length'] <= 120):
