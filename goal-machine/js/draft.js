@@ -354,25 +354,25 @@
       tw: { wildP: 0.35, allow: ['rotation'] },
       lines: x => [[`📝 Facts (${x.wild} wildcards played)`, 2 * x.u * x.wild]] },
   };
-  // Managers are earned: five to start with, the rest unlocked by what you do in CHAOS (u = the stat's scale, so an
+  // Managers are earned: the journeymen to start with, the legends at the top of the ladder (u = the stat's scale, so an
   // apps game asks for the same feat as a goals game). Shared games (Daily CHAOS, races, matchdays) offer everyone.
-  const MGR_START = ['fergie', 'wenger', 'mourinho', 'pep', 'klopp'];
+  const MGR_START = ['moyes', 'allardyce', 'hodgson', 'pulis', 'dyche'];
   const UNLOCK = {
-    moyes: ['Play 5 CHAOS games', (st) => st.games >= 5],
-    hodgson: ['Play 15 CHAOS games', (st) => st.games >= 15],
-    allardyce: ['Play 30 CHAOS games', (st) => st.games >= 30],
-    ancelotti: ['Score 1,000 CHAOS points in a game', (st, g) => g.pts >= 1000],
-    ranieri: ['Score 1,500 CHAOS points in a game', (st, g) => g.pts >= 1500],
-    keegan: ['Finish with 3 players on 100+', (st, g) => g.big >= 3],
-    pulis: ['Finish with 3 players on 0', (st, g) => g.zero >= 3],
-    redknapp: ['Win 300 bonus points in a game', (st, g) => g.bonus >= 300],
-    warnock: ['Have one player worth 400+', (st, g) => g.top >= 400],
-    benitez: ['Play 5 wildcards in one game', (st, g) => g.wild >= 5],
+    warnock: ['Play 5 CHAOS games', (st) => st.games >= 5],
     holloway: ['Set off 3 big moments in one game', (st, g) => g.moments >= 3],
-    dyche: ['Finish a game with nobody hurt', (st, g) => g.hurt === 0 && g.full],
-    ange: ['See a legendary moment', (st, g) => g.legend > 0],
-    vangaal: ['Finish CHAOS games in 4 different formations', (st) => (st.shapes || []).length >= 4],
+    redknapp: ['Win 300 bonus points in a game', (st, g) => g.bonus >= 300],
+    keegan: ['Finish with 3 players on 100+', (st, g) => g.big >= 3],
+    benitez: ['Play 5 wildcards in one game', (st, g) => g.wild >= 5],
+    ranieri: ['Play 15 CHAOS games', (st) => st.games >= 15],
     conte: ['Get 60+ from your defenders in a game', (st, g) => g.def >= 60],
+    vangaal: ['Finish CHAOS games in 4 different formations', (st) => (st.shapes || []).length >= 4],
+    ange: ['See a legendary moment', (st, g) => g.legend > 0],
+    ancelotti: ['Score 1,000 CHAOS points in a game', (st, g) => g.pts >= 1000],
+    klopp: ['Have one player worth 400+', (st, g) => g.top >= 400],
+    wenger: ['Go invincible: finish a full game with nobody hurt', (st, g) => g.hurt === 0 && g.full],
+    mourinho: ['Score 1,500 CHAOS points in a game', (st, g) => g.pts >= 1500],
+    pep: ['Play 30 CHAOS games', (st) => st.games >= 30],
+    fergie: ['Unlock every other manager', (st, g, have) => Object.keys(MANAGERS).every(k => k === 'fergie' || have.includes(k))],
   };
   const mgrUnlocked = () => { const u = GM.store.get('mgrs', null); return MGR_START.concat(Array.isArray(u) ? u : []).filter((k, n, a) => MANAGERS[k] && a.indexOf(k) === n); };
   const mgrPool = () => (S && (S.dailyChaos || S.online || S.fx || GM._forceMgr) ? Object.keys(MANAGERS) : mgrUnlocked());
@@ -388,14 +388,18 @@
       top: Math.max(0, ...filled.map(x => x.g)) / u, wild: S.wildUsed || 0, moments: (S.bigSeen || []).length, full: filled.length === S.xi.length,
       hurt: filled.filter(x => HURT.includes(x.mod) || x.mod === 'halved').length, legend: (S.moments || []).filter(m => m.rar === 'l').length,
       def: filled.filter(x => GM.GROUP[x.pos] === 'D').reduce((a, x) => a + x.g, 0) / u };
-    const have = mgrUnlocked(), fresh = Object.keys(UNLOCK).filter(k => !have.includes(k) && UNLOCK[k][1](st, g));
-    if (fresh.length) GM.store.set('mgrs', have.filter(k => !MGR_START.includes(k)).concat(fresh));
+    const have = mgrUnlocked(), fresh = [];
+    for (let more = true; more;) {  // twice round, so the last unlock can bring in Fergie in the same game
+      more = false;
+      Object.keys(UNLOCK).forEach(k => { if (!have.includes(k) && UNLOCK[k][1](st, g, have)) { have.push(k); fresh.push(k); more = true; } });
+    }
+    if (fresh.length) GM.store.set('mgrs', have.filter(k => !MGR_START.includes(k)));
     return fresh;
   }
   function managersModal() {
     const have = mgrUnlocked();
     GM.modal(`<h3>👔 CHAOS managers</h3><p class="muted small">${have.length} of ${Object.keys(MANAGERS).length} unlocked. Do the feat in a CHAOS game to unlock the rest.</p>
-      <div class="mgr-all">${Object.keys(MANAGERS).map(k => { const m = MANAGERS[k], on = have.includes(k);
+      <div class="mgr-all">${MGR_START.concat(Object.keys(UNLOCK), Object.keys(MANAGERS)).filter((k, n, a) => MANAGERS[k] && a.indexOf(k) === n).map(k => { const m = MANAGERS[k], on = have.includes(k);
         return `<div class="mgr-row ${on ? '' : 'locked'}"><span class="mgr-ico">${on ? m.icon : '🔒'}</span><div><b>${m.name}</b>${on ? `<small class="up">✅ ${m.perk}</small><small class="down">⚠️ ${m.catch}</small>` : `<small>🔓 ${UNLOCK[k] ? UNLOCK[k][0] : ''}</small>`}</div></div>`; }).join('')}</div>
       <div class="actions"><button class="btn" data-close>Done</button></div>`);
   }

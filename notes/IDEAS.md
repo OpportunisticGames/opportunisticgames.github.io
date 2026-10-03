@@ -31,7 +31,8 @@ formations, and badges round 2.
 - Built: blue/red cards vs the player's real numbers (with %), a sparkline in the dock and a full-time chart with event
   dots and a tap tooltip, player marks drawn beside the card (bandage, banana, tape, ring…), redrawn scorch and ball,
   crooked players + a torn turf path after the tornado, the black hole swaps numbers through it and leaves a crater.
-- Managers: Ferguson, Wenger, Mourinho, Guardiola and Klopp to start; 15 more unlock from feats (`UNLOCK` in draft.js).
+- Managers: the journeymen to start (Moyes, Allardyce, Hodgson, Pulis, Dyche; the owner: "they're like starter managers"),
+  the legends hardest (Wenger invincible, Mourinho 1,500 pts, Pep 30 games), Fergie for unlocking everyone (`UNLOCK` in draft.js).
   Shared games (Daily CHAOS, races, online) still offer every manager so nobody's stuck. Existing players start at five too.
 
 ### CHAOS: more events, every one leaves a mark ✅ 5.19 *(owner, 3 Oct 2026)*

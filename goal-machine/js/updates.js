@@ -15,7 +15,7 @@
         '📈 A little line follows your points as you play, and at full time there’s the whole story of your game: tap along it to see what happened at every spin',
         '🩹 Things that happen to a player now show next to him (bandages, banana skins, police tape, wedding rings…) instead of on top of the pitch, and the scorch marks and the ball look like what they are',
         '🌪️ The tornado leaves your players standing crooked and tears a path through the grass, 🚑 the ambulance parks up properly, and 🕳️ the black hole drags the numbers through it and leaves a crater',
-        '👔 Managers are unlocked now: you start with five, and the rest join as you play (games, big totals, centurions, players on nothing, bonus points and more). Tap “All managers” to see how to get each one',
+        '👔 Managers are unlocked now: you start with the journeymen (Moyes, Allardyce, Hodgson, Pulis, Dyche) and work your way up to the legends, with Sir Alex last of all. Tap “All managers” to see how to get each one',
       ],
     },
     {
