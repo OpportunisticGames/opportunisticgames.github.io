@@ -1,0 +1,50 @@
+name: Fetch Lottie animations
+
+# The cloud sessions can search LottieFiles but not download from it, so this downloads the animations listed in
+# goal-machine/fx/lottie/candidates.json into goal-machine/fx/lottie/cand/ and commits them back to the branch.
+# The ones picked for the game are copied out of cand/ by hand (with their credits in credits.json); cand/ is then removed.
+on:
+  push:
+    branches: ['claude/**']
+    paths: ['goal-machine/fx/lottie/candidates.json', '.github/workflows/lottie.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency: lottie-${{ github.ref }}
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - name: Download the candidates
+        run: |
+          mkdir -p goal-machine/fx/lottie/cand
+          python3 - <<'PY'
+          import json, urllib.request, pathlib
+          out = pathlib.Path('goal-machine/fx/lottie/cand')
+          c = json.load(open('goal-machine/fx/lottie/candidates.json'))
+          for k, v in c.items():
+              f = out / f'{k}.json'
+              if f.exists():
+                  continue
+              try:
+                  data = urllib.request.urlopen(urllib.request.Request(v['url'], headers={'User-Agent': 'Mozilla/5.0'}), timeout=30).read()
+                  json.loads(data)  # must be a real Lottie JSON
+                  f.write_bytes(data)
+                  print('ok', k, len(data))
+              except Exception as e:
+                  print('FAILED', k, e)
+          PY
+      - name: Commit
+        run: |
+          git add goal-machine/fx/lottie/cand
+          if git diff --cached --quiet; then echo "Nothing new"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Lottie candidates downloaded"
+          git pull --rebase -q origin "$GITHUB_REF_NAME"
+          git push
