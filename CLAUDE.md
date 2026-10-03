@@ -67,7 +67,7 @@ game mode for players; this file is about how to work on it.
   credits page). The libraries (`js/vendor/`) load on first use; `GM.FX.on` is false in Calm mode or without WebGL, so keep a
   fallback. Canvas at resolution 1 (sharper cost too much on phones). **Getting Lottie files:** sessions can search
   LottieFiles (its MCP) but not download, so list candidates in `fx/lottie/candidates.json` and push: the `lottie.yml`
-  workflow downloads them into `fx/lottie/cand/`; preview, copy the picks out, add credits, empty the list, delete `cand/`.
+  workflow downloads them into `fx/lottie/cand/`; preview with `tools/lottie_preview.html?n=a,b`, copy the picks out, add credits, empty the list, delete `cand/`.
 - `modes.js` – quick games (Club Hopper, Higher or Lower, Who Am I?, Club Grid, Guess the Tally); `h2h.js` – pass-the-phone series.
 - `daily.js` – Today page, Footle, daily streaks. `collection.js` – Album, badges, Dream XIs. `report.js` – full-time report.
 - `picture.js` – share-a-picture of your XI. `audio.js` – synthesised sound + music. `updates.js` – changelog.

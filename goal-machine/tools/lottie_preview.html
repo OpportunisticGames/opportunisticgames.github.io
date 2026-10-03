@@ -1,0 +1,8 @@
+<!-- Previews Lottie candidates: serve the repo root, open /goal-machine/tools/lottie_preview.html?n=amb1,pol2 (files from fx/lottie/cand/). Four frames each on pitch green. -->
+<!doctype html><html><head><style>body{margin:0;background:#1c7a4a;font:11px Arial;color:#fff}.row{display:flex;align-items:center;border-bottom:1px solid #0004}.row b{width:60px;padding:4px}.c{width:150px;height:110px}</style></head><body>
+<script src="/goal-machine/js/vendor/lottie_light.min.js"></script><script>
+(async()=>{ const names = (new URLSearchParams(location.search).get('n')||'').split(',');
+ for (const n of names) { const d = await fetch('/goal-machine/fx/lottie/cand/'+n+'.json').then(r=>r.json()); const row=document.createElement('div'); row.className='row'; row.innerHTML='<b>'+n+'<br>'+Math.round(d.w)+'x'+Math.round(d.h)+'<br>'+((d.op-d.ip)/d.fr).toFixed(1)+'s</b>'; document.body.appendChild(row);
+  for (const f of [0.1,0.35,0.6,0.85]) { const c=document.createElement('div'); c.className='c'; row.appendChild(c); const a=lottie.loadAnimation({container:c,renderer:'svg',loop:false,autoplay:false,animationData:JSON.parse(JSON.stringify(d))}); a.goToAndStop(d.ip+(d.op-d.ip)*f,true); } }
+ window.DONE=1; })().catch(e=>{document.body.append('ERR '+e.message); window.DONE=1;});
+</script></body></html>
