@@ -23,6 +23,17 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### CHAOS: readable pitch, a points chart, lasting damage and manager unlocks ✅ 5.20 *(owner, 3 Oct 2026)*
+> "colour code the cards … line chart of points … the black saturn with two glowing dots and the golden circle don't make
+> sense … emojis covering the pitch, at least put the icon next to the player … tornado, ambulance and black hole should
+> leave a lasting impact … does it make sense to unlock managers? Start with 5, unlock for games played, points totals,
+> players over 100 goals, players on 0, bonus points, one huge player, wildcards used in a game…"
+- Built: blue/red cards vs the player's real numbers (with %), a sparkline in the dock and a full-time chart with event
+  dots and a tap tooltip, player marks drawn beside the card (bandage, banana, tape, ring…), redrawn scorch and ball,
+  crooked players + a torn turf path after the tornado, the black hole swaps numbers through it and leaves a crater.
+- Managers: Ferguson, Wenger, Mourinho, Guardiola and Klopp to start; 15 more unlock from feats (`UNLOCK` in draft.js).
+  Shared games (Daily CHAOS, races, online) still offer every manager so nobody's stuck. Existing players start at five too.
+
 ### CHAOS: more events, every one leaves a mark ✅ 5.19 *(owner, 3 Oct 2026)*
 - **Owner's words:** a gambling scandal with a slot machine (win bonus, lose points); military conscription with a tank;
   proper helicopter and pigeon animations; the tornado showed only jagged lines; an earthquake; rain doing something small;

@@ -9,6 +9,16 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 62, label: '5.20', date: '2026-10-03', title: '📈 CHAOS you can read',
+      items: [
+        '🟦 Your cards change colour: blue when a player’s doing better than his real numbers, red when CHAOS has knocked him down, with the % on the card',
+        '📈 A little line follows your points as you play, and at full time there’s the whole story of your game: tap along it to see what happened at every spin',
+        '🩹 Things that happen to a player now show next to him (bandages, banana skins, police tape, wedding rings…) instead of on top of the pitch, and the scorch marks and the ball look like what they are',
+        '🌪️ The tornado leaves your players standing crooked and tears a path through the grass, 🚑 the ambulance parks up properly, and 🕳️ the black hole drags the numbers through it and leaves a crater',
+        '👔 Managers are unlocked now: you start with five, and the rest join as you play (games, big totals, centurions, players on nothing, bonus points and more). Tap “All managers” to see how to get each one',
+      ],
+    },
+    {
       v: 61, label: '5.19.1', date: '2026-10-03', title: '👔 Managers rebalanced',
       items: [
         '👔 After thousands of simulated CHAOS games with the new rules: Allardyce +10 per journeyman, Ranieri +45 per Leicester player, Klopp +15 per pair of teammates, Mourinho’s back line +70%, and Postecoglou plays Angeball (strikers +15%, rare moments six times as likely)',
