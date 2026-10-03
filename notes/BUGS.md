@@ -7,6 +7,7 @@ version they shipped in. Newest at the top.
 - Marks on a player showed only a corner: the player boxes clip their edges, so marks and the parked ambulance now sit inside.
 - The tornado's crooked players never showed: another transform on the card undid the tilt (now its own `rotate`).
 - Tapping a moment skipped its animation and play stopped until it ended: now a tap moves it on, and play carries on during it.
+- The Add songs action moved the CHAOS sound effects (fx/sfx) into the Soundtrack as 25 "songs": moved back, and it now leaves fx/ alone.
 - Rain was lines across the pitch: now drops, ripples and clouds. Too many screen flashes and throbbing backdrops: cut right down.
 
 ## Open
