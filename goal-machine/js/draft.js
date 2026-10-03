@@ -367,17 +367,36 @@
     conte: ['Get 60+ from your defenders in a game', (st, g) => g.def >= 60],
     vangaal: ['Finish CHAOS games in 4 different formations', (st) => (st.shapes || []).length >= 4],
     ange: ['See a legendary moment', (st, g) => g.legend > 0],
-    ancelotti: ['Score 1,000 CHAOS points in a game', (st, g) => g.pts >= 1000],
+    ancelotti: ['Play 30 CHAOS games', (st) => st.games >= 30],
     klopp: ['Have one player worth 400+', (st, g) => g.top >= 400],
     wenger: ['Go invincible: finish a full game with nobody hurt', (st, g) => g.hurt === 0 && g.full],
     mourinho: ['Score 1,500 CHAOS points in a game', (st, g) => g.pts >= 1500],
-    pep: ['Play 30 CHAOS games', (st) => st.games >= 30],
-    fergie: ['Unlock every other manager', (st, g, have) => Object.keys(MANAGERS).every(k => k === 'fergie' || have.includes(k))],
+    pep: ['Score 2,000 CHAOS points in a game', (st, g) => g.pts >= 2000],
+    fergie: ['Score 2,500 CHAOS points in a game', (st, g) => g.pts >= 2500],
   };
-  const mgrUnlocked = () => { const u = GM.store.get('mgrs', null); return MGR_START.concat(Array.isArray(u) ? u : []).filter((k, n, a) => MANAGERS[k] && a.indexOf(k) === n); };
+  // players from before unlocks keep what they'd have earned, judged from the CHAOS games on this phone (the top 20 of
+  // each CHAOS mode are kept, so it's a fair guess rather than exact): games played and their best score
+  function mgrLegacy() {
+    let games = 0, best = 0;
+    try {
+      Object.keys(localStorage).forEach(k => {
+        const m = k.match(/^gm:hist:(d?chaos.*)$/); if (!m) return;
+        const h = GM.store.get('hist:' + m[1], []), u = /apps/.test(m[1]) ? CHAOS_UNIT.apps : /ast/.test(m[1]) ? CHAOS_UNIT.assists : 1;
+        games += h.length; h.forEach(x => { best = Math.max(best, (+x.s || 0) / u); });
+      });
+    } catch (e) { /* no storage */ }
+    const by = { 5: ['warnock'], 10: ['holloway', 'benitez', 'redknapp', 'keegan', 'vangaal'], 15: ['ranieri'], 20: ['conte', 'ange', 'klopp', 'wenger'], 30: ['ancelotti'] };
+    const got = Object.keys(by).filter(n => games >= +n).flatMap(n => by[n]);
+    [[1500, 'mourinho'], [2000, 'pep'], [2500, 'fergie']].forEach(([n, k]) => { if (best >= n) got.push(k); });
+    if (games && !GM.store.get('chaosStats', null)) GM.store.set('chaosStats', { games, shapes: [] });
+    GM.store.set('mgrs', got);
+    return got;
+  }
+  const mgrUnlocked = () => { const u = GM.store.get('mgrs', null) || mgrLegacy(); return MGR_START.concat(Array.isArray(u) ? u : []).filter((k, n, a) => MANAGERS[k] && a.indexOf(k) === n); };
   const mgrPool = () => (S && (S.dailyChaos || S.online || S.fx || GM._forceMgr) ? Object.keys(MANAGERS) : mgrUnlocked());
   // after a CHAOS game: count it, and unlock any manager whose feat you've just pulled off
   function mgrProgress(sc) {
+    mgrUnlocked();  // an older player's earlier games count first
     const u = CHAOS_UNIT[S.stat] || 1, filled = S.xi.filter(x => x.p != null);
     const st = GM.store.get('chaosStats', { games: 0, shapes: [] });
     st.games = (st.games || 0) + 1;
@@ -389,10 +408,7 @@
       hurt: filled.filter(x => HURT.includes(x.mod) || x.mod === 'halved').length, legend: (S.moments || []).filter(m => m.rar === 'l').length,
       def: filled.filter(x => GM.GROUP[x.pos] === 'D').reduce((a, x) => a + x.g, 0) / u };
     const have = mgrUnlocked(), fresh = [];
-    for (let more = true; more;) {  // twice round, so the last unlock can bring in Fergie in the same game
-      more = false;
-      Object.keys(UNLOCK).forEach(k => { if (!have.includes(k) && UNLOCK[k][1](st, g, have)) { have.push(k); fresh.push(k); more = true; } });
-    }
+    Object.keys(UNLOCK).forEach(k => { if (!have.includes(k) && UNLOCK[k][1](st, g)) { have.push(k); fresh.push(k); } });
     if (fresh.length) GM.store.set('mgrs', have.filter(k => !MGR_START.includes(k)));
     return fresh;
   }

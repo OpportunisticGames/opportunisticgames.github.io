@@ -32,8 +32,9 @@ formations, and badges round 2.
   dots and a tap tooltip, player marks drawn beside the card (bandage, banana, tape, ring…), redrawn scorch and ball,
   crooked players + a torn turf path after the tornado, the black hole swaps numbers through it and leaves a crater.
 - Managers: the journeymen to start (Moyes, Allardyce, Hodgson, Pulis, Dyche; the owner: "they're like starter managers"),
-  the legends hardest (Wenger invincible, Mourinho 1,500 pts, Pep 30 games), Fergie for unlocking everyone (`UNLOCK` in draft.js).
-  Shared games (Daily CHAOS, races, online) still offer every manager so nobody's stuck. Existing players start at five too.
+  the legends hardest (Wenger invincible, Mourinho 1,500 pts, Pep 2,000, Fergie 2,500: about 1 in 20 and 1 in 50 real
+  CHAOS players' bests). Older players keep what they'd have earned, guessed from their saved CHAOS games (`mgrLegacy`).
+  Shared games (Daily CHAOS, races, online) still offer every manager so nobody's stuck.
 
 ### CHAOS: more events, every one leaves a mark ✅ 5.19 *(owner, 3 Oct 2026)*
 - **Owner's words:** a gambling scandal with a slot machine (win bonus, lose points); military conscription with a tank;
