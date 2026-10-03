@@ -110,6 +110,8 @@
     honour: () => [`<div class="sc-guard"><div class="row t">${Array.from({ length: 7 }, (_, k) => CLAPPER(k, '#fff')).join('')}</div><div class="row b">${Array.from({ length: 7 }, (_, k) => CLAPPER(k + 1, '#fff')).join('')}</div><div class="hero">${walk(PERSON('#e8b48a', '#e3262f', '#fff'))}</div></div>`, 3400, ['applause', 'cheer']],
     // the loan army's coach drives in, stops, honks and drives off
     coach: () => [`<div class="sc-coach">${SPRITE.coach.replace('class="spr"', 'class="spr moving"')}</div>`, 3400, ['bus', 'horn']],
+    // a bomb: it drops in, fizzing, and the clock starts
+    bomb: () => [`<div class="sc-bomb"><svg viewBox="0 0 60 64" width="96" height="102"><path class="fuse" d="M38 14q8-10 16-6" fill="none" stroke="#a67c00" stroke-width="3"/><circle cx="28" cy="38" r="22" fill="#1b1b22"/><rect x="31" y="10" width="11" height="9" rx="2" fill="#333" transform="rotate(30 36 14)"/><ellipse cx="20" cy="30" rx="6" ry="4" fill="#fff" opacity=".25"/><circle class="spark" cx="54" cy="8" r="4" fill="#ffd34d"/></svg></div>`, 2400, ['swoosh', 'tick3']],
     // the streaker legs it across, a steward after him
     streak: () => [`<div class="sc-streak">${walk(PERSON('#f2c4a0', '#f2c4a0', '#f2c4a0'))}<span class="gap"></span>${walk(PERSON('#e8b48a', '#ffd400', '#222'))}</div>`, 2600, ['whistle', 'cheer']],
     // the open-top bus crosses the pitch with the cup
@@ -189,21 +191,20 @@
   const PX = {
     tvvan: (f, r) => setTimeout(() => f.money(r, 40), 1300),
     derby: (f, r) => [[0.08, 0.04], [0.28, 0.96], [0.72, 0.04], [0.92, 0.96]].forEach(([x, y], k) => setTimeout(() => f.flare(...at(r, x, y), 2700), k * 160)),
-    shower: (f, r, kind) => kind === 'burst' ? (f.flash(0xffd34d, 0.45), f.burst(...at(r, 0.5, 0.5), 0xff8a3d), setTimeout(() => f.burst(...at(r, 0.25, 0.3)), 250), setTimeout(() => f.burst(...at(r, 0.75, 0.7)), 450))
+    shower: (f, r, kind) => kind === 'burst' ? (f.burst(...at(r, 0.5, 0.5), 0xff8a3d), setTimeout(() => f.burst(...at(r, 0.25, 0.3)), 250), setTimeout(() => f.burst(...at(r, 0.75, 0.7)), 450))
       : kind === 'trophy' ? (f.lottie('trophy', { x: r.left + r.width / 2, y: r.top + r.height * 0.42, w: LOT.trophy.w }), f.fireworks(r, 6), f.confetti(r, 160), GM.sound.play('firework'))
       : f.money(r, 36),
     golden: (f, r) => { for (let k = 0; k < 5; k++) setTimeout(() => f.sparks(...at(r, 0.1 + k * 0.17, 0.25 + (k % 2) * 0.4), { n: 18, tint: 0xffd34d, speed: 260 }), 200 + k * 380); },
     box: (f, r) => setTimeout(() => { f.sparks(...at(r, 0.5, 0.62), { n: 40, tint: 0xffe14a }); f.shockwave(...at(r, 0.5, 0.62), 0xffe14a, 0.8); }, 1900),
-    ref: (f, r) => setTimeout(() => f.flash(0xff2a2a, 0.25), 1150),
     chant: (f, r) => f.confetti(r, 90),
-    press: (f, r) => [0.6, 0.9, 1.2, 1.45, 1.7].forEach(t => setTimeout(() => { f.flash(0xffffff, 0.35); GM.sound.play('camera'); }, t * 1000)),
-    vhs: (f, r) => f.flash(0xa46bff, 0.3),
+    press: (f, r) => [0.6, 0.9, 1.2, 1.45, 1.7].forEach(t => setTimeout(() => GM.sound.play('camera'), t * 1000)),
     parade: (f, r) => { f.confetti(r, 160); f.fireworks(r, 3); },
     honour: (f, r) => f.confetti(r, 70),
     chutes: (f, r) => f.smoke(...at(r, 0.5, 1), { ms: 1200, tint: 0xff8a3d, alpha: 0.25 }),
     sacked: (f, r) => setTimeout(() => f.sparks(...at(r, 0.5, 0.18), { n: 16, tint: 0xffffff, speed: 200 }), 300),
     hired: (f, r) => setTimeout(() => f.confetti({ left: r.left, top: r.top, width: r.width * 0.6, height: r.height }, 50), 1600),
     streak: () => {},
+    bomb: (f, r) => { for (let k = 0; k < 8; k++) setTimeout(() => f.sparks(r.left + r.width / 2 + 34, r.top + r.height / 2 - 40, { n: 6, tint: 0xffd34d, speed: 160 }), 500 + k * 200); },
   };
   const PXW = {
     centurion: (f, r) => { f.burst(...at(r, 0.5, 0.5), 0xffd34d); f.sparks(...at(r, 0.5, 0.5), { n: 60, tint: 0xffd34d, speed: 520 }); },
@@ -215,7 +216,6 @@
     captain: (f, r) => setTimeout(() => f.sparks(...at(r, 0.5, 0.5), { n: 30, tint: 0xffd34d, speed: 300 }), 700),
     gegenpress: (f, r) => f.dust([0.15, 0.35, 0.55, 0.75, 0.9].map(x => at(r, x, 0.95))),
     oneclub: (f, r) => f.sparks(...at(r, 0.5, 0.5), { n: 30, tint: 0xff5e7a }),
-    deadline: (f, r) => f.flash(0xffd400, 0.3),
     magnet: (f, r) => f.shockwave(...at(r, 0.5, 0.5), 0x5ec8ff, 1),
     joker: (f, r) => f.sparks(...at(r, 0.5, 0.5), { n: 30, tint: 0xa46bff }),
     bus: (f, r) => setTimeout(() => f.smoke(...at(r, 0.32, 0.86), { ms: 900, tint: 0x888888, alpha: 0.4 }), 400),

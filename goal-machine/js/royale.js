@@ -279,7 +279,7 @@
       st.trophies = Math.max(0, st.trophies + d); st.played++;
       if (res === 'win') { st.wins++; st.streak++; } else st.streak = 0;
       const pack = res === 'win' && st.wins % 5 === 0;
-      if (pack && GM.givePack) GM.givePack(1, 'Goal Royale: 5 more wins');
+      if (pack && GM.givePack) GM.givePack(1, 'Goal Royale: 5 more wins', 'royale');
       save(st);
       const up = arenaOf(st.trophies) > arenaOf(before);
       GM.sound.play(res === 'win' ? 'fanfare' : res === 'loss' ? 'boo' : 'whistle');

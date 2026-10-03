@@ -3,6 +3,12 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.22 *(owner, 3 Oct 2026)*
+- Marks on a player showed only a corner: the player boxes clip their edges, so marks and the parked ambulance now sit inside.
+- The tornado's crooked players never showed: another transform on the card undid the tilt (now its own `rotate`).
+- Tapping a moment skipped its animation and play stopped until it ended: now a tap moves it on, and play carries on during it.
+- Rain was lines across the pitch: now drops, ripples and clouds. Too many screen flashes and throbbing backdrops: cut right down.
+
 ## Open
 
 | Reported | Bug | Status |

@@ -2573,7 +2573,7 @@ body.calm .rm, body.calm .runner .leg, body.calm .runner .arm, body.calm .dog .l
 .slot .marks i { font-style: normal; font-size: .9rem; line-height: 1; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .6)); }
 .slot .marks svg { display: block; width: 18px; height: 18px; }
 /* knocked crooked by the tornado, for the rest of the game */
-.slot[data-wonky] { transform: rotate(var(--wk)); }
+/* (see .pitch .slot[data-wonky] below) */
 .slot[data-wonky].spun { animation: slot-spun .8s ease-out; }
 /* the tornado's torn path */
 .mess svg.crack.turf polyline { stroke: #6b4a2b; stroke-width: 9; stroke-linecap: round; opacity: .55; stroke-dasharray: 3 2; filter: none; }
@@ -2917,3 +2917,74 @@ body.calm .sc-portrait .ph, body.calm .sc-portrait .stamp, body.calm .sc-portrai
 .mgr-ico.ph .mgr-photo { top: 46%; }
 .scn-sacked .sc-p45 { top: 10%; font-size: 1.3rem; }
 .sc-portrait .stamp { top: 70%; }
+
+/* 5.21.1: the boxes clip anything outside them, so the marks and a parked vehicle sit just inside the corners */
+.slot .marks { top: 1px; right: 1px; gap: 0; }
+.slot .marks svg { width: 15px; height: 15px; }
+.slot .marks i { font-size: .72rem; }
+.slot .parked, .slot .parked.r { width: 40px; bottom: 0; left: -2px; }
+.slot .parked.r { left: auto; right: -2px; }
+.slot .parked .spr, .slot .parked .lot-still { width: 40px; }
+
+/* 5.21.1: once a moment's action starts you can carry on playing. Its card becomes a slim banner at the top, the rest
+   of the screen takes taps, and the action plays on its own layer over the pitch (.cm-stage) */
+.cm-stage { position: fixed; z-index: 94; pointer-events: none; overflow: hidden; border-radius: var(--r); }
+.cm.act { justify-content: flex-start; padding: calc(6px + env(safe-area-inset-top)) 10px 0; pointer-events: none; }
+.cm.act::before { display: none; }
+.cm.act .cm-sky { display: none; }
+.cm.act .cm-card { pointer-events: auto; display: grid; grid-template-columns: auto 1fr; column-gap: 10px; align-items: center; text-align: left; padding: 6px 12px; max-width: 460px; width: 100%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .45); }
+.cm.act .cm-icon { grid-row: span 2; font-size: 1.7rem; margin: 0; }
+.cm.act .cm-name { font-size: 1rem; margin: 0; line-height: 1.15; }
+.cm.act .cm-text { font-size: .78rem; margin: 0; line-height: 1.25; }
+.cm.act .cm-rar, .cm.act .cm-skip { display: none; }
+.cm.act.tucked .cm-card, .cm.out .cm-card { opacity: 0; transform: translateY(-120%); transition: .3s; pointer-events: none; }
+.ps-chaos { margin: 8px 0 10px; padding: 8px 10px; border-radius: 12px; background: color-mix(in srgb, var(--panel) 80%, #7c3aed); }
+.ps-chaos h4 { margin: 0 0 4px; }
+.ps-story { list-style: none; margin: 4px 0 0; padding: 0; font-size: .82rem; }
+.ps-story li { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-top: 1px solid var(--line); }
+.ps-chaos .pos { color: #3987e5; } .ps-chaos .neg { color: #e66767; }
+.ps-chaos { margin: 8px 0 10px; padding: 8px 10px; border-radius: 12px; background: color-mix(in srgb, var(--panel) 80%, #7c3aed); }
+.ps-chaos h4 { margin: 0 0 4px; }
+.ps-story { list-style: none; margin: 4px 0 0; padding: 0; font-size: .82rem; }
+.ps-story li { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-top: 1px solid var(--line); }
+.ps-chaos .pos { color: #3987e5; } .ps-chaos .neg { color: #e66767; }
+/* the moment backdrops glow slowly instead of throbbing */
+.sky-red, .sky-fire { animation-duration: 2.6s; }
+@keyframes sky-pulse { to { filter: brightness(1.12); } }
+/* crooked players (the tornado, the earthquake): their own rotation, so no other transform on the card can undo it */
+.pitch .slot[data-wonky] { rotate: var(--wk); }
+/* the tornado picks each card up, spins it right round and drops it */
+@keyframes slot-spun { 0% { transform: none; } 30% { transform: translateY(-30px) scale(1.2) rotate(220deg); } 62% { transform: translateY(-38px) scale(1.12) rotate(420deg); } 84% { transform: translateY(5px) scale(.96) rotate(360deg); } 100% { transform: none; } }
+.slot.spun, .slot[data-wonky].spun { animation: slot-spun 1.1s cubic-bezier(.3, .6, .4, 1); z-index: 4; }
+/* the bomb */
+.sc-bomb { left: 50%; top: 50%; transform: translate(-50%, -50%); animation: bomb-in 2.4s cubic-bezier(.3, 1.4, .5, 1) forwards; }
+.sc-bomb .spark { animation: flare-spark .12s linear infinite alternate; transform-box: fill-box; transform-origin: center; }
+@keyframes bomb-in { 0% { transform: translate(-50%, -260%) rotate(-30deg); } 30% { transform: translate(-50%, -50%) rotate(8deg); } 40% { transform: translate(-50%, -56%) rotate(-4deg); } 80% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(-50%, -420%) scale(.2); opacity: 0; } }
+.bomb-pill { font-size: .8rem; font-weight: 900; padding: 2px 9px; border-radius: 99px; background: #1b1b22; color: #ffd34d; border: 2px solid #e3262f; white-space: nowrap; }
+.bomb-pill.late { background: #e3262f; color: #fff; animation: bomb-pulse .5s ease-in-out infinite alternate; }
+@keyframes bomb-pulse { to { transform: scale(1.12); } }
+/* 5.22: every kind of pack has its own look, and says what it's for */
+.fx-canvas.raised.top { z-index: 130; }
+.pk-daily { background: linear-gradient(135deg, #064e3b, #059669 55%, #a7f3d0); }
+.pk-level { background: linear-gradient(135deg, #0c2a4d, #2563eb 50%, #60a5fa); box-shadow: 0 18px 44px rgba(0, 0, 0, .5), inset 0 0 0 3px #bfdbfe; }
+.pk-badge { background: linear-gradient(135deg, #3f2a05, #b45309 50%, #fbbf24); box-shadow: 0 18px 44px rgba(0, 0, 0, .5), inset 0 0 0 3px #fde68a; }
+.pk-dailies { background: linear-gradient(135deg, #1e1b4b, #7c3aed 55%, #f472b6); }
+.pk-royale { background: linear-gradient(135deg, #1c1305, #a16207 45%, #fde047); box-shadow: 0 18px 44px rgba(0, 0, 0, .55), inset 0 0 0 3px #fef08a; }
+.pk-chaos { background: conic-gradient(from 200deg, #dc2626, #f59e0b, #16a34a, #2563eb, #9333ea, #dc2626); box-shadow: 0 18px 44px rgba(0, 0, 0, .55), inset 0 0 0 3px #111; }
+.pk-chaos b, .pk-chaos span { text-shadow: 0 2px 0 #000, 0 0 12px rgba(0, 0, 0, .6); }
+.po-why { display: block; margin-top: 6px; font: 700 .8rem Inter, sans-serif; font-style: normal; color: #fde68a; }
+.po-name small + .po-why { margin-top: 8px; }
+.pack-open .po-lot { position: fixed; inset: 0; pointer-events: none; z-index: 2; }
+.fx-lottie.po-trophy { z-index: 131; }
+/* 5.22: a player's card picked up by a moment (bundled into the police car, beamed up, whirled by the twister) */
+.page-draft .slot.away > * { visibility: hidden; }
+.page-draft .slot.away { background: rgba(255, 255, 255, .06); border-style: dashed; box-shadow: none; }
+.cm-stage .cm-held { position: absolute; z-index: 6; margin: 0; transform: translate(-50%, -50%); pointer-events: none; overflow: hidden; box-shadow: 0 10px 18px rgba(0, 0, 0, .45); rotate: none; }
+.cm-held.beaming { filter: drop-shadow(0 0 10px #b6ff8a) brightness(1.15); }
+/* riding in the vehicle: tucked behind it, head and shoulders showing over the roof */
+.cm-veh .cm-held.riding { position: absolute; left: 50%; top: 22%; z-index: -1; transform: translate(-50%, -50%) scale(.42) rotate(-10deg); box-shadow: none; }
+.cm-veh .cm-held.riding.lying { top: 48%; transform: translate(-50%, -50%) scale(.38) rotate(90deg); }
+.cm-veh.flip .cm-held.riding { transform: translate(-50%, -50%) scale(.42) rotate(10deg); }
+.fx-lottie .fx-carry { position: absolute; left: 6%; top: 46%; font-style: normal; font-size: 22px; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .5)); animation: carry-bob .25s ease-in-out infinite alternate; }
+@keyframes carry-bob { to { translate: 0 -3px; } }

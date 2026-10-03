@@ -20,7 +20,7 @@ const TURBO = () => {
 const STEP = () => {
   document.querySelectorAll('.modal-wrap').forEach(m => m.remove());
   const S = GM.draft.state(), M = GM.draft.MANAGERS();
-  const cm = document.querySelector('.cm:not(.out)');
+  const cm = document.querySelector('.cm:not(.out):not(.act)');  // (a moment that's under way doesn't stop play)
   if (cm) {
     const pick = cm.querySelector(`[data-mgr="${GM._forceMgr}"]`) || cm.querySelector('[data-mgr]');
     if (pick) { pick.click(); return 'mgr'; }

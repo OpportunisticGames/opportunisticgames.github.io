@@ -1,6 +1,6 @@
 """Adds new songs to the Soundtrack playlist (goal-machine/music/playlist.json).
 
-Any .mp3 uploaded outside the music folder (e.g. to the top of the repo by mistake) is moved into it first. Epidemic
+Any .mp3 uploaded outside the music folder (and the game's sound effects in fx/) (e.g. to the top of the repo by mistake) is moved into it first. Epidemic
 Sound downloads are named 'ES_Title - Artist.mp3', which gives the title and artist; other files use the file name as
 the title (fix it by hand in playlist.json). Songs whose file has gone are dropped. Run from the repo root:
     python3 goal-machine/tools/add_songs.py
@@ -11,13 +11,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 MUSIC = ROOT / 'goal-machine' / 'music'
+FX = ROOT / 'goal-machine' / 'fx'  # the game's sound effects (fx/sfx) are not songs: leave them where they are
 LIST = MUSIC / 'playlist.json'
 
 
 def main():
     # stray uploads: any .mp3 in the repo that isn't in music/
     for f in ROOT.rglob('*.mp3'):
-        if f.parent != MUSIC and '.git' not in f.parts:
+        if f.parent != MUSIC and '.git' not in f.parts and FX not in f.parents:
             dest = MUSIC / f.name
             subprocess.run(['git', 'mv', str(f), str(dest)], cwd=ROOT, check=False)
             if f.exists():

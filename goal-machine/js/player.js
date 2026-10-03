@@ -13,7 +13,7 @@
   }
   const fmtDate = d => { try { return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return d; } };
 
-  GM.playerSheet = function (ref) {
+  GM.playerSheet = function (ref, extra = '') {  // extra: a game's own block at the top (CHAOS: what's happened to him)
     const p = typeof ref === 'string' ? (GM.byPk.get(ref) || GM.anyByPk(ref)) : ref;
     if (!p) return null;
     const cs = GM.cardState ? GM.cardState(p) : null;
@@ -47,7 +47,7 @@
       <div class="ps-head">${GM.avatar(p, 'lg')}<div><h3>${GM.esc(p.name)}</h3>
         <div class="ps-sub">${GM.flag(p.nat)} ${GM.esc(p.nat || '')} · ${GM.posBadges(p)}</div>
         <div class="ps-sub">${GM.era(p)}${p.clubs.length > 1 || p.main ? ` · best known at ${GM.clubChip(p.main)}` : ''}</div></div></div>
-      ${cardBlock}
+      ${extra}${cardBlock}
       <div class="ps-stats"><span><b>${p.apps}</b>appearances</span><span><b>${p.goals}</b>goals</span><span><b>${p.ast}</b>assists</span><span><b>${p.apps ? (p.goals / p.apps).toFixed(2) : '0.00'}</b>goals a game</span></div>
       ${hon.length ? `<ul class="ps-hon">${hon.map(h => `<li>${h}</li>`).join('')}</ul>` : ''}
       <h4>Clubs</h4><ul class="ps-clubs">${clubs}</ul>

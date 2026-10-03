@@ -2,6 +2,7 @@
 // bonus packs (three dailies, new badges), the Packed XI and its board, and the Album showing it.
 const { chromium } = require(require('child_process').execSync('npm root -g').toString().trim() + '/playwright');
 const U = 'http://localhost:8765/goal-machine/';
+const GM_N = { level: 'Level Up Pack', badge: 'Badge Pack', royale: 'Royale Pack', chaos: 'CHAOS Pack' };
 const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) process.exitCode = 1; };
 (async () => {
   const b = await chromium.launch(), errs = [];
@@ -20,9 +21,9 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(t.c.l >= 25 && t.c.l <= 60 && t.c.g > 150 && t.c.s > 400 && t.c.b + t.c.s + t.c.g + t.c.l === t.all, `tiers: ${JSON.stringify(t.c)} of ${t.all} players`);
   ok(t.hof && t.shearer === 'l', 'Hall of Famers (Shearer included) are Legends');
   ok(await pg.evaluate(() => GM.packsWaiting() === 1) && /1 pack to open/i.test(await pg.textContent('.pack-bar')), 'a free pack every day, and Home says so');
-  // no break or matchday in this test: a plain Player Pack
+  // no break or matchday in this test: a plain Daily Pack
   await pg.evaluate(() => { GM.setFixtures([['2099-01-01T15:00:00Z', 'Everton', 'Chelsea']], []); });
-  ok(await pg.evaluate(() => GM.nextPackType()) === 'standard', 'on a normal day the free pack is a Player Pack');
+  ok(await pg.evaluate(() => GM.nextPackType()) === 'daily', 'on a normal day the free pack is a Daily Pack');
 
   // opening (no wildcard in this one; they're tested below)
   await pg.evaluate(() => { GM.packForce = { wild: 'none' }; });
@@ -81,9 +82,31 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(rules.grand, 'a card finished before the pack rule stays finished');
 
   // three dailies in a day: a bonus pack
-  const before = await pg.evaluate(() => GM.store.get('cards').packs);
+  const n3 = () => pg.evaluate(() => GM.store.get('cards').extra.filter(x => x.t === 'dailies').length);
+  const before = await n3();
   await pg.evaluate(() => { GM.markDaily('footle', 3); GM.markDaily('daily', 400); GM.markDaily('grid', 7); GM.markDaily('grid', 8); });
-  ok(await pg.evaluate(() => GM.store.get('cards').packs) === before + 1, 'three dailies in a day earn one bonus pack (not one per game after that)');
+  ok(await n3() === before + 1, 'three dailies in a day earn one Daily Hat-Trick Pack (not one per game after that)');
+  // every kind of pack says what it is and why you got it, and has its own face
+  const kinds = await pg.evaluate(async () => {
+    const out = []; GM.packForce = {};
+    for (const t of ['level', 'badge', 'royale', 'chaos']) {
+      const c = GM.store.get('cards'); c.daily = GM.today(); c.extra = []; c.packs = 0; GM.store.set('cards', c);
+      GM.givePack(1, 'test ' + t, t);
+      GM.packOpening();
+      const el = document.querySelector('.pack-open');
+      const r = { t, face: !!el.querySelector('.pk-' + t), name: el.querySelector('.po-name').textContent, why: (el.querySelector('.po-why') || {}).textContent || '' };
+      el.querySelector('.po-pack').click();
+      await new Promise(res => setTimeout(res, 1800));
+      r.cards = el.querySelectorAll('.po-cards .pcard').length;
+      r.tiers = [...el.querySelectorAll('.po-cards .pcard')].map(x => (x.className.match(/tier-(\w)/) || [])[1]).join('');
+      el.remove(); out.push(r);
+    }
+    return out;
+  });
+  kinds.forEach(k => ok(k.face && k.name.includes(GM_N[k.t]) && k.why.includes('test ' + k.t) && k.cards >= 3, `${GM_N[k.t]}: its own face, the name, why you got it, ${k.cards} cards (${k.tiers})`));
+  ok(/[sgl].*[sgl]/.test(kinds[0].tiers.replace(/w/g, '')), 'a Level Up Pack has two Silver or better');
+  ok(/[gl]/.test(kinds[2].tiers), 'a Royale Pack has a Gold or better');
+  ok(kinds[1].tiers.includes('w') && kinds[2].tiers.includes('w'), 'Badge and Royale Packs always have a wildcard');
 
   // a wildcard: Pick one — three face up, your choice gets the piece
   await pg.evaluate(() => { GM.packForce = { wild: 'pick' }; const c = GM.store.get('cards'); c.packs = 1; c.extra = []; GM.store.set('cards', c); });

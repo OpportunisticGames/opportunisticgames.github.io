@@ -287,7 +287,7 @@
 
   function celebrate(fresh, newPlayers) {
     let delay = 600;
-    if (fresh.length && GM.givePack) GM.givePack(fresh.length, fresh.length > 1 ? 'new badges' : 'new badge');
+    if (fresh.length && GM.givePack) GM.givePack(fresh.length, fresh.length > 1 ? `${fresh.length} new badges` : 'new badge', 'badge');
     if (fresh.length && GM.addXP) GM.addXP(GM.XP.badge * fresh.length);
     fresh.forEach(x => GM.pgsStat('badgeUnlocked', { badge: x.name }));
     fresh.forEach(x => { setTimeout(() => GM.toast(`🏅 Badge unlocked: ${x.icon} <b>${x.name}</b>`, 2600), delay); delay += 2800; });
