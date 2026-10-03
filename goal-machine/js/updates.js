@@ -9,6 +9,12 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 63, label: '5.20.1', date: '2026-10-03', title: '📸 Better photos',
+      items: [
+        '📸 More players have photos, and a new face finder lines the face up in 2,500 of them (more to come), so fewer foreheads and shoulders',
+      ],
+    },
+    {
       v: 62, label: '5.20', date: '2026-10-03', title: '📈 CHAOS you can read',
       items: [
         '🟦 Your cards change colour: blue when a player’s doing better than his real numbers, red when CHAOS has knocked him down, with the % on the card',

@@ -106,8 +106,9 @@ def main():
     d = load_js(DATA)
     photos = load_js(PHOTOS) if PHOTOS.exists() else {}
     faces = load_js(OUT) if OUT.exists() else {}
-    if faces.get('_detector') != DETECTOR:  # a better detector: every photo is looked at again
-        faces = {'_detector': DETECTOR}
+    # a better detector looks at every photo again, a few thousand a run, but keeps the old faces until it gets to them
+    # (wiping them first left thousands of avatars without a face between runs)
+    faces['_detector'] = DETECTOR
     jobs = []
     # every-player file too (Extreme / Purist), for its Transfermarkt portraits
     rows = d['players'] + (load_js(ALL)['players'] if ALL.exists() else [])
@@ -119,8 +120,12 @@ def main():
             jobs.append((f'w:{r[0]}|{r[6]}', ph['w']))
     # each entry ends with a short fingerprint of the picture it was found in, so a player whose photo changes is
     # looked at again ([cx, cy, w, tag], or [tag] when there's no clear face)
-    tag = lambda url: hashlib.md5(url.encode()).hexdigest()[:6]
-    todo = [j for j in jobs if j[0] not in faces or (faces[j[0]] or [''])[-1] != tag(j[1])][:limit]
+    # (the tag also carries the detector's number, so an entry from an older detector is looked at again)
+    tag = lambda url: hashlib.md5(url.encode()).hexdigest()[:6] + str(DETECTOR)
+    fresh = [j for j in jobs if j[0] not in faces]  # never looked at: first
+    stale = [j for j in jobs if j[0] in faces and (faces[j[0]] or [''])[-1] != tag(j[1])]
+    todo = (fresh + stale)[:limit]
+    print(f"{len(fresh)} never looked at, {len(stale)} from an older detector", file=sys.stderr)
     print(f'{len(jobs)} photos, {len(todo)} to check', file=sys.stderr)
     hit = 0
     for n, (k, url) in enumerate(todo):
