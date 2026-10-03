@@ -68,7 +68,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const veh = await pg.evaluate(() => { const S = GM.draft.state(); return { parked: Object.values(S.parked || {}), drawn: document.querySelectorAll('.slot .parked svg').length, ghost: S.ghost, filled: S.xi.filter(x => x.p != null).length }; });
   ok(parkedAfterInjury && parkedAfterInjury.n >= 1 && parkedAfterInjury.drawn >= 1, `🚑 the ambulance stays parked by the injured player (${parkedAfterInjury && parkedAfterInjury.drawn} drawn)`);
   ok(veh.ghost == null && st.moments.includes('Arrested!'), `🚔 arrested: his place is empty again (${veh.filled} signed)`);
-  ok(st.mess.includes('🩲') && st.mess.includes('#pigeon') && st.mess.includes('#crack'), `leftovers stay on the pitch (${st.mess})`);
+  ok(st.mess.includes('#pants') && st.mess.includes('#pigeon') && st.mess.includes('#crack'), `leftovers stay on the pitch (${st.mess})`);
   ok(st.shown === [...st.mess].length || st.shown >= 5, `${st.shown} leftovers drawn on the pitch`);
   ok(st.splat >= 1 && st.hidden === st.splat, `the pigeon’s revenge covers ${st.splat} number(s)`);
   await pg.screenshot({ path: 'lay/chaos_mess.png' });

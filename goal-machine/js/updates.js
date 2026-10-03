@@ -9,6 +9,28 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 62, label: '5.20', date: '2026-10-03', title: '📈 CHAOS you can read',
+      items: [
+        '🟦 Your cards change colour: blue when a player’s doing better than his real numbers, red when CHAOS has knocked him down, with the % on the card',
+        '📈 A little line follows your points as you play, and at full time there’s the whole story of your game: tap along it to see what happened at every spin',
+        '🩹 Things that happen to a player now show next to him (bandages, banana skins, police tape, wedding rings…) instead of on top of the pitch, and the scorch marks and the ball look like what they are',
+        '🌪️ The tornado leaves your players standing crooked and tears a path through the grass, 🚑 the ambulance parks up properly, and 🕳️ the black hole drags the numbers through it and leaves a crater',
+        '🎬 Every match-day moment is drawn now: the referee runs on with the red card, the taxman walks off with your card, a TV van drops off the money, the mystery box floats down on a parachute, men in balaclavas tiptoe past, the away end hold their scarves up, the loan army arrive by coach and more',
+        '🃏 Wildcards do something when you play one: the armband spins on, the bus drives in and stays parked in front of your goal, the Centurion Throw stamps 100, Deadline Day’s yellow banner, the Hat-Trick’s top hat…',
+        '🌦️ Weather for the whole game, forecast at kick-off: sun, rain, gales, snow (no pitch lines) or fog (squint at the names). It makes some things more likely',
+        '🎵 Mayhem builds with the CHAOS meter (faster, more drums, sirens), the crowd groans when one of yours turns red and goes “ooh” when one turns blue, the grass wears as the game goes on and the floodlights flicker when the meter’s nearly full',
+        '📰 A sacked manager clears his desk and walks off with his P45; the new one walks on waving',
+        '▶ Watch your game again at full time, and share a picture of your CHAOS pitch with everything left on it',
+        '👔 Managers are unlocked now: you start with the journeymen (Moyes, Allardyce, Hodgson, Pulis, Dyche) and work your way up to the legends: Pep for a 2,000-point game and Sir Alex for 2,500. Played CHAOS before? You keep the ones you’d already have earned. Tap “All managers” to see how to get each one',
+      ],
+    },
+    {
+      v: 61, label: '5.19.1', date: '2026-10-03', title: '👔 Managers rebalanced',
+      items: [
+        '👔 After thousands of simulated CHAOS games with the new rules: Allardyce +10 per journeyman, Ranieri +45 per Leicester player, Klopp +15 per pair of teammates, Mourinho’s back line +70%, and Postecoglou plays Angeball (strikers +15%, rare moments six times as likely)',
+      ],
+    },
+    {
       v: 60, label: '5.19', date: '2026-10-03', title: '🎰 The pitch remembers everything',
       items: [
         '🎰 Betting scandal: pull the fruit machine’s lever. Jackpot and you get bonus points; lose and your player’s fined half his numbers',

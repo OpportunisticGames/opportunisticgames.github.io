@@ -23,6 +23,30 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### CHAOS: readable pitch, a points chart, lasting damage and manager unlocks ✅ 5.20 *(owner, 3 Oct 2026)*
+> "colour code the cards … line chart of points … the black saturn with two glowing dots and the golden circle don't make
+> sense … emojis covering the pitch, at least put the icon next to the player … tornado, ambulance and black hole should
+> leave a lasting impact … does it make sense to unlock managers? Start with 5, unlock for games played, points totals,
+> players over 100 goals, players on 0, bonus points, one huge player, wildcards used in a game…"
+- Built: blue/red cards vs the player's real numbers (with %), a sparkline in the dock and a full-time chart with event
+  dots and a tap tooltip, player marks drawn beside the card (bandage, banana, tape, ring…), redrawn scorch and ball,
+  crooked players + a torn turf path after the tornado, the black hole swaps numbers through it and leaves a crater.
+- Managers: the journeymen to start (Moyes, Allardyce, Hodgson, Pulis, Dyche; the owner: "they're like starter managers"),
+  the legends hardest (Wenger invincible, Mourinho 1,500 pts, Pep 2,000, Fergie 2,500: about 1 in 20 and 1 in 50 real
+  CHAOS players' bests). Older players keep what they'd have earned, guessed from their saved CHAOS games (`mgrLegacy`).
+  Shared games (Daily CHAOS, races, online) still offer every manager so nobody's stuck.
+
+### CHAOS: animate everything that's left, the music, weather, replay and a share card ✅ 5.20 *(Claude's list, owner: "Could you do them all?", 3 Oct 2026)*
+- The nine original events and the six plain newer ones have drawn scenes (`js/chaosart.js`, `GM.CFX.play`), and every
+  wildcard has a short flourish (`GM.CFX.wild`). The bus stays parked (`S.bus`). No emojis thrown on the pitch any more:
+  leftovers and marks are drawn too.
+- Mayhem builds with the meter (`GM.sound.heat`), crowd groan/"ooh" when a card changes colour, pitch wear by spin,
+  floodlight flicker near a full meter.
+- Weather per game (seeded, so races and Daily CHAOS agree): sun/rain/wind/snow/fog, nudging event odds (`WEATHER` in chaosart.js).
+- Sacking: P45 and the walk off before you pick; the new manager walks on (also at kick-off).
+- Full time: ▶ replay (pitch refills spin by spin, bar at the bottom), and a CHAOS share picture (marks, cracks, bus, colours).
+- Calm mode skips the scenes (sounds still play).
+
 ### CHAOS: more events, every one leaves a mark ✅ 5.19 *(owner, 3 Oct 2026)*
 - **Owner's words:** a gambling scandal with a slot machine (win bonus, lose points); military conscription with a tank;
   proper helicopter and pigeon animations; the tornado showed only jagged lines; an earthquake; rain doing something small;

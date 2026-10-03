@@ -41,6 +41,7 @@
     c.beginPath(); c.moveTo(px + 20, py + ph / 2); c.lineTo(px + pw - 20, py + ph / 2); c.stroke();
     c.beginPath(); c.arc(W / 2, py + ph / 2, 90, 0, Math.PI * 2); c.stroke();
     c.strokeRect(W / 2 - 200, py + ph - 20 - 150, 400, 150); c.strokeRect(W / 2 - 200, py + 20, 400, 150);
+    if (opts.draw) opts.draw(c, px, py, pw, ph);  // CHAOS: whatever's been left on the pitch
     c.restore();
     // players
     const used = {};
@@ -57,6 +58,7 @@
       c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.arc(x, y + 6, 56, 0, Math.PI * 2); c.fill();
       c.fillStyle = cb; c.beginPath(); c.arc(x, y, 56, 0, Math.PI * 2); c.fill();
       c.lineWidth = 6; c.strokeStyle = cf; c.stroke();
+      if (s.ring) { c.lineWidth = 9; c.strokeStyle = s.ring; c.beginPath(); c.arc(x, y, 63, 0, Math.PI * 2); c.stroke(); }  // CHAOS: blue up, red down
       c.fillStyle = cf; c.font = '800 38px Inter, Arial, sans-serif'; c.fillText(GM.initials(s.p.name), x, y + 13);
       if (s.v != null) {  // the tally in a lime tag
         const t = Math.round(s.v).toLocaleString();
