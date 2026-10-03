@@ -29,6 +29,7 @@ const ONLY = (process.argv[2] || '').split(',').filter(Boolean);
   const MOM = { injury: 'lot', arrest: 'lot', aliens: 'lot', helicopter: 'lot', conscript: 'lot', fraud: 'lot', breakup: 'lot', splat: 'lot', dog: 'lot', title: 'lot',
     taxman: 'swap', box: 'swap', windfall: 'swap', loanarmy: 'swap',
     tornado: 'px', blackhole: 'px', lightning: 'px', quake: 'px', stoke: 'px', unleash: 'px', derby: 'px', windfall: 'px', lastminute: 'px', wedding: 'px' };
+  const HOLD = ['injury', 'arrest', 'aliens', 'conscript', 'tornado', 'wedding'];
   for (const ev of Object.keys(MOM).filter(k => !ONLY.length || ONLY.includes(k))) {
     await fill();
     await pg.evaluate(e => { const S = GM.draft.state(); S.forceEv = e; if (e === 'taxman') S.inv = ['captain']; }, ev);
@@ -39,7 +40,10 @@ const ONLY = (process.argv[2] || '').split(',').filter(Boolean);
     const st = await pg.evaluate(() => ({ lot: document.querySelectorAll('.fx-lot svg').length, swap: document.querySelectorAll('.wfx .lot .fx-lot svg').length }));
     const live = await pg.evaluate(() => GM.FX._alive ? GM.FX._alive() : -1);
     ok(MOM[ev] === 'lot' ? st.lot > 0 : MOM[ev] === 'swap' ? st.swap > 0 : live > 0, `${ev}: ${MOM[ev] === 'lot' ? `${st.lot} Lottie animation(s)` : MOM[ev] === 'swap' ? `the drawing swapped for its animation (${st.swap})` : `${live} particles`} on screen`);
+    // the characters pick up the player's card and take it with them
+    if (HOLD.includes(ev)) ok(await pg.waitForSelector('.cm-held', { timeout: 3000 }).then(() => true, () => false), `${ev}: the player's card is picked up`);
     await pg.screenshot({ path: `lay/px_${ev}.png` });
+    if (HOLD.includes(ev)) { await pg.waitForTimeout(900); await pg.screenshot({ path: `lay/px_${ev}2.png` }); }
     for (let k = 0; k < 40 && await pg.$('.cm:not(.out)'); k++) { await pg.click('.cm:not(.out)').catch(() => {}); await pg.waitForTimeout(250); }
     for (let k = 0; k < 30; k++) { const ph = await pg.evaluate(() => GM.draft.state().phase); if (ph === 'pick') break; await pg.waitForTimeout(200); }
   }

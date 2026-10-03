@@ -46,7 +46,7 @@
     T.spark = tex(64, 8, (g) => { const l = g.createLinearGradient(0, 0, 64, 0); l.addColorStop(0, 'rgba(255,255,255,0)'); l.addColorStop(0.7, 'rgba(255,255,255,.8)'); l.addColorStop(1, '#fff'); g.fillStyle = l; g.beginPath(); g.ellipse(32, 4, 32, 3, 0, 0, 7); g.fill(); });
     T.smoke = tex(128, 128, (g, w, h) => { for (let k = 0; k < 7; k++) { const x = 34 + Math.random() * 60, y = 34 + Math.random() * 60, r = 22 + Math.random() * 26, gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(255,255,255,.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, h); } });
     T.rect = tex(10, 6, (g) => { g.fillStyle = '#fff'; g.fillRect(0, 0, 10, 6); });
-    T.drop = tex(4, 26, (g) => { const l = g.createLinearGradient(0, 0, 0, 26); l.addColorStop(0, 'rgba(210,230,255,0)'); l.addColorStop(1, 'rgba(225,240,255,.85)'); g.fillStyle = l; g.fillRect(1, 0, 2, 26); });
+    T.drop = tex(10, 16, (g) => { const l = g.createLinearGradient(0, 0, 0, 16); l.addColorStop(0, 'rgba(200,225,255,.2)'); l.addColorStop(1, 'rgba(225,240,255,.9)'); g.fillStyle = l; g.beginPath(); g.moveTo(5, 0); g.quadraticCurveTo(9, 9, 9, 11); g.arc(5, 11, 4, 0, Math.PI); g.quadraticCurveTo(1, 9, 5, 0); g.fill(); g.fillStyle = 'rgba(255,255,255,.8)'; g.beginPath(); g.arc(3.6, 10.5, 1.2, 0, 7); g.fill(); });
     T.ring = tex(256, 256, (g) => { g.strokeStyle = '#fff'; g.lineWidth = 10; g.shadowColor = '#fff'; g.shadowBlur = 18; g.beginPath(); g.arc(128, 128, 110, 0, 7); g.stroke(); });
     T.leaf = tex(24, 14, (g) => { g.fillStyle = '#fff'; g.beginPath(); g.ellipse(12, 7, 11, 5, 0.3, 0, 7); g.fill(); g.strokeStyle = 'rgba(0,0,0,.25)'; g.beginPath(); g.moveTo(2, 9); g.lineTo(22, 5); g.stroke(); });
     T.chunk = tex(20, 16, (g) => { g.fillStyle = '#fff'; g.beginPath(); g.moveTo(2, 10); g.lineTo(8, 1); g.lineTo(18, 4); g.lineTo(16, 14); g.lineTo(6, 15); g.closePath(); g.fill(); });
@@ -99,12 +99,12 @@
     wx.rt -= dt;
     if (wx.rt <= 0) { const el = wx.get && wx.get(); wx.r = el && el.isConnected ? el.getBoundingClientRect() : null; wx.rt = 0.5; }
     const r = wx.r; if (!r || r.bottom < 0 || r.top > innerHeight) return;
-    const rate = { rain: 120, snow: 22, fog: 0.8, wind: 3.5, sun: 3 }[wx.kind] || 0;
+    const rate = { rain: 40, snow: 22, fog: 0.8, wind: 3.5, sun: 3 }[wx.kind] || 0;
     if (wx.warm) { wx.warm = false; warm(r); }
     wx.acc += rate * dt;
     for (; wx.acc >= 1; wx.acc--) {
       const x = r.left + rnd(-20, r.width), W = { weather: true };
-      if (wx.kind === 'rain') { const vy = rnd(650, 850), l = (r.height + 20) * rnd(0.4, 1) / vy; add({ ...W, tex: T.drop, x, y: r.top - 20, vx: 70, vy, rot: -0.09, alpha: rnd(0.35, 0.7), life: l, fadeIn: 0, fadeOut: 0.1, sy: 1.7, scale: rnd(0.9, 1.3) }); if (Math.random() < 0.35) add({ ...W, tex: T.hard, x: x + 70 * l, y: r.top - 20 + vy * l, vx: rnd(-30, 30), vy: -rnd(30, 60), ay: 400, scale: 0.2, alpha: 0.6, tint: 0xd8ecff, life: 0.22, delay: l, fadeIn: 0 }); }
+      if (wx.kind === 'rain') { drop(r, x, 0, W); if (Math.random() < 0.012) cloud(r, W); }
       else if (wx.kind === 'snow') add({ ...W, tex: T.flake, x, y: r.top - 8, vx: rnd(-8, 8), vy: rnd(28, 55), sway: rnd(14, 30), swf: rnd(1, 2), scale: rnd(0.25, 0.65), alpha: rnd(0.7, 1), life: (r.height + 8) / 40 * rnd(0.6, 1.1), fadeIn: 0.05, fadeOut: 0.12 });
       else if (wx.kind === 'fog') { const y = r.top + rnd(0.05, 0.95) * r.height; add({ ...W, tex: T.smoke, x: r.left - 80, y, vx: rnd(14, 26), tint: 0xe6ecef, scale: rnd(1.1, 1.7), alpha: rnd(0.2, 0.3), life: (r.width + 160) / 20, fadeIn: 0.15, fadeOut: 0.2 }); }
       else if (wx.kind === 'wind') { const y = r.top + rnd(0, r.height), leaf = Math.random() < 0.75; add({ ...W, tex: leaf ? T.leaf : T.paper, x: r.left - 20, y, vx: rnd(220, 340), vy: rnd(-20, 20), sway: 40, swf: 6, vr: rnd(-8, 8), tint: leaf ? pick([0x7cb342, 0xa0c050, 0xc9a24a, 0xb07a3a]) : 0xffffff, scale: leaf ? rnd(0.5, 0.8) : 0.5, life: (r.width + 40) / 280, fadeIn: 0.05, fadeOut: 0.1 }); }
@@ -116,6 +116,7 @@
     const W = { weather: true }, at = () => [r.left + rnd(0, r.width), r.top + rnd(0, r.height)];
     if (wx.kind === 'fog') for (let k = 0; k < 6; k++) { const [x, y] = at(), l = rnd(4, 9); add({ ...W, tex: T.smoke, x, y, vx: rnd(14, 26), tint: 0xe6ecef, scale: rnd(1.1, 1.7), alpha: rnd(0.2, 0.3), life: l, fadeIn: 0.1, fadeOut: 0.3 }); }
     if (wx.kind === 'snow') for (let k = 0; k < 40; k++) { const [x, y] = at(); add({ ...W, tex: T.flake, x, y, vx: rnd(-8, 8), vy: rnd(28, 55), sway: rnd(14, 30), swf: rnd(1, 2), scale: rnd(0.25, 0.65), alpha: rnd(0.7, 1), life: (r.bottom - y) / 40, fadeIn: 0.1, fadeOut: 0.15 }); }
+    if (wx.kind === 'rain') for (let k = 0; k < 5; k++) cloud(r, W, r.left + rnd(-60, r.width));
     if (wx.kind === 'sun') for (let k = 0; k < 10; k++) { const [x, y] = at(); add({ ...W, tex: T.dot, x, y, vx: rnd(-6, 6), vy: rnd(-10, -3), tint: 0xfff3c4, add: true, glow: true, scale: rnd(0.06, 0.14), alpha: rnd(0.4, 0.8), life: rnd(1.5, 4), fadeIn: 0.2, fadeOut: 0.4 }); }
   }
   async function weather(kind, get) {
@@ -129,6 +130,13 @@
     wx.kind = null; alive.splice(0).forEach(p => p.s.destroy()); if (app) { app.ticker.stop(); app.render(); } lots.splice(0).forEach(l => l.remove()); };
   window.addEventListener('hashchange', clear);
 
+  function drop(r, x, delay = 0, o = {}) {
+    const vy = rnd(420, 560), land = r.top + rnd(0.15, 1) * r.height, l = Math.max(0.1, (land - (r.top - 12)) / vy);
+    add({ ...o, tex: T.drop, x, y: r.top - 12, vx: 25, vy, rot: -0.05, alpha: rnd(0.45, 0.75), scale: rnd(0.55, 0.95), life: l, delay, fadeIn: 0, fadeOut: 0.05 });
+    add({ ...o, tex: T.ring, x: x + 25 * l, y: land, tint: 0xd8ecff, scale: 0.015, scale1: rnd(0.07, 0.11), sy: 0.4, alpha: 0.55, life: 0.55, delay: delay + l, fadeIn: 0, fadeOut: 0.8 });
+  }
+  // a dark rain cloud drifting across the top of an area
+  function cloud(r, o = {}, x) { add({ ...o, tex: T.smoke, x: x == null ? r.left - 90 : x, y: r.top + rnd(-0.02, 0.12) * r.height, vx: rnd(10, 18), tint: pick([0x4d5662, 0x5c6672, 0x6b7480]), scale: rnd(1.6, 2.6), alpha: rnd(0.35, 0.5), life: (r.width + 200) / 14, fadeIn: 0.08, fadeOut: 0.12 }); }
   const COLOURS = [0xff5ec8, 0xffe14a, 0x5ec8ff, 0x7dff6b, 0xffffff, 0xff8a3d, 0xa46bff];
   // each effect returns a promise for when it's (mostly) over; nothing happens without the canvas
   const E = {
@@ -137,7 +145,7 @@
     // banknotes and coins fluttering down
     money(t, n = 36) { const r = rect(t); for (let k = 0; k < n; k++) { const note = k % 3; add({ tex: note ? T.note : T.coin, x: r.left + rnd(0, r.width), y: r.top - rnd(10, 200), vy: rnd(70, 140), ay: note ? 20 : 220, drag: note ? 0.6 : 0, vr: rnd(-3, 3), rot: rnd(0, 6), scale: note ? rnd(0.7, 1) : rnd(0.6, 0.9), flip: note ? rnd(4, 8) : rnd(10, 18), sway: note ? rnd(30, 60) : 0, life: rnd(2.2, 3.2), fadeOut: 0.2 }); } return wait(3000); },
     // a downpour with splashes
-    rain(t, ms = 3000) { const r = rect(t), n = Math.round(ms / 12); for (let k = 0; k < n; k++) { const d = rnd(0, ms / 1000 - 0.4), x = r.left + rnd(-30, r.width), vy = rnd(700, 900), l = (r.height + 30) * rnd(0.45, 1) / vy; add({ tex: T.drop, x, y: r.top - 30, vx: 90, vy, rot: -0.12, life: l, delay: d, alpha: rnd(0.4, 0.8), fadeOut: 0.1, scale: rnd(0.8, 1.2), sy: 1.4 }); if (k % 3 === 0) add({ tex: T.hard, x: x + 90 * l, y: r.top - 30 + vy * l, vx: rnd(-40, 40), vy: -rnd(40, 80), ay: 400, scale: 0.25, alpha: 0.7, tint: 0xd8ecff, life: 0.25, delay: d + l, fadeIn: 0 }); } return wait(ms); },
+    rain(t, ms = 3000) { const r = rect(t); for (let k = 0; k < 5; k++) cloud(r, { life: ms / 1000 + 1 }, r.left + rnd(-40, r.width)); for (let k = 0; k < ms / 16; k++) drop(r, r.left + rnd(-20, r.width), rnd(0, ms / 1000 - 0.3)); return wait(ms); },
     // snow drifting down
     snow(t, ms = 3000) { const r = rect(t); for (let k = 0; k < ms / 30; k++) add({ tex: T.flake, x: r.left + rnd(0, r.width), y: r.top - 10, vy: rnd(30, 70), sway: rnd(20, 40), swf: rnd(1, 2), scale: rnd(0.3, 0.8), alpha: rnd(0.6, 1), life: rnd(3, 5), delay: rnd(0, ms / 1000) }); return wait(ms); },
     // a burst of hot sparks
@@ -149,7 +157,7 @@
     // an expanding ring of light
     shockwave(x, y, tint = 0xffffff, size = 1.6) { add({ tex: T.ring, x, y, tint, add: true, glow: true, scale: 0.05, scale1: size, alpha: 0.9, life: 0.7, fadeIn: 0, fadeOut: 0.7 }); return wait(700); },
     // a big bang: flash, ring, sparks and smoke
-    burst(x, y, tint = 0xffb347) { add({ tex: T.dot, x, y, tint: 0xffffff, add: true, glow: true, scale: 1, scale1: 4, alpha: 1, life: 0.35, fadeIn: 0, fadeOut: 0.9 }); E.shockwave(x, y, tint); E.sparks(x, y, { n: 40, speed: 600, tint }); E.smoke(x, y, { n: 14, ms: 300, tint: 0x666666, alpha: 0.5 }); return wait(1200); },
+    burst(x, y, tint = 0xffb347) { add({ tex: T.dot, x, y, tint, add: true, glow: true, scale: 0.8, scale1: 2.6, alpha: 0.8, life: 0.4, fadeIn: 0, fadeOut: 0.9 }); E.shockwave(x, y, tint); E.sparks(x, y, { n: 40, speed: 600, tint }); E.smoke(x, y, { n: 14, ms: 300, tint: 0x666666, alpha: 0.5 }); return wait(1200); },
     // a lightning strike from the sky to a point: a jagged, glowing bolt that flickers, then sparks where it lands
     lightning(x, y, top = 0) {
       if (!app) return wait(0);
@@ -207,6 +215,10 @@
     // fireworks over an area
     fireworks(t, n = 5) { const r = rect(t); for (let k = 0; k < n; k++) setTimeout(() => { const x = r.left + rnd(0.15, 0.85) * r.width, y = r.top + rnd(0.1, 0.45) * r.height, c = pick(COLOURS); for (let j = 0; j < 46; j++) { const a = (j / 46) * 6.28, v = rnd(160, 230); add({ tex: T.dot, x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, ay: 120, drag: 1.4, tint: c, add: true, glow: true, scale: 0.18, life: rnd(1, 1.4), fadeIn: 0 }); } E.shockwave(x, y, c, 0.6); }, k * 380); return wait(n * 380 + 1400); },
     // a flash of light over the whole screen
+    // light pulled in towards a point (a pack charging up)
+    charge(x, y, ms = 900, tint = 0xffe14a) { for (let k = 0; k < ms / 14; k++) { const a = rnd(0, 6.28), d = rnd(110, 200), l = rnd(0.35, 0.55); add({ tex: T.spark, x: x + Math.cos(a) * d, y: y + Math.sin(a) * d, vx: -Math.cos(a) * d / l, vy: -Math.sin(a) * d / l, rot: a, tint: pick([tint, 0xffffff]), add: true, glow: true, scale: rnd(0.25, 0.45), scale1: 0.1, life: l, delay: rnd(0, ms / 1000 - l), fadeIn: 0.3, fadeOut: 0.2 }); } add({ tex: T.dot, x, y, tint, add: true, glow: true, scale: 0.4, scale1: 2.2, alpha: 0.7, life: ms / 1000, fadeIn: 0.9, fadeOut: 0.05 }); return wait(ms); },
+    // gold rain over a card: light falling from above and twinkles about it
+    shimmer(t, tint = 0xffe14a, n = 24) { const r = rect(t); for (let k = 0; k < n; k++) add({ tex: T.dot, x: r.left + rnd(0, r.width), y: r.top + rnd(0, r.height), vy: -rnd(10, 40), tint: pick([tint, 0xffffff]), add: true, glow: true, scale: rnd(0.08, 0.2), scale1: 0, life: rnd(0.6, 1.2), delay: rnd(0, 0.8), fadeIn: 0.3 }); return wait(2000); },
     flash(tint = 0xffffff, a = 0.7) { add({ tex: T.rect, x: innerWidth / 2, y: innerHeight / 2, tint, scale: Math.max(innerWidth, innerHeight) / 4, alpha: a, life: 0.35, fadeIn: 0, fadeOut: 1 }); return wait(350); },
   };
 
@@ -270,7 +282,8 @@
     clear,
     weather,
     // lift the canvas over a moment's card for a while (the storm's rain over the whole screen)
-    raise(ms) { if (!app) return; app.canvas.classList.add('raised'); clearTimeout(this._rt); this._rt = setTimeout(() => app && app.canvas.classList.remove('raised'), ms); },
+    // over the pitch (z 97), or over anything (top: the pack opening sits at 120)
+    raise(ms, top) { if (!app) return; const c = app.canvas.classList; c.add('raised'); c.toggle('top', !!top); clearTimeout(this._rt); this._rt = setTimeout(() => app && c.remove('raised', 'top'), ms); },
     _alive: () => alive.length, _app: () => app,  // (tests)
     lottie: lottiePlay,
     rect,

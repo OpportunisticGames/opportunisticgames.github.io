@@ -66,7 +66,7 @@
     l[day] = { ...(l[day] || {}), [game]: value };
     store.set('dlog', l);
     if (Object.keys(l[day]).length > before && GM.addXP) GM.addXP(GM.XP.daily);
-    if (before === 2 && Object.keys(l[day]).length === 3 && day === GM.today() && GM.givePack) GM.givePack(1, 'three daily games today');
+    if (before === 2 && Object.keys(l[day]).length === 3 && day === GM.today() && GM.givePack) GM.givePack(1, 'three daily games today', 'dailies');
     if (GM.notify) GM.notify.sync();  // no streak or daily reminder once you've played today
   };
   GM.dailyResult = (game, day = GM.today()) => (log()[day] || {})[game];

@@ -65,16 +65,30 @@
       sub: () => { const f = PACKS.matchday.fx(); return f ? `${GM.clubShort(f.home)} v ${GM.clubShort(f.away)} players` : 'Matchday players'; },
       pool: () => { const f = PACKS.matchday.fx(); return f ? GM.players.filter(p => p.clubs.includes(f.home) || p.clubs.includes(f.away)) : null; },
     },
-    legends: { name: 'Legends Pack', sub: () => 'Choose a Legend, plus four Silver or better', pool: () => null },
+    legends: { name: 'Promotion Pack', sub: () => 'Choose a Legend, plus four Silver or better', pool: () => null },
+    // one for each way of earning a pack, so you can see what it was for: how it looks (badge) and what's in it
+    // (n pieces; the last `up` of them at least tier `min`; wild = always a wildcard)
+    daily: { name: 'Daily Pack', badge: '📅', sub: () => 'Your free pack for today', pool: () => null },
+    level: { name: 'Level Up Pack', badge: '⬆️', sub: () => 'Five pieces: two Silver or better', pool: () => null, min: 's', up: 2 },
+    badge: { name: 'Badge Pack', badge: '🏅', sub: () => 'Five pieces and a wildcard', pool: () => null, wild: 'pick' },
+    dailies: { name: 'Daily Hat-Trick Pack', badge: '🎩', sub: () => 'Three dailies in a day: one Gold or better', pool: () => null, min: 'g', up: 1 },
+    royale: { name: 'Royale Pack', badge: '👑', sub: () => 'Gold or better, and a wildcard', pool: () => null, min: 'g', up: 1, wild: 'pick' },
+    chaos: { name: 'CHAOS Pack', badge: '🌪️', sub: () => 'Anything could be in here: 3 to 7 pieces', pool: () => null, chaos: true },
   };
   GM.PACKS = PACKS;
+  // each pack's colour on the effects layer (the charge, the tear, the sparks)
+  const GLOW = { standard: 0xffe14a, legends: 0xe879f9, nations: 0x60a5fa, matchday: 0xfde047, daily: 0x6ee7b7, level: 0x93c5fd, badge: 0xfbbf24, dailies: 0xf472b6, royale: 0xfde047, chaos: 0xff5a2d };
   // today's free pack is themed when something's on
-  const dailyType = () => (GM.intlBreak && GM.intlBreak() ? 'nations' : GM.matchToday && GM.matchToday() ? 'matchday' : 'standard');
-  const nextType = c => (c.daily !== GM.today() ? dailyType() : c.extra.length ? c.extra[0] : c.packs > 0 ? 'standard' : null);
+  const dailyType = () => (GM.intlBreak && GM.intlBreak() ? 'nations' : GM.matchToday && GM.matchToday() ? 'matchday' : 'daily');
+  const xType = x => (x && typeof x === 'object' ? x.t : x), xWhy = x => (x && typeof x === 'object' ? x.why : '');
+  const nextType = c => (c.daily !== GM.today() ? dailyType() : c.extra.length ? (PACKS[xType(c.extra[0])] ? xType(c.extra[0]) : 'standard') : c.packs > 0 ? 'standard' : null);
+  // why you've got it (shown when you open it)
+  const nextWhy = c => (c.daily !== GM.today() ? 'Free every day' : c.extra.length ? xWhy(c.extra[0]) : '');
+  GM.nextPackWhy = () => nextWhy(load());
   GM.nextPackType = () => nextType(load());
   const packFace = (type, big) => {
     const P = PACKS[type], f = type === 'matchday' && P.fx(), [, bg, fg] = f ? clubCol(GM.favClub() || f.home) : [];
-    const badge = type === 'nations' ? `<span class="pf-badge">${GM.flag(P.nat())}</span>` : type === 'matchday' ? '<span class="pf-badge">🏟️</span>' : type === 'legends' ? '<span class="pf-badge">🟣</span>' : '';
+    const badge = type === 'nations' ? `<span class="pf-badge">${GM.flag(P.nat())}</span>` : type === 'matchday' ? '<span class="pf-badge">🏟️</span>' : type === 'legends' ? '<span class="pf-badge">🟣</span>' : P.badge ? `<span class="pf-badge">${P.badge}</span>` : '';
     return `<div class="po-foil pk-${type}${big ? '' : ' small'}"${f ? ` style="--pk1:${bg};--pk2:${fg}"` : ''}>${badge}<b>GOAL</b><span>MACHINE</span><i>${P.name.toUpperCase()}</i></div>`;
   };
 
@@ -82,9 +96,10 @@
   GM.packsWaiting = () => { const c = load(); return c.packs + c.extra.length + (c.daily !== GM.today() ? 1 : 0); };
   GM.givePack = function (n, why, type = 'standard') {
     const c = load();
-    if (type === 'standard') c.packs += n; else for (let i = 0; i < n; i++) c.extra.push(type);
+    if (type === 'standard') c.packs += n; else for (let i = 0; i < n; i++) c.extra.push({ t: type, why: why || '' });
     save(c);
     if (why) setTimeout(() => { GM.toast(`🎁 <b>+${n} ${type === 'standard' ? 'pack' : PACKS[type].name}${n > 1 ? 's' : ''}</b> · ${why}`, 2600); GM.sound.play('packget'); }, 900);
+    if (GM.FX && GM.FX.preload) GM.FX.preload(['trophy']);
     GM.packDots();
   };
   GM.packDots = () => GM.$$('.pack-count').forEach(el => { const n = GM.packsWaiting(); el.textContent = n; el.hidden = !n; });
@@ -162,20 +177,24 @@
     return { kind, options: out };
   }
   function draw(c, r, type) {
-    const theme = PACKS[type].pool(), taken = new Set(), out = [];
-    for (let i = 0; i < 5; i++) {
+    const P = PACKS[type], theme = P.pool(), taken = new Set(), out = [], n = P.chaos ? 3 + r.int(5) : 5;
+    for (let i = 0; i < n; i++) {
       let t = r.weighted(ORDER, k => TIERS[k].odds);
-      if ((i === 4 || type === 'legends') && t === 'b') t = r.weighted(['s', 'g', 'l'], k => TIERS[k].odds);
+      if ((i === n - 1 || type === 'legends') && t === 'b') t = r.weighted(['s', 'g', 'l'], k => TIERS[k].odds);
+      // a pack's promise: its last few pieces at least a tier (Silver for levelling up, Gold for Royale…)
+      if (P.min && i >= n - P.up && ORDER.indexOf(t) < ORDER.indexOf(P.min)) t = r.weighted(ORDER.slice(ORDER.indexOf(P.min)), k => TIERS[k].odds);
+      if (P.chaos && r() < 0.15) t = ORDER[Math.min(ORDER.length - 1, ORDER.indexOf(t) + 1)];  // CHAOS: now and then a tier up
       const p = pickFrom(c, r, t, theme, taken);
       taken.add(p.pk);
       out.push({ p, t: GM.cardTier(p) });
     }
     // a wildcard: in 3 packs out of 10 (the Legends pack always has Legend's choice)
     const force = GM.packForce || {};
-    const kind = type === 'legends' ? 'legend' : force.wild || (r() < 0.3 ? r.weighted(Object.keys(WILDS), k => WILDS[k].w) : null);
+    const any = () => r.weighted(Object.keys(WILDS), k => WILDS[k].w);
+    const kind = type === 'legends' ? 'legend' : force.wild || (P.wild ? any() : r() < 0.3 ? any() : null);
     if (kind && (force.wild !== 'none' || type === 'legends')) {
       const w = wildOptions(c, r, kind, theme, taken);
-      if (w.options.length) out[type === 'legends' ? 4 : r.int(4)] = { wild: w };
+      if (w.options.length) out[type === 'legends' ? n - 1 : r.int(n - 1)] = { wild: w };
     }
     // the best one last, for the reveal (a wildcard just before the best, a Legend's choice last)
     const rank = x => (x.wild ? (x.wild.kind === 'legend' ? 9 : 2.5) : ORDER.indexOf(x.t));
@@ -191,7 +210,7 @@
   // a piece from a pack for one card (the packs and Scout's tip use this; so do the tests)
   GM.cardPackPiece = function (p) { const c = load(), x = { p, t: GM.cardTier(p) }; apply(c, x); save(c); updateXI(); return x; };
   GM.openPack = function () {
-    const c = load(), type = nextType(c);
+    const c = load(), type = nextType(c), why = nextWhy(c);
     if (!type) return null;
     if (c.daily !== GM.today()) c.daily = GM.today();
     else if (c.extra.length) c.extra.shift();
@@ -201,7 +220,7 @@
     cards.forEach(x => { if (!x.wild) apply(c, x); });
     c.opened = (c.opened || 0) + 1;
     save(c);
-    const res = { type, cards, before };
+    const res = { type, why, cards, before };
     finishPack(res);
     return res;
   };
@@ -253,26 +272,30 @@
   // (Gold and Legend backs glow); they flip one by one, best last; a wildcard asks you to choose; a Legend walks out.
   // Tap during the reveal to speed it up.
   GM.packOpening = function (onClose) {
-    const type = GM.nextPackType();
+    const type = GM.nextPackType(), why = GM.nextPackWhy();
     if (!type) return;
     const P = PACKS[type];
     const el = document.createElement('div');
     el.className = 'pack-open pko-' + type;
     el.innerHTML = `<div class="po-rays"></div><div class="po-flash"></div>
       <div class="po-stage"><div class="po-pack" role="button" aria-label="Open the pack"><div class="po-strip"></div>${packFace(type, true)}</div>
-        <p class="po-name">${P.name}<small>${GM.esc(P.sub())}</small></p><p class="po-hint">👆 Tap to open</p></div>
+        <p class="po-name">${P.name}<small>${GM.esc(P.sub())}</small>${why ? `<em class="po-why">🎁 ${GM.esc(why)}</em>` : ''}</p><p class="po-hint">👆 Tap to open</p></div>
       <div class="po-cards"></div><div class="po-walk"></div><div class="po-choice"></div><div class="po-fx"></div><div class="po-actions"></div>`;
     document.body.appendChild(el);
     GM.sound.play('drumroll');
     const later = (ms, f) => setTimeout(() => { if (el.isConnected) f(); }, ms);
     let opened = false, fast = false, res = null;
+    const FX = GM.FX, glow = GLOW[type] || 0xffe14a, mid = n => { const r = el.querySelector(n).getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+    if (FX) FX.preload(['trophy']);
     el.querySelector('.po-pack').onclick = () => {
       if (opened) return; opened = true;
+      if (FX) { FX.ready().then(() => FX.raise(16000, true)); FX.charge(...mid('.po-pack'), 900, glow); }
       el.classList.add('charging'); GM.sound.play('charge', 1); later(300, () => GM.sound.play('charge', 2)); later(600, () => GM.sound.play('charge', 3));
       later(900, () => {
         res = GM.openPack();
         if (!res) { el.remove(); return; }
         el.classList.remove('charging'); el.classList.add('torn'); GM.sound.play('crack'); GM.buzz(60);
+        if (FX) { const [x, y] = mid('.po-pack'); FX.shockwave(x, y, glow, 2.2); FX.sparks(x, y - 60, { n: 50, speed: 520, tint: glow, up: 200 }); if (type === 'chaos') FX.confetti(el, 90); }
         later(700, deal);
       });
     };
@@ -335,6 +358,11 @@
     }
     // sparks for Gold, confetti for a Legend
     function burst(card, t) {
+      if (FX) {
+        const r = card.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+        FX.shockwave(x, y, t === 'l' ? 0xe879f9 : 0xffe14a, t === 'l' ? 1.8 : 1); FX.sparks(x, y, { n: t === 'l' ? 60 : 30, tint: t === 'l' ? 0xf0abfc : 0xffe14a }); FX.shimmer(card, t === 'l' ? 0xe879f9 : 0xffe14a);
+        if (t === 'l') { FX.fireworks(el, 4); FX.lottie('trophy', { x, y: r.top - 40, w: 140, cls: 'po-trophy' }); }
+      }
       const fx = el.querySelector('.po-fx'), r = card.getBoundingClientRect(), n = t === 'l' ? 36 : 18;
       const cols = t === 'l' ? ['#f0abfc', '#a855f7', '#fde047', '#fff'] : ['#fde047', '#facc15', '#fff'];
       for (let k = 0; k < n; k++) {

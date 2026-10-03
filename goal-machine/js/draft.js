@@ -176,11 +176,11 @@
       roam('dog');
       if (S.inv.length >= 3) return { note: 'A dog runs on, looks at your full wildcard bag and runs off again.' };
       const cards = Object.keys(WILDCARDS).filter(k => !WILDCARDS[k].chaos && !S.rules.noWild.includes(k)), w = cards[Math.floor(r() * cards.length)];
-      S.inv.push(w); return { note: `A dog runs on and fetches you a wildcard: ${WILDCARDS[w].icon} <b>${WILDCARDS[w].name}</b>!`, run: c => { c.cross('dog', 0.82, 2600); c.bag(); setTimeout(() => GM.sound.play('dog'), 500); } }; } },
+      S.inv.push(w); return { note: `A dog runs on and fetches you a wildcard: ${WILDCARDS[w].icon} <b>${WILDCARDS[w].name}</b>!`, run: c => { c.cross('dog', 0.82, 2600, WILDCARDS[w].icon); c.bag(); setTimeout(() => GM.sound.play('dog'), 500); } }; } },
     vuvuzela: { rar: 'c', icon: '🎺', name: 'Vuvuzelas', tone: 'weird', look: ['fire', 'horn'], go: () => { charge(); return { note: 'Nothing happens, very loudly. The CHAOS meter goes up one.', run: c => c.scene('vuvuzela') }; } },
     hamstring: { rar: 'c', icon: '🦵', name: 'Hamstring twang', tone: 'bad', look: ['red', 'bad'], go: r => {
       const f = filledIdx(); if (!f.length) return { note: 'Nobody to pull a hamstring yet.' };
-      const i = f[Math.floor(r() * f.length)]; scale(S.xi[i], 0.7, 'injured'); park(i, 'ambulance'); mark(i, '#bandage'); return { note: `${nm(i)} stretches for a ball he was never getting: <b>−30%</b>. Nee-naw.`, run: c => c.drive('ambulance', i, { park: true }) }; } },
+      const i = f[Math.floor(r() * f.length)]; scale(S.xi[i], 0.7, 'injured'); park(i, 'ambulance'); mark(i, '#bandage'); return { note: `${nm(i)} stretches for a ball he was never getting: <b>−30%</b>. Nee-naw.`, run: c => c.drive('ambulance', i, { park: true, take: 'stretcher' }) }; } },
     interview: { rar: 'c', icon: '🎤', name: 'Post-match interview', tone: 'bad', look: ['news', 'boo'], go: () => {
       const p = pts(5); S.bonus.push(['🎤 That interview', -p]); const m = S.manager && MANAGERS[S.manager];
       return { note: `${m ? m.name : 'Your chairman'} blames the ball, the grass and the moon. <b>−${p}</b> bonus points.`, run: c => c.scene('press') }; } },
@@ -234,10 +234,11 @@
       x.p = null; x.g = 0; x.v = null; x.mod = null; x.as = null; unpark(i); if (S.splat) S.splat = S.splat.filter(k => k !== i);
       S.bonus.push(['🎖️ A medal for service', p]);
       return { note: `${nm2(S.ghost.p)} is called up for national service and the tank comes to collect him. His place is empty, but there’s a medal: <b>+${p}</b>.`,
-        run: c => c.drive('tank', i, { wait: 1100, sound: 'rumble', then: () => { const el = c.slot(i); if (el) el.classList.add('nicked'); } }), done: () => { S.ghost = null; } }; } },
+        run: c => c.drive('tank', i, { wait: 1200, sound: 'rumble', take: true }), done: () => { S.ghost = null; } }; } },
     quake: { rar: 'u', icon: '🌍', name: 'Earthquake!', tone: 'weird', look: ['dark', 'quake'], go: r => {
       const f = filledIdx(); if (!f.length) return { note: 'The ground shakes. Luckily nobody’s on the pitch yet.' };
       let up = 0; f.forEach(i => { const k = 0.75 + r() * 0.55; scale(S.xi[i], k, k >= 1 ? 'boosted' : 'halved'); up += k >= 1; });
+      S.wonky = { ...(S.wonky || {}) }; f.forEach(i => { S.wonky[i] = (S.wonky[i] || 0) + Math.round((r() - 0.5) * 9); });  // everyone left a bit askew
       return { note: `The ground opens up! Everyone’s shaken: <b>${up}</b> up, <b>${f.length - up}</b> down. The crack stays.`, run: c => c.quake() }; } },
     fraud: { rar: 'u', icon: '💼', name: 'The owner’s done a runner', tone: 'bad', look: ['money', 'siren'], go: () => {
       const p = pts(15); S.bonus.push(['💼 Points deduction', -p]);
@@ -249,7 +250,7 @@
     wedding: { rar: 'u', icon: '💍', name: 'Wedding of the year', tone: 'good', look: ['party', 'bell'], go: r => {
       const f = filledIdx(); if (!f.length) return { note: 'The wedding goes ahead without any of your players. Lovely day for it.' };
       const i = f[Math.floor(r() * f.length)]; scale(S.xi[i], 1.4, 'boosted'); mark(i, '#ringw');
-      return { note: `${nm(i)} gets married and plays like a man in love: <b>+40%</b>.`, run: c => { c.confetti(); c.drive('wedding', i, { sound: 'bell', wait: 700 }); } }; } },
+      return { note: `${nm(i)} gets married and plays like a man in love: <b>+40%</b>.`, run: c => { c.confetti(); c.drive('wedding', i, { sound: 'bell', wait: 900, take: true }); } }; } },
     royal: { rar: 'r', icon: '👑', name: 'Royal visit', tone: 'good', look: ['gold', 'fanfare'], go: () => { const p = pts(50); S.bonus.push(['👑 Royal visit', p]); return { note: `Everyone’s on their best behaviour: <b>+${p}</b> bonus points.`, run: c => c.rain(ART('crown')) }; } },
     oligarch: { rar: 'r', icon: '💸', name: 'Takeover!', tone: 'good', look: ['money', 'cash'], go: r => {
       const cards = Object.keys(WILDCARDS).filter(k => WILDCARDS[k].chaos), got = [];
@@ -265,6 +266,12 @@
       const sg = f.find(k => byId(S.xi[k].p).name === 'Steven Gerrard');  // 🤫 of course it's him
       const i = sg != null ? sg : f.slice().sort((a, b) => S.xi[b].g - S.xi[a].g)[0]; scale(S.xi[i], 0.5, 'halved'); mark(i, '#banana');
       return { note: sg != null ? 'Steven Gerrard slips. Of course he does. <b>Halved</b>.' : `${nm(i)} slips at the worst possible moment: <b>halved</b>.`, run: c => { c.visit(i, ART('banana'), 'drive'); setTimeout(() => GM.sound.play('boing'), 500); } }; } },
+    // a bomb under the stand: finish your XI before the clock runs out, or half the pitch goes up
+    bomb: { rar: 'r', icon: '💣', name: 'Bomb scare', tone: 'bad', look: ['red', 'drumroll'], need: () => emptySlots() >= 2 && !S.bomb, go: () => {
+      const left = emptySlots();
+      if (left < 2 || S.bomb) return { note: 'Someone’s left a suspicious bag by the dugout. It’s a packed lunch.' };
+      const ms = 6000 + 7000 * left; S.bomb = { left: ms, total: ms };
+      return { note: `There’s a bomb under the stand! Finish your XI in <b>${Math.round(ms / 1000)} seconds</b> or half the pitch goes up. Get picking!`, run: c => c.scene('bomb') }; } },
     lastminute: { rar: 'l', icon: '⏱️', name: '93:20', tone: 'good', look: ['unleash', ['horn', 'cheer']], go: () => {
       filledIdx().forEach(i => scale(S.xi[i], 1.5, 'boosted'));
       return { note: 'Last-minute madness! The whole ground goes up: your <b>whole XI ×1.5</b>!', run: c => { c.confetti(); c.fireworks(); c.sweep(ART('party')); } }; } },
@@ -747,7 +754,7 @@
     tornado: '#turf', blackhole: '#crater', wedding: '#confetti', parade: '#confetti', title: '#trophy', relegation: '#chute', helicopter: '#pad', unleash: '#scorch',
     box: '#crate', retro: '#shirt', royal: '#crown', oligarch: '#moneybag', derby: '#flare', golden: '#ball',
     masked: '#mask', swapdeal: '#arrows', testimonial: '#scarf', loanarmy: '#suitcase',
-    lastminute: '#clock', splat: '#splat', deadline: '#paper', sacked: '#paper',
+    lastminute: '#clock', splat: '#splat', bomb: '#scorch', deadline: '#paper', sacked: '#paper',
   };
   // things that stay ALIVE on the pitch for the rest of the game: the streaker doing laps with a steward after him, the
   // dog trotting up and down, the saucer hovering over the stand. Their animations run on the clock (a negative delay),
@@ -821,7 +828,7 @@
   const unpark = i => { if (S.parked && S.parked[i]) { S.parked = { ...S.parked }; delete S.parked[i]; } };
 
   function chaosEvent(r, forced) {
-    const all = Object.keys(EVENTS).concat(Object.keys(XEV));
+    const all = Object.keys(EVENTS).concat(Object.keys(XEV)).filter(k => !(XEV[k] && XEV[k].need && !XEV[k].need()));
     let e = forced || r.weighted(all, k => rarW((EVENTS[k] || XEV[k]).rar) * again(S.evSeen, k) * (tw().ev && tw().ev[k] != null ? tw().ev[k] : 1) * ((wx().ev || {})[k] || 1));
     S.evSeen = (S.evSeen || []).concat(e);
     if (XEV[e]) {
@@ -844,7 +851,7 @@
         scale(S.xi[i], 0.5, 'injured'); mark(i, '#bandage');
         note = `${nm(i)} is crocked: his ${S.st.label} are halved.`;
         park(i, 'ambulance');
-        run = c => c.drive('ambulance', i, { park: true });
+        run = c => c.drive('ambulance', i, { park: true, take: 'stretcher' });
       }
     } else if (e === 'taxman') {
       if (!S.inv.length) note = 'Your wildcard bag is empty, so he leaves with nothing.';
@@ -986,6 +993,8 @@
      A moment is applied to the state first, then shown: a card over the reels, a bit of action on the pitch, and every
      number that changed counting from its old value to its new one. Tap to skip; nothing else can happen meanwhile. */
   let busy = false;
+  // players lifted off the pitch by a moment (a copy of the card is being carried about): their slot shows empty till it's over
+  const away = {};
   const snap = () => ({ g: S.xi.map(x => x.g), t: total(), b: S.rules.chaos ? scoreFor(S).bonus : 0 });
   function countTo(el, from, to, ms, fmtFn = fmt) {
     if (!el) return;
@@ -1021,11 +1030,17 @@
     return new Promise(done => {
       busy = true;
       render();
-      const pitch = GM.$('.pitch', root), timers = [], later = (ms, f) => timers.push(setTimeout(f, ms));
+      // the action happens on a layer of its own over the pitch, not in it: you can carry on spinning and picking (which
+      // redraws the pitch) while it plays out
+      const realPitch = GM.$('.pitch', root), pitch = realPitch ? document.createElement('div') : null;
+      if (pitch) { const r = realPitch.getBoundingClientRect(); pitch.className = 'cm-stage'; Object.assign(pitch.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' }); document.body.appendChild(pitch); }
+      const timers = [], later = (ms, f) => timers.push(setTimeout(f, ms));
       const slotEl = i => GM.$(`.slot[data-slot="${i}"]`, root);
       const b = o.before || snap(), changed = S.xi.map((x, i) => i).filter(i => b.g[i] !== S.xi[i].g);
       // wind the changed numbers (and the counter) back to where they were; they count to their new values on cue
       changed.forEach(i => { const n = GM.$('.sg', slotEl(i)); if (n) n.textContent = fmt(b.g[i]); });
+      // what happened to him, for his sheet (tap a player on the pitch)
+      if (S.rules.chaos) changed.forEach(i => { const x = S.xi[i]; if (x.p != null) x.story = (x.story || []).concat([{ i: o.icon, n: o.name, f: b.g[i], t: x.g }]).slice(-12); });
       const cn = GM.$('.counter-num b', root), cb = GM.$('.chaos-pts b', root), now = snap();
       if (cn) cn.textContent = fmt(b.t);
       if (cb) cb.textContent = signed(b.b);
@@ -1055,7 +1070,26 @@
         FX.lottie(kind, { into: el, loop: true, speed: L.speed, flip: (L.faces === 'left') === facingRight });
         return true;
       };
+      // a copy of player i's card, lifted onto the moment's layer where things can pick it up and carry it off (his slot
+      // shows a gap till the moment's over, then he's back, numbers and marks and all)
+      const grabbed = [];
+      const grab = i => {
+        const el = slotEl(i); if (!pitch || !el || !el.animate || el.classList.contains('empty')) return null;
+        const r = el.getBoundingClientRect(), p0 = pr(), g = el.cloneNode(true);
+        g.classList.remove('fresh', 'hit-up', 'hit-down', 'spun', 'wobble', 'nicked', 'beamed'); g.classList.add('cm-held'); g.removeAttribute('data-slot');
+        Object.assign(g.style, { left: (r.left - p0.left + r.width / 2) + 'px', top: (r.top - p0.top + r.height / 2) + 'px', width: el.offsetWidth + 'px', height: el.offsetHeight + 'px' });
+        pitch.appendChild(g); away[i] = true; grabbed.push(i); el.classList.add('away');
+        return g;
+      };
+      // the copy's done: the real card shows again
+      const putBack = (i, g) => { if (g) g.remove(); delete away[i]; const s = slotEl(i); if (s) s.classList.remove('away'); };
+      const beamUp = (i, up) => {
+        const g = grab(i); if (!g) return;
+        g.classList.add('beaming');
+        g.animate([{ transform: 'translate(-50%, -50%)' }, { transform: 'translate(-50%, -50%) translateY(-10px) rotate(-6deg)', offset: 0.25 }, { transform: `translate(-50%, -50%) translateY(${-up * 0.6}px) rotate(14deg) scale(.7)`, offset: 0.7 }, { transform: `translate(-50%, -50%) translateY(${-up}px) rotate(-20deg) scale(.12)`, opacity: 0 }], { duration: 1500, easing: 'ease-in', fill: 'forwards' });
+      };
       const c = {
+        grab,
         // something crosses the whole pitch, hitting each changed player as it passes
         sweep(icon, ms = 1800) {
           const e = fxEl('sweep', icon); if (!e) return;
@@ -1065,8 +1099,8 @@
         // something arrives at one player
         visit(i, icon, kind = 'pop', delay = 0, sound) {
           later(delay, () => {
-            if (!slotEl(i)) return; const [x, y] = at(i); fxEl('visit ' + kind, icon, x, y); if (sound) GM.sound.play(sound); if (kind === 'strike') flashApp();
-            if (FX && kind === 'strike') { const [px, py] = pg(i); if (sound === 'crack') { FX.lightning(px, py, pr().top - 20); FX.fire(px, py + 10, 1400); } else FX.sparks(px, py, { n: 30, tint: sound === 'good' ? 0xffe14a : 0xffffff }); }
+            if (!slotEl(i)) return; const [x, y] = at(i); fxEl('visit ' + kind, icon, x, y); if (sound) GM.sound.play(sound); if (kind === 'strike' && sound === 'crack' && !FX) flashApp();
+            if (FX && kind === 'strike') { const [px, py] = pg(i); if (sound === 'crack') { FX.lightning(px, py, pr().top - 20); FX.flash(0xcfe2ff, 0.3); FX.fire(px, py + 10, 1400); } else FX.sparks(px, py, { n: 30, tint: sound === 'good' ? 0xffe14a : 0xffffff }); }
           });
           later(delay + (kind === 'frame' ? 1400 : 700), () => hit(i));
         },
@@ -1074,14 +1108,23 @@
         // a Lottie animation by player i for a while (dy: how far above him), if the effects layer is on
         lotAt(kind, i, dy = 0, ms = 2400) { const L = FX && LOT[kind]; if (!L || i == null || !slotEl(i)) return; const [px, py] = pg(i); FX.lottie(kind, { x: px, y: py + dy, w: L.w, loop: true, speed: L.speed }).then(h => h && setTimeout(() => h.remove(), ms)); },
         // a Lottie character running right across the pitch (y: how far down, 0-1)
-        cross(kind, y = 0.5, ms = 2600) {
+        cross(kind, y = 0.5, ms = 2600, carry) {
           const L = FX && LOT[kind]; if (!L || !pitch) return;
           const r = pr(), box = document.createElement('div'); box.className = 'fx-lottie'; Object.assign(box.style, { left: (r.left - L.w) + 'px', top: (r.top + r.height * y - L.h / 2) + 'px', width: L.w + 'px', height: L.h + 'px' });
           document.body.appendChild(box); FX.lottie(kind, { into: box, loop: true, flip: L.faces === 'left' });
+          if (carry) box.insertAdjacentHTML('beforeend', `<i class="fx-carry">${carry}</i>`);  // in its mouth / under its arm
           box.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${r.width + L.w * 2}px)` }], { duration: ms, easing: 'linear', fill: 'forwards' });
           later(ms + 100, () => box.remove()); setTimeout(() => box.remove(), ms + 400);
         },
         fireworks() { if (FX) FX.fireworks(pr(), 5); GM.sound.play('firework'); },
+        boom(top) {
+          const app = document.getElementById('app'); app.classList.remove('shake'); void app.offsetWidth; app.classList.add('shake');
+          GM.sound.play('boom'); later(250, () => GM.sound.play('smash'));
+          if (!FX) return; const r = pr(), y0 = r.top + r.height * (top ? 0.25 : 0.75);
+          FX.flash(0xffb347, 0.45);
+          [0.2, 0.5, 0.8, 0.35, 0.65].forEach((x, k) => later(k * 160, () => { FX.burst(r.left + r.width * x, y0 + (k % 2 ? -1 : 1) * r.height * 0.1, 0xff6a2d); FX.smoke(r.left + r.width * x, y0, { n: 10, ms: 600, tint: 0x444444, alpha: 0.55 }); }));
+          later(300, () => FX.shockwave(r.left + r.width / 2, y0, 0xffb347, 2.4));
+        },
         // a drawn scene over the pitch (chaosart.js)
         scene(kind, ...args) { if (GM.CFX) GM.CFX.play(kind, pitch, ...args); },
         rain(icon) { if (!pitch) return; for (let k = 0; k < 9; k++) { const e = fxEl('rain', icon, Math.random() * pitch.clientWidth, -30); if (e) e.style.animationDelay = (k * 0.09) + 's'; } },
@@ -1092,7 +1135,13 @@
           t.innerHTML = '<i></i><i></i><i></i><i></i><i></i><i></i>' + [ART('paper'), ART('receipt'), ART('shirt'), ART('paper')].map(x => `<b>${x}</b>`).join('');
           pitch.appendChild(t); GM.sound.play('wind'); pitch.classList.add('windy'); later(ms, () => pitch.classList.remove('windy'));
           if (FX) { FX.twister(pr(), ms); t.classList.add('fxd'); }
-          changed.forEach(i => { const [, , f] = at(i); later(ms * (0.1 + 0.8 * f), () => { const el = slotEl(i); if (el) { el.classList.remove('spun'); void el.offsetWidth; el.classList.add('spun'); } hit(i); }); });
+          changed.forEach((i, k) => { const [, , f] = at(i); later(ms * (0.1 + 0.8 * f), () => {
+            // the first two it reaches are picked up, whirled round and dropped back down (crooked)
+            const g = k < 2 && grab(i);
+            if (g) { const a = g.animate([{ transform: 'translate(-50%, -50%)' }, { transform: 'translate(-50%, -50%) translate(14px, -50px) rotate(260deg) scale(.8)', offset: 0.35 }, { transform: 'translate(-50%, -50%) translate(-16px, -80px) rotate(560deg) scale(.7)', offset: 0.6 }, { transform: `translate(-50%, -50%) rotate(${720 + (S.wonky && S.wonky[i] || 0)}deg)`, offset: 0.92 }, { transform: `translate(-50%, -50%) translateY(-6px) rotate(${720 + (S.wonky && S.wonky[i] || 0)}deg)` }], { duration: 1300, easing: 'ease-in-out', fill: 'forwards' });
+              a.onfinish = () => { putBack(i, g); const el = slotEl(i); if (el) { el.classList.remove('wobble'); void el.offsetWidth; el.classList.add('wobble'); } GM.sound.play('thud'); if (FX) { const [px, py] = pg(i); FX.dust([[px, py + 20]]); } }; }
+            else { const el = slotEl(i); if (el) { el.classList.remove('spun'); void el.offsetWidth; el.classList.add('spun'); } }
+            hit(i); }); });
         },
         // the two players' numbers are sucked into the hole and spat out at each other
         swapThrough(a, b) {
@@ -1114,7 +1163,11 @@
         // a black hole opens in the middle of the pitch
         hole() {
           if (!pitch) return; GM.sound.play('spooky');
-          if (FX) { const r = pr(); FX.vortex(r.left + r.width / 2, r.top + r.height / 2, 3100, Math.min(r.width, r.height) * 0.45); return; }
+          // every card on the pitch is dragged towards it, shrinking and twisting, then snaps back
+          const R0 = pr(), hx = R0.left + R0.width / 2, hy = R0.top + R0.height / 2;
+          later(250, () => GM.$$('.slot.filled', root).forEach(el => { const r = el.getBoundingClientRect(), dx = (hx - r.left - r.width / 2) * 0.38, dy = (hy - r.top - r.height / 2) * 0.38;
+            if (el.animate) el.animate([{ transform: 'none' }, { transform: `translate(${dx}px, ${dy}px) scale(.72) rotate(${dx > 0 ? 24 : -24}deg)`, offset: 0.7 }, { transform: `translate(${dx * 1.1}px, ${dy * 1.1}px) scale(.66) rotate(${dx > 0 ? 30 : -30}deg)`, offset: 0.82 }, { transform: 'scale(1.08)', offset: 0.93 }, { transform: 'none' }], { duration: 2700, easing: 'ease-in' }); }));
+          if (FX) { FX.vortex(hx, hy, 3100, Math.min(R0.width, R0.height) * 0.45); return; }
           const h = document.createElement('div'); h.className = 'cm-hole'; pitch.appendChild(h); later(3100, () => h.remove());
         },
         // something flies in and lands (where it'll stay: the last leftover)
@@ -1147,8 +1200,18 @@
           const tx = d => `translate(-50%, -50%) translateX(${d}px)`;
           v.animate([{ transform: tx(from - stopX) }, { transform: tx(0), offset: 0.85 }, { transform: tx(left ? 5 : -5) + ' rotate(' + (left ? 3 : -3) + 'deg)', offset: 0.93 }, { transform: tx(0) }],
             { duration: 1500, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards' });
-          later(1500, () => { v.classList.remove('moving'); GM.sound.play('screech'); if (o.then) o.then(v); });
-          if (!o.park) later(1500 + (o.wait || 900), () => {
+          later(1500, () => { v.classList.remove('moving'); GM.sound.play('screech'); if (o.then) o.then(v); if (o.take) load(v); });
+          // he's put in: (injured) he goes down first, then he's shoved across and in, and rides off with it
+          const load = v => {
+            const g = grab(i); if (!g) return;
+            const vr = v.getBoundingClientRect(), gr = g.getBoundingClientRect(), dx = vr.left + vr.width / 2 - gr.left - gr.width / 2, dy = vr.top + vr.height / 2 - gr.top - gr.height / 2;
+            const fall = o.take === 'stretcher' ? [{ transform: 'translate(-50%, -50%) rotate(84deg) translateX(10px)', offset: 0.35 }, { transform: 'translate(-50%, -50%) rotate(90deg) translateX(10px)', offset: 0.55 }]
+              : [{ transform: 'translate(-50%, -50%) rotate(-8deg) translateX(-4px)', offset: 0.25 }, { transform: 'translate(-50%, -50%) rotate(6deg) translateX(4px)', offset: 0.45 }];
+            const a = g.animate([{ transform: 'translate(-50%, -50%)' }, ...fall, { transform: `translate(-50%, -50%) translate(${dx}px, ${dy - 6}px) rotate(${o.take === 'stretcher' ? 90 : -12}deg) scale(.42)` }], { duration: o.take === 'stretcher' ? 1500 : 850, easing: 'ease-in', fill: 'forwards' });
+            if (o.take === 'stretcher') GM.sound.play('groan');
+            a.onfinish = () => { if (!v.isConnected) return g.remove(); a.cancel(); g.className += ' riding' + (o.take === 'stretcher' ? ' lying' : ''); Object.assign(g.style, { left: '', top: '', width: g.style.width, height: g.style.height }); v.insertBefore(g, v.firstChild); GM.buzz(30); };
+          };
+          if (!o.park) later(1500 + (o.wait || 900) + (o.take ? 300 : 0), () => {
             v.classList.add('moving'); GM.sound.play(o.sound || kind);
             v.animate([{ transform: tx(0) }, { transform: tx(left ? W + 140 - stopX : -stopX - 140) }], { duration: 1300, easing: 'cubic-bezier(.6,0,.9,.6)', fill: 'forwards' });
           });
@@ -1157,7 +1220,7 @@
         // the police take player i away: the car pulls up, he's bundled in, and it drives off with him
         arrest(i) {
           const el = slotEl(i); if (!el) return;
-          c.drive('police', i, { wait: 1000, then: () => { el.classList.add('nicked'); GM.sound.play('cuffs'); } });
+          c.drive('police', i, { wait: 1100, take: true, then: () => GM.sound.play('cuffs') });
         },
         // a flying saucer hovers over player i, beams him up and zooms off
         abduct(i) {
@@ -1165,14 +1228,14 @@
           if (FX && LOT.ufo) {  // the drawn-by-an-artist saucer, beam and all
             const [px, py] = pg(i); GM.sound.play('ufo');
             FX.lottie('ufo', { x: px, y: py - 50, w: LOT.ufo.w, speed: LOT.ufo.speed });
-            later(1300, () => { el.classList.add('beamed'); hit(i); FX.sparks(px, py, { n: 24, tint: 0x9dff8a, speed: 220 }); });
+            later(1300, () => { beamUp(i, 110); hit(i); FX.sparks(px, py, { n: 24, tint: 0x9dff8a, speed: 220 }); });
             return;
           }
           const [x, y] = at(i), u = document.createElement('div'); u.className = 'cm-ufo'; u.innerHTML = SPRITE.ufo + '<i class="beam"></i>';
           u.style.left = x + 'px'; u.style.top = Math.max(34, y - 70) + 'px'; pitch.appendChild(u); GM.sound.play('ufo');
           u.animate([{ transform: 'translate(-50%, -50%) translate(-260px, -140px) rotate(-12deg)' }, { transform: 'translate(-50%, -50%) rotate(6deg)', offset: 0.35 },
             { transform: 'translate(-50%, -50%) translateY(4px)', offset: 0.8 }, { transform: 'translate(-50%, -50%) translate(300px, -200px) rotate(20deg)' }], { duration: 3600, easing: 'ease-in-out', fill: 'forwards' });
-          later(1300, () => { u.classList.add('beaming'); el.classList.add('beamed'); hit(i); });
+          later(1300, () => { u.classList.add('beaming'); beamUp(i, 80); hit(i); });
           later(2800, () => u.classList.remove('beaming'));
         },
         slot: slotEl,
@@ -1239,21 +1302,29 @@
       document.body.appendChild(el);
       scene(el, o.scene, timers);
       if (o.sound) [].concat(o.rarity === 'l' || o.rarity === 'r' ? ['wild'] : [], o.sound).forEach((snd, k) => later(k * 450, () => GM.sound.play(snd)));
-      if (o.tone === 'bad' || o.tone === 'unleash') { const app = document.getElementById('app'); app.classList.remove('shake'); void app.offsetWidth; app.classList.add('shake'); }
+      if (o.big && (o.tone === 'bad' || o.tone === 'unleash')) { const app = document.getElementById('app'); app.classList.remove('shake'); void app.offsetWidth; app.classList.add('shake'); }  // big ones only
       GM.buzz(o.tone === 'bad' ? 120 : 40);
       const card = GM.$('.cm-card', el), setText = (html, tone) => { const t = GM.$('.cm-text', el); if (t) t.innerHTML = html; if (tone) el.className = el.className.replace(/cm-(good|bad|weird|unleash)\b/, 'cm-' + tone); };
       let stage = 'intro', over = false;
+      // let play carry on (the moment's in the history, the spin that brought it goes ahead); the animation keeps going
+      let released = false;
+      const release = () => {
+        if (released) return; released = true; busy = false;
+        if (!o.pick) track(o.icon, o.name);
+        if (S.rules.chaos && (o.text || o.reveal)) S.moments = (S.moments || []).concat([{ icon: o.icon, name: o.name, text: (o.after || (o.reveal && o.reveal.text) || o.text).replace(/<[^>]+>/g, ''), rar: o.rarity || '' }]);
+        if (S.rules.chaos && S.online && GM.online) GM.online.pushRace(S);
+        done();
+      };
+      // the end: the card and the layer go, and anything waiting for it to finish (an arrested player leaving) happens
       const finish = () => {
         if (over) return; over = true;
         timers.forEach(clearTimeout); window.removeEventListener('hashchange', finish);
+        grabbed.forEach(i => { delete away[i]; const s = slotEl(i); if (s) s.classList.remove('away'); });
         el.classList.add('out'); setTimeout(() => el.remove(), 300);
-        busy = false;
+        if (pitch) setTimeout(() => pitch.remove(), 600);
+        release();
         if (o.onDone) o.onDone();
-        if (!o.pick) track(o.icon, o.name);
-        if (S.rules.chaos && (o.text || o.reveal)) S.moments = (S.moments || []).concat([{ icon: o.icon, name: o.name, text: (o.after || (o.reveal && o.reveal.text) || o.text).replace(/<[^>]+>/g, ''), rar: o.rarity || '' }]);
-        render();
-        if (S.rules.chaos && S.online && GM.online) GM.online.pushRace(S);
-        done();
+        if (onThisGame() && S.phase !== 'spinning' && !busy) render();
       };
       window.addEventListener('hashchange', finish);
       if (o.pick) { GM.$$('[data-mgr]', el).forEach(bt => bt.onclick = e => { e.stopPropagation(); o.onPick(bt.dataset.mgr); GM.sound.play('sting'); finish(); }); return; }
@@ -1268,11 +1339,12 @@
         const r2 = card.getBoundingClientRect();
         if (card.animate) card.animate([{ transform: `translateY(${r1.top - r2.top}px)` }, { transform: 'none' }], { duration: 450, easing: 'cubic-bezier(.2,.8,.2,1)' });
         const t0 = 450;
-        later(t0, () => { if (o.run) o.run(c); changed.forEach(i => later(o.run ? 2000 : 200, () => hit(i))); countTo(cn, b.t, now.t, 1100); countTo(cb, b.b, now.b, 1100, signed); if (o.actSound) GM.sound.play(o.actSound); });
+        later(t0, () => { if (o.run) o.run(c); changed.forEach(i => later(o.run ? 2000 : 200, () => hit(i))); countTo(cn, b.t, now.t, 1100); countTo(cb, b.b, now.b, 1100, signed); if (o.actSound) GM.sound.play(o.actSound); release(); });
         if (o.reveal) later(t0 + 1400, () => { setText(o.reveal.text, o.reveal.tone); if (o.reveal.sound) GM.sound.play(o.reveal.sound); });
         later(t0 + (o.run ? 2900 : 1300), () => { stage = 'result'; later(1700, finish); });
       };
-      el.onclick = () => { if (stage === 'intro') { if ((o.coin != null || o.slot) && !flipped) return o.slot ? pull() : flip(); act(); } else finish(); };
+      // a tap moves the card on to the action (never skips it); once it's playing, a tap just tucks the banner away
+      el.onclick = () => { if (stage === 'intro') { if ((o.coin != null || o.slot) && !flipped) return o.slot ? pull() : flip(); act(); } else if (released) el.classList.add('tucked'); else finish(); };
       // the fruit machine: pull the lever, the reels spin and stop one by one on the symbols already decided
       const pull = () => {
         if (flipped) return; flipped = true;
@@ -1321,7 +1393,7 @@
   function charge(n = 1) {
     if (!S.rules.chaos) return;
     S.meter = (S.meter || 0) + n * (tw().meterX || 1);
-    if (S.meter >= METER && !S.chaosDue) { S.meter = 0; S.chaosDue = true; setTimeout(() => { GM.sound.play('meterfull'); GM.sound.play('alarm'); if (GM.FX) GM.FX.flash(0xff2bd6, 0.3); }, 250); }
+    if (S.meter >= METER && !S.chaosDue) { S.meter = 0; S.chaosDue = true; setTimeout(() => { GM.sound.play('meterfull'); GM.sound.play('alarm'); }, 250); }
     else if (!S.chaosDue) setTimeout(() => GM.sound.play('charge', S.meter), 250);
     if (S.online && GM.online) GM.online.pushRace(S);  // the opponent's view of the CHAOS bar
   }
@@ -1446,6 +1518,7 @@
     slot.p = p.id; slot.g = g; slot.mod = rant ? 'zero' : S.modifier === 'coin' ? (heads ? 'captain' : 'zero') : short ? 'halved' : S.modifier === 'hero' ? null : S.modifier;
     slot.trio = trio ? trio.map(q => q.id) : null;
     slot.base = base[S.stat];  // his own numbers before anything happened to him (the card's colour compares with this)
+    if (S.rules.chaos) slot.story = g !== base[S.stat] ? [{ i: '✍️', n: `Signed${S.modifier && WILDCARDS[S.modifier] ? ' with ' + WILDCARDS[S.modifier].name : ''}${outPos ? ', out of position' : ''}`, f: base[S.stat], t: g }] : [];
     if (trio) trio.forEach(q => { if (q.id !== p.id) S.used.push(q.id); });
     slot.as = pos !== p.poss[0] ? pos : null;
     slot.fresh = true; slot.at = S.spin;  // when he signed (the full-time replay)
@@ -1663,6 +1736,10 @@
   }
 
   async function finish() {
+    if (S.bomb && S.rules.chaos) {  // finished in time: defused
+      const p = pts(40); S.bonus.push(['💣 Bomb defused', p]); S.bomb = null;
+      setTimeout(() => { GM.toast(`✂️ <b>Bomb defused!</b> With seconds to spare: +${p} bonus`, 3000); GM.sound.play('cheer'); }, 200);
+    }
     S.phase = 'done';
     const sc = scoreFor(S);
     S.final = sc;
@@ -1681,7 +1758,7 @@
       });
       S.collected = { n: S.collected.newPlayers.length, total: S.collected.total, badges: S.collected.fresh.map(x => x.icon + ' ' + x.name), book: S.collected.book };
     }
-    if (S.rules.chaos && !S.readonly && !S.mgrsDone) { S.mgrsDone = true; S.newMgrs = mgrProgress(sc); if (S.newMgrs.length) setTimeout(() => GM.sound.play('fanfare'), 900); }
+    if (S.rules.chaos && !S.readonly && !S.mgrsDone) { S.mgrsDone = true; S.newMgrs = mgrProgress(sc); if (S.newMgrs.length) { setTimeout(() => GM.sound.play('fanfare'), 900); if (GM.givePack) GM.givePack(S.newMgrs.length, `new manager: ${MANAGERS[S.newMgrs[0]].name}`, 'chaos'); } }
     if (saveKey() && !S.readonly) GM.store.set(saveKey(), null);
     if (S.fx && !S.readonly) GM.store.set('match2:' + S.fx, { ...S, rules: undefined });
     if (S.dailyChaos && !S.readonly) {
@@ -1752,7 +1829,7 @@
     ? `<svg class="crack ${m.k || 'crack'} ${Date.now() - m.t < 2500 ? 'new' : ''}" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${m.c}" pathLength="100"/></svg>`
     : m.i === '#pigeon' && fxRoam() ? '<i hidden></i>' : `<i class="${Date.now() - m.t < 2500 ? 'new' : ''} ${m.i[0] === '#' ? 'drawn' : ''}" style="left:${m.x}%;top:${m.y}%;--r:${m.r}deg">${m.i[0] === '#' && LEFT[m.i.slice(1)] ? LEFT[m.i.slice(1)]() : m.i}</i>`).join('')}</div>` : '';
   function slotHtml(s, i) {
-    const gh = S.ghost && S.ghost.i === i ? S.ghost : null;
+    const gh = S.ghost && S.ghost.i === i && !away[i] ? S.ghost : null;  // (once he's been carried off, his place is free)
     if (gh) s = { ...s, p: gh.p, g: gh.g, mod: gh.mod };
     if (s.p == null) {
       const tgt = S.pending != null && S.reels[S.pending] && targetSlots(byId(S.reels[S.pending].id)).includes(i);
@@ -1767,15 +1844,42 @@
       const base = s.base != null ? s.base : pv(p)[S.stat], r = base > 0 ? s.g / base : (s.g > 0 ? 2 : 1);
       if (Math.abs(r - 1) >= 0.02) {
         tone = `${r > 1 ? 'tone-up' : 'tone-down'}" style="--tone:${Math.min(1, 0.35 + Math.abs(Math.log2(Math.max(r, 0.05))) * 0.45).toFixed(2)}`;
-        pct = `<span class="slot-pct">${r > 1 ? '+' : '−'}${base > 0 ? Math.round(Math.abs(r - 1) * 100) + '%' : fmt(s.g)}</span>`;
+        if (S.phase === 'done') pct = `<span class="slot-pct">${r > 1 ? '+' : '−'}${base > 0 ? Math.round(Math.abs(r - 1) * 100) + '%' : fmt(s.g)}</span>`;
       }
     }
-    return `<div class="slot filled ${s.fresh ? 'fresh' : ''} ${tone}" data-slot="${i}" title="${GM.esc(p.name)}"${S.wonky && S.wonky[i] ? ` data-wonky style="--wk:${S.wonky[i]}deg"` : ''}>${pk}${pct}${marksHtml(i)}
+    return `<div class="slot filled ${s.fresh ? 'fresh' : ''} ${away[i] ? 'away' : ''} ${tone}" data-slot="${i}" title="${GM.esc(p.name)}"${S.wonky && S.wonky[i] ? ` data-wonky style="--wk:${S.wonky[i]}deg"` : ''}>${pk}${pct}${marksHtml(i)}
       ${GM.avatar(p)}<span class="slot-name">${GM.esc(surname)}</span>
       <span class="slot-goals ${splatted(i) ? 'splatted' : ''}"><span class="sg">${S.rules.treble && s.v ? `${s.v.goals}·${s.v.assists}·${s.v.apps}` : fmt(s.g)}</span>${MOD_TAG[s.mod] || ''}</span><span class="slot-pos" title="${GM.POS_NAME[s.pos]}">${s.pos}</span></div>`;
   }
 
   // is he above (up) or below (down) his own numbers right now? (the card's colour; the crowd reacts to it)
+  // CHAOS: what's happened to a player this game, for the top of his sheet
+  function storyHtml(x) {
+    if (!S.rules.chaos || x.p == null) return '';
+    const base = x.base != null ? x.base : pv(byId(x.p))[S.stat], d = base > 0 ? Math.round((x.g / base - 1) * 100) : 0;
+    const lines = (x.story || []).map(e => `<li><span>${e.i} ${GM.esc(e.n)}</span><b class="${e.t < e.f ? 'neg' : 'pos'}">${fmt(e.f)} → ${fmt(e.t)}</b></li>`).join('');
+    return `<div class="ps-chaos"><h4>🌪️ This game</h4><p class="small">His own ${S.st.label}: <b>${fmt(base)}</b> · now <b>${fmt(x.g)}</b>${d ? ` <b class="${d < 0 ? 'neg' : 'pos'}">(${d > 0 ? '+' : '−'}${Math.abs(d)}%)</b>` : ''}</p>
+      ${lines ? `<ul class="ps-story">${lines}</ul>` : '<p class="muted small">Nothing’s happened to him. Yet.</p>'}</div>`;
+  }
+  // the bomb's clock: runs only while the game's on screen (and the app's open), ticks faster at the end
+  let bombLast = 0, bombSec = 0;
+  setInterval(() => {
+    if (!S || !S.bomb || !S.rules || !S.rules.chaos || S.phase === 'done' || !onThisGame() || document.hidden) { bombLast = 0; return; }
+    const now = performance.now(); if (bombLast) S.bomb.left -= now - bombLast; bombLast = now;
+    const sec = Math.max(0, Math.ceil(S.bomb.left / 1000)), el = document.getElementById('bomb-left');
+    if (el) { el.textContent = sec; el.parentNode.classList.toggle('late', sec <= 10); }
+    if (sec !== bombSec) { bombSec = sec; GM.sound.play(sec <= 10 ? 'clock' : 'tick'); }
+    if (S.bomb.left <= 0 && !busy) bombGoesOff();
+  }, 150);
+  function bombGoesOff() {
+    const top = GM.rng(`${S.seed}|bomb|${S.spin}`)() < 0.5, before = snap();
+    const hit = filledIdx().filter(i => ['F', 'M'].includes(GM.GROUP[S.xi[i].pos]) === top);
+    hit.forEach(i => { scale(S.xi[i], 0.5, 'halved'); mark(i, '#scorch'); });
+    S.bomb = null; S.log.push('💥'); leave('bomb');
+    return moment({ icon: '💥', name: 'BOOM!', tone: 'bad', big: true, before, scene: 'fire', sound: 'boom', rarity: 'r',
+      text: `Too slow! The ${top ? 'front' : 'back'} half of your pitch goes up: ${hit.length ? `<b>${hit.length}</b> player${hit.length === 1 ? '' : 's'} <b>halved</b>` : 'luckily nobody was standing there'}.`,
+      run: c => c.boom(top) });
+  }
   function toneOf(i) {
     const s = S.xi[i]; if (!s || s.p == null || !S.rules.chaos) return null;
     const base = s.base != null ? s.base : pv(byId(s.p))[S.stat], r = base > 0 ? s.g / base : (s.g > 0 ? 2 : 1);
@@ -1927,7 +2031,7 @@
       <div class="counter-num"><b>${fmt(t)}</b><span>${S.st.label}</span>${S.rules.chaos ? `<span class="chaos-pts"><b>${signed(scoreFor(S).bonus)}</b> bonus</span>` : ''}</div>
       ${S.rules.chaos ? sparkHtml(pb) : `<div class="bar"><i style="width:${pb ? Math.min(100, t / pb * 100) : 0}%"></i></div>`}
       <div class="counter-sub">${pb ? (t > pb && !S.rules.chaos ? '🔥 Beating your best (' + fmt(pb) + ')' : `Your best: ${fmt(pb)}${S.rules.chaos ? ' pts' : ''}`) : 'Set your first score'} · ${left} slot${left === 1 ? '' : 's'} left${mod}${S.hot ? ` · <b>🔥 ×1.5 ×${S.hot}</b>` : ''}${S.golden ? ' · <b>⚽ ×3 next</b>' : ''}${S.unleash ? ` · <b>💥 ×2 ×${S.unleash}</b>` : ''}</div>
-      ${S.rules.chaos ? `<div class="chaos-row">${S.manager ? `<button class="dugout" id="dugout">${MANAGERS[S.manager].icon} <b>${mgrShort(MANAGERS[S.manager])}</b></button>` : ''}<div class="chaos-meter ${S.chaosDue ? 'due' : ''}" title="The CHAOS meter: taking or playing wildcards fills it. Full = a CHAOS moment next spin"><span>${S.chaosDue ? 'NEXT SPIN!' : 'CHAOS'}</span>${Array.from({ length: METER }, (_, i) => `<i class="${S.chaosDue || i < Math.floor(S.meter || 0) ? 'on' : ''}"></i>`).join('')}</div>${wx().name ? `<span class="wx-pill" title="${GM.esc(wx().note)}">${wx().icon} ${wx().name}</span>` : ''}</div>` : ''}
+      ${S.rules.chaos ? `<div class="chaos-row">${S.manager ? `<button class="dugout" id="dugout">${MANAGERS[S.manager].icon} <b>${mgrShort(MANAGERS[S.manager])}</b></button>` : ''}<div class="chaos-meter ${S.chaosDue ? 'due' : ''}" title="The CHAOS meter: taking or playing wildcards fills it. Full = a CHAOS moment next spin"><span>${S.chaosDue ? 'NEXT SPIN!' : 'CHAOS'}</span>${Array.from({ length: METER }, (_, i) => `<i class="${S.chaosDue || i < Math.floor(S.meter || 0) ? 'on' : ''}"></i>`).join('')}</div>${S.bomb ? `<span class="bomb-pill ${S.bomb.left <= 10000 ? 'late' : ''}">💣 <b id="bomb-left">${Math.max(0, Math.ceil(S.bomb.left / 1000))}</b>s</span>` : wx().name ? `<span class="wx-pill" title="${GM.esc(wx().note)}">${wx().icon} ${wx().name}</span>` : ''}</div>` : ''}
     </div>`;
     }
     if (S.rules.treble) {
@@ -2068,7 +2172,7 @@
     GM.$$('[data-slot]', root).forEach(b => b.onclick = () => {
       if (S.subbing !== false) release(+b.dataset.slot);
       else if (S.pending != null) place(+b.dataset.slot);
-      else { const sl = S.xi[+b.dataset.slot]; if (sl && sl.p != null) GM.playerSheet(byId(sl.p)); }  // a player already on the pitch: his sheet
+      else { const sl = S.xi[+b.dataset.slot]; if (sl && sl.p != null) GM.playerSheet(byId(sl.p), storyHtml(sl)); }  // a player already on the pitch: his sheet
     });
     const cs = GM.$('#cancel-sub', root); if (cs) cs.onclick = () => { S.subbing = false; render(); };
     const dg = GM.$('#dugout', root); if (dg) dg.onclick = () => { const m = MANAGERS[S.manager]; GM.modal(`<div class="center"><div class="mgr-big">${m.icon}</div><h3>${m.name}</h3></div><p>✅ ${m.perk}</p><p>⚠️ ${m.catch}</p><p class="muted small">👍 and 👎 on the reels show who he’d like or not. It all adds up in your bonus.</p><div class="actions"><button class="btn ghost" id="mgr-all-btn">👔 All managers</button><button class="btn" data-close>Got it</button></div>`); const b = document.getElementById('mgr-all-btn'); if (b) b.onclick = () => { document.querySelectorAll('.modal-wrap').forEach(x => x.remove()); managersModal(); }; };

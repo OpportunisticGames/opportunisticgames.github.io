@@ -36,6 +36,22 @@ formations, and badges round 2.
   CHAOS players' bests). Older players keep what they'd have earned, guessed from their saved CHAOS games (`mgrLegacy`).
   Shared games (Daily CHAOS, races, online) still offer every manager so nobody's stuck.
 
+### Packs of different kinds, clearly labelled ✅ 5.22 *(owner, 3 Oct 2026)*
+> "there should be different types of packs that you get for different things and they should be clearly labelled when you
+> open them (e.g level up pack, daily pack etc)" · make them cooler with the new effects.
+- Daily (free), Level Up (two Silver+), Promotion (a Legend's choice), Badge (a wildcard), Daily Hat-Trick (a Gold+),
+  Royale (Gold+ and a wildcard), CHAOS (3 to 7 pieces, for a new manager). Each shows why you got it. Pixi charge, burst and sparks.
+
+### CHAOS: things interact with the players ✅ 5.22 *(owner, 3 Oct 2026)*
+> "most things that happen still seem to be your drawings and things just moving about … some things that interact with each other, some life"
+- A copy of the card is lifted onto the moment's layer: bundled into the police car / tank / wedding car and driven off, stretchered
+  into the ambulance, beamed up, whirled by the tornado. The dog carries the wildcard in its mouth.
+
+### CHAOS: keep playing during moments, a bomb, story per player ✅ 5.22 *(owner, 3 Oct 2026)*
+> "all the skips skip the animation … you should be able to keep spinning and picking while things are going on" · "an event
+> (quite rare) that sets off a bomb timer … if you don't finish half the pitch explodes" · "the percentages overcrowd the screen …
+> if you click on a player the top of their bio says what has happened to them this game" · fewer flashes · more oomph.
+
 ### Proper rendering: PixiJS effects + LottieFiles animations ✅ 5.21 in CHAOS *(owner, 3 Oct 2026)*
 > "Why are all the animations so shit? … they look like drawings" → "use a rendering engine and then free lottie assets"
 - Built a shared effects layer (`js/fx.js`) so other games can use it next (Hat-Trick, Dodgy Owner, Goal Royale, level-ups,

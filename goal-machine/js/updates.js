@@ -9,6 +9,20 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 65, label: '5.22', date: '2026-10-03', title: '💣 Don’t stop playing',
+      items: [
+        '▶️ CHAOS doesn’t stop for anything: once a moment starts you can carry on spinning and picking while the ambulance is still parking, and tapping never cuts an animation short',
+        '💣 Bomb scare: a rare one. Finish your XI before the clock runs out or half your pitch goes up (finish in time and it’s defused, with a bonus)',
+        '🌪️ The tornado really does leave your players crooked now, the black hole drags every card towards it, and an earthquake leaves everyone a bit askew',
+        '🌧️ Rain is proper drops that splash into ripples, with dark clouds drifting over',
+        '🔍 No more percentages over faces while you play: tap a player to see everything that’s happened to him this game (and full time shows the %)',
+        '🩹 The marks on a player (bandages, rings, bananas…) fit in his box, and far fewer flashes',
+        '🚓 Things actually happen to your players: the police bundle him into the car and drive off with him, the paramedics stretcher him into the ambulance, the saucer beams his card up, the tornado picks players up and drops them crooked, and the wedding car whisks him away',
+        '🎁 New kinds of pack, each with its own look, saying what it is and why you got it: Daily, Level Up, Promotion, Badge, Daily Hat-Trick, Royale and the CHAOS Pack (3 to 7 pieces, for unlocking a manager)',
+        '✨ Opening a pack: the light pulls in as it charges, it bursts open in its own colour, and Gold and Legend cards go off with sparks (fireworks and a trophy for a Legend)',
+      ],
+    },
+    {
       v: 64, label: '5.21', date: '2026-10-03', title: '✨ CHAOS, properly animated',
       items: [
         '🚑 The ambulance, police car, flying saucer, helicopter, tank, dog and pigeon are proper animations now, made by artists on LottieFiles, and the ambulance that parks by your injured player is the same one',
