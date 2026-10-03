@@ -36,6 +36,17 @@ formations, and badges round 2.
   CHAOS players' bests). Older players keep what they'd have earned, guessed from their saved CHAOS games (`mgrLegacy`).
   Shared games (Daily CHAOS, races, online) still offer every manager so nobody's stuck.
 
+### CHAOS: animate everything that's left, the music, weather, replay and a share card ✅ 5.20 *(Claude's list, owner: "Could you do them all?", 3 Oct 2026)*
+- The nine original events and the six plain newer ones have drawn scenes (`js/chaosart.js`, `GM.CFX.play`), and every
+  wildcard has a short flourish (`GM.CFX.wild`). The bus stays parked (`S.bus`). No emojis thrown on the pitch any more:
+  leftovers and marks are drawn too.
+- Mayhem builds with the meter (`GM.sound.heat`), crowd groan/"ooh" when a card changes colour, pitch wear by spin,
+  floodlight flicker near a full meter.
+- Weather per game (seeded, so races and Daily CHAOS agree): sun/rain/wind/snow/fog, nudging event odds (`WEATHER` in chaosart.js).
+- Sacking: P45 and the walk off before you pick; the new manager walks on (also at kick-off).
+- Full time: ▶ replay (pitch refills spin by spin, bar at the bottom), and a CHAOS share picture (marks, cracks, bus, colours).
+- Calm mode skips the scenes (sounds still play).
+
 ### CHAOS: more events, every one leaves a mark ✅ 5.19 *(owner, 3 Oct 2026)*
 - **Owner's words:** a gambling scandal with a slot machine (win bonus, lose points); military conscription with a tank;
   proper helicopter and pigeon animations; the tornado showed only jagged lines; an earthquake; rain doing something small;

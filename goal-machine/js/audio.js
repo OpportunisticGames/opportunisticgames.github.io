@@ -164,6 +164,44 @@
       brass([60, 64, 67], t, 0.16); brass([60, 64, 67], t + 0.2, 0.16); brass([60, 65, 69], t + 0.4, 0.16);
       brass([64, 67, 72], t + 0.6, 1.2, 0.08); roar(t + 0.5, 1.6, 0.3);
     },
+    // the crowd: a groan when one of yours drops ("ohhh", falling), an "ooh" that rises when one climbs, applause
+    groan: t => { [260, 420, 640].forEach(f => noise({ t, dur: 1.3, freq: f * 1.15, to: f * 0.7, q: 3.5, vol: 0.16, attack: 0.12 })); },
+    ooh: t => { [300, 480, 720].forEach(f => noise({ t, dur: 1.1, freq: f * 0.85, to: f * 1.2, q: 3.5, vol: 0.14, attack: 0.1 })); roar(t + 0.5, 0.3, 0.1); },
+    applause: t => { for (let i = 0; i < 40; i++) noise({ t: t + Math.random() * 1.6, dur: 0.03, freq: 1400 + Math.random() * 1800, q: 1.2, vol: 0.05 + Math.random() * 0.05 }); },
+    // the terrace anthem: the crowd singing a tune (voice-band noise on the notes), with the drum
+    chant: t => {
+      [67, 67, 69, 71, 71, 69, 67, 64, 67].forEach((n, i) => { const d = i * 0.28; noise({ t: t + d, dur: 0.3, freq: midi(n) * 2, q: 9, vol: 0.32, attack: 0.03 }); noise({ t: t + d, dur: 0.3, freq: midi(n) * 4, q: 9, vol: 0.12, attack: 0.03 }); tone(midi(n - 12), { t: t + d, dur: 0.26, type: 'sawtooth', lp: 900, vol: 0.02 }); });
+      [0, 0.56, 1.12, 1.68, 2.24].forEach(d => tone(110, { t: t + d, to: 50, dur: 0.2, vol: 0.3 }));
+    },
+    // a stadium full of vuvuzelas: a fat, out-of-tune B flat drone
+    vuvuzela: t => { [-22, -8, 0, 9, 25].forEach(dt => { const o = tone(233, { t, dur: 2.4, type: 'sawtooth', lp: 1500, attack: 0.15, vol: 0.035 }); o.detune.value = dt; }); },
+    // the press room: microphone feedback and camera shutters
+    mic: t => { tone(2650, { t, dur: 0.7, type: 'sine', attack: 0.2, vol: 0.05 }); for (let i = 0; i < 7; i++) { noise({ t: t + 0.6 + i * 0.13 + Math.random() * 0.05, dur: 0.04, type: 'highpass', freq: 3000, vol: 0.2 }); } },
+    // a coach / the bus: a diesel engine and the hiss of the air brakes
+    bus: t => { for (let i = 0; i < 16; i++) noise({ t: t + i * 0.08, dur: 0.09, type: 'lowpass', freq: 260, vol: 0.3 }); tone(55, { t, dur: 1.4, type: 'sawtooth', lp: 180, vol: 0.08 }); noise({ t: t + 1.35, dur: 0.6, type: 'highpass', freq: 4000, vol: 0.18 }); },
+    // the armband: a strip of velcro ripping and sticking
+    velcro: t => { for (let i = 0; i < 9; i++) noise({ t: t + i * 0.025, dur: 0.03, freq: 2200 + i * 150, q: 2, vol: 0.12 }); noise({ t: t + 0.35, dur: 0.06, type: 'lowpass', freq: 900, vol: 0.2 }); },
+    // the Gegenpress: a stampede of studs
+    stampede: t => { for (let i = 0; i < 22; i++) { const d = i * 0.06 + Math.random() * 0.03; noise({ t: t + d, dur: 0.05, type: 'lowpass', freq: 700, vol: 0.18 }); noise({ t: t + d, dur: 0.02, freq: 3500, q: 3, vol: 0.05 }); } },
+    // the magnet: a buzzing hum swelling, and a clunk
+    magnet: t => { tone(110, { t, dur: 1, type: 'sawtooth', lp: 600, attack: 0.5, vol: 0.06 }); tone(220, { t, dur: 1, type: 'square', lp: 900, attack: 0.5, vol: 0.02 }); tone(160, { t: t + 1, to: 60, dur: 0.15, vol: 0.4 }); },
+    // the scout's pen: a pencil scribbling
+    scribble: t => { for (let i = 0; i < 10; i++) noise({ t: t + i * 0.07, dur: 0.06, freq: 4000 + (i % 3) * 600, q: 3, vol: 0.06 }); },
+    // the fog horn and a snowy hush
+    foghorn: t => { tone(midi(38), { t, dur: 1.8, type: 'sawtooth', lp: 400, attack: 0.15, vol: 0.12 }); tone(midi(45), { t, dur: 1.8, type: 'sawtooth', lp: 400, attack: 0.15, vol: 0.06 }); },
+    snow: t => noise({ t, dur: 2.6, type: 'lowpass', freq: 600, vol: 0.12, attack: 0.8 }),
+    sunny: t => { [72, 76, 79, 84].forEach((n, i) => tone(midi(n), { t: t + i * 0.09, dur: 0.6, type: 'sine', vol: 0.06 })); },
+    // a wheelie case and a door slam (the sacked manager leaving), a rip of paper
+    rip: t => noise({ t, dur: 0.35, freq: 1800, to: 4200, q: 1.2, vol: 0.22 }),
+    // a parachute drop, a box landing, a swoosh of balaclavas
+    thud: t => { tone(120, { t, to: 40, dur: 0.25, vol: 0.4 }); noise({ t, dur: 0.15, type: 'lowpass', freq: 800, vol: 0.25 }); },
+    // the red card: a sharp double whistle
+    redwhistle: t => { blast(t, 0.18); blast(t + 0.24, 0.5); },
+    // a VHS tape rewinding: a whirr that climbs, and the clunk of the stop
+    rewind: t => { tone(300, { t, to: 2400, glide: 1.4, dur: 1.5, type: 'sawtooth', lp: 1800, vol: 0.035 }); noise({ t, dur: 1.5, freq: 1500, to: 5000, q: 2, vol: 0.06 }); tone(140, { t: t + 1.6, to: 60, dur: 0.12, vol: 0.3 }); },
+    whoosh: t => { noise({ t, dur: 0.9, freq: 300, to: 2500, q: 1, vol: 0.25, attack: 0.3 }); },
+    // the CHAOS meter full: an alarm that wails, then the floodlights' clunk
+    alarm: t => { for (let i = 0; i < 3; i++) tone(600, { t: t + i * 0.5, to: 1100, glide: 0.45, dur: 0.48, type: 'square', lp: 2200, vol: 0.05 }); },
     /* Packs and levels */
     // a pack for you: a ribbon being pulled and a sparkle
     packget: t => { noise({ t, dur: 0.25, freq: 1800, to: 4200, q: 1.5, vol: 0.12 }); [84, 88, 91, 96].forEach((n, i) => tone(midi(n), { t: t + 0.18 + i * 0.07, dur: 0.4, type: 'triangle', vol: 0.1 })); },
@@ -200,6 +238,8 @@
 
   /* ---------------------------------------------------------------- background music */
   let bgNodes = [], bgTimer = null, bgMode = 'off';
+  // CHAOS: how full the meter is (0-1). Mayhem builds with it: faster, more drums, the bass opening up, sirens
+  let heat = 0;
 
   // The music. Each game area has its own track, all played by the same little band (kick, clap, hats, bass, chord
   // stabs, pad, arpeggio and a lead tune with an echo). A track is a list of sections; the arpeggios and hi-hats pick
@@ -362,6 +402,7 @@
         for (const x of SONG) { if (barAll < start + x.bars) { sec = x; break; } start += x.bars; }
         const bar = barAll - start, [ch, root] = CH[sec.chords[bar % 4]], last = bar === sec.bars - 1;
         const r = GM.rng(name + pass + ':' + barAll + ':' + b);
+        const h = name === 'chaos' ? heat : 0;
         const t = t0 + (I.swing && b % 2 ? step * I.swing : 0);  // swing pushes the off-beat 16ths late
         if (b === 0 && sec.pad) inst.pad(t, ch, 1);
         if (sec.kick && (I.soft ? b % 8 === 0 : b % 4 === 0) && !(last && sec.fill && b >= 8)) inst.kick(t);
@@ -378,7 +419,11 @@
         if (sec.bass === 'walk' && b % 4 === 0) inst.bass(t, root + [0, 4, 7, 9][b / 4], 3.6);  // a walking line up the chord
         if (sec.bass === 'long' && b === 0) inst.bass(t, root, 15);
         // wobble: every 16th, the filter opening and closing like a dubstep bass
-        if (sec.bass === 'wobble') tone(midi(b % 8 === 6 ? root + 12 : root), { t, dur: step * 0.95, type: 'sawtooth', lp: [260, 700, 1600, 700][b % 4] * (b >= 8 ? 1.3 : 1), vol: 0.13, dest: out });
+        if (sec.bass === 'wobble') tone(midi(b % 8 === 6 ? root + 12 : root), { t, dur: step * 0.95, type: 'sawtooth', lp: [260, 700, 1600, 700][b % 4] * (b >= 8 ? 1.3 : 1) * (1 + h * 0.8), vol: 0.13, dest: out });
+        // the meter filling: a second kick, open hats, then a siren every bar, a snare roll and the hook an octave up
+        if (h > 0.3 && !sec.intro) { if (b === 10 || (h > 0.6 && b === 7)) inst.kick(t); if (b % 4 === 2) inst.hat(t, true); }
+        if (h > 0.6 && !sec.intro) { if (b === 0 && bar % 2 === 1) tone(midi(79), { t, to: midi(91), glide: step * 6, dur: step * 7, type: 'sawtooth', lp: 3200, vol: 0.016, dest: out }); if (b >= 12) inst.clap(t, 0.03 + (b - 12) * 0.015); }
+        if (h >= 1 && b % 8 === 0) tone(600, { t, to: 1100, glide: step * 7, dur: step * 7.5, type: 'square', lp: 2000, vol: 0.012, dest: out });
         // a police siren sweeping up every other bar
         if (sec.siren && b === 0 && bar % 2 === 0) tone(midi(79), { t, to: midi(91), glide: step * 6, dur: step * 7, type: 'sawtooth', lp: 3200, vol: 0.016, dest: out });
         // the stock ticker: faint, fast blips that skip about
@@ -392,7 +437,7 @@
           const tune = T.tunes[sec.tune], n = tune[bar % tune.length][b / 2];
           if (n) inst.tune(t, n);
         }
-        s++; t0 += step;
+        s++; t0 += step / (1 + h * 0.12);  // up to 12% faster as the meter fills
       }
     }
     if (until) { schedule(until - 1); return; }
@@ -504,6 +549,8 @@
     // the Soundtrack song playing now (or next), and a skip button for Settings
     nowPlaying: () => (tunes.list && tunes.i >= 0 ? tunes.list[tunes.i] : null),
     skipTune() { if (bgMode === 'tunes') nextTune(); },
+    // CHAOS: how full the meter is, 0-1 (Mayhem builds with it)
+    heat(v) { heat = Math.max(0, Math.min(1, +v || 0)); },
     tuneList: () => loadTunes().then(() => tunes.list),
     play(name, arg) {
       if (!live || !store.get('sfx', true) || document.hidden) return;
