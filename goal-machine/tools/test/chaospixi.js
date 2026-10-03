@@ -27,20 +27,36 @@ const ONLY = (process.argv[2] || '').split(',').filter(Boolean);
   });
   // what should be on screen (Lottie animations or PixiJS particles) part-way through each moment
   const MOM = { injury: 'lot', arrest: 'lot', aliens: 'lot', helicopter: 'lot', conscript: 'lot', fraud: 'lot', breakup: 'lot', splat: 'lot', dog: 'lot', title: 'lot',
+    taxman: 'swap', box: 'swap', windfall: 'swap', loanarmy: 'swap',
     tornado: 'px', blackhole: 'px', lightning: 'px', quake: 'px', stoke: 'px', unleash: 'px', derby: 'px', windfall: 'px', lastminute: 'px', wedding: 'px' };
   for (const ev of Object.keys(MOM).filter(k => !ONLY.length || ONLY.includes(k))) {
     await fill();
-    await pg.evaluate(e => { GM.draft.state().forceEv = e; }, ev);
+    await pg.evaluate(e => { const S = GM.draft.state(); S.forceEv = e; if (e === 'taxman') S.inv = ['captain']; }, ev);
     await pg.click('#spin');
     await pg.waitForSelector('.cm', { timeout: 5000 }).catch(() => {});
     await pg.waitForTimeout(400); await pg.click('.cm').catch(() => {});  // into act 2
     await pg.waitForTimeout(ev === 'blackhole' || ev === 'tornado' ? 1500 : 1300);
-    const st = await pg.evaluate(() => ({ lot: document.querySelectorAll('.fx-lot svg').length, px: (window.__fxAlive = (document.querySelector('.fx-canvas') ? 1 : 0)) }));
+    const st = await pg.evaluate(() => ({ lot: document.querySelectorAll('.fx-lot svg').length, swap: document.querySelectorAll('.wfx .lot .fx-lot svg').length }));
     const live = await pg.evaluate(() => GM.FX._alive ? GM.FX._alive() : -1);
-    ok(MOM[ev] === 'lot' ? st.lot > 0 : live > 0, `${ev}: ${MOM[ev] === 'lot' ? `${st.lot} Lottie animation(s)` : `${live} particles`} on screen`);
+    ok(MOM[ev] === 'lot' ? st.lot > 0 : MOM[ev] === 'swap' ? st.swap > 0 : live > 0, `${ev}: ${MOM[ev] === 'lot' ? `${st.lot} Lottie animation(s)` : MOM[ev] === 'swap' ? `the drawing swapped for its animation (${st.swap})` : `${live} particles`} on screen`);
     await pg.screenshot({ path: `lay/px_${ev}.png` });
     for (let k = 0; k < 40 && await pg.$('.cm:not(.out)'); k++) { await pg.click('.cm:not(.out)').catch(() => {}); await pg.waitForTimeout(250); }
     for (let k = 0; k < 30; k++) { const ph = await pg.evaluate(() => GM.draft.state().phase); if (ph === 'pick') break; await pg.waitForTimeout(200); }
+  }
+  if (!ONLY.length || ONLY.includes('weather')) {
+    // the weather all game long, and the dog and the pigeon that stay, on their own layer
+    for (const w of ['rain', 'snow', 'fog', 'wind', 'sun']) {
+      await pg.evaluate(w => { const S = GM.draft.state(); S.weather = w; S.roam = ['dog']; S.mess = (S.mess || []).filter(m => m.i !== '#pigeon').concat([{ i: '#pigeon', x: 20, y: 70, r: 0, t: 0 }]); GM.draft.render(); }, w);
+      await pg.waitForTimeout(1800);
+      const n = await pg.evaluate(() => GM.FX._alive());
+      ok(n > (w === 'fog' ? 1 : 4), `weather ${w}: ${n} particles over the pitch`);
+      await pg.screenshot({ path: `lay/px_wx_${w}.png` });
+    }
+    const roam = await pg.evaluate(() => ({ dog: document.querySelectorAll('#roam-fx .rmx-dog .fx-lot svg').length, pigeon: document.querySelectorAll('#roam-fx .rmp .fx-lot svg').length, svgDog: document.querySelectorAll('.pitch .roam .rm-dog').length }));
+    ok(roam.dog === 1 && roam.pigeon === 1 && roam.svgDog === 0, `the dog and the pigeon that stay are animated (${JSON.stringify(roam)})`);
+    // they don't start again when the pitch is redrawn
+    const same = await pg.evaluate(async () => { const a = document.querySelector('#roam-fx .rmx-dog'); GM.draft.render(); await new Promise(r => setTimeout(r, 100)); return a === document.querySelector('#roam-fx .rmx-dog'); });
+    ok(same, 'redrawing the pitch keeps the same dog');
   }
   if (!ONLY.length) {
     const parked = await pg.evaluate(() => { GM.draft.render(); return document.querySelectorAll('.slot .parked .lot-still').length; });

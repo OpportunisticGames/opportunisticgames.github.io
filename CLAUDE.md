@@ -68,6 +68,12 @@ game mode for players; this file is about how to work on it.
   fallback. Canvas at resolution 1 (sharper cost too much on phones). **Getting Lottie files:** sessions can search
   LottieFiles (its MCP) but not download, so list candidates in `fx/lottie/candidates.json` and push: the `lottie.yml`
   workflow downloads them into `fx/lottie/cand/`; preview with `tools/lottie_preview.html?n=a,b`, copy the picks out, add credits, empty the list, delete `cand/`.
+- Recorded sounds: `fx/sfx/*.mp3` (credits in `fx/sfx/credits.json`); `audio.js` `REC` maps a sound name to a recording,
+  loaded by `GM.sound.recordings(true)` (CHAOS at kick-off); the synthesised sound plays until it's loaded. **Getting more:**
+  add `key: [max seconds, search terms…]` to `fx/sfx/wanted.json` and push: `sounds.yml` runs `tools/fetch_sfx.py`, which
+  searches Wikimedia Commons and OpenGameArt (free licences only, spoken pronunciations skipped) and commits trimmed,
+  level-matched candidates with spectrograms to `fx/sfx/cand/`. Pick by title and spectrogram, copy to `fx/sfx/<key>.mp3`,
+  add the credit, delete `cand/`.
 - `modes.js` – quick games (Club Hopper, Higher or Lower, Who Am I?, Club Grid, Guess the Tally); `h2h.js` – pass-the-phone series.
 - `daily.js` – Today page, Footle, daily streaks. `collection.js` – Album, badges, Dream XIs. `report.js` – full-time report.
 - `picture.js` – share-a-picture of your XI. `audio.js` – synthesised sound + music. `updates.js` – changelog.

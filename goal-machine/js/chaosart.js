@@ -166,6 +166,7 @@
     ambulance: { w: 92, h: 70, faces: 'right' }, police: { w: 112, h: 56, faces: 'left' }, tank: { w: 124, h: 62, faces: 'right' },
     heli: { w: 140, h: 140, faces: 'right' }, ufo: { w: 190, h: 190, speed: 2 }, dog: { w: 74, h: 74, faces: 'left' }, pigeon: { w: 74, h: 74 },
     runner: { w: 76, h: 76, faces: 'left' }, trophy: { w: 170, h: 170 }, heartbreak: { w: 100, h: 100 }, tornado: { w: 170, h: 170 },
+    taxman: { w: 66, h: 66, faces: 'right' }, crate: { w: 96, h: 96 }, coach: { w: 150, h: 150, faces: 'right' }, tvvan: { w: 120, h: 120, faces: 'right' },
   };
   const FX = () => (GM.FX && GM.FX.on ? GM.FX : null);
   const at = (r, fx, fy) => [r.left + fx * r.width, r.top + fy * r.height];
@@ -174,13 +175,13 @@
     tvvan: (f, r) => setTimeout(() => f.money(r, 40), 1300),
     derby: (f, r) => [[0.08, 0.04], [0.28, 0.96], [0.72, 0.04], [0.92, 0.96]].forEach(([x, y], k) => setTimeout(() => f.flare(...at(r, x, y), 2700), k * 160)),
     shower: (f, r, kind) => kind === 'burst' ? (f.flash(0xffd34d, 0.45), f.burst(...at(r, 0.5, 0.5), 0xff8a3d), setTimeout(() => f.burst(...at(r, 0.25, 0.3)), 250), setTimeout(() => f.burst(...at(r, 0.75, 0.7)), 450))
-      : kind === 'trophy' ? (f.lottie('trophy', { x: r.left + r.width / 2, y: r.top + r.height * 0.42, w: LOT.trophy.w }), f.fireworks(r, 6), f.confetti(r, 160))
+      : kind === 'trophy' ? (f.lottie('trophy', { x: r.left + r.width / 2, y: r.top + r.height * 0.42, w: LOT.trophy.w }), f.fireworks(r, 6), f.confetti(r, 160), GM.sound.play('firework'))
       : f.money(r, 36),
     golden: (f, r) => { for (let k = 0; k < 5; k++) setTimeout(() => f.sparks(...at(r, 0.1 + k * 0.17, 0.25 + (k % 2) * 0.4), { n: 18, tint: 0xffd34d, speed: 260 }), 200 + k * 380); },
     box: (f, r) => setTimeout(() => { f.sparks(...at(r, 0.5, 0.62), { n: 40, tint: 0xffe14a }); f.shockwave(...at(r, 0.5, 0.62), 0xffe14a, 0.8); }, 1900),
     ref: (f, r) => setTimeout(() => f.flash(0xff2a2a, 0.25), 1150),
     chant: (f, r) => f.confetti(r, 90),
-    press: (f, r) => [0.6, 0.9, 1.2, 1.45, 1.7].forEach(t => setTimeout(() => f.flash(0xffffff, 0.35), t * 1000)),
+    press: (f, r) => [0.6, 0.9, 1.2, 1.45, 1.7].forEach(t => setTimeout(() => { f.flash(0xffffff, 0.35); GM.sound.play('camera'); }, t * 1000)),
     vhs: (f, r) => f.flash(0xa46bff, 0.3),
     parade: (f, r) => { f.confetti(r, 160); f.fireworks(r, 3); },
     honour: (f, r) => f.confetti(r, 70),
@@ -204,6 +205,15 @@
     joker: (f, r) => f.sparks(...at(r, 0.5, 0.5), { n: 30, tint: 0xa46bff }),
     bus: (f, r) => setTimeout(() => f.smoke(...at(r, 0.32, 0.86), { ms: 900, tint: 0x888888, alpha: 0.4 }), 400),
   };
+  const swap = (st, sel, kind, keep) => {
+    const f = FX(), el = st && st.querySelector(sel), L = LOT[kind]; if (!f || !el || !L) return;
+    const held = keep ? el.querySelector(keep) : null;
+    el.innerHTML = ''; el.classList.add('lot'); Object.assign(el.style, { width: L.w + 'px', height: L.h + 'px' });
+    f.lottie(kind, { into: el, loop: true, flip: L.faces === 'left' });
+    if (held) el.appendChild(held);
+  };
+  // the drawn vehicles and people in a scene that have a proper animation
+  const SWAP = { tvvan: st => swap(st, '.sc-van', 'tvvan'), taxman: st => swap(st, '.sc-tax', 'taxman', '.held'), box: st => swap(st, '.sc-crate', 'crate'), coach: st => swap(st, '.sc-coach', 'coach') };
   const fxOn = (table, kind, pitch, args) => { const f = FX(); if (f && pitch && table[kind]) try { table[kind](f, pitch.getBoundingClientRect(), ...args); } catch (e) { /* decoration only */ } };
 
   GM.CFX = { PERSON, SPRITE, LEFT, SCENES, WILD, WEATHER, WX_W, weatherHtml, LOT,
@@ -212,7 +222,9 @@
       const f = SCENES[kind] || WILD[kind]; if (!f) return null;
       const [html, ms, sound] = f(...args);
       fxOn(PX, kind, pitch, args);
-      return stage(pitch, 'scn-' + kind, html, ms, sound);
+      const st = stage(pitch, 'scn-' + kind, html, ms, sound);
+      if (SWAP[kind]) try { SWAP[kind](st); } catch (e) { /* the drawing stays */ }
+      return st;
     },
     wild(kind, pitch, ...args) {
       const f = WILD[kind]; if (!f) return null;

@@ -154,7 +154,7 @@
   const RAR_NAME = { u: 'Uncommon', r: 'Rare', l: 'Legendary' };
   // more match-day nonsense. go(r) changes the game and returns { note, run }; look = [scene, sound]
   const XEV = {
-    pigeon: { rar: 'c', icon: '🐦', name: 'Pitch invader', tone: 'weird', look: ['kickoff', 'wild'], go: () => { S.bonus.push(['🐦 A pigeon', 1]); return { note: 'A pigeon lands on the pitch. It’s just a pigeon. It’s staying. <b>+1</b> bonus point, for the pigeon.', run: c => c.fly('🐦') }; } },
+    pigeon: { rar: 'c', icon: '🐦', name: 'Pitch invader', tone: 'weird', look: ['kickoff', 'wild'], go: () => { S.bonus.push(['🐦 A pigeon', 1]); return { note: 'A pigeon lands on the pitch. It’s just a pigeon. It’s staying. <b>+1</b> bonus point, for the pigeon.', run: c => { c.fly('🐦'); setTimeout(() => GM.sound.play('pigeon'), 1800); } }; } },
     streaker: { rar: 'c', icon: '🏃', name: 'Streaker', tone: 'good', look: ['party', ['whistle', 'cheer']], go: () => { roam('streaker'); const p = pts(6); S.bonus.push(['🏃 The streaker', p]); return { note: `Someone’s run on with nothing on. Best laugh of the season: <b>+${p}</b> bonus. He’s still out there, with a steward after him.`, run: c => c.scene('streak') }; } },
     amnesty: { rar: 'r', icon: '📺', name: 'VAR overturns it all', tone: 'good', look: ['tv', ['var', 'cheer']], go: () => {
       const hurt = filledIdx().filter(i => HURT.includes(S.xi[i].mod));
@@ -176,7 +176,7 @@
       roam('dog');
       if (S.inv.length >= 3) return { note: 'A dog runs on, looks at your full wildcard bag and runs off again.' };
       const cards = Object.keys(WILDCARDS).filter(k => !WILDCARDS[k].chaos && !S.rules.noWild.includes(k)), w = cards[Math.floor(r() * cards.length)];
-      S.inv.push(w); return { note: `A dog runs on and fetches you a wildcard: ${WILDCARDS[w].icon} <b>${WILDCARDS[w].name}</b>!`, run: c => { c.cross('dog', 0.82, 2600); c.bag(); } }; } },
+      S.inv.push(w); return { note: `A dog runs on and fetches you a wildcard: ${WILDCARDS[w].icon} <b>${WILDCARDS[w].name}</b>!`, run: c => { c.cross('dog', 0.82, 2600); c.bag(); setTimeout(() => GM.sound.play('dog'), 500); } }; } },
     vuvuzela: { rar: 'c', icon: '🎺', name: 'Vuvuzelas', tone: 'weird', look: ['fire', 'horn'], go: () => { charge(); return { note: 'Nothing happens, very loudly. The CHAOS meter goes up one.', run: c => c.scene('vuvuzela') }; } },
     hamstring: { rar: 'c', icon: '🦵', name: 'Hamstring twang', tone: 'bad', look: ['red', 'bad'], go: r => {
       const f = filledIdx(); if (!f.length) return { note: 'Nobody to pull a hamstring yet.' };
@@ -264,7 +264,7 @@
       const f = filledIdx(); if (!f.length) return { note: 'Nobody to slip yet.' };
       const sg = f.find(k => byId(S.xi[k].p).name === 'Steven Gerrard');  // 🤫 of course it's him
       const i = sg != null ? sg : f.slice().sort((a, b) => S.xi[b].g - S.xi[a].g)[0]; scale(S.xi[i], 0.5, 'halved'); mark(i, '#banana');
-      return { note: sg != null ? 'Steven Gerrard slips. Of course he does. <b>Halved</b>.' : `${nm(i)} slips at the worst possible moment: <b>halved</b>.`, run: c => c.visit(i, ART('banana'), 'drive') }; } },
+      return { note: sg != null ? 'Steven Gerrard slips. Of course he does. <b>Halved</b>.' : `${nm(i)} slips at the worst possible moment: <b>halved</b>.`, run: c => { c.visit(i, ART('banana'), 'drive'); setTimeout(() => GM.sound.play('boing'), 500); } }; } },
     lastminute: { rar: 'l', icon: '⏱️', name: '93:20', tone: 'good', look: ['unleash', ['horn', 'cheer']], go: () => {
       filledIdx().forEach(i => scale(S.xi[i], 1.5, 'boosted'));
       return { note: 'Last-minute madness! The whole ground goes up: your <b>whole XI ×1.5</b>!', run: c => { c.confetti(); c.fireworks(); c.sweep(ART('party')); } }; } },
@@ -488,7 +488,7 @@
   function start(el, mode, opts = {}) {
     fitKey = '';  // a new page: size the pitch again
     // CHAOS: get the effects layer and its animations ready in the background, so the first moment isn't late
-    if (mode === 'chaos' && GM.FX && GM.CFX) setTimeout(() => { GM.FX.preload(Object.keys(GM.CFX.LOT)); GM.FX.makeStill('ambulance', 0.5); }, 1200);
+    if (mode === 'chaos') setTimeout(() => { GM.sound.recordings(true); if (GM.FX && GM.CFX) { GM.FX.preload(Object.keys(GM.CFX.LOT)); GM.FX.makeStill('ambulance', 0.5); } }, 1200);
     root = el;
     if (!RULES[mode]) mode = 'ultimate';
     const extreme = !!opts.extreme && !!RULES_X[mode] && !opts.online;
@@ -765,8 +765,33 @@
     dog: { dur: 9, html: () => DOG },
     ufo: { dur: 7, html: () => SPRITE.ufo },
   };
+  // roamers with a proper animation, drawn on their own layer over the pitch (so redrawing the pitch on every tap doesn't
+  // start them again): the dog trotting up and down, and the pigeon that's settled in
+  const LROAM = { dog: 'dog' };
+  const fxRoam = () => !!(GM.FX && GM.FX.on && GM.CFX && GM.CFX.LOT);
+  function roamLayer() {
+    let lay = document.getElementById('roam-fx');
+    const pitch = S && S.rules && S.rules.chaos && fxRoam() ? GM.$$('.pitch', root).slice(-1)[0] : null;
+    const want = pitch ? (S.roam || []).filter(k => LROAM[k]) : [], pigeons = pitch ? (S.mess || []).filter(m => m.i === '#pigeon') : [];
+    if (!want.length && !pigeons.length) { if (lay) lay.remove(); return; }
+    if (!lay) { lay = document.createElement('div'); lay.id = 'roam-fx'; lay.setAttribute('aria-hidden', 'true'); document.body.appendChild(lay); }
+    const r = pitch.getBoundingClientRect();
+    Object.assign(lay.style, { left: (r.left + scrollX) + 'px', top: (r.top + scrollY) + 'px', width: r.width + 'px', height: r.height + 'px' });
+    want.forEach(k => {
+      if (lay.querySelector('.rmx-' + k)) return;
+      const d = ROAM[k].dur, el = document.createElement('i'); el.className = `rm rm-${k} rmx-${k}`;
+      el.style.animationDuration = d + 's'; el.style.animationDelay = -((Date.now() / 1000) % d).toFixed(2) + 's';
+      lay.appendChild(el); GM.FX.lottie(LROAM[k], { into: el, loop: true, flip: GM.CFX.LOT[LROAM[k]].faces === 'left' });
+    });
+    pigeons.forEach((m, n) => {
+      if (lay.querySelector('.rmp-' + n)) return;
+      const el = document.createElement('i'); el.className = 'rmp rmp-' + n; Object.assign(el.style, { left: m.x + '%', top: m.y + '%' });
+      lay.appendChild(el); GM.FX.lottie('pigeon', { into: el, loop: true });
+    });
+  }
+  window.addEventListener('hashchange', () => { const l = document.getElementById('roam-fx'); if (l) l.remove(); });
   const roamHtml = () => {
-    const ks = (S.roam || []).flatMap(k => k === 'streaker' ? ['streaker', 'steward'] : [k]).filter(k => ROAM[k]);
+    const ks = (S.roam || []).flatMap(k => k === 'streaker' ? ['streaker', 'steward'] : [k]).filter(k => ROAM[k] && !(LROAM[k] && fxRoam()));
     if (!ks.length) return '';
     const now = Date.now() / 1000;
     return `<div class="roam" aria-hidden="true">${ks.map(k => { const d = ROAM[k].dur; return `<i class="rm rm-${k}" style="animation-duration:${d}s;animation-delay:-${((now - (ROAM[k].lag || 0)) % d).toFixed(2)}s">${ROAM[k].html()}</i>`; }).join('')}</div>`;
@@ -971,7 +996,7 @@
     const sky = document.createElement('div'); sky.className = 'cm-sky sky-' + (kind || 'dark'); el.prepend(sky);
     const bits = (n, cls, chars) => { for (let k = 0; k < n; k++) { const b = document.createElement('i'); b.className = cls; const ch = chars ? chars[k % chars.length] : ''; if (ch[0] === '<') b.innerHTML = ch; else b.textContent = ch; b.style.left = Math.random() * 100 + '%'; b.style.animationDelay = (Math.random() * 1.6).toFixed(2) + 's'; b.style.animationDuration = (1.4 + Math.random() * 1.4).toFixed(2) + 's'; if (!chars) b.style.background = ['#ff2bd6', '#ffe600', '#39ff88', '#00f0ff', '#fff'][k % 5]; sky.appendChild(b); } };
     if (kind === 'storm' || kind === 'lightning') {
-      if (kind === 'storm') { sky.insertAdjacentHTML('beforeend', '<div class="cm-rain"></div><div class="cm-rain far"></div>'); GM.sound.play('rain'); }
+      if (kind === 'storm') { if (GM.FX && GM.FX.on) { GM.FX.raise(2800); GM.FX.rain({ left: 0, top: 0, width: innerWidth, height: innerHeight }, 2600); } else sky.insertAdjacentHTML('beforeend', '<div class="cm-rain"></div><div class="cm-rain far"></div>'); GM.sound.play('rain'); }
       let n = 0;
       const flash = () => { if (!el.isConnected) return; sky.classList.remove('flash'); void sky.offsetWidth; sky.classList.add('flash'); if (n++ < 2) GM.sound.play('thunder'); timers.push(setTimeout(flash, 900 + Math.random() * 1500)); };
       timers.push(setTimeout(flash, 250));
@@ -1053,7 +1078,7 @@
           box.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${r.width + L.w * 2}px)` }], { duration: ms, easing: 'linear', fill: 'forwards' });
           later(ms + 100, () => box.remove()); setTimeout(() => box.remove(), ms + 400);
         },
-        fireworks() { if (FX) FX.fireworks(pr(), 5); },
+        fireworks() { if (FX) FX.fireworks(pr(), 5); GM.sound.play('firework'); },
         // a drawn scene over the pitch (chaosart.js)
         scene(kind, ...args) { if (GM.CFX) GM.CFX.play(kind, pitch, ...args); },
         rain(icon) { if (!pitch) return; for (let k = 0; k < 9; k++) { const e = fxEl('rain', icon, Math.random() * pitch.clientWidth, -30); if (e) e.style.animationDelay = (k * 0.09) + 's'; } },
@@ -1722,7 +1747,7 @@
   // CHAOS leftovers on the pitch (a new one drops in)
   const messHtml = () => (S.mess || []).length ? `<div class="mess" aria-hidden="true">${S.mess.map(m => m.c
     ? `<svg class="crack ${m.k || 'crack'} ${Date.now() - m.t < 2500 ? 'new' : ''}" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${m.c}" pathLength="100"/></svg>`
-    : `<i class="${Date.now() - m.t < 2500 ? 'new' : ''} ${m.i[0] === '#' ? 'drawn' : ''}" style="left:${m.x}%;top:${m.y}%;--r:${m.r}deg">${m.i[0] === '#' && LEFT[m.i.slice(1)] ? LEFT[m.i.slice(1)]() : m.i}</i>`).join('')}</div>` : '';
+    : m.i === '#pigeon' && fxRoam() ? '<i hidden></i>' : `<i class="${Date.now() - m.t < 2500 ? 'new' : ''} ${m.i[0] === '#' ? 'drawn' : ''}" style="left:${m.x}%;top:${m.y}%;--r:${m.r}deg">${m.i[0] === '#' && LEFT[m.i.slice(1)] ? LEFT[m.i.slice(1)]() : m.i}</i>`).join('')}</div>` : '';
   function slotHtml(s, i) {
     const gh = S.ghost && S.ghost.i === i ? S.ghost : null;
     if (gh) s = { ...s, p: gh.p, g: gh.g, mod: gh.mod };
@@ -1764,7 +1789,7 @@
     const rows = ['F', 'M', 'D', 'G'].map(g => S.xi.map((s, i) => [s, i]).filter(([s]) => GM.GROUP[s.pos] === g)
       .sort((a, b) => lat(a[1]) - lat(b[1]) || a[1] - b[1])).filter(r => r.length);
     const shape = rows.slice(0, -1).reverse().map(r => r.length).join('-');
-    const wxc = S.rules.chaos && S.weather ? { snow: 'wx-snowy', sun: 'wx-sunny', wind: 'wx-windy' }[S.weather] || '' : '';
+    const wxc = S.rules.chaos && S.weather ? ({ snow: 'wx-snowy', sun: 'wx-sunny', wind: 'wx-windy' }[S.weather] || '') + (GM.FX && GM.FX.on ? ' fxw' : '') : '';
     return `<div class="pitch ${S.subbing !== false ? 'subbing' : ''} ${S.pending != null ? 'placing' : ''} ${wxc}">
       <div class="pitch-lines"></div><div class="shape">${shape}</div>${S.rules.chaos ? chaosPitch() + messHtml() + roamHtml() : ''}
       ${rows.map(r => `<div class="pitch-row ${r.length > 4 ? 'crowded' : ''}">${r.map(([s, i]) => slotHtml(s, i)).join('')}</div>`).join('')}
@@ -2007,10 +2032,11 @@
   function render() {
     if (!S || !onThisGame()) return;
     if (S.phase === 'done') return renderDone();
-    requestAnimationFrame(() => { fitPitch(); fitReels(); });
+    requestAnimationFrame(() => { fitPitch(); fitReels(); roamLayer(); });
     if (!S.readonly && saveKey()) GM.store.set(saveKey(), { ...S, rules: undefined });  // saved on every move
     if (S.revealStage === 'intro') return mysteryIntro();
     if (GM.sound.heat) GM.sound.heat(S.rules.chaos ? (S.chaosDue ? 1 : (S.meter || 0) / METER) : 0);  // Mayhem builds with the meter
+    if (GM.FX) GM.FX.weather(S.rules.chaos && S.weather ? S.weather : null, () => GM.$('.pitch', root));  // rain, snow, fog… all game
     const icon = S.nat ? GM.flag(S.nat) : S.mode === 'club' ? '🏟️' : GM.MODES[S.mode === 'daily' ? 'daily' : S.mode].icon;
     const nReels = Math.max(3, S.reels.length);
     const sp = S.special && WILDCARDS[S.special];
@@ -2071,6 +2097,7 @@
   }
 
   function renderDone() {
+    requestAnimationFrame(roamLayer);
     const sc = S.final || scoreFor(S);
     const best = GM.best(S.mode === 'daily' ? 'daily' : modeKey());
     const icon = S.nat ? GM.flag(S.nat) : S.mode === 'club' ? '🏟️' : GM.MODES[S.mode === 'daily' ? 'daily' : S.mode].icon;

@@ -2880,3 +2880,17 @@ body.calm .wx, body.calm .wx i, body.calm .pitch.wx-windy .pitch-row { animation
 .cm-veh.lot .held-case .spr { width: 22px; height: auto; }
 .cm-tornado b > svg { width: 1em; height: 1em; }
 .parked .lot-still { width: 100%; height: auto; display: block; }
+.wfx .lot { overflow: visible; }
+.sc-tax.lot .held { left: 70%; top: 10%; }
+.sc-crate.lot { transform-origin: center; }
+.fx-canvas.raised { z-index: 97; }
+/* with the effects layer on, the weather is drawn there (the CSS stripes and dots stay for Calm mode / no WebGL) */
+.pitch.fxw .wx-rain, .pitch.fxw .wx-snow, .pitch.fxw .wx-wind .leaf { display: none; }
+.pitch.fxw .wx-fog { background-color: rgba(220, 228, 232, .08); }
+/* roamers with a proper animation (draft.js roamLayer): their own layer over the pitch, scrolling with the page */
+#roam-fx { position: absolute; pointer-events: none; z-index: 5; overflow: hidden; border-radius: var(--r); }
+#roam-fx .rm { position: absolute; display: block; animation-timing-function: linear; animation-iteration-count: infinite; }
+#roam-fx .rm-dog { width: 46px; height: 46px; margin-top: -24px; }
+#roam-fx .rmp { position: absolute; width: 44px; height: 44px; transform: translate(-50%, -60%); }
+body.calm #roam-fx { display: none; }
+.cm-tornado.fxd i, .cm-tornado.fxd b, .cm-tornado.fxd::before, .cm-tornado.fxd::after { display: none; }

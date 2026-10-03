@@ -63,7 +63,7 @@ def oga(q):
 
 index = json.loads((OUT / 'index.json').read_text()) if (OUT / 'index.json').exists() else {}
 for key, spec in WANT.items():
-    if key.startswith('_') or any(k.startswith(key + '_') for k in index):
+    if key.startswith('_') or any(k.startswith(key + '_') for k in index) or (ROOT / f'fx/sfx/{key}.mp3').exists():  # picked already
         continue
     maxlen, terms = spec[0], spec[1:]
     seen, cands = set(), []

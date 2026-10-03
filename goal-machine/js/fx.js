@@ -64,18 +64,20 @@
     (o.glow ? glow : layer).addChild(s);
     alive.push({ s, vx: o.vx || 0, vy: o.vy || 0, ax: o.ax || 0, ay: o.ay || 0, drag: o.drag || 0, vr: o.vr || 0, life: o.life || 1, t: -(o.delay || 0),
       s0: o.scale == null ? 1 : o.scale, s1: o.scale1 == null ? (o.scale == null ? 1 : o.scale) : o.scale1, sy: o.sy || 1, a0: o.alpha == null ? 1 : o.alpha,
-      fin: o.fadeIn == null ? 0.08 : o.fadeIn, fout: o.fadeOut == null ? 0.35 : o.fadeOut, flip: o.flip || 0, sway: o.sway || 0, swf: o.swf || 3, ph: Math.random() * 6, fn: o.fn });
+      w: !!o.weather, fin: o.fadeIn == null ? 0.08 : o.fadeIn, fout: o.fadeOut == null ? 0.35 : o.fadeOut, flip: o.flip || 0, sway: o.sway || 0, swf: o.swf || 3, ph: Math.random() * 6, fn: o.fn });
     if (!app.ticker.started) app.ticker.start();
   }
   function step(tk) {
     const dt = Math.min(0.05, tk.deltaMS / 1000);
+    weatherTick(dt);
+    let busy = 0;
     for (let i = alive.length - 1; i >= 0; i--) {
       const p = alive[i], s = p.s;
       p.t += dt;
       if (p.t < 0) continue;
       const f = p.t / p.life;
       if (f >= 1) { s.destroy(); alive.splice(i, 1); continue; }
-      s.visible = true;
+      s.visible = true; if (!p.w) busy++;
       p.vx += p.ax * dt; p.vy += p.ay * dt;
       if (p.drag) { const k = Math.max(0, 1 - p.drag * dt); p.vx *= k; p.vy *= k; }
       if (p.fn) p.fn(p, dt, f);
@@ -85,9 +87,46 @@
       s.scale.set(sc, sc * p.sy * (p.flip ? Math.cos(p.t * p.flip + p.ph) : 1));
       s.alpha = p.a0 * Math.min(1, p.fin ? f / p.fin : 1, p.fout ? (1 - f) / p.fout : 1);
     }
-    if (!alive.length) { app.ticker.stop(); app.render(); }  // nothing left: stop drawing (and leave it clear)
+    if (!alive.length && !wx.kind) { app.ticker.stop(); app.render(); }  // nothing left: stop drawing (and leave it clear)
+    app.ticker.maxFPS = busy ? 0 : 30;  // weather on its own is fine at 30 frames a second (kinder to the battery)
   }
-  const clear = () => { alive.splice(0).forEach(p => p.s.destroy()); if (app) { app.ticker.stop(); app.render(); } lots.splice(0).forEach(l => l.remove()); };
+  /* ---------------------------------------------------------------- weather that lasts the whole game
+     A few particles a second over an element (found again each time, as the page redraws it), at 30 fps; paused while
+     the app is in the background. kind: rain, snow, fog, wind, sun (null stops it). */
+  const wx = { kind: null, get: null, acc: 0, r: null, rt: 0 };
+  function weatherTick(dt) {
+    if (!wx.kind || document.hidden) return;
+    wx.rt -= dt;
+    if (wx.rt <= 0) { const el = wx.get && wx.get(); wx.r = el && el.isConnected ? el.getBoundingClientRect() : null; wx.rt = 0.5; }
+    const r = wx.r; if (!r || r.bottom < 0 || r.top > innerHeight) return;
+    const rate = { rain: 120, snow: 22, fog: 0.8, wind: 3.5, sun: 3 }[wx.kind] || 0;
+    if (wx.warm) { wx.warm = false; warm(r); }
+    wx.acc += rate * dt;
+    for (; wx.acc >= 1; wx.acc--) {
+      const x = r.left + rnd(-20, r.width), W = { weather: true };
+      if (wx.kind === 'rain') { const vy = rnd(650, 850), l = (r.height + 20) * rnd(0.4, 1) / vy; add({ ...W, tex: T.drop, x, y: r.top - 20, vx: 70, vy, rot: -0.09, alpha: rnd(0.35, 0.7), life: l, fadeIn: 0, fadeOut: 0.1, sy: 1.7, scale: rnd(0.9, 1.3) }); if (Math.random() < 0.35) add({ ...W, tex: T.hard, x: x + 70 * l, y: r.top - 20 + vy * l, vx: rnd(-30, 30), vy: -rnd(30, 60), ay: 400, scale: 0.2, alpha: 0.6, tint: 0xd8ecff, life: 0.22, delay: l, fadeIn: 0 }); }
+      else if (wx.kind === 'snow') add({ ...W, tex: T.flake, x, y: r.top - 8, vx: rnd(-8, 8), vy: rnd(28, 55), sway: rnd(14, 30), swf: rnd(1, 2), scale: rnd(0.25, 0.65), alpha: rnd(0.7, 1), life: (r.height + 8) / 40 * rnd(0.6, 1.1), fadeIn: 0.05, fadeOut: 0.12 });
+      else if (wx.kind === 'fog') { const y = r.top + rnd(0.05, 0.95) * r.height; add({ ...W, tex: T.smoke, x: r.left - 80, y, vx: rnd(14, 26), tint: 0xe6ecef, scale: rnd(1.1, 1.7), alpha: rnd(0.2, 0.3), life: (r.width + 160) / 20, fadeIn: 0.15, fadeOut: 0.2 }); }
+      else if (wx.kind === 'wind') { const y = r.top + rnd(0, r.height), leaf = Math.random() < 0.75; add({ ...W, tex: leaf ? T.leaf : T.paper, x: r.left - 20, y, vx: rnd(220, 340), vy: rnd(-20, 20), sway: 40, swf: 6, vr: rnd(-8, 8), tint: leaf ? pick([0x7cb342, 0xa0c050, 0xc9a24a, 0xb07a3a]) : 0xffffff, scale: leaf ? rnd(0.5, 0.8) : 0.5, life: (r.width + 40) / 280, fadeIn: 0.05, fadeOut: 0.1 }); }
+      else if (wx.kind === 'sun') add({ ...W, tex: T.dot, x, y: r.top + rnd(0, r.height), vx: rnd(-6, 6), vy: rnd(-10, -3), tint: 0xfff3c4, add: true, glow: true, scale: rnd(0.06, 0.14), alpha: rnd(0.4, 0.8), life: rnd(2.5, 4.5), fadeIn: 0.3, fadeOut: 0.4 });
+    }
+  }
+  // weather starts already going: the fog banks, snowflakes and motes are spread over the pitch, not on their way in
+  function warm(r) {
+    const W = { weather: true }, at = () => [r.left + rnd(0, r.width), r.top + rnd(0, r.height)];
+    if (wx.kind === 'fog') for (let k = 0; k < 6; k++) { const [x, y] = at(), l = rnd(4, 9); add({ ...W, tex: T.smoke, x, y, vx: rnd(14, 26), tint: 0xe6ecef, scale: rnd(1.1, 1.7), alpha: rnd(0.2, 0.3), life: l, fadeIn: 0.1, fadeOut: 0.3 }); }
+    if (wx.kind === 'snow') for (let k = 0; k < 40; k++) { const [x, y] = at(); add({ ...W, tex: T.flake, x, y, vx: rnd(-8, 8), vy: rnd(28, 55), sway: rnd(14, 30), swf: rnd(1, 2), scale: rnd(0.25, 0.65), alpha: rnd(0.7, 1), life: (r.bottom - y) / 40, fadeIn: 0.1, fadeOut: 0.15 }); }
+    if (wx.kind === 'sun') for (let k = 0; k < 10; k++) { const [x, y] = at(); add({ ...W, tex: T.dot, x, y, vx: rnd(-6, 6), vy: rnd(-10, -3), tint: 0xfff3c4, add: true, glow: true, scale: rnd(0.06, 0.14), alpha: rnd(0.4, 0.8), life: rnd(1.5, 4), fadeIn: 0.2, fadeOut: 0.4 }); }
+  }
+  async function weather(kind, get) {
+    if (!kind || calm()) { wx.kind = null; return; }
+    if (wx.kind === kind) { wx.get = get; return; }
+    if (!await pixi()) return;
+    wx.kind = kind; wx.get = get; wx.rt = 0; wx.acc = 0; wx.warm = true;
+    if (!app.ticker.started) app.ticker.start();
+  }
+  const clear = () => {
+    wx.kind = null; alive.splice(0).forEach(p => p.s.destroy()); if (app) { app.ticker.stop(); app.render(); } lots.splice(0).forEach(l => l.remove()); };
   window.addEventListener('hashchange', clear);
 
   const COLOURS = [0xff5ec8, 0xffe14a, 0x5ec8ff, 0x7dff6b, 0xffffff, 0xff8a3d, 0xa46bff];
@@ -145,6 +184,12 @@
     twister(t, ms = 2400) {
       const r = rect(t), life = ms / 1000, x0 = r.left - 60, x1 = r.left + r.width + 60, top = r.top, h = r.height;
       const cx = tt => x0 + (x1 - x0) * Math.min(1, tt / life);
+      // the funnel itself: dust spinning tight at the ground and wide at the top, a cone that travels with the debris
+      for (let k = 0; k < ms / 16; k++) {
+        const hy = Math.pow(rnd(0, 1), 0.8), ph = rnd(0, 6.28), sp = rnd(9, 14), rad = 6 + hy * hy * 62, d = rnd(0, life - 0.35), dark = Math.random() < 0.5;
+        add({ tex: T.smoke, x: x0, y: top + h * (1 - hy), tint: dark ? 0x5d636c : 0xb9bfc7, scale: 0.16 + hy * 0.34, alpha: 0.6 + (1 - hy) * 0.3, vr: rnd(-3, 3), life: rnd(0.35, 0.6), delay: d, fadeIn: 0.25, fadeOut: 0.4,
+          fn: p => { const a = ph + p.t * sp; p.s.x = cx(d + p.t) + Math.cos(a) * rad + Math.sin((d + p.t) * 3 + hy * 4) * 10 * hy; p.s.y = top + h * (1 - hy) + Math.sin(a) * rad * 0.16; p.vx = p.vy = 0; } });
+      }
       for (let k = 0; k < ms / 14; k++) {
         const hy = rnd(0, 1), ph = rnd(0, 6.28), sp = rnd(7, 12), rad = 14 + hy * 70, kind = [0, 0, 2, 2, 3, 0, 2, 3, 0, 1][k % 10], d = rnd(0, life - 0.6);
         add({ tex: kind === 0 ? T.leaf : kind === 1 ? T.paper : kind === 2 ? T.chunk : T.smoke, x: x0, y: top + h * (1 - hy),
@@ -223,6 +268,9 @@
     ready: () => pixi(),
     preload(names) { if (calm()) return; pixi(); lottieLib().catch(() => {}); (names || []).forEach(n => json(n).catch(() => {})); },
     clear,
+    weather,
+    // lift the canvas over a moment's card for a while (the storm's rain over the whole screen)
+    raise(ms) { if (!app) return; app.canvas.classList.add('raised'); clearTimeout(this._rt); this._rt = setTimeout(() => app && app.canvas.classList.remove('raised'), ms); },
     _alive: () => alive.length, _app: () => app,  // (tests)
     lottie: lottiePlay,
     rect,

@@ -14,7 +14,11 @@
         '🚑 The ambulance, police car, flying saucer, helicopter, tank, dog and pigeon are proper animations now, made by artists on LottieFiles, and the ambulance that parks by your injured player is the same one',
         '✨ A new effects engine: lightning that really strikes, a black hole that swallows the light, flares that spit sparks and smoke, a tornado full of flying turf, rain that splashes, confetti, fireworks and money raining down',
         '💥 Every number that changes gets a burst of sparks (or a puff of smoke)',
-        '🔋 Calm mode (Settings → Look) turns all of it off',
+        '🌦️ The weather is real now: rain that splashes, snow drifting down, fog rolling across in banks, gales full of leaves, and sunshine you can see',
+        '🐕 The dog and the pigeon that stay all game are animated, and so are the taxman, the TV van, the mystery box on its parachute and the loan army’s coach',
+        '🌪️ The tornado is a spinning funnel of dust and turf',
+        '🔊 Real sounds: a referee’s whistle, a stadium crowd, booing, sirens, the helicopter, thunder, a cash register, the fruit machine, fireworks and more (free recordings, credited on the credits page)',
+        '🔋 Calm mode (Settings → Look) turns all the visuals off'
       ],
     },
     {
