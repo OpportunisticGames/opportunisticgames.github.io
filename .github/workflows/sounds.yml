@@ -1,0 +1,32 @@
+name: Find sound effects
+
+# The cloud sessions can't reach Wikimedia Commons, so this searches it for the sounds listed in
+# goal-machine/fx/sfx/wanted.json and commits trimmed, level-matched candidates to goal-machine/fx/sfx/cand/ on the branch.
+on:
+  push:
+    branches: ['claude/**']
+    paths: ['goal-machine/fx/sfx/wanted.json', 'goal-machine/tools/fetch_sfx.py', '.github/workflows/sounds.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency: sounds-${{ github.ref }}
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - run: python3 goal-machine/tools/fetch_sfx.py
+      - name: Commit
+        run: |
+          git add goal-machine/fx/sfx/cand
+          if git diff --cached --quiet; then echo "Nothing new"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Sound effect candidates"
+          git pull --rebase -q origin "$GITHUB_REF_NAME"
+          git push
