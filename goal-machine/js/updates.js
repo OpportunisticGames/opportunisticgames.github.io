@@ -9,8 +9,16 @@
 (function () {
   GM.UPDATES = [
     {
-      v: 66, label: '5.22.1', date: '2026-10-03', title: '📸 Faces in focus',
+      v: 66, label: '5.22.1', date: '2026-10-08', title: '🔧 Fixes, and faces in focus',
       items: [
+        '⚡ Extreme really is extreme now: every PL player, and just names and positions on the reels (no clubs, years or apps)',
+        '🃏 Bag full? Tapping a wildcard now always asks: play it straight away, play one of yours first and keep the new one, or swap one out. Nothing gets thrown away without you choosing',
+        '🌪️ CHAOS: sign a player and the reasons the bonus moved fade in and out in the corner (+12 chemistry, −15 squad rating…)',
+        '🖼️ Share a picture of your XI is your pitch exactly as it is on screen',
+        '▶️ A CHAOS game you left asks "carry on?" before anything else, not after you’ve picked a manager',
+        '☁️ The weather stops at full time instead of following you to the next game',
+        '🏅 Badges count on every level: Extreme Measures for any Extreme draft (including ones you’ve already played), and the quick-game badges on Extreme',
+        '🕴️ Dodgy Owner shows your real personal best on Home (it was showing 0)',
         '📸 The new face finder has now looked at 4,800 player photos (up from 2,700), so far more avatars zoom in on the face rather than a shoulder or the crowd',
         '🖼️ A few more players have photos',
       ],

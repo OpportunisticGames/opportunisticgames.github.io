@@ -831,7 +831,7 @@ GM.HARD_MODES = ['ultimate', 'ultimateast', 'ultimateapps', 'chaos', 'chaosast',
   'money', 'boss', 'owner'];
 // Difficulty, one switch: Normal, Hard (names and positions only) or Extreme (see GM.EXTREME_GAMES; the Main event and CHAOS use every one
 // of the 5,000+ PL players instead of the 50+ app ones). Before 5.5 Hard was on its own and Extreme was a pool switch.
-GM.LEVELS = { normal: ['🙂', 'Normal', '50+ apps · clues shown'], hard: ['🥵', 'Hard', 'names & positions only'], extreme: ['⚡', 'Extreme', 'every player, 5,000+'] };
+GM.LEVELS = { normal: ['🙂', 'Normal', '50+ apps · clues shown'], hard: ['🥵', 'Hard', 'names & positions only'], extreme: ['⚡', 'Extreme', 'every player, names & positions only'] };
 GM.level = () => {
   const l = GM.store.get('level', null);
   return GM.LEVELS[l] ? l : GM.store.get('hard', false) ? 'hard' : GM.store.get('ultPool', '') === 'extreme' ? 'extreme' : 'normal';

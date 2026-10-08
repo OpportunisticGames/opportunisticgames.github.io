@@ -78,7 +78,7 @@ game mode for players; this file is about how to work on it.
   `managers.yml` / `tools/fetch_managers.py` (add the article to `ARTICLES` for a new manager); shown by `GM.CFX.faceImg`.
 - `modes.js` – quick games (Club Hopper, Higher or Lower, Who Am I?, Club Grid, Guess the Tally); `h2h.js` – pass-the-phone series.
 - `daily.js` – Today page, Footle, daily streaks. `collection.js` – Album, badges, Dream XIs. `report.js` – full-time report.
-- `picture.js` – share-a-picture of your XI. `audio.js` – synthesised sound + music. `updates.js` – changelog.
+- `picture.js` – share-a-picture of your XI: `GM.screenPicture` copies the pitch on screen (html-to-image, `js/vendor/`, loaded on first use) into a framed PNG; the drawn `GM.teamPicture` is the fallback. `audio.js` – synthesised sound + music. `updates.js` – changelog.
 - Data: `data/players.js` (2,039 players with 50+ apps), the full list is loaded on demand; built by `tools/build_players.py`,
   then `tools/clean_sheets.py` adds keepers' clean sheets (column 13; CHAOS counts one goal per three).
 
@@ -137,6 +137,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
      editing). Keep every manager within about 5% of the average.
    - `chaosfx.js` – every CHAOS scene and wildcard flourish is drawn, weather, the parked bus, sacking, replay and the CHAOS picture.
    - `chaospixi.js` – the effects layer in CHAOS: Lottie vehicles and characters, PixiJS particles, the parked ambulance, Calm off.
+   - `fixes5221.js` – Extreme hides clues, the full wildcard bag choice, the share picture, CHAOS resume order, weather at full time, bonus notes, badges on every level.
    - `layout.js` – plays whole drafts and checks the pitch never changes size (`node layout.js "chaos:1,ultimate:0" 360x740`).
    Screenshots land in `./lay/` (ignored by git). Block photo hosts with `ctx.route(...)` to keep runs fast.
 3. Tests set `gm:welcomed` and `gm:seenVersion` in localStorage so the welcome and What's New pop-ups stay out of the way.

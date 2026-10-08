@@ -3,6 +3,16 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.22.1 *(owner, 8 Oct 2026)*
+- Extreme drafts showed clubs, apps and years like Normal: Extreme now hides the clues like Hard (every player as before).
+- A full wildcard bag sometimes threw a card away (storms) and sometimes refused: now it always asks (play it now / play one of yours first / swap).
+- Share a picture of your XI drew its own 4-4-2 (wrong for other shapes): now it's the pitch on screen (html-to-image).
+- Extreme Measures never unlocked: the main event and CHAOS on Extreme are modes of their own (extreme/purist/chaosx), not the Extreme flag. Quick-game badges on Extreme never counted either (hilox etc.). Both fixed; past Extreme drafts on your board count.
+- Dodgy Owner's PB on Home was divided by 100 (an old scale), so it read 0 pts.
+- A saved CHAOS game asked for a manager first and "carry on?" second.
+- The weather kept going on the full-time screen and into the next game.
+- Leaving a draft mid-pick could move the next game on a spin (the pick finished on the new game).
+
 ### Fixed in 5.22 *(owner, 3 Oct 2026)*
 - Marks on a player showed only a corner: the player boxes clip their edges, so marks and the parked ambulance now sit inside.
 - The tornado's crooked players never showed: another transform on the card undid the tilt (now its own `rotate`).

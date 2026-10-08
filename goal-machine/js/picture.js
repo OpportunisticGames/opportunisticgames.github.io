@@ -89,6 +89,51 @@
     return cv.toDataURL('image/png');
   };
 
+  /* The pitch exactly as it is on your screen (html-to-image copies the page's own drawing of it), framed like the
+     picture above: the header, your pitch, the total. Photos from sites that don't allow it come out as plain discs.
+     Resolves to a PNG data URL, or null if it can't be done (the caller falls back to the drawn picture). */
+  const VQ = ((document.currentScript && document.currentScript.src) || '').split('?')[1] || '';
+  let libP = null;
+  const lib = () => (window.htmlToImage ? Promise.resolve(window.htmlToImage) : (libP = libP || new Promise((res, rej) => {
+    const sc = document.createElement('script'); sc.src = 'js/vendor/html-to-image.min.js' + (VQ ? '?' + VQ : ''); sc.onload = () => res(window.htmlToImage); sc.onerror = rej; document.head.appendChild(sc);
+  })));
+  const DISC = 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><circle cx="32" cy="32" r="32" fill="#2b3a4a"/></svg>');
+  GM.screenPicture = async function (el, opts = {}) {
+    if (!el) return null;
+    let shot;
+    try {
+      const h2i = await lib(), o = { pixelRatio: Math.min(3, 1000 / el.offsetWidth), imagePlaceholder: DISC, cacheBust: false, filter: n => !(n.classList && (n.classList.contains('cm-stage') || n.classList.contains('fx-canvas'))) };
+      try { shot = await h2i.toCanvas(el, o); } catch (e) { shot = await h2i.toCanvas(el, { ...o, skipFonts: true }); }
+    } catch (e) { return null; }
+    if (!shot || !shot.width) return null;
+    // the frame: the pitch 1000 wide (or shorter if it's very tall), the header above and the total below
+    let pw = 1000, ph = Math.round(shot.height * pw / shot.width);
+    if (ph > 1250) { ph = 1250; pw = Math.round(shot.width * ph / shot.height); }
+    const top = 225, Hh = top + ph + 200, cv = document.createElement('canvas');
+    cv.width = W; cv.height = Hh;
+    const c = cv.getContext('2d');
+    const bg = c.createLinearGradient(0, 0, 0, Hh); bg.addColorStop(0, '#0b3d2e'); bg.addColorStop(1, '#07261d');
+    c.fillStyle = bg; c.fillRect(0, 0, W, Hh);
+    c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+    c.fillStyle = '#c8ff3d'; c.font = '700 64px Oswald, Impact, sans-serif'; c.fillText('GOAL MACHINE', W / 2, 92);
+    c.fillStyle = '#ffffff'; fit(c, opts.title || 'My XI', W - 120, 44); c.fillText(opts.title || 'My XI', W / 2, 150);
+    if (opts.sub) { c.fillStyle = 'rgba(255,255,255,.7)'; fit(c, opts.sub, W - 120, 30, 600); c.fillText(opts.sub, W / 2, 192); }
+    c.save(); roundRect(c, (W - pw) / 2, top, pw, ph, 24); c.clip(); c.drawImage(shot, (W - pw) / 2, top, pw, ph); c.restore();
+    if (opts.total != null) {
+      const n = Math.round(opts.total).toLocaleString(), label = opts.totalLabel || '';
+      c.font = '700 96px Oswald, Impact, sans-serif'; const w1 = c.measureText(n).width;
+      c.font = '800 40px Inter, Arial, sans-serif'; const w2 = label ? c.measureText(label).width + 18 : 0;
+      const x0 = W / 2 - (w1 + w2) / 2, y = top + ph + 125;
+      c.textAlign = 'left';
+      c.fillStyle = '#ffffff'; c.font = '700 96px Oswald, Impact, sans-serif'; c.fillText(n, x0, y);
+      if (label) { c.fillStyle = '#c8ff3d'; c.font = '800 40px Inter, Arial, sans-serif'; c.fillText(label, x0 + w1 + 18, y); }
+      c.textAlign = 'center';
+    }
+    c.fillStyle = 'rgba(255,255,255,.6)'; c.font = '600 26px Inter, Arial, sans-serif';
+    c.fillText(opts.foot || 'opportunisticgames.github.io/goal-machine', W / 2, Hh - 30);
+    try { return cv.toDataURL('image/png'); } catch (e) { return null; }  // (a photo that slipped through would taint it)
+  };
+
   // Share a picture: the Android app's share sheet (build 13+), the phone's share menu, or a download
   GM.shareImage = async function (png, text) {
     if (window.AndroidApp && typeof AndroidApp.shareImage === 'function') { AndroidApp.shareImage(png, text || ''); return; }

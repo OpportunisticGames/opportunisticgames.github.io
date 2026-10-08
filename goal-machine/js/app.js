@@ -258,7 +258,7 @@
       </div>
       <div data-hpanel="market">
       <div class="tiles">
-        ${tile('#/owner', 't-navy wide', '🕴️', 'Dodgy Owner', 'You’ve bought a club. Hire and sack coaches, meddle, wheel and deal, and try to stay one step ahead of the league’s investigators.', pb('owner') ? Math.floor(pb('owner') / 100) + ' pts' : 0)}
+        ${tile('#/owner', 't-navy wide', '🕴️', 'Dodgy Owner', 'You’ve bought a club. Hire and sack coaches, meddle, wheel and deal, and try to stay one step ahead of the league’s investigators.', pb('owner') ? pb('owner') + ' pts' : 0)}
         ${tile('#/moneyball', 't-green wide', '💼', 'Moneyball', 'Chairman for a season: buy low, sell high, and get rich. Bids, injuries, takeovers and Deadline Day.', pb('money') ? '£' + pb('money') + 'm' : 0)}
         ${dtile('moneyball', 't-gold', 'Same season for everyone · one go')}
         ${tile('#/auction', 't-magenta', '🔨', 'Auction', 'Secret bids against a mate', 0)}
@@ -289,7 +289,7 @@
     GM.$$('#htabs button').forEach(b => b.onclick = () => showTab(b.dataset.t));
     showTab(htab);
     GM.$$('[data-level]').forEach(b => b.onclick = () => {
-      if (b.dataset.level === 'extreme' && GM.level() !== 'extreme') GM.toast('⚡ <b>Extreme:</b> all 5,000+ PL players on the reels and markets, and no name suggestions when you type', 3400);
+      if (b.dataset.level === 'extreme' && GM.level() !== 'extreme') GM.toast('⚡ <b>Extreme:</b> all 5,000+ PL players on the reels and markets, names and positions only, and no name suggestions when you type', 3400);
       GM.setLevel(b.dataset.level); home();
     });
     GM.$('#share-game').onclick = () => GM.shareGame();
@@ -370,7 +370,7 @@
         ${inApp && GM.app('pgsAvailable') ? grp('pgs', `<div class="setting"><b>🏆 Google Play Games</b><small>Your badges, scores and stats go to your Play Games profile when you’re signed in.</small>
           <div id="s-pgs" class="nstatus"><span>Checking…</span></div>
           <div class="setting-btns"><button class="btn ghost small" id="s-pgsin">🔑 Sign in</button><button class="btn ghost small" id="s-pgsbadges">🏅 My achievements</button><button class="btn ghost small" id="s-pgsboards">🏆 Leaderboards</button></div></div>`) : ''}
-        ${grp('play', `<div class="setting"><b>Difficulty</b><small>Hard hides clubs, years and appearances: names and positions only, and in the Target games big-name players turn up less often. Extreme brings in every one of the 5,000+ PL players, not just the 50+ app ones, in the Main event, CHAOS, the Target and money games, Higher or Lower and Guess the Tally. Where you type names (Who Am I?, the Club Grid, Club Hopper) every PL player always counts, and Extreme turns the suggestions off: type the whole name. The daily games stay the same for everyone. Each level has its own leaderboards</small>${seg('s-level', Object.fromEntries(Object.entries(GM.LEVELS).map(([k, [i, n]]) => [k, i + ' ' + n])), GM.level())}</div>`)}
+        ${grp('play', `<div class="setting"><b>Difficulty</b><small>Hard hides clubs, years and appearances: names and positions only, and in the Target games big-name players turn up less often. Extreme brings in every one of the 5,000+ PL players, not just the 50+ app ones, and hides the clues like Hard, in the Main event, CHAOS, the Target and money games, Higher or Lower and Guess the Tally. Where you type names (Who Am I?, the Club Grid, Club Hopper) every PL player always counts, and Extreme turns the suggestions off: type the whole name. The daily games stay the same for everyone. Each level has its own leaderboards</small>${seg('s-level', Object.fromEntries(Object.entries(GM.LEVELS).map(([k, [i, n]]) => [k, i + ' ' + n])), GM.level())}</div>`)}
       </section>
       <section class="settings links" ${sub ? 'hidden' : ''}>
         <a href="#" id="s-share">📣 Share Goal Machine with a friend<span>›</span></a>
@@ -685,7 +685,7 @@
       <p class="muted">These photos come from Wikimedia Commons under the licences shown. Tap one to see the original file and its full licence.${GM.playSafe ? '' : ' Other photos are from premierleague.com and Transfermarkt.'}</p>
       <div class="plist">${list.length ? list.map(p => `<a class="prow credit" href="${GM.esc(p.photo.u)}" target="_blank" rel="noopener">${GM.avatar(p)}<div><b>${GM.esc(p.name)}</b>
         <small>📷 ${GM.esc(p.photo.a)} · ${GM.esc(p.photo.l)}</small></div></a>`).join('') : '<div class="muted">No Wikimedia photos in use yet.</div>'}</div>
-      <h3>🎬 Animations</h3><p class="muted">The ambulances, police cars, flying saucers and friends in CHAOS are free animations from <a href="https://lottiefiles.com" target="_blank" rel="noopener">LottieFiles</a>, by these artists. Effects are drawn with <a href="https://pixijs.com" target="_blank" rel="noopener">PixiJS</a>.</p>
+      <h3>🎬 Animations</h3><p class="muted">The ambulances, police cars, flying saucers and friends in CHAOS are free animations from <a href="https://lottiefiles.com" target="_blank" rel="noopener">LottieFiles</a>, by these artists. Effects are drawn with <a href="https://pixijs.com" target="_blank" rel="noopener">PixiJS</a>, and the pictures of your pitch are made with <a href="https://github.com/bubkoo/html-to-image" target="_blank" rel="noopener">html-to-image</a>.</p>
       <div class="plist" id="lot-credits"></div>
       <h3>👔 Managers</h3><p class="muted">The CHAOS managers' photos are from Wikipedia / Wikimedia Commons, under the licences shown.</p>
       <div class="plist" id="mgr-credits"></div>
