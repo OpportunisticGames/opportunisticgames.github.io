@@ -153,6 +153,7 @@
     ['onwin25', '⚔️', 'Ruthless', 'Win 25 online games.', (e, a) => e.type === 'online' && (a.online || {}).wins >= 25],
   ].map(([id, icon, name, desc, test, secret]) => ({ id, icon, name, desc, test, secret: !!secret, cat: CAT_OF(id, secret) }));
 
+  GM.badgeIds = () => A.map(x => x.id);  // (tests: every badge must be reachable)
   const chaos = e => e.type === 'draft' && (e.mode === 'chaos' || e.mode === 'chaosx');
   // an Extreme draft finished before its badge worked (the main event and CHAOS on Extreme weren't counted): its score's on the board
   const everExtreme = () => ['extreme', 'purist', 'chaosx', 'targetx', 'treblex', 'mysteryx'].some(k => ['', 'ast', 'apps'].some(s => GM.best(k + s) > 0));

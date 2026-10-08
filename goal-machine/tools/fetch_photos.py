@@ -26,6 +26,8 @@ SRC = os.environ.get('SRC', 'src')
 UA = 'GoalMachinePhotos/1.0 (https://opportunisticgames.github.io/goal-machine/; fan-made quiz game)'
 PL_PHOTO = 'https://resources.premierleague.com/premierleague/photos/players/110x140/p{}.png'
 RETRY_DAYS = 60
+# pictures that turned out to be someone else with the same name (a bishop, a senator, a lion keeper…): never used
+NOT_ME = {f.replace('_', ' ').removeprefix('File:') for f in json.loads((Path(__file__).resolve().parent.parent / 'data/photos_notme.json').read_text())['files']}
 TODAY = datetime.date.today()
 FREE = re.compile(r'^(cc0|cc[ -]by(-sa)?[ -]?[\d.]*( [a-z]+)?|public domain|pd\b.*)$', re.I)
 # first words too common to identify a club on their own
@@ -271,11 +273,11 @@ def from_wikipedia(p):
         for pp in ((pics or {}).get('query', {}).get('pages') or {}).values():
             cands += [i['title'] for i in pp.get('images', []) if named_for(i['title'], p['name'])]
         found = commons_free(list(dict.fromkeys(c.replace('_', ' ') for c in cands))[:12])
-        found = [(t, ii, 'lead' if t in sure else 'art') for t, ii in found if t in sure or fits_him(t, ii, p, life)]
+        found = [(t, ii, 'lead' if t in sure else 'art') for t, ii in found if t.removeprefix('File:') not in NOT_ME and (t in sure or fits_him(t, ii, p, life))]
         if not found:
             sr = get_json(CAPI + urllib.parse.urlencode({'action': 'query', 'list': 'search', 'srsearch': f"{p['name']} footballer", 'srnamespace': 6, 'srlimit': 10, 'format': 'json'}))
             more = [x['title'] for x in (sr or {}).get('query', {}).get('search', []) if named_for(x['title'], p['name'])]
-            found = [(t, ii, 'search') for t, ii in commons_free(more[:6]) if fits_him(t, ii, p, life)]
+            found = [(t, ii, 'search') for t, ii in commons_free(more[:6]) if t.removeprefix('File:') not in NOT_ME and fits_him(t, ii, p, life)]
         if found:
             return credit(found[0][1], pg['title'], found[0][2])
     return None

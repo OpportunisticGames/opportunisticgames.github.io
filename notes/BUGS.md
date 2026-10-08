@@ -12,6 +12,11 @@ version they shipped in. Newest at the top.
 - A saved CHAOS game asked for a manager first and "carry on?" second.
 - The weather kept going on the full-time screen and into the next game.
 - Leaving a draft mid-pick could move the next game on a spin (the pick finished on the new game).
+- Wrong person in a photo (Dean Richards showed a rugby coach): removed in 5.21; going through the older photos turned up 26 more
+  people who only share a name (a bishop, a US senator, a Lieutenant Governor, a lion keeper, an NFL player, a meeting with
+  Joe Biden…). All removed, and `data/photos_notme.json` stops the finder ever picking them again. The remaining ~3,800 photos
+  found before the stricter checks go through a recheck run (photos.yml, recheck on).
+- Photos that didn't fit the circle (Ingimarsson, Laursen): both found again by the new face finder (YuNet), with ~4,800 others.
 
 ### Fixed in 5.22 *(owner, 3 Oct 2026)*
 - Marks on a player showed only a corner: the player boxes clip their edges, so marks and the parked ambulance now sit inside.
@@ -24,8 +29,6 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Status |
 |---|---|---|
-| 2026-10-02 | Wrong person in a photo: Richards (Dean Richards, the Southampton/Spurs defender) showed the rugby coach of the same name. A Commons search fallback trusted any file with his name in it | Fixing: files that aren't the article's own photo or Wikidata's must say football and be dated within his life (`fits_him`); a recheck run goes back over every earlier photo. His photo is removed |
-| 2026-10-02 | Photos that don't fit the circle: Ingimarsson (no face found, so the default crop showed his body) and Laursen (an action shot; the old detector picked the wrong spot) | Fixing: YuNet, OpenCV's neural face detector, on bigger copies of each photo; every face is found again, and again whenever a photo changes |
 
 ## Fixed
 

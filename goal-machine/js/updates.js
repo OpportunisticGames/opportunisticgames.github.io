@@ -19,6 +19,7 @@
         '☁️ The weather stops at full time instead of following you to the next game',
         '🏅 Badges count on every level: Extreme Measures for any Extreme draft (including ones you’ve already played), and the quick-game badges on Extreme',
         '🕴️ Dodgy Owner shows your real personal best on Home (it was showing 0)',
+        '🙈 26 player photos that were someone else with the same name (a bishop, a senator, a lion keeper…) are gone, and won’t come back',
         '📸 The new face finder has now looked at 4,800 player photos (up from 2,700), so far more avatars zoom in on the face rather than a shoulder or the crowd',
         '🖼️ A few more players have photos',
       ],
