@@ -149,11 +149,14 @@
     ['lv50', '🎖️', 'Ballon d’Or', 'Reach level 50.', () => GM.myLevel().n >= 50],
     ['daily100', '🌅', 'A Hundred Days', 'Play the Daily Ultimate on 100 different days.', () => Object.values(GM.store.get('dlog', {})).filter(d => d.daily != null).length >= 100],
     ['pk50', '📦', 'Pack Mentality', 'Open 50 packs.', e => game(e, 'pack') && e.score >= 50],
-    ['extreme', '☠️', 'Extreme Measures', 'Finish a draft in Extreme.', e => e.type === 'draft' && e.extreme],
+    ['extreme', '☠️', 'Extreme Measures', 'Finish a draft in Extreme.', e => (e.type === 'draft' && e.extreme) || everExtreme()],
     ['onwin25', '⚔️', 'Ruthless', 'Win 25 online games.', (e, a) => e.type === 'online' && (a.online || {}).wins >= 25],
   ].map(([id, icon, name, desc, test, secret]) => ({ id, icon, name, desc, test, secret: !!secret, cat: CAT_OF(id, secret) }));
 
+  GM.badgeIds = () => A.map(x => x.id);  // (tests: every badge must be reachable)
   const chaos = e => e.type === 'draft' && (e.mode === 'chaos' || e.mode === 'chaosx');
+  // an Extreme draft finished before its badge worked (the main event and CHAOS on Extreme weren't counted): its score's on the board
+  const everExtreme = () => ['extreme', 'purist', 'chaosx', 'targetx', 'treblex', 'mysteryx'].some(k => ['', 'ast', 'apps'].some(s => GM.best(k + s) > 0));
   const md = e => e.type === 'draft' && e.mode === 'match';
   const intl = e => e.type === 'draft' && e.mode === 'nation';
   const HOME = ['England', 'Scotland', 'Wales', 'Northern Ireland'];
@@ -184,7 +187,8 @@
   const relegated = p => Object.entries(p.stints || {}).some(([c, ys]) => [...ys].some(y => (DOWN[y] || []).includes(c)));
   GM.relegated = relegated; GM.plSeasons = plSeasons;
   const ult = (e, stat) => e.type === 'draft' && (e.mode === 'ultimate' || e.mode === 'daily') && e.stat === stat;
-  const game = (e, m) => e.type === 'game' && e.mode.replace(/h$/, '').replace(/:.*/, '') === m;
+  // (the game's board key: Hard ends in h and Extreme in x, e.g. hiloh, tallyx; the badges count every level)
+  const game = (e, m) => e.type === 'game' && e.mode.replace(/:.*/, '').replace(/[hx]$/, '') === m;
   function maxSameClub(xi) {
     const c = {};
     xi.forEach(p => p.clubs.forEach(k => { c[k] = (c[k] || 0) + 1; }));

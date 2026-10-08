@@ -2988,3 +2988,15 @@ body.calm .sc-portrait .ph, body.calm .sc-portrait .stamp, body.calm .sc-portrai
 .cm-veh.flip .cm-held.riding { transform: translate(-50%, -50%) scale(.42) rotate(10deg); }
 .fx-lottie .fx-carry { position: absolute; left: 6%; top: 46%; font-style: normal; font-size: 22px; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .5)); animation: carry-bob .25s ease-in-out infinite alternate; }
 @keyframes carry-bob { to { translate: 0 -3px; } }
+/* 5.22.1: a full wildcard bag – play the new one now, or play / swap one of yours */
+.modal .bf-now { width: 100%; margin: 6px 0 10px; }
+.bag-full { display: grid; gap: 6px; margin-bottom: 10px; }
+.bf-row { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); }
+.bf-row span { flex: 1; min-width: 0; font-weight: 700; font-size: .9rem; }
+.bf-row .btn { white-space: nowrap; }
+/* 5.22.1: CHAOS – why the bonus moved when you signed someone, a line at a time in the corner */
+#bonus-notes { position: fixed; right: 8px; top: calc(env(safe-area-inset-top, 0px) + 56px); z-index: 96; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; pointer-events: none; max-width: min(260px, 70vw); }
+#bonus-notes .bn { padding: 4px 9px; border-radius: 10px; font: 600 .74rem/1.25 Inter, sans-serif; color: #fff; background: rgba(12, 18, 30, .82); box-shadow: 0 4px 12px rgba(0, 0, 0, .3); text-align: right; animation: bn-life 3.4s ease forwards; }
+#bonus-notes .bn b { font-weight: 800; margin-right: 2px; }
+#bonus-notes .bn.up b { color: #7cc0ff; } #bonus-notes .bn.down b { color: #ff8a8a; }
+@keyframes bn-life { 0% { opacity: 0; transform: translateX(14px); } 10%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-6px); } }

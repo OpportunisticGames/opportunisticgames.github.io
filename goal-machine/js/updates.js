@@ -9,6 +9,22 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 66, label: '5.22.1', date: '2026-10-08', title: '🔧 Fixes, and faces in focus',
+      items: [
+        '⚡ Extreme really is extreme now: every PL player, and just names and positions on the reels (no clubs, years or apps)',
+        '🃏 Bag full? Tapping a wildcard now always asks: play it straight away, play one of yours first and keep the new one, or swap one out. Nothing gets thrown away without you choosing',
+        '🌪️ CHAOS: sign a player and the reasons the bonus moved fade in and out in the corner (+12 chemistry, −15 squad rating…)',
+        '🖼️ Share a picture of your XI is your pitch exactly as it is on screen',
+        '▶️ A CHAOS game you left asks "carry on?" before anything else, not after you’ve picked a manager',
+        '☁️ The weather stops at full time instead of following you to the next game',
+        '🏅 Badges count on every level: Extreme Measures for any Extreme draft (including ones you’ve already played), and the quick-game badges on Extreme',
+        '🕴️ Dodgy Owner shows your real personal best on Home (it was showing 0)',
+        '🙈 26 player photos that were someone else with the same name (a bishop, a senator, a lion keeper…) are gone, and won’t come back',
+        '📸 The new face finder has now looked at 4,800 player photos (up from 2,700), so far more avatars zoom in on the face rather than a shoulder or the crowd',
+        '🖼️ A few more players have photos',
+      ],
+    },
+    {
       v: 65, label: '5.22', date: '2026-10-03', title: '💣 Don’t stop playing',
       items: [
         '▶️ CHAOS doesn’t stop for anything: once a moment starts you can carry on spinning and picking while the ambulance is still parking, and tapping never cuts an animation short',

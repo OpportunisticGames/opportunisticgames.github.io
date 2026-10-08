@@ -3,6 +3,21 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.22.1 *(owner, 8 Oct 2026)*
+- Extreme drafts showed clubs, apps and years like Normal: Extreme now hides the clues like Hard (every player as before).
+- A full wildcard bag sometimes threw a card away (storms) and sometimes refused: now it always asks (play it now / play one of yours first / swap).
+- Share a picture of your XI drew its own 4-4-2 (wrong for other shapes): now it's the pitch on screen (html-to-image).
+- Extreme Measures never unlocked: the main event and CHAOS on Extreme are modes of their own (extreme/purist/chaosx), not the Extreme flag. Quick-game badges on Extreme never counted either (hilox etc.). Both fixed; past Extreme drafts on your board count.
+- Dodgy Owner's PB on Home was divided by 100 (an old scale), so it read 0 pts.
+- A saved CHAOS game asked for a manager first and "carry on?" second.
+- The weather kept going on the full-time screen and into the next game.
+- Leaving a draft mid-pick could move the next game on a spin (the pick finished on the new game).
+- Wrong person in a photo (Dean Richards showed a rugby coach): removed in 5.21; going through the older photos turned up 26 more
+  people who only share a name (a bishop, a US senator, a Lieutenant Governor, a lion keeper, an NFL player, a meeting with
+  Joe Biden…). All removed, and `data/photos_notme.json` stops the finder ever picking them again. The remaining ~3,800 photos
+  found before the stricter checks go through a recheck run (photos.yml, recheck on).
+- Photos that didn't fit the circle (Ingimarsson, Laursen): both found again by the new face finder (YuNet), with ~4,800 others.
+
 ### Fixed in 5.22 *(owner, 3 Oct 2026)*
 - Marks on a player showed only a corner: the player boxes clip their edges, so marks and the parked ambulance now sit inside.
 - The tornado's crooked players never showed: another transform on the card undid the tilt (now its own `rotate`).
@@ -14,8 +29,6 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Status |
 |---|---|---|
-| 2026-10-02 | Wrong person in a photo: Richards (Dean Richards, the Southampton/Spurs defender) showed the rugby coach of the same name. A Commons search fallback trusted any file with his name in it | Fixing: files that aren't the article's own photo or Wikidata's must say football and be dated within his life (`fits_him`); a recheck run goes back over every earlier photo. His photo is removed |
-| 2026-10-02 | Photos that don't fit the circle: Ingimarsson (no face found, so the default crop showed his body) and Laursen (an action shot; the old detector picked the wrong spot) | Fixing: YuNet, OpenCV's neural face detector, on bigger copies of each photo; every face is found again, and again whenever a photo changes |
 
 ## Fixed
 

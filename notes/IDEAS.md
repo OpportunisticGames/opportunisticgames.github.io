@@ -36,6 +36,10 @@ formations, and badges round 2.
   CHAOS players' bests). Older players keep what they'd have earned, guessed from their saved CHAOS games (`mgrLegacy`).
   Shared games (Daily CHAOS, races, online) still offer every manager so nobody's stuck.
 
+### CHAOS: say why the bonus moved when you sign someone ✅ 5.22.1 *(owner, 8 Oct 2026)*
+> "if when you got a player it said why there were bonus points … a bullet point for each bonus point addition that gently fades in and out in the corner"
+- Lines in the pitch's top corner after each CHAOS signing: each bonus that changed, with the change (+12 / −15).
+
 ### Packs of different kinds, clearly labelled ✅ 5.22 *(owner, 3 Oct 2026)*
 > "there should be different types of packs that you get for different things and they should be clearly labelled when you
 > open them (e.g level up pack, daily pack etc)" · make them cooler with the new effects.
