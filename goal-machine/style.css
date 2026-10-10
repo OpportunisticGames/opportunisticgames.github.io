@@ -3076,3 +3076,13 @@ body.ch-mode .page-draft .pitch { box-shadow: 0 0 0 2px #dc2626, 0 0 22px rgba(2
 .ch-verdict.won { border-color: var(--good); box-shadow: 0 0 22px rgba(61, 220, 132, .35); }
 .ch-verdict.lost { border-color: var(--bad); } .ch-verdict.drew { border-color: var(--accent2); }
 .ch-verdict.won > b, .ch-verdict.lost > b, .ch-verdict.drew > b { animation: chi-pop .5s ease-out; }
+/* your challenges list (Online tab, #/challenges) */
+.ch-mine .ch-who { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ch-mine .ch-who > span { display: grid; min-width: 0; }
+.ch-mine .ch-who b { font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ch-mine .ch-who small { font-size: .75rem; line-height: 1.3; } .ch-mine .ch-who small .live { color: var(--good); }
+.ch-mine .ch-score { white-space: nowrap; font-size: 1rem; }
+.more-link { display: block; text-align: right; margin: 6px 2px 0; font-weight: 700; font-size: .85rem; }
+.ch-recs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px; }
+.ch-recs a { flex: 0 0 auto; display: grid; justify-items: center; gap: 2px; padding: 8px 12px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); color: var(--text); text-decoration: none; }
+.ch-recs small { color: var(--muted); font-weight: 700; }
