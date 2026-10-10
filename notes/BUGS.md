@@ -9,11 +9,10 @@ version they shipped in. Newest at the top.
   (fixed on the server straight away). And challenges were only reachable from the link: now they're listed on the Online
   tab (Games and Finished), on `#/challenges` with a record per friend, from a friend's menu, and a card pops up in the
   app when someone starts or finishes yours (new RPC `challenge_mine`).
-
-### Open: app links don't open the app *(owner, 10 Oct 2026)*
-- A challenge link tapped in WhatsApp opens Chrome. The phone's Open by default shows "0 verified links", so Android
-  rejected `assetlinks.json`. Play Console shows the app signing key was changed (a previous key from 28 Sep), so the
-  fingerprint we publish (AC:CE:05…) is probably the old one. Needs the console's Digital Asset Links snippet.
+- Challenge links tapped in WhatsApp opened Chrome, not the app: the phone showed "0 verified links". The Play app
+  signing key had been changed (the old one is listed under Previous app signing keys, from 28 Sep), and
+  `.well-known/assetlinks.json` only had the old fingerprint (AC:CE:05…). Added the current key (D9:AA:2D…) from Play
+  Console's Digital Asset Links snippet, keeping the old one.
 
 ### Fixed in 5.23.1 *(owner, 10 Oct 2026)*
 - Make a Sub couldn't be deselected once tapped: tapping it again now calls it off and it stays in your bag.
