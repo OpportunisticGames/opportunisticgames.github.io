@@ -3,6 +3,14 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.22.2 *(owner, 10 Oct 2026)*
+- Shared links opened on the website instead of the Play app (so not on your account). The app's link check is fine
+  (Google's Digital Asset Links lists goal.machine with the Play signing key), but many apps and Chrome itself keep links
+  in the browser. Now a shared link opened in an Android browser shows an "Open in the app" bar: an intent to goal.machine
+  carrying the page as `?go=`, which the app turns back into the `#` route (the Play Store if the app isn't installed).
+- The CHAOS rain's clouds stayed after full time: stopping the weather didn't touch the clouds already on screen (they
+  live 30–60 s). Weather on screen now fades out in under a second when it stops or changes.
+
 ### Fixed in 5.22.1 *(owner, 8 Oct 2026)*
 - Extreme drafts showed clubs, apps and years like Normal: Extreme now hides the clues like Hard (every player as before).
 - A full wildcard bag sometimes threw a card away (storms) and sometimes refused: now it always asks (play it now / play one of yours first / swap).

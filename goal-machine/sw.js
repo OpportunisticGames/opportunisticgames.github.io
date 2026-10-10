@@ -1,5 +1,5 @@
 // Offline support: cache the app shell, network-first so updates show up on the next load.
-const CACHE = 'goal-machine-v70';
+const CACHE = 'goal-machine-v71';
 const SHELL = ['./', 'index.html', 'style.css', 'config.js', 'data/players.js', 'data/photos.js', 'data/faces.js', 'js/core.js', 'js/audio.js', 'js/daily.js', 'js/fx.js', 'js/chaosart.js', 'js/draft.js', 'js/report.js', 'js/collection.js', 'js/packs.js', 'js/player.js', 'js/levels.js', 'js/firstgame.js', 'js/modes.js', 'js/h2h.js', 'js/online.js', 'js/picture.js', 'js/market.js', 'js/moneyball.js', 'js/owner-engine.js', 'js/owner.js', 'js/reign.js', 'js/royale.js', 'js/secret.js', 'js/hattrick.js', 'js/updates.js', 'js/banter.js', 'data/fixtures.js', 'js/matchday.js', 'js/promo.js', 'js/app.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'];
 
