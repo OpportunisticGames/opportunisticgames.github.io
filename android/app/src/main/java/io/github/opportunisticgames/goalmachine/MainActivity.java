@@ -51,6 +51,9 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         web = new WebView(this);
         web.setBackgroundColor(0xFF07261D);
+        // no scrollbars: Android draws its own over the page (a line on the right that does nothing useful on a phone)
+        web.setVerticalScrollBarEnabled(false);
+        web.setHorizontalScrollBarEnabled(false);
 
         Achievements.checkSignIn(this, false);   // Play Games Services (a do-nothing in the sideload APK)
         WebSettings s = web.getSettings();
