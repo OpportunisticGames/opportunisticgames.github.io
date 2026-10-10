@@ -51,7 +51,7 @@ game mode for players; this file is about how to work on it.
   Daily, CHAOS). `RULES`, `WILDCARDS`, CHAOS `EVENTS`, reel generation (`makeReels`, seeded, so the same seed = the same
   game), scoring (`scoreFor`), rendering. The pitch is sized once by `fitPitch()`; everything under it sits in a
   fixed-height `.dock` so the layout never jumps. `render()` only draws while its own game is on screen.
-- `challenge.js` – friend challenges (`GM.challenge`): `#/c?id=CODE` (landing, `&p=` head-to-head, `&watch=` watch along), `#/rival?name=`; the draft keeps `S.ch` (the challenge you're playing), `S.prog` ([signed, total] after each signing), `S.picks`; tables `challenges` / `challenge_plays`, RPCs `challenge_create/_get/_start/_progress/_react/_history/_mine` (`_mine` feeds the lists on the Online tab, `#/challenges` and the in-app card), inbox items and push on new plays, results, reactions and rematches.
+- `challenge.js` – friend challenges (`GM.challenge`): `#/c?id=CODE` (landing, `&p=` head-to-head, `&watch=` watch along), `#/rival?name=`; the draft keeps `S.ch` (the challenge you're playing), `S.prog` ([signed, total] after each signing), `S.picks`; tables `challenges` / `challenge_plays`, RPCs `challenge_create/_get/_start/_progress/_react/_history/_mine/_send` (`_send` sends yours to app friends: `challenge_invites`, pushed as `cm:`) (`_mine` feeds the lists on the Online tab, `#/challenges` and the in-app card), inbox items and push on new plays, results, reactions and rematches.
 - `online.js` – online games with friends: the hub (sub-tabs Games / Finished / League / Friends), Draft Duel,
   Scout Duel (card hand + bonus cards), Live Race and its variants Target Race and CHAOS Race (race = both play the
   same seed; the variant picks the draft mode), the opponent live feed in races, the weekly league, notifications.
@@ -77,6 +77,7 @@ game mode for players; this file is about how to work on it.
   add the credit, delete `cand/`.
 - Manager portraits: `fx/mgr/<key>.jpg` (free-licence Wikipedia photos, 320px) with face positions in `fx/mgr/credits.json`, fetched by
   `managers.yml` / `tools/fetch_managers.py` (add the article to `ARTICLES` for a new manager); shown by `GM.CFX.faceImg`.
+- `promo.js` – the Home banner: matchday, the newest feature releases from the last 3 weeks (an entry's `promo` list, or a slide made from its title), a challenge waiting for you, a daily "Try today" game (`TRY`), news from `announcements`. Give a feature release a `promo` entry to choose its slide.
 - `modes.js` – quick games (Club Hopper, Higher or Lower, Who Am I?, Club Grid, Guess the Tally); `h2h.js` – pass-the-phone series.
 - `daily.js` – Today page, Footle, daily streaks. `collection.js` – Album, badges, Dream XIs. `report.js` – full-time report.
 - `picture.js` – share-a-picture of your XI: `GM.screenPicture` copies the pitch on screen (html-to-image, `js/vendor/`, loaded on first use) into a framed PNG; the drawn `GM.teamPicture` is the fallback. `audio.js` – synthesised sound + music. `updates.js` – changelog.

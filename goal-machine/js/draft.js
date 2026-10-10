@@ -611,7 +611,22 @@
     prog: st.prog || [[0, 0]], picks: st.picks || [], wild: (st.wildPlayed || []).slice(0, 20),
     mgr: st.manager ? MANAGERS[st.manager].name : null, mgrOffer: st.mgrOffer || null, form: (st.form || []).join(','), spin: st.spin,
     unit: st.rules && (st.rules.chaos || !st.rules.max) ? 'pts' : st.st.label,
+    pts: chPoints(st),
   });
+  // where a CHAOS score came from, for the head-to-head: the players' own PL numbers, what wildcards and moments did to
+  // them, team bonuses, moments and bonus spins, the manager; plus the biggest things that happened to players and bonuses
+  function chPoints(st) {
+    if (!st.rules || !st.rules.chaos) return null;
+    let sc; try { sc = scoreFor(st); } catch (e) { return null; }
+    if (!sc || !sc.grp) return null;
+    const filled = st.xi.filter(x => x.p != null);
+    const raw = filled.reduce((a, x) => a + ((x.story || []).length ? x.story[0].f : x.g), 0);
+    const hits = [];
+    filled.forEach(x => (x.story || []).forEach(e => { if (Math.round(e.t - e.f)) hits.push([byId(x.p).name, `${e.i} ${e.n}`, Math.round(e.t - e.f)]); }));
+    hits.sort((a, b) => Math.abs(b[2]) - Math.abs(a[2]));
+    const bon = (st.bonus || []).slice().sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 3);
+    return { raw: Math.round(raw), on: Math.round(sc.t - raw), team: sc.grp.team, ev: sc.grp.ev, mgr: sc.grp.mgr, hits: hits.slice(0, 3), bon };
+  }
   const modeKey = () => (S.dailyChaos ? 'dchaos:' + S.day : keyFor(S.mode, S.stat, S.hard, S.fx || S.nat || S.club, S.extreme));
   // where a half-finished draft is kept (the Daily Ultimate has its own; online races save with the race)
   const saveKey = () => (S.mode === 'daily' ? progressKey() : S.online ? null : 'draftp:' + modeKey());
@@ -1828,7 +1843,9 @@
       const jm = ps.filter(p => p.clubs.length >= 5).length; add(`🧳 Journeymen, 5+ clubs (${jm})`, 10 * jm);
       const vets = ps.filter(p => Math.min(p.last, GM.currentSeason) - p.first + 1 >= 10).length; add(`🗓️ Ten-season veterans (${vets})`, 8 * vets);
     }
+    const nTeam = parts.length;
     (st.bonus || []).forEach(([label, pts]) => parts.push([label, pts]));
+    const nEv = parts.length;
     const m = MANAGERS[st.manager];
     if (m && slots.length) {
       const pairs = GM.teamRating(slots).pairs.length;
@@ -1836,7 +1853,9 @@
     }
     const bonus = parts.reduce((a, x) => a + x[1], 0);
     const gk = st.stat !== 'apps' && slots.some(x => x.player.pos === 'G' && x.player.cs) ? ' + 🧤 clean sheets' : '';
-    return { total: t + bonus, parts: [[`${GM.STATS[st.stat].icon} PL ${GM.STATS[st.stat].label}${gk}`, t], ...parts], diff: null, t, bonus };
+    const sum = a => a.reduce((x, y) => x + y[1], 0);
+    const grp = { team: sum(parts.slice(0, nTeam)), ev: sum(parts.slice(nTeam, nEv)), mgr: sum(parts.slice(nEv)) };  // for the challenge head-to-head
+    return { total: t + bonus, parts: [[`${GM.STATS[st.stat].icon} PL ${GM.STATS[st.stat].label}${gk}`, t], ...parts], diff: null, t, bonus, grp };
   }
 
   async function finish() {
@@ -2372,11 +2391,11 @@
     if (GM.$('#challenge', root)) GM.$('#challenge', root).onclick = async () => {
       // a proper challenge (their XI, their line, the head-to-head, the tally); the plain link if the server can't be reached
       const btn = GM.$('#challenge', root); btn.disabled = true;
-      const code = GM.challenge && await GM.challenge.create(S, sc);
-      btn.disabled = false;
       const txt = S.rules.max ? `⚽ Goal Machine – my ${modeName()}${S.hard ? ' (Hard)' : ''} XI has ${fmt(S.rules.chaos ? sc.total : sc.t)} ${S.rules.chaos ? 'pts' : 'PL ' + S.st.label}. Same spins, can you beat it?`
         : `⚽ Goal Machine – I scored ${sc.total} in ${modeName()}${S.hard ? ' (Hard)' : ''}. Same spins, can you beat me?`;
-      if (code) { GM.share(txt, GM.challenge.link(code)); return; }
+      const sent = GM.challenge && await GM.challenge.send(S, sc, txt);  // friends in the app and/or a link
+      btn.disabled = false;
+      if (sent) return;
       const name = await GM.askName() || 'A friend';
       const m = S.mode === 'daily' ? 'ultimate' : S.mode;
       const url = `${GM.baseUrl()}#/draft?m=${m}&s=${S.stat}${S.club ? '&c=' + encodeURIComponent(S.club) : ''}${S.nat ? '&n=' + encodeURIComponent(S.nat) : ''}${S.extreme ? '&x=1' : ''}&seed=${encodeURIComponent(S.seed)}${S.hard ? '&h=1' : ''}&vs=${encodeURIComponent(name)}&vss=${sc.total}`;

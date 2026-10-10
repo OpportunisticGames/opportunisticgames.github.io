@@ -9,6 +9,21 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 75, label: '5.24', date: '2026-10-10', title: '⚔️ Challenge friends in the app',
+      promo: [
+        { href: '#/challenges', icon: '⚔️', cls: 't-red', title: 'Challenge your friends', sub: 'Finish a draft, tap ⚔️ Challenge a friend and pick your mates. They get a notification.' },
+      ],
+      items: [
+        '⚔️ Challenge a friend now lists your app friends: pick one or a few and they get a notification (or send a link, as before)',
+        '📥 Challenges sent to you wait in your challenges list and pop up in the app',
+        '📤 Your list shows who you sent each challenge to',
+        '🎞️ The Home banner keeps up: the newest releases, a challenge waiting for you, and a different game to try each day',
+        '🧹 No more stray scroll line on the right of the screen',
+        '🧮 CHAOS head-to-heads now show where the points came from: the players’ own numbers, what wildcards and moments did to them, team bonuses, bonus spins and the manager, plus the luckiest (and unluckiest) moments',
+        '👥 Your W–D–L record with each friend sits still again (it was pulsing like a live dot)',
+      ],
+    },
+    {
       v: 74, label: '5.23.2', date: '2026-10-10', title: '⚔️ Find your challenges',
       items: [
         '🔔 You now get a notification when a friend takes on your challenge, finishes it or reacts (they were being held back)',

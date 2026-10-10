@@ -23,6 +23,12 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### Challenge app friends, not just by link ✅ 5.24 *(owner, 10 Oct 2026)*
+- "When you go to challenge a friend, it would be ideal if you could challenge a friend in app too right? Like you could
+  challenge one of your app friends as well as being able to send a link."
+- Built straight in (we were working on challenges): ⚔️ Challenge a friend opens a sheet of your friends; pick one or a few
+  and they get a notification (`challenge_send`, `challenge_invites`, inbox `cm:CODE:i`), or send a link as before.
+
 ### Challenges that come alive: their XI, what you did differently, both lines on one chart, a tally ✅ 5.23 *(owner, 10 Oct 2026)*
 > "When you challenge a friend it should be more interactive right? Like show you their score and some details/maybe what
 > you did differently - maybe it could connect to your account too and there could be like a tally for beating friends
