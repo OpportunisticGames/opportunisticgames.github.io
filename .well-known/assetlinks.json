@@ -10,6 +10,6 @@
   "target": {
     "namespace": "android_app",
     "package_name": "goal.machine",
-    "sha256_cert_fingerprints": ["AC:CE:05:0A:B5:E6:A8:CB:0B:A6:40:49:D2:63:A3:D5:C9:02:CD:65:53:23:18:B1:32:8B:F9:B2:12:61:9D:A6"]
+    "sha256_cert_fingerprints": ["D9:AA:2D:63:A1:48:FE:6C:43:3A:1D:1E:58:E0:3D:6C:52:DD:77:FC:60:A4:07:97:C6:7E:47:1E:5E:64:8D:9E", "AC:CE:05:0A:B5:E6:A8:CB:0B:A6:40:49:D2:63:A3:D5:C9:02:CD:65:53:23:18:B1:32:8B:F9:B2:12:61:9D:A6"]
   }
 }]

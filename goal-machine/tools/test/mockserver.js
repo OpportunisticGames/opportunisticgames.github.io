@@ -51,6 +51,20 @@ module.exports = function makeServer() {
       if (plays.find(x => x.code === p.code && x.owner && x.token === a.p_token)) { p.owner_reaction = a.p_reaction; return 'ok'; }
       return 'no_play';
     },
+    challenge_mine(a) {
+      const me = auth(a.p_user, a.p_key); if (!me) return [];
+      const out = [];
+      Object.values(chs).forEach(c => {
+        const o = plays.find(p => p.code === c.code && p.owner), base = { code: c.code, mode: c.mode, stat: c.stat, hard: c.hard, extreme: c.extreme, club: c.club, nat: c.nat };
+        const ts = plays.filter(t => t.code === c.code && !t.owner && t.score != null);
+        if (o.username === me) {
+          if (!ts.length) out.push({ ...base, sent: true, opp: null, pid: null, status: 'waiting', mine: o.score, theirs: null, at: c.created });
+          ts.forEach(t => out.push({ ...base, sent: true, opp: t.username || t.name, pid: t.id, status: t.status, mine: o.score, theirs: t.score, at: t.finished || t.started }));
+        }
+        plays.filter(t => t.code === c.code && !t.owner && t.username === me && o.username !== me).forEach(t => out.push({ ...base, sent: false, opp: o.name, pid: t.id, status: t.status, mine: t.score, theirs: o.score, at: t.finished || t.started }));
+      });
+      return out.reverse();
+    },
     challenge_history(a) {
       const me = auth(a.p_user, a.p_key); if (!me) return [];
       const out = [];

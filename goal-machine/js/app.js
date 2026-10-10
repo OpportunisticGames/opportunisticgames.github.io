@@ -129,6 +129,7 @@
       case 'online': return GM.onlinePage(app, q);
       case 'c': return GM.challenge.page(app, q);  // a friend's "beat my score" challenge (challenge.js)
       case 'rival': return GM.challenge.rival(app, q.name || '');
+      case 'challenges': return GM.challenge.list(app);  // every challenge you've sent or taken on
       case 'footle': return GM.footle(app, false);
       case 'clubfootle': return GM.footle(app, true);
       case 'daily': return GM.draft.start(app, 'daily');

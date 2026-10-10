@@ -9,6 +9,15 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 74, label: '5.23.2', date: '2026-10-10', title: '⚔️ Find your challenges',
+      items: [
+        '🔔 You now get a notification when a friend takes on your challenge, finishes it or reacts (they were being held back)',
+        '⚔️ Your challenges are on the Online tab (Games and Finished) and on their own page, with your record against each friend',
+        '👀 A card pops up in the app when someone starts or finishes your challenge: tap it to watch along or see the head-to-head',
+        '📜 Tap a friend on the Friends tab for your challenges with them',
+      ],
+    },
+    {
       v: 73, label: '5.23.1', date: '2026-10-10', title: '🔧 Wildcard fixes',
       items: [
         '🔄 Make a Sub: tap it again to call it off (it goes back in your bag)',

@@ -3,6 +3,17 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.23.2 *(owner, 10 Oct 2026)*
+- Someone took on the owner's challenge but there was no notification and nowhere in the app to find it. The push server
+  only sent game, result and friend alerts, so every challenge alert (started, finished, reaction, rematch) was dropped
+  (fixed on the server straight away). And challenges were only reachable from the link: now they're listed on the Online
+  tab (Games and Finished), on `#/challenges` with a record per friend, from a friend's menu, and a card pops up in the
+  app when someone starts or finishes yours (new RPC `challenge_mine`).
+- Challenge links tapped in WhatsApp opened Chrome, not the app: the phone showed "0 verified links". The Play app
+  signing key had been changed (the old one is listed under Previous app signing keys, from 28 Sep), and
+  `.well-known/assetlinks.json` only had the old fingerprint (AC:CE:05…). Added the current key (D9:AA:2D…) from Play
+  Console's Digital Asset Links snippet, keeping the old one.
+
 ### Fixed in 5.23.1 *(owner, 10 Oct 2026)*
 - Make a Sub couldn't be deselected once tapped: tapping it again now calls it off and it stays in your bag.
 - The Joker only became a few CHAOS wildcards: it now picks from every wildcard the game allows, weighted by rarity.

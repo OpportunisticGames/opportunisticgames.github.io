@@ -161,6 +161,7 @@
           : `<div class="og-empty"><b>Nothing waiting on you</b><span>Start a game, or check back when it’s your turn.</span><button class="btn" id="onew2">⚔️ New game</button></div>`)
         + (theirs.length ? block('⏳ Their move', theirs, '') : '');
       GM.$('#odone').innerHTML = done.length ? `<div class="og-list">${done.slice(0, 30).map(line).join('')}</div>` : '<p class="muted center">No finished games yet.</p>';
+      if (GM.challenge) GM.challenge.fillOnline(GM.$('#olists'), GM.$('#odone'));  // your challenges: live/recent on Games, finished on Finished
       const nb = GM.$('#onew2'); if (nb) nb.onclick = () => newGame();
       GM.$$('[data-quick]').forEach(b => b.onclick = () => newGame(b.dataset.quick));
       GM.$('#oqm').onclick = quickMatch;
@@ -177,7 +178,7 @@
       GM.$$('[data-fmenu]').forEach(b => b.onclick = () => {
         const n = b.dataset.fmenu;
         const m = GM.modal(`<div class="center">${GM.userPic(n, 'xl')}<h3>${esc(n)}</h3></div>
-          <div class="actions col"><button class="btn" data-a="play">⚔️ Challenge</button><button class="btn ghost" data-a="report">🚩 Report their picture</button>
+          <div class="actions col"><button class="btn" data-a="play">⚔️ Challenge</button><a class="btn ghost" href="#/rival?name=${encodeURIComponent(n)}" data-close>📜 Your challenges with ${esc(n)}</a><button class="btn ghost" data-a="report">🚩 Report their picture</button>
           <button class="btn ghost danger" data-a="remove">Remove friend</button><button class="btn ghost" data-close>Close</button></div>`);
         GM.$$('[data-a]', m.el).forEach(x => x.onclick = async () => {
           m.close();
@@ -816,6 +817,7 @@
     setTimeout(done, 0);
     list = list || [];
     GM.online.setWaiting(list.length);
+    if (GM.challenge) GM.challenge.checkNew();  // someone took on (or finished) your challenge
     // one alert per turn: a game counts as new again each time it changes (your next pick, the next lot…)
     const tag = g => g.code + '@' + Math.floor(g.updated || 0);
     const seen = GM.store.get('onlineSeen', []), fresh = list.filter(g => !seen.includes(tag(g)));
