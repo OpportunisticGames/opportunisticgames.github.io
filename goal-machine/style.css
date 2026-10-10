@@ -3005,3 +3005,48 @@ body.calm .sc-portrait .ph, body.calm .sc-portrait .stamp, body.calm .sc-portrai
 .app-bar span { flex: 1; min-width: 0; }
 .app-bar .btn { white-space: nowrap; }
 .app-bar .icon-btn { color: #fff; background: transparent; border: 0; font-size: 1rem; padding: 4px; }
+/* 5.23: friend challenges – the ghost bar, the head-to-head, the chart, watch along, the rivalry page */
+.ch-ghost { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 10px; font-size: .85rem; }
+.ch-ghost .chg-line { font-size: .8rem; }
+.ch-ghost i { font-style: normal; font-weight: 800; } .ch-ghost i.up { color: var(--good); } .ch-ghost i.down { color: var(--bad); }
+.ch-ghost .chg-spoil { border: 0; background: rgba(0, 0, 0, .15); color: inherit; font: 600 .75rem Inter, sans-serif; padding: 3px 8px; border-radius: 999px; }
+.ch-hero { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding: 18px 12px; margin: 10px 0; border-radius: 18px; background: var(--card); border: 2px solid var(--line); }
+.ch-hero b { font: 700 1.4rem Oswald, sans-serif; } .ch-hero .ch-rec { font-size: 2rem; } .ch-hero small { color: var(--muted); }
+.ch-verdict { text-align: center; padding: 14px 10px; margin: 10px 0; border-radius: 18px; background: var(--card); border: 2px solid var(--line); }
+.ch-verdict > b { display: block; font: 700 1.3rem Oswald, sans-serif; margin-bottom: 6px; }
+.ch-verdict small { color: var(--muted); }
+.ch-scores { display: flex; justify-content: center; align-items: baseline; gap: 10px; font-size: .95rem; }
+.ch-scores b { font: 700 1.8rem Oswald, sans-serif; } .ch-scores i { color: var(--muted); font-style: normal; }
+.ch-scores .a b, .ch-legend .a { color: #3b82f6; } .ch-scores .b b, .ch-legend .b { color: #f97316; }
+.ch-chart { background: var(--card); border: 2px solid var(--line); border-radius: 16px; padding: 8px 8px 6px; }
+.ch-chart svg { display: block; width: 100%; height: auto; }
+.ch-chart .grid { stroke: var(--line); stroke-width: 1; } .ch-chart .ax { fill: var(--muted); font: 600 9px Inter, sans-serif; }
+.ch-chart .la, .ch-chart .lb { fill: none; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.ch-chart .la { stroke: #3b82f6; } .ch-chart .lb { stroke: #f97316; } .ch-chart .cx { fill: #facc15; stroke: var(--card); stroke-width: 2; }
+.ch-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; font: 700 .75rem Inter, sans-serif; margin-top: 4px; }
+.ch-legend span::before { content: ''; display: inline-block; width: 12px; height: 4px; border-radius: 2px; background: currentColor; margin-right: 5px; vertical-align: middle; }
+.ch-legend .c { color: var(--muted); } .ch-legend .c::before { width: 8px; height: 8px; border-radius: 50%; background: #facc15; }
+.ch-diffs { display: grid; gap: 6px; }
+.ch-diff { display: grid; gap: 2px; padding: 8px 10px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); font-size: .85rem; }
+.ch-diff small { color: var(--muted); font-weight: 700; } .ch-diff .win { color: var(--good); }
+.ch-xis { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.ch-xis th { text-align: left; color: var(--muted); font-size: .75rem; padding: 4px 6px; } .ch-xis td { padding: 5px 6px; border-top: 1px solid var(--line); }
+.ch-xis .pos { color: var(--muted); font-weight: 800; font-size: .75rem; width: 34px; } .ch-xis .win b { color: var(--good); }
+.ch-wild { display: flex; justify-content: space-between; gap: 10px; font-size: .85rem; margin: 8px 0; }
+.ch-table { display: grid; gap: 4px; }
+.ch-row { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); color: var(--text); text-decoration: none; }
+.ch-row small { color: var(--muted); } .ch-row .ch-score { margin-left: auto; font: 700 1.1rem Oswald, sans-serif; }
+.ch-row .ch-rank { width: 22px; text-align: center; font-weight: 800; color: var(--muted); }
+.ch-row.owner { border-color: var(--accent2); } .ch-row.live { border-style: dashed; }
+.ch-bubble { margin: 8px 0; padding: 10px 12px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); font-size: .9rem; }
+.ch-reacts { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.ch-bo3 { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; margin: 8px 0; border-radius: 14px; background: rgba(255, 210, 63, .12); border: 1px solid rgba(255, 210, 63, .4); }
+.ch-bo3 span { font: 700 1.1rem Oswald, sans-serif; }
+.ch-sent { display: grid; gap: 6px; text-align: center; padding: 12px; border-radius: 14px; background: var(--card); border: 2px solid var(--accent2); }
+.ch-sent small { color: var(--muted); }
+.ch-facts { display: grid; gap: 6px; margin: 8px 0; }
+.ch-facts a { display: grid; gap: 2px; padding: 10px 12px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); color: var(--text); text-decoration: none; }
+.ch-facts span { color: var(--muted); font-size: .85rem; }
+.ch-tally { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: rgba(255, 210, 63, .15); color: var(--text); font: 700 .72rem Inter, sans-serif; text-decoration: none; }
+.live-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--bad); margin-right: 4px; animation: live-blink 1.2s ease-in-out infinite; }
+@keyframes live-blink { 50% { opacity: .3; } }

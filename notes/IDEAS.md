@@ -23,7 +23,7 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
-### Challenges that come alive: their XI, what you did differently, both lines on one chart, a tally 💬 *(owner, 10 Oct 2026)*
+### Challenges that come alive: their XI, what you did differently, both lines on one chart, a tally ✅ 5.23 *(owner, 10 Oct 2026)*
 > "When you challenge a friend it should be more interactive right? Like show you their score and some details/maybe what
 > you did differently - maybe it could connect to your account too and there could be like a tally for beating friends
 > scores? … Maybe the two graphs could intersect to show how you both made different progress at different times"
@@ -45,6 +45,8 @@ optional "what they picked here", off for no spoilers); **reactions** after full
 sent with the result); **group challenges** (one link to many friends, a little table for that seed); **head-to-head
 picture** to share (both pitches + the crossing lines); **rivalry page** per friend (record, streaks, biggest comeback);
 **best of three** with a Rematch button.
+Owner: "Rematch button too of course! Can you add all those things!" + one release. Built in 5.23 (challenge.js;
+challenges / challenge_plays; inbox items cs/cf/cr/co/cm). Not counted in the weekly league; no new badge.
 
 ### CHAOS: readable pitch, a points chart, lasting damage and manager unlocks ✅ 5.20 *(owner, 3 Oct 2026)*
 > "colour code the cards … line chart of points … the black saturn with two glowing dots and the golden circle don't make

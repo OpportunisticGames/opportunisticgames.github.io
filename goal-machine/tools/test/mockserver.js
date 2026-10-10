@@ -17,7 +17,52 @@ module.exports = function makeServer() {
     r.status = 'done'; r.turn = null; r.result = { host: hp, guest: gp, winner: hp > gp ? 'host' : gp > hp ? 'guest' : 'draw' };
   };
   const view = r => ({ quick: !!r.quick, created: r.created, bids_in: Object.keys(r.secret || {}).filter(k => k === 'host' || k === 'guest'), code: r.code, kind: r.kind, variant: r.variant, stat: r.stat, seed: r.seed, host: r.host, guest: r.guest, moves: r.moves, race: r.race, turn: r.turn, status: r.status, result: r.result, seen: r.seen, now: now(), updated: r.updated });
+  // friend challenges (challenge_* in SQL)
+  const chs = {}, plays = []; let pid = 0;
+  const chName = (a) => auth(a.p_user, a.p_key) || (a.p_name && a.p_name.trim()) || 'A friend';
+  const chUser = (a) => auth(a.p_user, a.p_key) || null;
+  const tok = () => Math.random().toString(36).slice(2);
+  const chView = c => c && ({ ...c, now: new Date().toISOString(), plays: plays.filter(p => p.code === c.code).map(({ token, ...p }) => p).sort((a, b) => (b.owner - a.owner) || a.id - b.id),
+    chain: (() => { const out = []; let x = c; for (let i = 0; x && i < 20; i++) { out.unshift(x.code); x = chs[x.parent]; } return out; })() });
   const fns = {
+    challenge_create(a) {
+      const code = 'C' + String(Object.keys(chs).length + 1).padStart(5, '0'), u = chUser(a);
+      let to = null; const par = chs[a.p_parent];
+      if (par) to = par.owner_user !== u ? par.owner_user : (plays.filter(p => p.code === par.code && !p.owner && p.username && p.username !== u).pop() || {}).username || null;
+      chs[code] = { code, mode: a.p_mode, stat: a.p_stat, seed: a.p_seed, hard: !!a.p_hard, extreme: !!a.p_extreme, club: a.p_club, nat: a.p_nat, owner: chName(a), owner_user: u, parent: par ? par.code : null, to_user: to, created: new Date().toISOString() };
+      const p = { id: ++pid, code, name: chName(a), username: u, owner: true, status: 'done', score: a.p_score, total: a.p_total, game: a.p_game || {}, token: tok(), reaction: null, owner_reaction: null, finished: new Date().toISOString(), updated: new Date().toISOString() };
+      plays.push(p); return { code, play: p.id, token: p.token };
+    },
+    challenge_get: a => chView(chs[(a.p_code || '').toUpperCase()]) || null,
+    challenge_start(a) {
+      const c = chs[(a.p_code || '').toUpperCase()]; if (!c) return { error: 'no_challenge' };
+      const u = chUser(a);
+      if (u) { const p = plays.filter(x => x.code === c.code && x.username === u).sort((x, y) => x.owner - y.owner)[0]; if (p && (p.owner || p.status === 'done')) return { error: p.owner ? 'own' : 'played', play: p.id }; if (p) return { play: p.id, token: p.token }; }
+      const p = { id: ++pid, code: c.code, name: chName(a), username: u, owner: false, status: 'playing', score: null, total: null, game: {}, token: tok(), reaction: null, owner_reaction: null, started: new Date().toISOString(), updated: new Date().toISOString() };
+      plays.push(p); return { play: p.id, token: p.token };
+    },
+    challenge_progress(a) {
+      const p = plays.find(x => x.id === a.p_play && x.token === a.p_token); if (!p) return 'no_play'; if (p.status === 'done') return 'done';
+      Object.assign(p, { score: a.p_score, total: a.p_total, game: a.p_game || p.game, updated: new Date().toISOString() + Math.random(), status: a.p_done ? 'done' : 'playing', finished: a.p_done ? new Date().toISOString() : null }); return 'ok';
+    },
+    challenge_react(a) {
+      const p = plays.find(x => x.id === a.p_play); if (!p) return 'no_play';
+      if (p.token === a.p_token && !p.owner) { p.reaction = a.p_reaction; return 'ok'; }
+      if (plays.find(x => x.code === p.code && x.owner && x.token === a.p_token)) { p.owner_reaction = a.p_reaction; return 'ok'; }
+      return 'no_play';
+    },
+    challenge_history(a) {
+      const me = auth(a.p_user, a.p_key); if (!me) return [];
+      const out = [];
+      Object.values(chs).forEach(c => {
+        const o = plays.find(p => p.code === c.code && p.owner);
+        plays.filter(t => t.code === c.code && !t.owner && t.status === 'done' && t.username).forEach(t => {
+          if (o.username === me && t.username !== me) out.push({ code: c.code, mode: c.mode, stat: c.stat, parent: c.parent, at: t.finished, opp: t.username, mine: o.score, theirs: t.score, my_hist: o.game.prog, their_hist: t.game.prog });
+          else if (t.username === me && o.username && o.username !== me) out.push({ code: c.code, mode: c.mode, stat: c.stat, parent: c.parent, at: t.finished, opp: o.username, mine: t.score, theirs: o.score, my_hist: t.game.prog, their_hist: o.game.prog });
+        });
+      });
+      return out.reverse();
+    },
     claim_name: a => { const k = a.p_username.toLowerCase(); if (!players[k] && /fuck|shit/i.test(k)) return 'rude_name'; if (players[k] && players[k].key !== a.p_key) return 'taken'; players[k] = { username: a.p_username, key: a.p_key }; return 'ok'; }, name_available: a => /fuck|shit/i.test(a.p_username) ? null : !players[a.p_username.toLowerCase()], submit_score: a => 'ok',
     quick_match(a) {
       const u = auth(a.p_user, a.p_key); if (!u) return { error: 'auth' };
@@ -106,7 +151,7 @@ module.exports = function makeServer() {
     },
   };
   return {
-    rooms, fns, hiddenNames,
+    rooms, fns, hiddenNames, chs, plays,
     async attach(ctx) {
       await ctx.route('**/rest/v1/rpc/*', async route => {
         const fn = route.request().url().split('/rpc/')[1].split('?')[0], args = JSON.parse(route.request().postData() || '{}');
