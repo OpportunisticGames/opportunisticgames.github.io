@@ -38,6 +38,13 @@ Proposal (Claude):
    ("Bob beat your 512!"), a ⚔️ tally per friend (You 5–3 Bob) on the Friends tab, and a Rematch button.
 Questions: link-only (works without an account) or server (needed for the tally and notifications), or both? Count in
 the weekly league? A badge for it would need a new Play achievement, so not without the owner.
+Owner (10 Oct): "all of that sounds great" + "maybe the other person gets a notification so they can watch along?"
+More (Claude): **watch along live** (push "Joel's taking on your 512", a spectator view of their pitch filling up
+spin by spin, built on the Live Race feed); **ghost race** while you play (where you stand after the same spin, and an
+optional "what they picked here", off for no spoilers); **reactions** after full time (a few preset banter lines/emoji,
+sent with the result); **group challenges** (one link to many friends, a little table for that seed); **head-to-head
+picture** to share (both pitches + the crossing lines); **rivalry page** per friend (record, streaks, biggest comeback);
+**best of three** with a Rematch button.
 
 ### CHAOS: readable pitch, a points chart, lasting damage and manager unlocks ✅ 5.20 *(owner, 3 Oct 2026)*
 > "colour code the cards … line chart of points … the black saturn with two glowing dots and the golden circle don't make
