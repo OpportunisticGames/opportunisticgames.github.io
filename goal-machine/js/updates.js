@@ -21,7 +21,7 @@
         '🏟️ Send one link to the whole group and everyone who plays it lands in a table',
         '📜 Your record with each friend: a ⚔️ tally on the Friends tab and a rivalry page (record, streaks, best comebacks, the closest game)',
         '🖼️ Share the head-to-head as a picture',
-        '📋 Van Gaal: the reels now bring players for the positions you still need; his philosophy is about where you can put them (no more centre-backs up front at 80%)',
+        '📋 Van Gaal: the reels now bring players for the positions you still need; his philosophy is about where you can put them (no more centre-backs up front), and out of position a player now counts 85% (was 80%)',
       ],
     },
     {

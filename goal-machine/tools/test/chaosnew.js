@@ -116,7 +116,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   }
   ok(caps[0] >= 1.95 && caps[1] >= 1.45 && caps[1] < 1.55 && caps[2] >= 1.2 && caps[2] < 1.3, `©️ the armband passes down: ×${caps.join(', ×')}`);
 
-  // van Gaal: a striker can go in defence, at 80%
+  // van Gaal: a striker can go in defence, at 85%
   await game('vangaal', 'newchaos2');
   const vg = await pg.evaluate(() => {
     const S = GM.draft.state(), id = GM.players.findIndex(p => p.poss.join() === 'ST' && p.goals >= 40);
@@ -132,7 +132,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.evaluate(() => { const S = GM.draft.state(), i = S.xi.findIndex(x => x.pos === 'CB'); document.querySelector(`.slot[data-slot="${i}"]`).click(); });
   await pg.waitForTimeout(2600);
   const vgs = await pg.evaluate(id => GM.draft.state().xi.find(x => x.p === id), vg.id);
-  ok(vgs && vgs.pos === 'CB' && vgs.g === Math.floor(vg.g * 0.8), `out of position at centre-back he counts 80% (${vgs && vgs.g} of ${vg.g})`);
+  ok(vgs && vgs.pos === 'CB' && vgs.g === Math.floor(vg.g * 0.85), `out of position at centre-back he counts 85% (${vgs && vgs.g} of ${vg.g})`);
 
   // the manager sheet and the help mention keepers
   await pg.click('#dugout'); await pg.waitForTimeout(300);

@@ -357,7 +357,7 @@
     dyche: { icon: '🗿', name: 'Sean Dyche', perk: 'Solid: your XI +12%', catch: 'Calm down: the CHAOS meter fills at half speed',
       tw: { meterX: 0.5 },
       lines: x => [['🗿 Solid: XI +12%', 0.12 * x.slots.reduce((a, s) => a + s.g, 0)]] },
-    vangaal: { icon: '📋', name: 'Louis van Gaal', perk: 'Philosophy: any outfield player can play any outfield position (not on themed spins like a Centurion Throw)', catch: 'Out of position, a player counts 80%',
+    vangaal: { icon: '📋', name: 'Louis van Gaal', perk: 'Philosophy: any outfield player can play any outfield position (not on themed spins like a Centurion Throw)', catch: 'Out of position, a player counts 85%',
       lines: () => [] },  // both happen as you sign (canPlay, place)
     conte: { icon: '🔥', name: 'Antonio Conte', perk: 'Three at the back: centre-backs +40% (kick-off switches you to 3-4-3)', catch: 'Touchline fury: −8 for every wildcard you play',
       likes: p => p.poss.includes('CB'),
@@ -1565,7 +1565,7 @@
     let rant = false;
     if (mgrIs('warnock')) { rant = GM.rng(`${S.seed}|warnock|${S.spin}|${S.respins}`)() < 0.1; mult = rant ? 0 : mult * 1.15; }
     const outPos = !p.poss.includes(pos);
-    if (outPos) mult *= 0.8;  // van Gaal's philosophy
+    if (outPos) mult *= 0.85;  // van Gaal's philosophy (85%: balanced by tools/test/managers.js)
     const fergieTime = mgrIs('fergie') && emptySlots() === 1;
     if (fergieTime) mult *= 2;
     const both = S.club2 && bothSides(p);  // Matchday XI: played for both sides, double (on top of everything else)
@@ -1594,7 +1594,7 @@
     if (S.target && !S.rules.treble) setTimeout(() => GM.sound.play('rise', S.xi.reduce((a, x) => a + x.g, 0) / S.target), 180);
     if (both) setTimeout(() => GM.toast(`🤝 ${GM.esc(p.name)} played for both sides: <b>double points</b>`, 2600), 300);
     if (rant) setTimeout(() => { GM.toast(`🗯️ “It’s a conspiracy!” ${GM.esc(p.name)} <b>counts for nothing</b>`, 2800); GM.sound.play('boo'); }, 300);
-    else if (outPos && S.rules.chaos) setTimeout(() => GM.toast(`📋 ${GM.esc(p.name)} out of position: <b>80%</b>`, 2200), 300);
+    else if (outPos && S.rules.chaos) setTimeout(() => GM.toast(`📋 ${GM.esc(p.name)} out of position: <b>85%</b>`, 2200), 300);
     if (trio) setTimeout(() => { GM.toast(`🎩 Hat-trick! ${trio.map(q => GM.esc(q.name.split(' ').slice(-1)[0])).join(' + ')} = <b>${fmt(base[S.stat])}</b> ${S.st.label}${short ? ` – under ${HAT[S.stat]}, so <b>half</b>` : ''}`, 3400); GM.sound.play(short ? 'boo' : 'cheer'); }, 300);
     if (fergieTime && !rant) setTimeout(() => { GM.toast(`⌚ <b>Fergie time!</b> ${GM.esc(p.name)} counts double`, 2800); GM.sound.play('cheer'); }, 300);
     if (p.name === 'Sergio Agüero' && emptySlots() === 0) {  // 🤫 the last signing of the game
