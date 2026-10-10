@@ -3,6 +3,21 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.24 *(owner, 10 Oct 2026)*
+- A white vertical scroll line stayed on the right of Home in the app; you could drag it but nothing scrolled. Couldn't
+  reproduce in Chromium (no element on Home overflows), so on touch screens every scrollbar is now hidden in CSS
+  (`scrollbar-width: none` and `::-webkit-scrollbar`), which covers both the page's and any inner box's. If it's still
+  there, the next step is `setVerticalScrollBarEnabled(false)` on the WebView (needs an app build).
+- The Home banner was stuck on 5.10's Dodgy Owner: it only showed the `promo` list of the newest release that had one,
+  and nothing since 5.10 did. Now it shows the newest feature releases from the last three weeks (their own `promo`, or a
+  slide made from the release title and first item), a challenge waiting for you, and a different "Try today" game daily.
+
+- The W–D–L record on the Friends tab shrank and grew non-stop and stacked up: Moneyball's live red dot (5.8) was styled
+  as a global `.rec` (9px, pulsing), the same class as the record. Now scoped to `.mbl-head .rec`.
+- The CHAOS head-to-head only compared signings, but most of a CHAOS gap is elsewhere. New "Where the points came from":
+  the players' own numbers, wildcards and moments on players, team bonuses, moments and bonus spins, the manager (saved
+  with the game as `pts`; older games split into XI and bonuses), plus each side's biggest moments.
+
 ### Fixed in 5.23.2 *(owner, 10 Oct 2026)*
 - Someone took on the owner's challenge but there was no notification and nowhere in the app to find it. The push server
   only sent game, result and friend alerts, so every challenge alert (started, finished, reaction, rematch) was dropped

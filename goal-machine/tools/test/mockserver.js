@@ -18,7 +18,7 @@ module.exports = function makeServer() {
   };
   const view = r => ({ quick: !!r.quick, created: r.created, bids_in: Object.keys(r.secret || {}).filter(k => k === 'host' || k === 'guest'), code: r.code, kind: r.kind, variant: r.variant, stat: r.stat, seed: r.seed, host: r.host, guest: r.guest, moves: r.moves, race: r.race, turn: r.turn, status: r.status, result: r.result, seen: r.seen, now: now(), updated: r.updated });
   // friend challenges (challenge_* in SQL)
-  const chs = {}, plays = []; let pid = 0;
+  const chs = {}, plays = [], invites = []; let pid = 0;
   const chName = (a) => auth(a.p_user, a.p_key) || (a.p_name && a.p_name.trim()) || 'A friend';
   const chUser = (a) => auth(a.p_user, a.p_key) || null;
   const tok = () => Math.random().toString(36).slice(2);
@@ -51,6 +51,13 @@ module.exports = function makeServer() {
       if (plays.find(x => x.code === p.code && x.owner && x.token === a.p_token)) { p.owner_reaction = a.p_reaction; return 'ok'; }
       return 'no_play';
     },
+    challenge_send(a) {
+      const u = auth(a.p_user, a.p_key); if (!u) return { error: 'auth' };
+      const c = chs[(a.p_code || '').toUpperCase()]; if (!c || c.owner_user !== u) return { error: 'not_yours' };
+      let sent = 0;
+      (a.p_to || []).slice(0, 10).forEach(n => { const f = [...friends].find(x => x.toLowerCase() === (u + '|' + n).toLowerCase()); if (f && !invites.some(i => i.code === c.code && i.to === f.split('|')[1])) { invites.push({ code: c.code, to: f.split('|')[1], at: new Date().toISOString() }); sent++; } });
+      return { sent };
+    },
     challenge_mine(a) {
       const me = auth(a.p_user, a.p_key); if (!me) return [];
       const out = [];
@@ -58,9 +65,11 @@ module.exports = function makeServer() {
         const o = plays.find(p => p.code === c.code && p.owner), base = { code: c.code, mode: c.mode, stat: c.stat, hard: c.hard, extreme: c.extreme, club: c.club, nat: c.nat };
         const ts = plays.filter(t => t.code === c.code && !t.owner && t.score != null);
         if (o.username === me) {
-          if (!ts.length) out.push({ ...base, sent: true, opp: null, pid: null, status: 'waiting', mine: o.score, theirs: null, at: c.created });
+          if (!ts.length) out.push({ ...base, sent: true, opp: null, pid: null, status: 'waiting', mine: o.score, theirs: null, at: c.created, sent_to: invites.filter(i => i.code === c.code).map(i => i.to) });
           ts.forEach(t => out.push({ ...base, sent: true, opp: t.username || t.name, pid: t.id, status: t.status, mine: o.score, theirs: t.score, at: t.finished || t.started }));
         }
+        const inv = invites.find(i => i.code === c.code && i.to === me);
+        if ((inv || c.to_user === me) && !plays.some(p => p.code === c.code && p.username === me)) out.push({ ...base, sent: false, opp: c.owner, pid: null, status: 'invited', mine: null, theirs: o.score, at: inv ? inv.at : c.created });
         plays.filter(t => t.code === c.code && !t.owner && t.username === me && o.username !== me).forEach(t => out.push({ ...base, sent: false, opp: o.name, pid: t.id, status: t.status, mine: t.score, theirs: o.score, at: t.finished || t.started }));
       });
       return out.reverse();

@@ -131,6 +131,7 @@ async function playDraft(pg, each, last) {
   ok(await playDraft(A), 'Alice plays CHAOS');
   await A.waitForTimeout(800); await A.evaluate(() => document.querySelectorAll('.modal-wrap').forEach(m => m.remove()));
   await A.evaluate(() => { window._shared = null; document.getElementById('challenge').click(); }); await A.waitForTimeout(1500);
+  await A.evaluate(() => { const l = document.getElementById('chp-link'); if (l) l.click(); }); await A.waitForTimeout(300);  // she has friends now: the sheet, then a link
   const cc = (await A.evaluate(() => window._shared.u)).split('id=')[1];
   ok(server.plays.find(p => p.code === cc && p.owner).game.unit === 'pts', 'a CHAOS challenge counts points');
   await B.goto(U + '#/c?id=' + cc); await B.waitForTimeout(1200); await B.click('#ch-go'); await B.waitForTimeout(1500);
@@ -141,6 +142,9 @@ async function playDraft(pg, each, last) {
   ok(await playDraft(B, null, true), 'Bob plays the CHAOS challenge');
   await B.waitForSelector('.ch-verdict', { timeout: 8000 }).catch(() => {});
   ok(/pts/.test(await B.evaluate(() => (document.querySelector('.ch-verdict') || {}).textContent || '')) && (await B.$$('#ch-h2h polyline')).length === 2, 'and gets the CHAOS head-to-head in points');
+  const from = await B.evaluate(() => { const t = document.querySelector('#ch-h2h .ch-from'); if (!t) return null; const rows = [...t.querySelectorAll('tr')].slice(1).map(r => [...r.children].map(c => c.textContent.replace(/[^0-9−-]/g, ''))); return { n: rows.length, text: t.textContent, sums: rows.slice(0, -1).reduce((a, r) => [a[0] + +r[1], a[1] + +r[2]], [0, 0]), tot: rows[rows.length - 1].slice(1).map(Number) }; });
+  ok(from && from.n === 6 && /own PL numbers/.test(from.text) && /manager/.test(from.text) && from.sums[0] === from.tot[0] && from.sums[1] === from.tot[1], `🧮 where the points came from: players, wildcards & moments, team bonuses, bonus spins, the manager, adding up to each total (${from && JSON.stringify(from.sums)} = ${from && JSON.stringify(from.tot)})`);
+  await B.screenshot({ path: 'lay/ch_from.png', fullPage: true });
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();
 })();

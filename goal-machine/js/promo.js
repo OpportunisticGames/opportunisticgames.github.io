@@ -33,18 +33,44 @@
 
   /* ---------------------------------------------------------------- the slides */
   const NEWS_KEY = 'promoNews';
+  // the "Try today" slide: one of these each day
+  const TRY = [
+    { href: '#/draft?m=chaos&daily=1', icon: '🌪️', cls: 't-red', title: 'Daily CHAOS', sub: 'The same chaos for everyone today. One go – how many points can you get?' },
+    { href: '#/footle', icon: '🟩', cls: 't-green', title: 'Footle', sub: 'Guess today’s mystery player in six goes.' },
+    { href: '#/grid', icon: '#️⃣', cls: 't-navy', title: 'Club Grid', sub: 'Fill the grid with players who played for both clubs.' },
+    { href: '#/hilo', icon: '↕️', cls: 't-purple', title: 'Higher or Lower', sub: 'More PL goals or fewer? Keep the streak going.' },
+    { href: '#/whoami', icon: '🕵️', cls: 't-teal', title: 'Who Am I?', sub: 'Clue by clue: name the player in as few as you can.' },
+    { href: '#/tally', icon: '🔢', cls: 't-navy', title: 'Guess the Tally', sub: 'How many PL goals did he really score?' },
+    { href: '#/moneyball', icon: '💼', cls: 't-green', title: 'Moneyball', sub: 'Chairman for a season with £100m. Buy low, sell high.' },
+    { href: '#/owner', icon: '🕴️', cls: 't-navy', title: 'Dodgy Owner', sub: 'Buy a club, sack the coach, stay ahead of the investigators.' },
+    { href: '#/window', icon: '🔄', cls: 't-purple', title: 'Transfer Window', sub: 'Build your XI on a budget before the window shuts.' },
+    { href: '#/packs', icon: '🃏', cls: 't-teal', title: 'Packs', sub: 'Open a pack and see who walks out.' },
+    { href: '#/hopper', icon: '🦘', cls: 't-green', title: 'Club Hopper', sub: 'Hop from club to club through the players who played for both.' },
+    { href: '#/online', icon: '🎲', cls: 't-red', title: 'Quick match', sub: 'Play someone online in today’s game of the day.' },
+  ];
   function slides() {
     const out = [];
     const match = GM.matchBanner ? GM.matchBanner() : '', intl = GM.intlBanner ? GM.intlBanner() : '';
     if (match) out.push(match);
     if (intl) out.push(intl);
     const hrefs = new Set();
-    const latest = (GM.UPDATES || []).find(u => u.promo);
-    if (latest && recent(latest.date, FEATURE_DAYS)) latest.promo.forEach(p => {
-      hrefs.add(p.href);
-      out.push(`<a class="promo-card ${p.cls || 't-green'}" href="${p.href}"><span class="pcd-icon">${p.icon}</span>
-        <span class="pcd-text"><span class="pcd-kick">${p.kick || `✨ New in ${latest.label}`}</span><b>${GM.esc(p.title)}</b><small>${GM.esc(p.sub)}</small></span><span class="pcd-go">›</span></a>`);
+    const card = (p, kick) => { hrefs.add(p.href); return `<a class="promo-card ${p.cls || 't-green'}" href="${p.href}"><span class="pcd-icon">${p.icon}</span>
+        <span class="pcd-text"><span class="pcd-kick">${p.kick || kick}</span><b>${GM.esc(p.title)}</b><small>${GM.esc(p.sub)}</small></span><span class="pcd-go">›</span></a>`; };
+    // a challenge a friend sent you that you haven't played (remembered from the last check)
+    const inv = GM.store.get('chInvited', null);
+    if (inv && inv.code && recent(inv.at, 3)) out.push(card({ href: '#/c?id=' + inv.code, icon: '⚔️', cls: 't-red', kick: '⚔️ Waiting for you', title: `${inv.from} challenged you`, sub: `Same spins, beat ${inv.score}. Tap to take it on.` }));
+    // the newest feature releases (5.24, not 5.24.1) from the last three weeks: their own banner slides, or one made
+    // from the release itself, so the banner always shows what's new
+    const strip = t => String(t || '').replace(/^[^\p{L}\p{N}]+/u, '').trim();
+    const firstIcon = t => (String(t || '').match(/^\p{Extended_Pictographic}️?/u) || ['✨'])[0];
+    (GM.UPDATES || []).filter(u => /^\d+\.\d+$/.test(u.label) && recent(u.date, FEATURE_DAYS)).slice(0, 3).forEach((u, k) => {
+      const list = u.promo ? u.promo.slice(0, 2) : [{ href: '#/updates', icon: firstIcon(u.title), cls: ['t-green', 't-navy', 't-purple'][k % 3], title: strip(u.title), sub: strip((u.items || [])[0]).slice(0, 120) }];
+      list.forEach(p => out.push(card(p, `✨ New in ${u.label}`)));
     });
+    // and one game to try today, a different one each day
+    const day = Math.floor((Date.now() - new Date().getTimezoneOffset() * 6e4) / DAY);
+    const pick = TRY[day % TRY.length];
+    if (!hrefs.has(pick.href)) out.push(card({ ...pick, kick: '🎯 Try today' }));
     const news = (GM.store.get(NEWS_KEY, { list: [] }).list || []).filter(n => recent(n.created_at, NEWS_DAYS) && !hrefs.has(inApp(n.link)));
     news.forEach((n, i) => out.push(`<a class="promo-card news ${['t-navy', 't-purple', 't-teal'][i % 3]}" href="${GM.esc(inApp(n.link))}"><span class="pcd-icon">📣</span>
       <span class="pcd-text"><span class="pcd-kick">News</span><b>${GM.esc(n.title)}</b><small>${GM.esc(n.body || '')}</small></span><span class="pcd-go">›</span></a>`));

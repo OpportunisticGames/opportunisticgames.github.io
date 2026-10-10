@@ -74,6 +74,32 @@
       } catch (e) { return null; }
     },
 
+    // ⚔️ Challenge a friend: pick friends from the app (they get a notification) and/or send the link anywhere.
+    // Returns false when the challenge couldn't be saved (the draft then falls back to a plain link).
+    async send(S, sc, txt) {
+      const code = S.chCode || (S.chCode = await this.create(S, sc));
+      if (!code) return false;
+      let fr = [];
+      if (GM.account() && GM.lb.enabled) { try { fr = (await rpc('online_friends', auth())) || []; } catch (e) { fr = []; } }
+      if (!fr.length) { GM.share(txt, link(code)); return true; }
+      const sent = S.chSentTo || (S.chSentTo = []);
+      const m = GM.modal(`<h3 class="center">⚔️ Challenge a friend</h3><p class="muted center">Same spins, your score to beat: <b>${fmt(sc.total)}</b></p>
+        <div class="ch-pick">${fr.map(f => `<button class="${sent.includes(f.name) ? 'done' : ''}" data-f="${esc(f.name)}" ${sent.includes(f.name) ? 'disabled' : ''}>${GM.userPic(f.name)}<span>${esc(f.name)}</span><i>${sent.includes(f.name) ? '✓ sent' : ''}</i></button>`).join('')}</div>
+        <div class="actions col"><button class="btn" id="chp-send" disabled>⚔️ Send in the app</button><button class="btn ghost" id="chp-link">📤 Send a link instead</button><button class="btn ghost" data-close>Close</button></div>`);
+      const pick = new Set(), go = GM.$('#chp-send', m.el);
+      const label = () => { go.disabled = !pick.size; go.textContent = pick.size ? `⚔️ Send to ${pick.size === 1 ? [...pick][0] : pick.size + ' friends'}` : '⚔️ Send in the app'; };
+      GM.$$('[data-f]', m.el).forEach(b => b.onclick = () => { const n = b.dataset.f; if (pick.has(n)) pick.delete(n); else pick.add(n); b.classList.toggle('on', pick.has(n)); GM.buzz(15); label(); });
+      GM.$('#chp-link', m.el).onclick = () => { m.close(); GM.share(txt, link(code)); };
+      go.onclick = async () => {
+        go.disabled = true; go.textContent = 'Sending…';
+        let r = null; try { r = await rpc('challenge_send', { ...auth(), p_code: code, p_to: [...pick] }); } catch (e) { r = null; }
+        if (!r || r.error) { GM.toast('Couldn’t send it – check your connection, or send a link'); label(); return; }
+        sent.push(...pick); m.close();
+        GM.toast(`⚔️ Sent to <b>${esc([...pick].join(', '))}</b> – they’ll get a notification`, 2800); GM.sound.play('whistle');
+      };
+      return true;
+    },
+
     // after each signing (and at full time): your progress, for the challenger watching along and for the result
     progress(S, sc, done) {
       const c = S.ch; if (!c || !c.play || !GM.lb.enabled) return;
@@ -134,12 +160,17 @@
       if (!rows) return;
       const tag = r => `${r.code}:${r.pid || 0}:${r.status}`, seen = GM.store.get('chSeen', null);
       if (!seen) { GM.store.set('chSeen', rows.map(tag).slice(0, 150)); return; }  // first look: nothing old pops up
-      const fresh = rows.filter(r => r.sent && r.pid && !seen.includes(tag(r)) && Date.now() - Date.parse(r.at) < 3 * 864e5);
+      const fresh = rows.filter(r => ((r.sent && r.pid) || r.status === 'invited') && !seen.includes(tag(r)) && Date.now() - Date.parse(r.at) < 3 * 864e5);
       GM.store.set('chSeen', [...rows.map(tag), ...seen].filter((x, i, a) => a.indexOf(x) === i).slice(0, 150));
+      // the newest challenge waiting for you goes on the Home banner too
+      const w = rows.find(x => x.status === 'invited');
+      GM.store.set('chInvited', w ? { code: w.code, from: w.opp, score: fmt(w.theirs), at: w.at } : null);
       const r = fresh[0];
       if (!r || location.hash.includes('id=' + r.code)) return;
       const won = r.mine > r.theirs, mn = esc(modeName(r));
-      GM.notice(r.status === 'done'
+      GM.notice(r.status === 'invited'
+        ? { pic: GM.userPic(r.opp || '?'), title: `⚔️ ${esc(r.opp)} challenged you`, sub: `${mn} · beat ${fmt(r.theirs)} · tap to take it on`, href: rowHref(r), ms: 8000 }
+        : r.status === 'done'
         ? { pic: GM.userPic(r.opp || '?'), title: won ? `🛡️ You held off ${esc(r.opp)}` : r.mine < r.theirs ? `😱 ${esc(r.opp)} beat your score` : `🤝 ${esc(r.opp)} matched your score`, sub: `${fmt(r.theirs)} v your ${fmt(r.mine)} · ${mn} · tap to see how`, href: rowHref(r), ms: 8000 }
         : { pic: GM.userPic(r.opp || '?'), title: `👀 ${esc(r.opp)}’s taking on your challenge`, sub: `${mn} · tap to watch along`, href: rowHref(r), ms: 8000 });
     },
@@ -227,6 +258,25 @@
     if (iAmOwner) return { a: owner, b: p, you: 'a', token: l && l.own ? l.token : null, target: p.id, owner: true };
     return { a: p, b: owner, you: null, token: null, target: p.id };
   }
+  // 🧮 where the points came from: not just who you signed. In CHAOS: the players' own numbers, what wildcards and
+  // moments did to them, team bonuses, moments and bonus spins, the manager (older games: the XI and the bonuses)
+  function pointsFrom(A, B, an, bn) {
+    if (A.score == null || B.score == null || A.total == null || B.total == null || A.score === A.total && B.score === B.total) return '';
+    const pa = (A.game || {}).pts, pb = (B.game || {}).pts;
+    const rows = pa && pb
+      ? [['⚽ Their own PL numbers', pa.raw, pb.raw, 'what your players scored in real life'], ['🃏 Wildcards & moments on players', pa.on, pb.on, 'captains, doubles, injuries, halvings…'],
+         ['⭐ Team bonuses', pa.team, pb.team, 'chemistry, rating, titles, legends…'], ['🎲 Moments & bonus spins', pa.ev, pb.ev, 'TV money, VAR, the streaker…'], ['👔 The manager', pa.mgr, pb.mgr, '']]
+      : [['⚽ Your XI', A.total, B.total, 'the players’ numbers after everything'], ['⭐ Bonus points', A.score - A.total, B.score - B.total, 'team bonuses, moments, the manager']];
+    const big = rows.slice().sort((x, y) => Math.abs(y[1] - y[2]) - Math.abs(x[1] - x[2]))[0];
+    const d = big[1] - big[2], who = d > 0 ? an : bn;
+    const luck = (p, name) => p && (p.hits.length || p.bon.length) ? `<div class="ch-luck"><small>${esc(name)}</small>${p.hits.slice(0, 2).map(h => `<span>${esc(h[1])}: ${esc(h[0])} <b class="${h[2] < 0 ? 'neg' : 'pos'}">${h[2] > 0 ? '+' : '−'}${fmt(Math.abs(h[2]))}</b></span>`).join('')}${p.bon.slice(0, 2).map(b => `<span>${esc(b[0])} <b class="${b[1] < 0 ? 'neg' : 'pos'}">${b[1] > 0 ? '+' : '−'}${fmt(Math.abs(b[1]))}</b></span>`).join('')}</div>` : '';
+    return `<h3 class="section-title">🧮 Where the points came from</h3>
+      <table class="ch-xis ch-from"><tr><th></th><th>${esc(an)}</th><th>${esc(bn)}</th></tr>
+      ${rows.map(r => `<tr><td>${r[0]}${r[3] ? `<small>${r[3]}</small>` : ''}</td><td class="${r[1] > r[2] ? 'win' : ''}">${r[1] > r[2] ? '<b>' + fmt(r[1]) + '</b>' : fmt(r[1])}</td><td class="${r[2] > r[1] ? 'win' : ''}">${r[2] > r[1] ? '<b>' + fmt(r[2]) + '</b>' : fmt(r[2])}</td></tr>`).join('')}
+      <tr class="tot"><td>Total</td><td>${fmt(A.score)}</td><td>${fmt(B.score)}</td></tr></table>
+      ${d ? `<p class="muted small center">The biggest gap: <b>${big[0].replace(/^\S+\s/, '').toLowerCase()}</b>, ${fmt(Math.abs(d))} to ${esc(who)}.</p>` : ''}
+      ${luck(pa, an) || luck(pb, bn) ? `<div class="ch-lucks"><small class="muted">🍀 The luck of the draw</small>${luck(pa, an)}${luck(pb, bn)}</div>` : ''}`;
+  }
   function h2h(el, ch, playId, fresh) {
     const sd = sides(ch, playId), A = sd.a, B = sd.b, unit = unitOf(A);
     if (!B || A === B) { el.innerHTML = '<p class="muted center">Nobody’s taken this one on yet.</p>'; return; }
@@ -239,6 +289,7 @@
       <div id="ch-bo3"></div>
       ${reactIn ? `<div class="ch-bubble">💬 <b>${esc(bn)}</b>: ${esc(reactIn)}</div>` : ''}
       <h3 class="section-title">📈 How it went</h3>${chartSvg(ga.prog, gb.prog, an, bn)}<p class="muted small center">${story(ga.prog, gb.prog, an, bn)}</p>
+      ${pointsFrom(A, B, an, bn)}
       ${diffs(ga.picks, gb.picks, an, bn, ga.mgr !== gb.mgr && (ga.mgr || gb.mgr) ? [ga.mgr, gb.mgr] : null)}
       <h3 class="section-title">🆚 The XIs</h3>${xis(ga, gb, an, bn)}
       ${(ga.wild || []).length || (gb.wild || []).length ? `<p class="ch-wild"><span>${esc(an)}: ${(ga.wild || []).join(' ') || 'no wildcards'}</span><span>${esc(bn)}: ${(gb.wild || []).join(' ') || 'no wildcards'}</span></p>` : ''}
@@ -418,10 +469,12 @@
   const rowHref = r => `#/c?id=${r.code}${r.pid ? (r.status === 'playing' && r.sent ? '&watch=' : '&p=') + r.pid : ''}`;
   function rowHtml(r) {
     const d = (r.mine || 0) - (r.theirs || 0), done = r.status === 'done';
-    const icon = !r.pid ? '📤' : !done ? '👀' : d > 0 ? '✅' : d < 0 ? '❌' : '🤝';
-    const who = !r.pid ? 'Waiting for a taker' : esc(r.opp);
-    const sub = `${!r.pid ? 'You sent it' : r.sent ? 'Took on yours' : 'You took on theirs'} · ${!done && r.pid ? (r.sent ? '<b class="live">playing now – watch</b>' : 'not finished') : new Date(r.at).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}<br>${esc(modeName(r))}`;
-    const score = !r.pid ? fmt(r.mine) : done ? `${fmt(r.mine)}–${fmt(r.theirs)}` : `${fmt(r.theirs || 0)}…`;
+    const inv = r.status === 'invited';
+    const icon = inv ? '⚔️' : !r.pid ? '📤' : !done ? '👀' : d > 0 ? '✅' : d < 0 ? '❌' : '🤝';
+    const who = inv ? esc(r.opp) : !r.pid ? ((r.sent_to || []).length ? 'Sent to ' + esc(r.sent_to.join(', ')) : 'Waiting for a taker') : esc(r.opp);
+    const when = new Date(r.at).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    const sub = `${inv ? '<b class="live">Challenged you – take it on</b>' : !r.pid ? 'You sent it' : r.sent ? 'Took on yours' : 'You took on theirs'} · ${!inv && !done && r.pid ? (r.sent ? '<b class="live">playing now – watch</b>' : 'not finished') : when}<br>${esc(modeName(r))}`;
+    const score = inv ? `beat ${fmt(r.theirs)}` : !r.pid ? fmt(r.mine) : done ? `${fmt(r.mine)}–${fmt(r.theirs)}` : `${fmt(r.theirs || 0)}…`;
     return `<a class="ch-row ch-mine ${done ? '' : 'live'}" href="${rowHref(r)}"><span class="ch-rank">${icon}</span><span class="ch-who">${r.opp ? GM.userPic(r.opp) : ''}<span><b>${who}</b><small>${sub}</small></span></span><span class="ch-score">${score}</span></a>`;
   }
   async function listPage(app) {
