@@ -23,6 +23,33 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### Nationalities and countries *(owner, 10 Oct 2026)*
+- **Owner's words:** "Something about player's nationality and teams. Like best player to play for every country etc etc
+  idk something around all that"
+- **We already have:** every player's nationality, the International XI (`#/nations`, 32 countries, in international
+  breaks only), nationality as a Footle clue.
+- **Our ideas to talk through:**
+  1. **World Map / Around the World** (collect): a map of every country that's sent a PL player. Sign a player in any
+     draft and his country lights up; each country shows its best-ever PL player (most goals/apps). A completion %,
+     badges for continents, and "rare" countries worth more (one PL player ever).
+  2. **Best of each country** (a quiz): "Who's Norway's top PL scorer?" Pick from four, or type it. A daily one too.
+  3. **Nation Grid**: Club Grid with countries on one side (played for Arsenal and is French).
+  4. **United Nations XI** (a draft mode): eleven players, eleven different countries. A bonus for each continent covered.
+  5. **Country v Country**: two nations' best PL XIs side by side (Brazil v Argentina), and you pick who wins each position.
+  6. A CHAOS wildcard or moment: "Passport Office", a spin of players from one random country.
+- **Questions:** which of these grabs you? Collecting (1), quizzing (2, 3) or a new draft (4)? Should the International
+  XI be playable all year, not just in breaks?
+- **Owner (10 Oct):** "I like passport office that's funny. But i was more thinking like with the cards and stuff."
+  So: packs and the Album. Our thoughts for the card side:
+  - **Nation packs**: a pack of five from one country (a flag on the wrapper), and a rare "World XI" pack.
+  - **Country sets in the Album**: collect a country's best five or eleven (e.g. 🇳🇴 Norway: Solskjær, Riise, Flo, Carew,
+    Haaland) for a set badge and a reward pack. Small countries are quick sets; Brazil and France are long ones.
+  - **A flag on every card**, and a "foil" finish for the best-ever PL player from that country (the country's
+    "No. 1" card: one per country, so 100+ to hunt).
+  - **Packed XI by nation**: build an XI from your cards with a bonus for teammates from the same country (chemistry).
+  - **Passport Office** in CHAOS (a free spin of one random country's players) can come along with it.
+  - Question: which of these first? Sets + No. 1 cards feel like the heart of it.
+
 ### Challenge app friends, not just by link ✅ 5.24 *(owner, 10 Oct 2026)*
 - "When you go to challenge a friend, it would be ideal if you could challenge a friend in app too right? Like you could
   challenge one of your app friends as well as being able to send a link."

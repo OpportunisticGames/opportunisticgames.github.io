@@ -3,6 +3,11 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.24.1 *(owner, 11 Oct 2026)*
+- The scroll lines were still there after 5.24's CSS: they're the Android WebView's own scrollbars (drawn by the app,
+  not the page), one for the page and a stray one. MainActivity now turns them off (`setVerticalScrollBarEnabled(false)`,
+  horizontal too). Needs the new app build.
+
 ### Fixed in 5.24 *(owner, 10 Oct 2026)*
 - A white vertical scroll line stayed on the right of Home in the app; you could drag it but nothing scrolled. Couldn't
   reproduce in Chromium (no element on Home overflows), so on touch screens every scrollbar is now hidden in CSS

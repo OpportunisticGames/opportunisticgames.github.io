@@ -9,6 +9,12 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 76, label: '5.24.1', date: '2026-10-11', title: '🧹 No more scroll line',
+      items: [
+        '🧹 The app no longer draws a scroll line down the right of the screen (update the app from Google Play)',
+      ],
+    },
+    {
       v: 75, label: '5.24', date: '2026-10-10', title: '⚔️ Challenge friends in the app',
       promo: [
         { href: '#/challenges', icon: '⚔️', cls: 't-red', title: 'Challenge your friends', sub: 'Finish a draft, tap ⚔️ Challenge a friend and pick your mates. They get a notification.' },
