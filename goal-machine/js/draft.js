@@ -632,7 +632,9 @@
   // (not on a themed spin like a Centurion Throw: a 100-goal striker at centre-back with a Hat-Trick Hero was far too much)
   const themed = () => !!(S.special && WILDCARDS[S.special] && WILDCARDS[S.special].filter);
   const canPlay = (p, pos) => p.poss.includes(pos) || (mgrIs('vangaal') && pos !== 'GK' && p.pos !== 'G' && !themed());
-  const fits = (p, open) => open.some(pos => canPlay(p, pos));
+  // who goes on the reels: players for the positions you still need, in their own positions (van Gaal's philosophy is
+  // about where you can put them, not who turns up: otherwise late on the reels filled with defenders for your strikers)
+  const fits = (p, open) => open.some(pos => p.poss.includes(pos));
   const emptySlots = () => S.xi.filter(s => s.p == null).length;
   const fmt = n => n.toLocaleString();
   const signed = n => (n < 0 ? '−' : '+') + Math.abs(n).toLocaleString();
@@ -1717,7 +1719,7 @@
         idx.forEach(i => { S.xi[i].pos = w === 'gegenpress' ? 'ST' : 'CB'; });
         if (w === 'bus' && S.rules.chaos) S.bus = true;  // and it stays parked in front of your goal
         GM.toast(w === 'gegenpress' ? `⚡ Gegenpress! ${idx.length} midfield slot${idx.length > 1 ? 's' : ''} → strikers` : `🚌 Bus parked: ${idx.length} slot${idx.length > 1 ? 's' : ''} → defence`);
-        if (S.phase === 'pick' && !S.reels.some(x => x.wild || fits(byId(x.id), openPos()))) { S.respins++; S.spinRespins = (S.spinRespins || 0) + 1; consume(); doSpin(); return; }
+        if (S.phase === 'pick' && !S.reels.some(x => x.wild || openPos().some(pos => canPlay(byId(x.id), pos)))) { S.respins++; S.spinRespins = (S.spinRespins || 0) + 1; consume(); doSpin(); return; }
         break;
       }
     }
