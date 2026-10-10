@@ -11,6 +11,8 @@
     {
       v: 72, label: '5.23', date: '2026-10-10', title: '⚔️ Challenges come alive',
       items: [
+        '🔥 CHALLENGE MODE: a versus card and a 3-2-1 countdown, red-and-black colours, the tense Head to Head music, a cheer when you go ahead (and a groan when they’re back in front), and on your last signing exactly what you need to win',
+        '👔 CHAOS challenges offer you the same three managers your friend had, and the head-to-head shows if you went with different ones',
         '⚔️ Challenge a friend now sends your whole game: they get the same spins, see your score, and a bar shows where they stand against you after the same number of signings (with an optional peek at what you signed next)',
         '👀 Watch along: when a friend takes on your challenge you get a notification and can watch their XI fill up live, their line against yours',
         '📈 At full time, the head-to-head: both XIs side by side, both lines on one chart (crossing where the lead changed hands), the signings where you went different ways, and your wildcards against theirs',

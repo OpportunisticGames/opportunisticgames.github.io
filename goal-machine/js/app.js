@@ -76,6 +76,7 @@
 
   GM.NEW_MODES = ['chaos', 'auction'];
   function route() {
+    document.body.classList.remove('ch-mode');  // (a challenge game puts it back)
     const { path, q } = parseHash();
     const tried = path === 'draft' ? q.m : path;
     GM.triedGame(tried);  // opening a game clears its NEW / UPDATED tag
@@ -96,7 +97,7 @@
       b.textContent = n; b.hidden = !n;
       if (GM.online && GM.online.check) GM.online.check();
     }
-    GM.sound.scene(path === 'draft' && /^chaos/.test(q.m || '') ? 'chaos' : path);  // each game area has its own music (CHAOS has Mayhem)
+    GM.sound.scene(path === 'draft' && /^chaos/.test(q.m || '') ? 'chaos' : path === 'draft' && q.ch ? 'h2h' : path);  // (a friend's challenge: the tense one)  // each game area has its own music (CHAOS has Mayhem)
     GM.chaosLook(path === 'draft' && /^chaos/.test(q.m || ''));
     GM.moneyLook(path === 'moneyball');
     GM.ownerLook(path === 'owner' || path === 'reign');

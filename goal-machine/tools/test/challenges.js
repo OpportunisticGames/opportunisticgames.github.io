@@ -55,7 +55,10 @@ async function playDraft(pg, each, last) {
   const land = await B.textContent('#app');
   ok(/Alice challenges you/.test(land) && land.includes(owner.score.toLocaleString()), 'Bob sees who challenged him and the score to beat');
   await B.screenshot({ path: 'lay/ch_landing.png' });
-  await B.click('#ch-go'); await B.waitForTimeout(1500);
+  await B.click('#ch-go'); await B.waitForTimeout(900);
+  const intro = await B.evaluate(() => ({ card: (document.querySelector('.ch-intro') || {}).textContent || '', mode: document.body.classList.contains('ch-mode'), pill: !!document.querySelector('.ch-pill') }));
+  ok(/CHALLENGE MODE/.test(intro.card) && /Alice/.test(intro.card) && intro.mode && intro.pill, 'CHALLENGE MODE: a versus card and countdown, its own look while you play');
+  await B.screenshot({ path: 'lay/ch_intro.png' }); await B.waitForTimeout(2800);
   ok(/seed=chal-1/.test(await B.evaluate(() => location.hash)), 'Take it on: the same spins (same seed)');
   // the ghost bar after a few signings, and Alice watching along
   let ghost = '', watched = false;
@@ -131,6 +134,10 @@ async function playDraft(pg, each, last) {
   const cc = (await A.evaluate(() => window._shared.u)).split('id=')[1];
   ok(server.plays.find(p => p.code === cc && p.owner).game.unit === 'pts', 'a CHAOS challenge counts points');
   await B.goto(U + '#/c?id=' + cc); await B.waitForTimeout(1200); await B.click('#ch-go'); await B.waitForTimeout(1500);
+  await B.waitForSelector('.cm [data-mgr]', { timeout: 8000 }).catch(() => {});
+  const offers = await B.evaluate(() => [...document.querySelectorAll('.cm [data-mgr]')].map(b => b.dataset.mgr).join());
+  const aOffer = (server.plays.find(p => p.code === cc && p.owner).game.mgrOffer || []).join();
+  ok(offers && offers === aOffer, `the same three managers on offer as Alice had (${offers})`);
   ok(await playDraft(B, null, true), 'Bob plays the CHAOS challenge');
   await B.waitForSelector('.ch-verdict', { timeout: 8000 }).catch(() => {});
   ok(/pts/.test(await B.evaluate(() => (document.querySelector('.ch-verdict') || {}).textContent || '')) && (await B.$$('#ch-h2h polyline')).length === 2, 'and gets the CHAOS head-to-head in points');

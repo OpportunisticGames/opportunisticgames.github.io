@@ -27,7 +27,37 @@
   GM.challenge = {
     link,
     // the challenge you're taking on, for the draft (draft.js keeps it on the game as S.ch)
-    ctx(code) { const c = local(code); return c && c.play ? { code, play: c.play, token: c.token, name: c.oppName, score: c.oppScore, prog: c.oppProg || [], picks: c.oppPicks || [], unit: c.unit } : null; },
+    ctx(code) { const c = local(code); return c && c.play ? { code, play: c.play, token: c.token, name: c.oppName, score: c.oppScore, prog: c.oppProg || [], picks: c.oppPicks || [], unit: c.unit, mgrOffer: c.mgrOffer || null } : null; },
+
+    // CHALLENGE MODE: a versus card and a countdown before the first spin
+    intro(S) {
+      const c = S.ch, el = document.createElement('div');
+      el.className = 'ch-intro';
+      el.innerHTML = `<div class="chi-card"><div class="chi-tag">⚔️ CHALLENGE MODE</div>
+        <div class="chi-vs"><span>${GM.userPic ? GM.userPic(GM.getName() || 'You', 'xl') : ''}<b>You</b></span><i>V</i><span>${GM.userPic ? GM.userPic(c.name, 'xl') : ''}<b>${esc(c.name)}</b></span></div>
+        <div class="chi-goal">Beat <b>${fmt(c.score)}</b> ${esc(c.unit || '')}</div><div class="chi-count">3</div><small>Same spins they had · tap to skip</small></div>`;
+      document.body.appendChild(el);
+      GM.sound.play('drumroll'); GM.buzz(40);
+      const n = el.querySelector('.chi-count'), timers = [];
+      const go = () => { timers.forEach(clearTimeout); if (!el.isConnected) return; el.classList.add('out'); setTimeout(() => el.remove(), 400); };
+      [2, 1].forEach((k, i) => timers.push(setTimeout(() => { n.textContent = k; n.classList.remove('pop'); void n.offsetWidth; n.classList.add('pop'); GM.sound.play('tick'); }, 800 * (i + 1))));
+      timers.push(setTimeout(() => { n.textContent = 'GO!'; n.classList.add('go'); GM.sound.play('whistle'); GM.buzz(80); }, 2400));
+      timers.push(setTimeout(go, 3200));
+      el.onclick = go;
+      window.addEventListener('hashchange', go, { once: true });
+    },
+    // the lead changing hands as you sign: a cheer when you go ahead, a groan when they're back in front
+    leadCheck(S, n) {
+      const c = S.ch, d = at(S.prog, n) - at(c.prog, n), was = S.chLead || 0, now = Math.sign(d);
+      if (now && now !== was) {
+        if (was) {
+          GM.toast(now > 0 ? `📈 <b>You’ve gone ahead</b> of ${esc(c.name)}!` : `📉 <b>${esc(c.name)}’s back in front</b>`, 2200);
+          GM.sound.play(now > 0 ? 'cheer' : 'groan'); GM.buzz(now > 0 ? 60 : 120);
+          S.chFlash = Date.now();
+        }
+        S.chLead = now;
+      }
+    },
 
     /** Send a challenge from a finished game (parent: the challenge this is a rematch of). Resolves the code, or null. */
     async create(S, sc, parent) {
@@ -57,7 +87,9 @@
     ghostHtml(S) {
       const c = S.ch, n = S.xi.filter(x => x.p != null).length, mine = at(S.prog, n), theirs = at(c.prog, n), d = mine - theirs;
       const spoil = GM.store.get('chspoil', false), next = (c.picks || [])[n];
-      return `<div class="banner ch-ghost">⚔️ <b>${esc(c.name)}</b> scored <b>${fmt(c.score)}</b>
+      const left = S.xi.filter(x => x.p == null).length, need = c.score - mine;
+      const last = left === 1 && S.phase !== 'done' && (S.rules.max || S.rules.chaos) ? `<span class="chg-last">${need > 0 ? `🎯 Last signing: you need <b>${fmt(need + 1)}</b> to win` : '🛡️ Last signing: you’re ahead – hold on!'}</span>` : '';
+      return `<div class="banner ch-ghost ${S.chFlash && Date.now() - S.chFlash < 1500 ? 'flash' : ''} ${d < 0 ? 'behind' : ''}">⚔️ <b>${esc(c.name)}</b> scored <b>${fmt(c.score)}</b>${last}
         ${n ? `<span class="chg-line">After ${n} signing${n > 1 ? 's' : ''}: you <b>${fmt(mine)}</b> · ${esc(c.name)} <b>${fmt(theirs)}</b> <i class="${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '+' : '−'}${fmt(Math.abs(d))}</i></span>` : ''}
         ${next ? `<button class="chg-spoil" onclick="GM.challenge.toggleSpoil()">${spoil ? `👀 They signed <b>${esc(next[2])}</b> next (${esc(next[3])}, ${fmt(next[4])})` : '👀 What did they sign next?'}</button>` : ''}</div>`;
     },
@@ -108,7 +140,7 @@
       await (this._done || Promise.resolve()).catch(() => {});  // your full-time score first
       let ch = null; try { ch = await rpc('challenge_get', { p_code: code }); } catch (e) { /* offline */ }
       if (!ch) { el.innerHTML = '<p class="muted center">The head-to-head will be here when you’re back online.</p>'; return; }
-      h2h(el, ch, playId);
+      h2h(el, ch, playId, true);
     },
   };
 
@@ -143,7 +175,7 @@
     if (r.error === 'own') return GM.toast('That’s your own challenge – send it to a friend!');
     if (r.error === 'played') { location.hash = `#/c?id=${ch.code}&p=${r.play}`; return; }
     if (r.error) return GM.toast(r.error === 'full' ? 'That challenge is full' : 'Couldn’t start the challenge');
-    GM.store.set('ch:' + ch.code, { play: r.play, token: r.token, oppName: owner.name, oppScore: owner.score, oppProg: owner.game.prog || [], oppPicks: owner.game.picks || [], unit: unitOf(owner) });
+    GM.store.set('ch:' + ch.code, { play: r.play, token: r.token, oppName: owner.name, oppScore: owner.score, oppProg: owner.game.prog || [], oppPicks: owner.game.picks || [], unit: unitOf(owner), mgrOffer: owner.game.mgrOffer || null });
     location.hash = draftUrl(ch, `&ch=${ch.code}&vs=${enc(owner.name)}&vss=${owner.score}`);
   }
 
@@ -160,7 +192,7 @@
     if (iAmOwner) return { a: owner, b: p, you: 'a', token: l && l.own ? l.token : null, target: p.id, owner: true };
     return { a: p, b: owner, you: null, token: null, target: p.id };
   }
-  function h2h(el, ch, playId) {
+  function h2h(el, ch, playId, fresh) {
     const sd = sides(ch, playId), A = sd.a, B = sd.b, unit = unitOf(A);
     if (!B || A === B) { el.innerHTML = '<p class="muted center">Nobody’s taken this one on yet.</p>'; return; }
     const an = sd.you ? 'You' : A.name, bn = B.name, ga = A.game || {}, gb = B.game || {};
@@ -172,10 +204,10 @@
       <div id="ch-bo3"></div>
       ${reactIn ? `<div class="ch-bubble">💬 <b>${esc(bn)}</b>: ${esc(reactIn)}</div>` : ''}
       <h3 class="section-title">📈 How it went</h3>${chartSvg(ga.prog, gb.prog, an, bn)}<p class="muted small center">${story(ga.prog, gb.prog, an, bn)}</p>
-      ${diffs(ga.picks, gb.picks, an, bn)}
+      ${diffs(ga.picks, gb.picks, an, bn, ga.mgr !== gb.mgr && (ga.mgr || gb.mgr) ? [ga.mgr, gb.mgr] : null)}
       <h3 class="section-title">🆚 The XIs</h3>${xis(ga, gb, an, bn)}
       ${(ga.wild || []).length || (gb.wild || []).length ? `<p class="ch-wild"><span>${esc(an)}: ${(ga.wild || []).join(' ') || 'no wildcards'}</span><span>${esc(bn)}: ${(gb.wild || []).join(' ') || 'no wildcards'}</span></p>` : ''}
-      ${ga.mgr || gb.mgr ? `<p class="ch-wild"><span>👔 ${esc(ga.mgr || '–')}</span><span>👔 ${esc(gb.mgr || '–')}</span></p>` : ''}
+      ${ga.mgr && ga.mgr === gb.mgr ? `<p class="ch-wild"><span>👔 Both went with ${esc(ga.mgr)}</span></p>` : ''}
       ${groupTable(ch)}
       ${sd.token ? `<h3 class="section-title">💬 Say something</h3><div class="ch-reacts">${REACTS.map(r => `<button class="btn small ghost" data-react="${esc(r)}">${esc(r)}</button>`).join('')}</div>` : ''}
       <div class="actions col">
@@ -193,6 +225,24 @@
     if (rm) rm.onclick = () => { location.hash = draftUrl({ ...ch, seed: 'rm' + Date.now().toString(36) }, `&rm=${ch.code}`); };
     GM.$('#ch-pic', el).onclick = () => GM.shareImage(picture(ch, A, B, an, bn), `⚽ Goal Machine – ${an === 'You' ? (GM.getName() || 'Me') : an} ${fmt(A.score)} v ${fmt(B.score)} ${bn}`);
     bestOf(GM.$('#ch-bo3', el), ch, A.name, B.name, sd.you);
+    if (fresh && !live) reveal(el, A.score, B.score, v);
+  }
+  // the final whistle on your own result: both scores count up, then the verdict lands (confetti if you won)
+  function reveal(el, a, b, v) {
+    const box = GM.$('.ch-verdict', el); if (!box) return;
+    const [na, nb] = [GM.$('.ch-scores .a b', box), GM.$('.ch-scores .b b', box)], head = box.querySelector(':scope > b');
+    box.classList.add('revealing'); head.style.visibility = 'hidden';
+    const t0 = performance.now(), dur = 1400;
+    GM.sound.play('drumroll');
+    const tick = t => {
+      const f = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - f, 3);
+      na.textContent = fmt(a * e); nb.textContent = fmt(b * e);
+      if (f < 1) return requestAnimationFrame(tick);
+      head.style.visibility = ''; box.classList.remove('revealing'); box.classList.add(v > 0 ? 'won' : v < 0 ? 'lost' : 'drew');
+      GM.sound.play(v > 0 ? 'fanfare' : v < 0 ? 'boo' : 'good'); GM.buzz(v > 0 ? 120 : 60);
+      if (v > 0 && GM.FX) GM.FX.confetti(box, 120);
+    };
+    requestAnimationFrame(tick);
   }
 
   // the two lines on one chart: x = players signed (0 to 11), y = the running total; where they cross, the lead changed
@@ -226,14 +276,15 @@
     return `${lead ? `${esc(lead.who)} led from signing ${lead.x} to the end. ` : ''}${swing ? `Biggest swing: signing ${sx} (${fmt(swing)}).` : ''}`;
   }
   // the signings that differed most (same order of signing, different player)
-  function diffs(a, b, an, bn) {
+  function diffs(a, b, an, bn, mgrs) {
     const rows = [];
+    const mgrRow = mgrs ? `<div class="ch-diff"><small>👔 The manager</small><span>${esc(an)}: <b>${esc(mgrs[0] || '–')}</b></span><span>${esc(bn)}: <b>${esc(mgrs[1] || '–')}</b></span></div>` : '';
     for (let k = 0; k < Math.min((a || []).length, (b || []).length); k++) {
       const x = a[k], y = b[k];
       if (x[1] !== y[1]) rows.push({ k, x, y, d: x[4] - y[4] });
     }
-    if (!rows.length) return '';
-    return `<h3 class="section-title">🔀 Where you went different ways</h3><div class="ch-diffs">${rows.sort((p, q) => Math.abs(q.d) - Math.abs(p.d)).slice(0, 4).sort((p, q) => p.k - q.k).map(r =>
+    if (!rows.length && !mgrRow) return '';
+    return `<h3 class="section-title">🔀 Where you went different ways</h3><div class="ch-diffs">${mgrRow}${rows.sort((p, q) => Math.abs(q.d) - Math.abs(p.d)).slice(0, 4).sort((p, q) => p.k - q.k).map(r =>
       `<div class="ch-diff"><small>Signing ${r.k + 1}</small><span class="${r.d > 0 ? 'win' : ''}">${esc(an)}: <b>${esc(r.x[2])}</b> ${esc(r.x[3])} · ${fmt(r.x[4])}</span><span class="${r.d < 0 ? 'win' : ''}">${esc(bn)}: <b>${esc(r.y[2])}</b> ${esc(r.y[3])} · ${fmt(r.y[4])}</span></div>`).join('')}</div>`;
   }
   // the two XIs, slot by slot

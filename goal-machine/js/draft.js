@@ -609,7 +609,7 @@
   const chGame = st => ({
     xi: st.xi.map(x => x.p != null ? [x.pos, byId(x.p).pk, byId(x.p).name, Math.round(x.g)] : [x.pos]),
     prog: st.prog || [[0, 0]], picks: st.picks || [], wild: (st.wildPlayed || []).slice(0, 20),
-    mgr: st.manager ? MANAGERS[st.manager].name : null, form: (st.form || []).join(','), spin: st.spin,
+    mgr: st.manager ? MANAGERS[st.manager].name : null, mgrOffer: st.mgrOffer || null, form: (st.form || []).join(','), spin: st.spin,
     unit: st.rules && (st.rules.chaos || !st.rules.max) ? 'pts' : st.st.label,
   });
   const modeKey = () => (S.dailyChaos ? 'dchaos:' + S.day : keyFor(S.mode, S.stat, S.hard, S.fx || S.nat || S.club, S.extreme));
@@ -1002,12 +1002,18 @@
     if (k === 'redknapp') ['deadline', 'respin', 'hot'].forEach(w => { if (S.inv.length < 3) S.inv.push(w); });
     if (tw().meter && !S.chaosDue) S.meter = Math.max(S.meter || 0, tw().meter);
   }
+  // the three managers on offer at kick-off; a friend's challenge offers exactly the three they had (from their unlocks)
+  function kickoffMgrs() {
+    const theirs = S.ch && (S.ch.mgrOffer || []).filter(k => MANAGERS[k]);
+    S.mgrOffer = theirs && theirs.length ? theirs : mgrChoices(null);
+    return S.mgrOffer;
+  }
   function pickManager() {
     const shape = ['D', 'M', 'F'].map(g => S.form.filter(p => GM.GROUP[p] === g).length).join('-');
     if (!S.weather && GM.CFX) { const W = GM.CFX.WX_W; S.weather = GM.rng(`${S.seed}|weather`).weighted(Object.keys(W), k => W[k]); }
     const w = wx();
     if (w.sound) setTimeout(() => GM.sound.play(w.sound), 900);
-    return moment({ icon: '👔', name: 'Kick-off', tone: 'good', before: snap(), text: `Formation <b>${shape}</b>.${w.name ? ` ${w.icon} <b>${w.name}</b>: ${w.note.replace(/^[^:]*: /, '')}` : ''} Appoint your manager: each has a perk and a catch.`, pick: mgrChoices(null), onPick: k => { appoint(k); hired(); }, scene: 'kickoff', sound: 'whistle' });
+    return moment({ icon: '👔', name: 'Kick-off', tone: 'good', before: snap(), text: `Formation <b>${shape}</b>.${w.name ? ` ${w.icon} <b>${w.name}</b>: ${w.note.replace(/^[^:]*: /, '')}` : ''} Appoint your manager: each has a perk and a catch.`, pick: kickoffMgrs(), onPick: k => { appoint(k); hired(); }, scene: 'kickoff', sound: 'whistle' });
   }
 
   /* ---------------------------------------------------------------- CHAOS moments: one at a time, on the pitch
@@ -1643,7 +1649,7 @@
   function chProgress(done) {
     const sc = scoreFor(S), n = S.xi.filter(x => x.p != null).length, v = S.rules.chaos ? sc.total : sc.t;
     S.prog = (S.prog || [[0, 0]]).filter(x => x[0] !== n).concat([[n, v]]).sort((a, b) => a[0] - b[0]);
-    if (S.ch && GM.challenge && !S.readonly) GM.challenge.progress(S, sc, !!done);
+    if (S.ch && GM.challenge && !S.readonly) { GM.challenge.progress(S, sc, !!done); if (!done) GM.challenge.leadCheck(S, n); }
   }
   function track(icon, name) {
     if (!S.rules.chaos) return;
@@ -2228,6 +2234,8 @@
     // the weather lasts the game: it stops at full time (and before the next game's kick-off)
     if (GM.FX) GM.FX.weather(S.rules.chaos && S.weather && S.phase !== 'done' ? S.weather : null, () => GM.$('.pitch', root));
     if (S.inv && S.inv.length > 3 && S.subbing === false && !S.playNow) S.inv.splice(3);  // a card played straight off the reels that didn't happen
+    document.body.classList.toggle('ch-mode', !!(S.ch && S.phase !== 'done'));  // challenge mode: its own look while you play
+    if (S.ch && GM.challenge && !S.chIntro && S.spin === 0 && !S.xi.some(x => x.p != null)) { S.chIntro = true; GM.challenge.intro(S); }
     if (S.phase === 'done') return renderDone();
     requestAnimationFrame(() => { fitPitch(); fitReels(); roamLayer(); });
     if (!S.readonly && saveKey()) GM.store.set(saveKey(), { ...S, rules: undefined });  // saved on every move
@@ -2237,7 +2245,7 @@
     const nReels = Math.max(3, S.reels.length);
     const sp = S.special && WILDCARDS[S.special];
     root.innerHTML = `
-      <div class="topbar"><a href="#/" class="back">‹</a><h2><span class="t-name">${icon} ${modeName().replace(/^Ultimate Wildcard CHAOS/, 'CHAOS').replace(/^Matchday XI · /, '')}</span>${S.hard ? '<small class="hard-pill">Hard</small>' : ''}</h2><span class="top-btns">${S.online ? '' : GM.lbButton(modeKey())}<button class="icon-btn" id="help">?</button></span></div>
+      <div class="topbar"><a href="#/" class="back">‹</a><h2><span class="t-name">${icon} ${modeName().replace(/^Ultimate Wildcard CHAOS/, 'CHAOS').replace(/^Matchday XI · /, '')}</span>${S.hard ? '<small class="hard-pill">Hard</small>' : ''}${S.ch ? '<small class="hard-pill ch-pill">⚔️ Challenge</small>' : ''}</h2><span class="top-btns">${S.online ? '' : GM.lbButton(modeKey())}<button class="icon-btn" id="help">?</button></span></div>
       ${S.ch && GM.challenge ? GM.challenge.ghostHtml(S) : S.vs ? `<div class="banner">⚔️ Beat <b>${GM.esc(S.vs)}</b>’s score of <b>${GM.esc(S.vss)}</b></div>` : ''}
       ${S.online ? `<div class="opp-bar" id="oppbar">${(GM.online && GM.online.oppBar && GM.online.oppBar(S.online.code)) || `🌐 Racing <b>${GM.esc(S.online.opp)}</b>…`}</div>` : ''}
       ${counterHtml()}
