@@ -9,7 +9,7 @@
 (function () {
   GM.UPDATES = [
     {
-      v: 67, label: '5.22.2', date: '2026-10-10', title: '📱 Links into the app',
+      v: 71, label: '5.22.2', date: '2026-10-10', title: '📱 Links into the app',
       items: [
         '📱 Open a shared Goal Machine link (a challenge, an online game) on an Android phone’s browser and a bar offers to open it in the app, where your account is',
         '☁️ The CHAOS weather really does clear at full time now: the clouds fade away instead of drifting on for half a minute',
