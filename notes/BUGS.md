@@ -3,7 +3,7 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
-### Fixed in 5.22.3 *(owner, 10 Oct 2026)*
+### Fixed in 5.23 *(owner, 10 Oct 2026)*
 - Van Gaal's philosophy made the reels worse as the game went on: "any outfield player can play anywhere" also decided
   who turned up, so with only striker spots left the reels filled with defenders, who then went up front at 80%. Now the
   reels show players for the positions you still need (as with every manager) and the philosophy only applies to where
