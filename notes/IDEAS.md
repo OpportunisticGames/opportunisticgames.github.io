@@ -23,6 +23,23 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### Nationalities and countries *(owner, 10 Oct 2026)*
+- **Owner's words:** "Something about player's nationality and teams. Like best player to play for every country etc etc
+  idk something around all that"
+- **We already have:** every player's nationality, the International XI (`#/nations`, 32 countries, in international
+  breaks only), nationality as a Footle clue.
+- **Our ideas to talk through:**
+  1. **World Map / Around the World** (collect): a map of every country that's sent a PL player. Sign a player in any
+     draft and his country lights up; each country shows its best-ever PL player (most goals/apps). A completion %,
+     badges for continents, and "rare" countries worth more (one PL player ever).
+  2. **Best of each country** (a quiz): "Who's Norway's top PL scorer?" Pick from four, or type it. A daily one too.
+  3. **Nation Grid**: Club Grid with countries on one side (played for Arsenal and is French).
+  4. **United Nations XI** (a draft mode): eleven players, eleven different countries. A bonus for each continent covered.
+  5. **Country v Country**: two nations' best PL XIs side by side (Brazil v Argentina), and you pick who wins each position.
+  6. A CHAOS wildcard or moment: "Passport Office", a spin of players from one random country.
+- **Questions:** which of these grabs you? Collecting (1), quizzing (2, 3) or a new draft (4)? Should the International
+  XI be playable all year, not just in breaks?
+
 ### Challenge app friends, not just by link ✅ 5.24 *(owner, 10 Oct 2026)*
 - "When you go to challenge a friend, it would be ideal if you could challenge a friend in app too right? Like you could
   challenge one of your app friends as well as being able to send a link."
