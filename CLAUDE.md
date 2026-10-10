@@ -118,6 +118,13 @@ Change SQL with the Supabase MCP tools (`apply_migration`); read a function firs
 `GM.app('fn', ...)`); `GameCheckService.java` polls `app_inbox` for notifications. Pushing changes under `android/`
 runs `.github/workflows/android.yml`, which builds a signed APK and publishes a release (`versionCode` = run number).
 Raise `GM.APP_MIN_BUILD` in `core.js` only when the web code needs a newer app; players below it see an update prompt.
+Build 57+ (5.25) tells the site what it can do: `AndroidApp.features()` → check with `GM.appHas('buzz')`. Native haptics
+(`buzz(kind)`: tick/click/confirm/reject/heavy/win, used by `GM.buzz`), the Play review card (`askReview`, asked by
+`GM.native.happy()`), in-app updates (`checkUpdate`, `completeUpdate`), the links check (`linksStatus`,
+`openLinkSettings`), Play Games player id and server auth code (`pgsPlayer`, `pgsServerAuth`). Replies come back as
+`GM.appEvent(name, value)` (`GM.onAppEvent`). Play-only code lives in `PlayExtras.java` (the sideload copy does nothing).
+Icon shortcuts are set in `MainActivity.shortcuts()`; notifications get a button by id (`GameCheckService.action`) and
+reminders/news go to the quieter `reminders` channel.
 Most changes are web-only and reach the app automatically.
 
 ## Testing
@@ -141,6 +148,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    - `chaospixi.js` – the effects layer in CHAOS: Lottie vehicles and characters, PixiJS particles, the parked ambulance, Calm off.
    - `challenges.js` – friend challenges on three phones: send, ghost bar, watch along, head-to-head, reactions, rematch (best of three), group table, tally, rivalry page, CHAOS.
    - `allbadges.js` – every one of the 100 badges is earned through the calls the games make (a new badge needs a trigger here).
+   - `app525.js` – the app's extras with a pretend AndroidApp: haptics, Play updates, the links nudge and Settings row, the review card's timing, old builds untouched.
    - `fixes5232.js` – your challenges: the in-app card when someone takes yours on, the Online tab lists, `#/challenges`, the friend menu.
    - `fixes5231.js` – Make a Sub can be called off, the Joker becomes any wildcard, Benítez the Tinkerman halves a player.
    - `fixes5222.js` – the weather clears when it stops; the "Open in the app" bar on Android browsers and the ?go= hand-over.

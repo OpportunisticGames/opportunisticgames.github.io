@@ -880,7 +880,55 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && GM
 GM.applyTheme();
 
 // Little buzz on phones that support it (the Android app included)
-GM.buzz = (ms = 15) => { try { if (GM.store.get('buzz', true) && navigator.vibrate) navigator.vibrate(ms); } catch (e) { } };
+// Haptics. In the app (build 57+) the phone's own feel: a tick for taps, confirm/reject, heavy, or a little "win" pattern;
+// elsewhere the browser's vibrate (which Android's WebView mostly ignores, hence the app's). GM.buzz(15) or GM.buzz('win').
+GM.buzz = (k = 15) => {
+  try {
+    if (!GM.store.get('buzz', true)) return;
+    if (GM.appHas('buzz')) return GM.app('buzz', typeof k === 'string' ? k : k <= 20 ? 'tick' : k <= 60 ? 'confirm' : 'heavy');
+    if (navigator.vibrate) navigator.vibrate(typeof k === 'string' ? ({ win: [40, 60, 40, 60, 120], heavy: 90, reject: [30, 40, 30], confirm: 40 }[k] || 15) : k);
+  } catch (e) { }
+};
+// What this app build can do (AndroidApp.features(), build 57+): review, update, pgsPlayer, pgsAuth, buzz, links, shortcuts, events
+GM.appHas = f => { if (GM._feat == null) { const v = GM.app('features'); GM._feat = typeof v === 'string' ? v.split(',') : []; } return GM._feat.includes(f); };
+// Things the app tells the page (MainActivity.event): GM.onAppEvent('update', v => …)
+GM._appH = {};
+GM.onAppEvent = (name, fn) => { (GM._appH[name] = GM._appH[name] || []).push(fn); };
+GM.appEvent = (name, value) => { (GM._appH[name] || []).forEach(fn => { try { fn(value); } catch (e) { } }); };
+
+/* ---------------------------------------------------------------- the app's extras (Google Play version) */
+GM.native = {
+  // once a session: a newer build on Play (download it in the background, then "restart to update"), the Play Games
+  // player id (kept for restoring your account on a new phone later), and links that don't open in the app
+  start() {
+    if (GM.native._started || !window.AndroidApp) return;
+    GM.native._started = true;
+    if (GM.appHas('update') && Date.now() - GM.store.get('updChecked', 0) > 6 * 3600e3) { GM.store.set('updChecked', Date.now()); GM.app('checkUpdate', false); }
+    if (GM.appHas('pgsPlayer')) GM.app('pgsPlayer');
+    if (GM.appHas('links') && GM.app('linksStatus') === 'off' && Date.now() - GM.store.get('linksNag', 0) > 14 * 864e5) {
+      GM.store.set('linksNag', Date.now());
+      setTimeout(() => GM.notice({ pic: '<span class="notice-icon">🔗</span>', title: 'Friends’ links open in Chrome', sub: 'Tap, then turn on “Open supported links” so they open here', href: '#/settings', ms: 9000 }).addEventListener('click', e => { e.preventDefault(); GM.app('openLinkSettings'); }), 4000);
+    }
+    if (!GM.store.get('firstSeen', 0)) GM.store.set('firstSeen', Date.now());
+  },
+  // the Play review card, at a happy moment: not in the first 3 days, after 8+ games, at most every 60 days (Play limits it too)
+  happy(why) {
+    GM.store.set('happyN', GM.store.get('happyN', 0) + 1);
+    if (!GM.appHas('review') || GM.store.get('reviewed', false)) return;
+    const first = GM.store.get('firstSeen', Date.now()), games = +GM.store.get('gamesDone', 0);
+    if (Date.now() - first < 3 * 864e5 || games < 8 || Date.now() - GM.store.get('reviewAsk', 0) < 60 * 864e5) return;
+    GM.store.set('reviewAsk', Date.now());
+    setTimeout(() => GM.app('askReview'), 1800);
+  },
+  gameDone() { GM.store.set('gamesDone', +GM.store.get('gamesDone', 0) + 1); },
+};
+GM.onAppEvent('update', v => {
+  if (/^available/.test(v)) GM.notice({ pic: '<span class="notice-icon">⬆️</span>', title: 'A new version of the app is ready', sub: 'Tap to download it in the background', href: '#', ms: 10000 })
+    .addEventListener('click', e => { e.preventDefault(); GM.app('checkUpdate', true); });
+  else if (v === 'downloaded') GM.notice({ pic: '<span class="notice-icon">✅</span>', title: 'Update downloaded', sub: 'Tap to restart and finish', href: '#', ms: 15000 })
+    .addEventListener('click', e => { e.preventDefault(); GM.app('completeUpdate'); });
+});
+GM.onAppEvent('pgsPlayer', id => { if (id) GM.store.set('pgsPlayer', id); });
 Object.keys(GM.MODES).filter(k => GM.HARD_MODES.includes(k)).forEach(k => {
   GM.MODES[k + 'h'] = { name: GM.MODES[k].name + ' (Hard)', icon: GM.MODES[k].icon };
 });

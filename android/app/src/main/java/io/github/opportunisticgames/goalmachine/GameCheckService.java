@@ -34,6 +34,7 @@ import java.util.Set;
 public class GameCheckService extends JobService {
     private static final int JOB_ID = 4243, OLD_JOB_ID = 4242;  // 4243: persisted across restarts (build 16+)
     private static final String CHANNEL = "moves_whistle";
+    static final String QUIET = "reminders";
     static final String PREFS = "online";
 
     /** Remembers what to ask the server ({url, key, rpc, args}) and makes sure the periodic check is scheduled. */
@@ -99,6 +100,27 @@ public class GameCheckService extends JobService {
         ch.enableVibration(true);
         ch.setVibrationPattern(new long[] { 0, 120, 80, 260 });
         nm.createNotificationChannel(ch);
+        // reminders (the daily, your streak, come back) and news: quieter, no whistle, and they can be muted on their own
+        NotificationChannel quiet = new NotificationChannel(QUIET, "Reminders and news", NotificationManager.IMPORTANCE_DEFAULT);
+        quiet.setDescription("The daily games, your streak and new game modes");
+        nm.createNotificationChannel(quiet);
+    }
+
+    /** Things that happen (your move, challenges, results, friends) whistle; everything else is a reminder. */
+    static boolean loud(String id) {
+        return id != null && id.matches("^(g|r|f|cs|cf|cr|co|cm):.*");
+    }
+
+    /** The button on a notification, by what it is: the same place as tapping it, said plainly. */
+    static String action(String id) {
+        if (id == null) return null;
+        if (id.startsWith("cm:")) return "⚔️ Take it on";
+        if (id.startsWith("cs:")) return "👀 Watch";
+        if (id.startsWith("cf:") || id.startsWith("r:")) return "📊 See how";
+        if (id.startsWith("cr:") || id.startsWith("co:")) return "💬 Reply";
+        if (id.startsWith("g:")) return "▶️ Play now";
+        if (id.startsWith("d:") || id.startsWith("s:")) return "▶️ Play today's";
+        return null;
     }
 
     static Uri whistle(Context ctx) {
@@ -151,9 +173,13 @@ public class GameCheckService extends JobService {
         if (link == null || link.isEmpty()) link = "https://opportunisticgames.github.io/goal-machine/";
         Intent open = new Intent(Intent.ACTION_VIEW, Uri.parse(link), ctx, MainActivity.class);
         PendingIntent pi = PendingIntent.getActivity(ctx, id.hashCode(), open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        Notification.Builder nb = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(ctx, CHANNEL) : new Notification.Builder(ctx);
-        nb.setSmallIcon(R.drawable.ic_stat_ball).setColor(0xFF16803C).setContentTitle(title).setContentText(body).setContentIntent(pi).setAutoCancel(true);
-        if (Build.VERSION.SDK_INT < 26) nb.setSound(whistle(ctx)).setVibrate(new long[] { 0, 120, 80, 260 }).setPriority(Notification.PRIORITY_HIGH);
+        boolean loud = loud(id);
+        Notification.Builder nb = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(ctx, loud ? CHANNEL : QUIET) : new Notification.Builder(ctx);
+        nb.setSmallIcon(R.drawable.ic_stat_ball).setColor(0xFF16803C).setContentTitle(title).setContentText(body).setContentIntent(pi).setAutoCancel(true)
+            .setStyle(new Notification.BigTextStyle().bigText(body));
+        String act = action(id);
+        if (act != null) nb.addAction(new Notification.Action.Builder(android.graphics.drawable.Icon.createWithResource(ctx, R.drawable.ic_stat_ball), act, pi).build());
+        if (Build.VERSION.SDK_INT < 26 && loud) nb.setSound(whistle(ctx)).setVibrate(new long[] { 0, 120, 80, 260 }).setPriority(Notification.PRIORITY_HIGH);
         ((NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE)).notify(id.hashCode(), nb.build());
     }
 
