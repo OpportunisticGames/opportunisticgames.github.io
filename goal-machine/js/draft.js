@@ -362,8 +362,8 @@
     conte: { icon: '🔥', name: 'Antonio Conte', perk: 'Three at the back: centre-backs +40% (kick-off switches you to 3-4-3)', catch: 'Touchline fury: −8 for every wildcard you play',
       likes: p => p.poss.includes('CB'),
       lines: x => [['🧱 Back three: centre-backs +40%', 0.4 * x.slots.filter(s => s.pos === 'CB').reduce((a, s) => a + s.g, 0)], [`😤 Touchline fury (${x.wild} wildcards)`, -8 * x.u * x.wild]] },
-    benitez: { icon: '📝', name: 'Rafa Benítez', perk: 'Facts: wildcards turn up more often, +2 for every one you play', catch: 'Rotation: 🩹 Rotation Risk is back in the deck',
-      tw: { wildP: 0.35, allow: ['rotation'] },
+    benitez: { icon: '📝', name: 'Rafa Benítez', perk: 'Facts: wildcards turn up more often, +2 for every one you play', catch: 'Tinkerman: every third wildcard you play, he rotates someone – one of your players counts half',
+      tw: { wildP: 0.35 },
       lines: x => [[`📝 Facts (${x.wild} wildcards played)`, 2 * x.u * x.wild]] },
   };
   // Managers are earned: the journeymen to start with, the legends at the top of the ladder (u = the stat's scale, so an
@@ -1679,11 +1679,21 @@
     if (!GM.CFX.WILD[w]) return;
     setTimeout(() => { if (onThisGame()) GM.CFX.wild(w, GM.$('.pitch', root), ...args); }, 40);
   }
+  // Benítez the Tinkerman: every third wildcard you play, he rotates one of your players (seeded): he counts half
+  function tinker() {
+    if (!mgrIs('benitez') || S.wildUsed % 3) return;
+    const f = S.xi.map((x, i) => i).filter(i => S.xi[i].p != null && S.xi[i].g > 0);
+    if (!f.length) return;
+    const i = f[GM.rng(`${S.seed}|tinker|${S.wildUsed}`).int(f.length)];
+    scale(S.xi[i], 0.5, 'halved'); mark(i, '#bandage');
+    if (S.xi[i].story) S.xi[i].story = S.xi[i].story.concat([{ i: '📝', n: 'Rotated by Rafa', f: S.xi[i].g * 2, t: S.xi[i].g }]);
+    setTimeout(() => { GM.toast(`📝 <b>Rafa rotates.</b> ${nm(i)} only counts half`, 2600); GM.sound.play('groan'); }, 600);
+  }
   function useWild(k) {
     const w = S.inv[k];
     const wc = WILDCARDS[w];
     if (busy || S.phase === 'spinning' || S.phase === 'reveal' || S.phase === 'done') return;
-    const consume = () => { S.inv.splice(k, 1); S.log.push(wc.icon); S.wildPlayed = (S.wildPlayed || []).concat(wc.icon); S.wildUsed++; GM.sound.play('wild'); charge(); wildFx(w); };
+    const consume = () => { S.inv.splice(k, 1); S.log.push(wc.icon); S.wildPlayed = (S.wildPlayed || []).concat(wc.icon); S.wildUsed++; GM.sound.play('wild'); charge(); wildFx(w); tinker(); };
     switch (wc.kind) {
       case 'reveal':
         if (S.phase === 'pick') S.revealed = true; else S.revealNext = true;
@@ -1695,6 +1705,7 @@
       case 'special':
         S.respins++; S.spinRespins = (S.spinRespins || 0) + 1; consume(); doSpin(w); return;
       case 'sub':
+        if (S.subbing === k) { S.subbing = false; render(); GM.toast('🔄 Sub called off – it’s back in your bag'); return; }  // tap it again: changed your mind
         if (!S.xi.some(s => s.p != null)) { GM.toast('No one to release yet'); return; }
         S.subbing = k; S.pending = null; render(); GM.toast('Tap a player on the pitch to release him'); return;
       case 'allin': {
@@ -1716,8 +1727,9 @@
         return;
       }
       case 'joker': {
-        const types = Object.keys(WILDCARDS).filter(t => WILDCARDS[t].chaos && !['joker', 'storm'].includes(t));
-        const t = types[GM.rng(`${S.seed}|joker|${S.spin}|${S.wildUsed}|${k}`).int(types.length)];
+        // any wildcard this game allows (the everyday ones too), as often as each turns up on the reels
+        const types = Object.keys(WILDCARDS).filter(t => t !== 'joker' && (!S.rules.noWild.includes(t) || (tw().allow || []).includes(t)) && (!WILDCARDS[t].chaos || S.rules.chaos));
+        const t = GM.rng(`${S.seed}|joker|${S.spin}|${S.wildUsed}|${k}`).weighted(types, x => WILDCARDS[x].w);
         S.inv[k] = t; GM.sound.play('shimmer'); wildFx('joker');
         GM.toast(`🃏 The Joker turns into ${WILDCARDS[t].icon} <b>${WILDCARDS[t].name}</b>`, 2600);
         render(); return;
@@ -2252,7 +2264,7 @@
       ${pitchHtml()}
       <div class="dock">
       ${S.rules.wild === false ? '' : `<div class="inv ${S.inv.length ? 'has' : ''}"><span class="inv-label">${S.inv.length ? `🃏 ${S.inv.length}/3` : 'Wildcards 0/3'}</span>${S.inv.length ? S.inv.map((w, k) =>
-      `<button class="wild-btn ${S.subbing === k ? 'active' : ''}" data-w="${k}" title="${GM.esc(WILDCARDS[w].desc(wst()))}">${WILDCARDS[w].icon}<small>${WILDCARDS[w].name}</small></button>`).join('')
+      `<button class="wild-btn ${S.subbing === k ? 'active' : ''}" data-w="${k}" title="${GM.esc(WILDCARDS[w].desc(wst()))}">${WILDCARDS[w].icon}<small>${S.subbing === k ? '✕ Cancel' : WILDCARDS[w].name}</small></button>`).join('')
         : '<span class="muted">none yet · spin to find them</span>'}</div>`}
       <div class="stage ${blind() ? 'hard' : ''}">${S.phase === 'spin' ? `<div class="spin-zone"><button class="btn big spin" id="spin" ${busy ? 'disabled' : ''}>🎰 SPIN</button></div>` : `<div class="reels ${nReels > 3 ? 'n5' : ''} ${S.rules.chaos && S.weather === 'fog' && S.phase === 'pick' && !S.revealed ? 'foggy' : ''}">${Array.from({ length: nReels }, (_, i) => {
           const x = S.reels[i];

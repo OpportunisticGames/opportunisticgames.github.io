@@ -3,6 +3,12 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.23.1 *(owner, 10 Oct 2026)*
+- Make a Sub couldn't be deselected once tapped: tapping it again now calls it off and it stays in your bag.
+- The Joker only became a few CHAOS wildcards: it now picks from every wildcard the game allows, weighted by rarity.
+- Benítez's catch (the Rotation Risk wildcard) meant nothing, since you'd just never play it. Now he's the Tinkerman:
+  every third wildcard you play, one of your players is rotated and counts half.
+
 ### Fixed in 5.23 *(owner, 10 Oct 2026)*
 - Van Gaal's philosophy made the reels worse as the game went on: "any outfield player can play anywhere" also decided
   who turned up, so with only striker spots left the reels filled with defenders, who then went up front at 80%. Now the

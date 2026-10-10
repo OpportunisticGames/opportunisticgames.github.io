@@ -9,6 +9,14 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 73, label: '5.23.1', date: '2026-10-10', title: '🔧 Wildcard fixes',
+      items: [
+        '🔄 Make a Sub: tap it again to call it off (it goes back in your bag)',
+        '🃏 The Joker can now turn into any wildcard, the everyday ones more often and the rare ones rarely',
+        '📝 Benítez is now the Tinkerman: every third wildcard you play, he rotates someone and that player counts half',
+      ],
+    },
+    {
       v: 72, label: '5.23', date: '2026-10-10', title: '⚔️ Challenges come alive',
       items: [
         '🔥 CHALLENGE MODE: a versus card and a 3-2-1 countdown, red-and-black colours, the tense Head to Head music, a cheer when you go ahead (and a groan when they’re back in front), and on your last signing exactly what you need to win',

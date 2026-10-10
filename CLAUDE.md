@@ -140,6 +140,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    - `chaospixi.js` – the effects layer in CHAOS: Lottie vehicles and characters, PixiJS particles, the parked ambulance, Calm off.
    - `challenges.js` – friend challenges on three phones: send, ghost bar, watch along, head-to-head, reactions, rematch (best of three), group table, tally, rivalry page, CHAOS.
    - `allbadges.js` – every one of the 100 badges is earned through the calls the games make (a new badge needs a trigger here).
+   - `fixes5231.js` – Make a Sub can be called off, the Joker becomes any wildcard, Benítez the Tinkerman halves a player.
    - `fixes5222.js` – the weather clears when it stops; the "Open in the app" bar on Android browsers and the ?go= hand-over.
    - `fixes5221.js` – Extreme hides clues, the full wildcard bag choice, the share picture, CHAOS resume order, weather at full time, bonus notes, badges on every level.
    - `layout.js` – plays whole drafts and checks the pitch never changes size (`node layout.js "chaos:1,ultimate:0" 360x740`).
