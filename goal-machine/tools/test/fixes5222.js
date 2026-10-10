@@ -37,6 +37,22 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   // the app receives /goal-machine/?go=%23%2F… and opens that page
   await p2.goto(U + '?go=' + encodeURIComponent('#/today')); await p2.waitForTimeout(800);
   ok(await p2.evaluate(() => location.hash === '#/today' && !location.search), 'the handed-over link opens the right page (?go= becomes the #)');
+  // 5.22.3: van Gaal's reels bring players for the positions you still need (strikers for the strikers' spots), and he
+  // can still put anyone anywhere outfield
+  await pg.evaluate(() => { Object.keys(localStorage).filter(k => k.startsWith('gm:draftp')).forEach(k => localStorage.removeItem(k)); GM._forceMgr = 'vangaal'; location.hash = '#/draft?m=chaos&seed=vg1'; });
+  await pg.waitForSelector('.cm-pick [data-mgr="vangaal"]', { timeout: 8000 }); await pg.click('.cm-pick [data-mgr="vangaal"]'); await pg.waitForTimeout(800);
+  const vg = [];
+  for (let k = 0; k < 6; k++) {
+    await pg.evaluate(() => {  // everything filled but the strikers
+      const S = GM.draft.state();
+      S.xi.forEach((x, i) => { if (x.p == null && x.pos !== 'ST') { const id = GM.players.findIndex((p, j) => p.poss.includes(x.pos) && !S.xi.some(y => y.p === j)); x.p = id; x.g = 1; x.base = 1; x.v = { goals: 1, assists: 0, apps: 1 }; } });
+      S.phase = 'spin'; S.reels = []; S.pending = null; S.inv = []; S.forceEv = null; S.momentSpin = S.spin; S.chaosDue = false; S.meter = 0; S.spin++; GM.draft.render();
+    });
+    await pg.evaluate(() => { document.querySelectorAll('.cm').forEach(x => x.remove()); const b = document.getElementById('spin'); if (b) b.click(); });
+    await pg.waitForTimeout(1600);
+    vg.push(...await pg.evaluate(() => GM.draft.state().reels.filter(x => !x.wild && x.id != null).map(x => GM.players[x.id].poss.includes('ST'))));
+  }
+  ok(vg.length >= 6 && vg.every(Boolean), `van Gaal: with only the strikers' spots left, the reels bring strikers (${vg.filter(Boolean).length}/${vg.length})`);
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();
 })();

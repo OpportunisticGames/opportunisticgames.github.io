@@ -76,6 +76,7 @@
 
   GM.NEW_MODES = ['chaos', 'auction'];
   function route() {
+    document.body.classList.remove('ch-mode');  // (a challenge game puts it back)
     const { path, q } = parseHash();
     const tried = path === 'draft' ? q.m : path;
     GM.triedGame(tried);  // opening a game clears its NEW / UPDATED tag
@@ -96,7 +97,7 @@
       b.textContent = n; b.hidden = !n;
       if (GM.online && GM.online.check) GM.online.check();
     }
-    GM.sound.scene(path === 'draft' && /^chaos/.test(q.m || '') ? 'chaos' : path);  // each game area has its own music (CHAOS has Mayhem)
+    GM.sound.scene(path === 'draft' && /^chaos/.test(q.m || '') ? 'chaos' : path === 'draft' && q.ch ? 'h2h' : path);  // (a friend's challenge: the tense one)  // each game area has its own music (CHAOS has Mayhem)
     GM.chaosLook(path === 'draft' && /^chaos/.test(q.m || ''));
     GM.moneyLook(path === 'moneyball');
     GM.ownerLook(path === 'owner' || path === 'reign');
@@ -117,7 +118,7 @@
   function page(path, q) {
     switch (path) {
       case 'draft': return GM.draft.start(app, ['target', 'treble', 'mystery', 'club', 'classic', 'classicwild', 'ultimatepure', 'extreme', 'purist', 'chaos', 'chaosx', 'match', 'nation'].includes(q.m) ? q.m : 'ultimate',
-        { fx: q.fx, nat: q.n, stat: q.s, seed: q.seed, vs: q.vs, vss: q.vss ? +q.vss : undefined, hard: q.seed ? q.h === '1' : GM.isHard(), extreme: q.seed ? q.x === '1' : GM.isExtreme(), club: q.c, daily: q.daily === '1' });
+        { fx: q.fx, nat: q.n, stat: q.s, seed: q.seed, vs: q.vs, vss: q.vss ? +q.vss : undefined, ch: q.ch, rematch: q.rm, hard: q.seed ? q.h === '1' : GM.isHard(), extreme: q.seed ? q.x === '1' : GM.isExtreme(), club: q.c, daily: q.daily === '1' });
       case 'today': return GM.todayPage(app);
       case 'matchday': return GM.matchday(app);
       case 'nations': return GM.nationsPage(app);
@@ -126,6 +127,8 @@
       case 'packs': return GM.album(app, 'goals', 'album', q.v === 'xi' ? 'xi' : 'cards', '', GM.TIERS[q.t] ? q.t : '', q.open === '1');
       case 'matchfootle': return GM.footle(app, false, q.fx);
       case 'online': return GM.onlinePage(app, q);
+      case 'c': return GM.challenge.page(app, q);  // a friend's "beat my score" challenge (challenge.js)
+      case 'rival': return GM.challenge.rival(app, q.name || '');
       case 'footle': return GM.footle(app, false);
       case 'clubfootle': return GM.footle(app, true);
       case 'daily': return GM.draft.start(app, 'daily');

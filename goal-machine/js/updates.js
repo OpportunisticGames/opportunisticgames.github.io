@@ -9,6 +9,22 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 72, label: '5.23', date: '2026-10-10', title: '⚔️ Challenges come alive',
+      items: [
+        '🔥 CHALLENGE MODE: a versus card and a 3-2-1 countdown, red-and-black colours, the tense Head to Head music, a cheer when you go ahead (and a groan when they’re back in front), and on your last signing exactly what you need to win',
+        '👔 CHAOS challenges offer you the same three managers your friend had, and the head-to-head shows if you went with different ones',
+        '⚔️ Challenge a friend now sends your whole game: they get the same spins, see your score, and a bar shows where they stand against you after the same number of signings (with an optional peek at what you signed next)',
+        '👀 Watch along: when a friend takes on your challenge you get a notification and can watch their XI fill up live, their line against yours',
+        '📈 At full time, the head-to-head: both XIs side by side, both lines on one chart (crossing where the lead changed hands), the signings where you went different ways, and your wildcards against theirs',
+        '💬 Send a reaction (😏 Easy, 🙈 Robbed!…) and they get it as a notification; react back to theirs',
+        '🔁 Rematch: new spins, sent straight back to them, and best of three along the way',
+        '🏟️ Send one link to the whole group and everyone who plays it lands in a table',
+        '📜 Your record with each friend: a ⚔️ tally on the Friends tab and a rivalry page (record, streaks, best comebacks, the closest game)',
+        '🖼️ Share the head-to-head as a picture',
+        '📋 Van Gaal: the reels now bring players for the positions you still need; his philosophy is about where you can put them (no more centre-backs up front), and out of position a player now counts 85% (was 80%)',
+      ],
+    },
+    {
       v: 71, label: '5.22.2', date: '2026-10-10', title: '📱 Links into the app',
       items: [
         '📱 Open a friend’s “beat my score” challenge (or any shared Goal Machine link) in an Android phone’s browser and a bar offers to take it on in the app, where your account is',

@@ -3,6 +3,12 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.23 *(owner, 10 Oct 2026)*
+- Van Gaal's philosophy made the reels worse as the game went on: "any outfield player can play anywhere" also decided
+  who turned up, so with only striker spots left the reels filled with defenders, who then went up front at 80%. Now the
+  reels show players for the positions you still need (as with every manager) and the philosophy only applies to where
+  you can put them: a striker can go into an empty centre-back spot at 80%.
+
 ### Fixed in 5.22.2 *(owner, 10 Oct 2026)*
 - Shared links opened on the website instead of the Play app (so not on your account). The app's link check is fine
   (Google's Digital Asset Links lists goal.machine with the Play signing key), but many apps and Chrome itself keep links

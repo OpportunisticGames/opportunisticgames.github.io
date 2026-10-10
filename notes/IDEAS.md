@@ -23,6 +23,31 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### Challenges that come alive: their XI, what you did differently, both lines on one chart, a tally ✅ 5.23 *(owner, 10 Oct 2026)*
+> "When you challenge a friend it should be more interactive right? Like show you their score and some details/maybe what
+> you did differently - maybe it could connect to your account too and there could be like a tally for beating friends
+> scores? … Maybe the two graphs could intersect to show how you both made different progress at different times"
+
+Now: the link carries only their name and score (`vs`, `vss`) plus the seed; you get a banner and "You beat / lost to".
+Proposal (Claude):
+1. **Their game travels with the challenge**: their XI and their running total after each spin.
+2. **Head-to-head full time**: their pitch next to yours; "same spin, different pick" lines (spin 4: you took Lampard,
+   they took Gerrard: +38 to them); who led when; your wildcards v theirs.
+3. **Both lines on one chart**, crossing where the lead changed hands, with the swing moments marked.
+4. **On your account**: challenges kept on the server (short link), the challenger told when you've played it
+   ("Bob beat your 512!"), a ⚔️ tally per friend (You 5–3 Bob) on the Friends tab, and a Rematch button.
+Questions: link-only (works without an account) or server (needed for the tally and notifications), or both? Count in
+the weekly league? A badge for it would need a new Play achievement, so not without the owner.
+Owner (10 Oct): "all of that sounds great" + "maybe the other person gets a notification so they can watch along?"
+More (Claude): **watch along live** (push "Joel's taking on your 512", a spectator view of their pitch filling up
+spin by spin, built on the Live Race feed); **ghost race** while you play (where you stand after the same spin, and an
+optional "what they picked here", off for no spoilers); **reactions** after full time (a few preset banter lines/emoji,
+sent with the result); **group challenges** (one link to many friends, a little table for that seed); **head-to-head
+picture** to share (both pitches + the crossing lines); **rivalry page** per friend (record, streaks, biggest comeback);
+**best of three** with a Rematch button.
+Owner: "Rematch button too of course! Can you add all those things!" + one release. Built in 5.23 (challenge.js;
+challenges / challenge_plays; inbox items cs/cf/cr/co/cm). Not counted in the weekly league; no new badge.
+
 ### CHAOS: readable pitch, a points chart, lasting damage and manager unlocks ✅ 5.20 *(owner, 3 Oct 2026)*
 > "colour code the cards … line chart of points … the black saturn with two glowing dots and the golden circle don't make
 > sense … emojis covering the pitch, at least put the icon next to the player … tornado, ambulance and black hole should

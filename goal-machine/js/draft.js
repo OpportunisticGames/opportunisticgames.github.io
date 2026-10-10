@@ -357,7 +357,7 @@
     dyche: { icon: '🗿', name: 'Sean Dyche', perk: 'Solid: your XI +12%', catch: 'Calm down: the CHAOS meter fills at half speed',
       tw: { meterX: 0.5 },
       lines: x => [['🗿 Solid: XI +12%', 0.12 * x.slots.reduce((a, s) => a + s.g, 0)]] },
-    vangaal: { icon: '📋', name: 'Louis van Gaal', perk: 'Philosophy: any outfield player can play any outfield position (not on themed spins like a Centurion Throw)', catch: 'Out of position, a player counts 80%',
+    vangaal: { icon: '📋', name: 'Louis van Gaal', perk: 'Philosophy: any outfield player can play any outfield position (not on themed spins like a Centurion Throw)', catch: 'Out of position, a player counts 85%',
       lines: () => [] },  // both happen as you sign (canPlay, place)
     conte: { icon: '🔥', name: 'Antonio Conte', perk: 'Three at the back: centre-backs +40% (kick-off switches you to 3-4-3)', catch: 'Touchline fury: −8 for every wildcard you play',
       likes: p => p.poss.includes('CB'),
@@ -482,7 +482,7 @@
   let asking = false;  // the "carry on?" question is up
   let root = null;
 
-  GM.draft = { METER, MANAGERS: () => MANAGERS, events: () => Object.keys(EVENTS).concat(Object.keys(XEV), Object.keys(MOMENTS)), start, RULES, WILDCARDS, TARGETS, state: () => S, total: st => scoreFor(st).t, score: st => scoreFor(st), render: () => render(), modeKey: (m, s, h, c, x) => keyFor(m, s, h, c, x) };
+  GM.draft = { game: st => chGame(st || S), modeName: () => modeName(), METER, MANAGERS: () => MANAGERS, events: () => Object.keys(EVENTS).concat(Object.keys(XEV), Object.keys(MOMENTS)), start, RULES, WILDCARDS, TARGETS, state: () => S, total: st => scoreFor(st).t, score: st => scoreFor(st), render: () => render(), modeKey: (m, s, h, c, x) => keyFor(m, s, h, c, x) };
 
   const statSuffix = s => ({ goals: '', assists: 'ast', apps: 'apps' }[s] || '');
   function keyFor(mode, stat, hard, club, extreme) {
@@ -596,6 +596,8 @@
       phase: 'spin', vs: opts.vs, vss: opts.vss, log: [], pending: null, wildUsed: 0, coinWin: false, bonus: [], hot: 0, event: null, meter: 0, unleash: 0, golden: false, masked: false, chaosCount: 0, manager: null, moments: [], chaosDue: false, momentSpin: -1, forceSpecial: null,
       hard: mode !== 'daily' && !dailyChaos && !fx && !extreme && !!opts.hard, club, club2: fx ? fx.away : null, fx: fx ? fx.id : null, nat, dailyChaos, day: GM.today(),
       online: opts.online ? { ...opts.online, ms: 0, lastT: Date.now() } : null,  // Live Race: { code, seat, opp } + time taken
+      ch: opts.ch && GM.challenge ? GM.challenge.ctx(opts.ch) : null,  // a friend's challenge you're taking on (see challenge.js)
+      rematch: opts.rematch || null,  // a rematch you're playing first, to send back
     };
     if (S.online) root.className = 'page-draft page-online';
     render();
@@ -603,6 +605,13 @@
     if (RULES[mode] && RULES[mode].chaos) setTimeout(() => { if (S === me && onThisGame() && !S.manager && S.spin === 0 && !asking) pickManager(); }, 350);
   }
 
+  // a finished (or half-played) game for a friend challenge: the XI, the line, the signings, the wildcards
+  const chGame = st => ({
+    xi: st.xi.map(x => x.p != null ? [x.pos, byId(x.p).pk, byId(x.p).name, Math.round(x.g)] : [x.pos]),
+    prog: st.prog || [[0, 0]], picks: st.picks || [], wild: (st.wildPlayed || []).slice(0, 20),
+    mgr: st.manager ? MANAGERS[st.manager].name : null, mgrOffer: st.mgrOffer || null, form: (st.form || []).join(','), spin: st.spin,
+    unit: st.rules && (st.rules.chaos || !st.rules.max) ? 'pts' : st.st.label,
+  });
   const modeKey = () => (S.dailyChaos ? 'dchaos:' + S.day : keyFor(S.mode, S.stat, S.hard, S.fx || S.nat || S.club, S.extreme));
   // where a half-finished draft is kept (the Daily Ultimate has its own; online races save with the race)
   const saveKey = () => (S.mode === 'daily' ? progressKey() : S.online ? null : 'draftp:' + modeKey());
@@ -632,7 +641,9 @@
   // (not on a themed spin like a Centurion Throw: a 100-goal striker at centre-back with a Hat-Trick Hero was far too much)
   const themed = () => !!(S.special && WILDCARDS[S.special] && WILDCARDS[S.special].filter);
   const canPlay = (p, pos) => p.poss.includes(pos) || (mgrIs('vangaal') && pos !== 'GK' && p.pos !== 'G' && !themed());
-  const fits = (p, open) => open.some(pos => canPlay(p, pos));
+  // who goes on the reels: players for the positions you still need, in their own positions (van Gaal's philosophy is
+  // about where you can put them, not who turns up: otherwise late on the reels filled with defenders for your strikers)
+  const fits = (p, open) => open.some(pos => p.poss.includes(pos));
   const emptySlots = () => S.xi.filter(s => s.p == null).length;
   const fmt = n => n.toLocaleString();
   const signed = n => (n < 0 ? '−' : '+') + Math.abs(n).toLocaleString();
@@ -991,12 +1002,18 @@
     if (k === 'redknapp') ['deadline', 'respin', 'hot'].forEach(w => { if (S.inv.length < 3) S.inv.push(w); });
     if (tw().meter && !S.chaosDue) S.meter = Math.max(S.meter || 0, tw().meter);
   }
+  // the three managers on offer at kick-off; a friend's challenge offers exactly the three they had (from their unlocks)
+  function kickoffMgrs() {
+    const theirs = S.ch && (S.ch.mgrOffer || []).filter(k => MANAGERS[k]);
+    S.mgrOffer = theirs && theirs.length ? theirs : mgrChoices(null);
+    return S.mgrOffer;
+  }
   function pickManager() {
     const shape = ['D', 'M', 'F'].map(g => S.form.filter(p => GM.GROUP[p] === g).length).join('-');
     if (!S.weather && GM.CFX) { const W = GM.CFX.WX_W; S.weather = GM.rng(`${S.seed}|weather`).weighted(Object.keys(W), k => W[k]); }
     const w = wx();
     if (w.sound) setTimeout(() => GM.sound.play(w.sound), 900);
-    return moment({ icon: '👔', name: 'Kick-off', tone: 'good', before: snap(), text: `Formation <b>${shape}</b>.${w.name ? ` ${w.icon} <b>${w.name}</b>: ${w.note.replace(/^[^:]*: /, '')}` : ''} Appoint your manager: each has a perk and a catch.`, pick: mgrChoices(null), onPick: k => { appoint(k); hired(); }, scene: 'kickoff', sound: 'whistle' });
+    return moment({ icon: '👔', name: 'Kick-off', tone: 'good', before: snap(), text: `Formation <b>${shape}</b>.${w.name ? ` ${w.icon} <b>${w.name}</b>: ${w.note.replace(/^[^:]*: /, '')}` : ''} Appoint your manager: each has a perk and a catch.`, pick: kickoffMgrs(), onPick: k => { appoint(k); hired(); }, scene: 'kickoff', sound: 'whistle' });
   }
 
   /* ---------------------------------------------------------------- CHAOS moments: one at a time, on the pitch
@@ -1548,7 +1565,7 @@
     let rant = false;
     if (mgrIs('warnock')) { rant = GM.rng(`${S.seed}|warnock|${S.spin}|${S.respins}`)() < 0.1; mult = rant ? 0 : mult * 1.15; }
     const outPos = !p.poss.includes(pos);
-    if (outPos) mult *= 0.8;  // van Gaal's philosophy
+    if (outPos) mult *= 0.85;  // van Gaal's philosophy (85%: balanced by tools/test/managers.js)
     const fergieTime = mgrIs('fergie') && emptySlots() === 1;
     if (fergieTime) mult *= 2;
     const both = S.club2 && bothSides(p);  // Matchday XI: played for both sides, double (on top of everything else)
@@ -1567,6 +1584,7 @@
     slot.fresh = true; slot.at = S.spin;  // when he signed (the full-time replay)
     S.modifier = null; S.capMult = null;
     S.last = p.id;
+    S.picks = (S.picks || []).concat([[S.spin, p.pk, p.name, pos, g]]);  // (friend challenges compare signing by signing)
     S.used.push(p.id);
     if (!S.readonly && GM.trackPick) GM.trackPick(p, S.reels.filter(x => !x.wild).map(x => byId(x.id)));
     S.log.push(pos);
@@ -1576,7 +1594,7 @@
     if (S.target && !S.rules.treble) setTimeout(() => GM.sound.play('rise', S.xi.reduce((a, x) => a + x.g, 0) / S.target), 180);
     if (both) setTimeout(() => GM.toast(`🤝 ${GM.esc(p.name)} played for both sides: <b>double points</b>`, 2600), 300);
     if (rant) setTimeout(() => { GM.toast(`🗯️ “It’s a conspiracy!” ${GM.esc(p.name)} <b>counts for nothing</b>`, 2800); GM.sound.play('boo'); }, 300);
-    else if (outPos && S.rules.chaos) setTimeout(() => GM.toast(`📋 ${GM.esc(p.name)} out of position: <b>80%</b>`, 2200), 300);
+    else if (outPos && S.rules.chaos) setTimeout(() => GM.toast(`📋 ${GM.esc(p.name)} out of position: <b>85%</b>`, 2200), 300);
     if (trio) setTimeout(() => { GM.toast(`🎩 Hat-trick! ${trio.map(q => GM.esc(q.name.split(' ').slice(-1)[0])).join(' + ')} = <b>${fmt(base[S.stat])}</b> ${S.st.label}${short ? ` – under ${HAT[S.stat]}, so <b>half</b>` : ''}`, 3400); GM.sound.play(short ? 'boo' : 'cheer'); }, 300);
     if (fergieTime && !rant) setTimeout(() => { GM.toast(`⌚ <b>Fergie time!</b> ${GM.esc(p.name)} counts double`, 2800); GM.sound.play('cheer'); }, 300);
     if (p.name === 'Sergio Agüero' && emptySlots() === 0) {  // 🤫 the last signing of the game
@@ -1626,6 +1644,13 @@
   }
 
   // CHAOS: the points after every signing and every moment, for the line under the score and the full-time chart
+  // the running total after each signing ([players signed, total]), for friend challenges: their line and yours on one
+  // chart, and where you stand against them after the same number of signings
+  function chProgress(done) {
+    const sc = scoreFor(S), n = S.xi.filter(x => x.p != null).length, v = S.rules.chaos ? sc.total : sc.t;
+    S.prog = (S.prog || [[0, 0]]).filter(x => x[0] !== n).concat([[n, v]]).sort((a, b) => a[0] - b[0]);
+    if (S.ch && GM.challenge && !S.readonly) { GM.challenge.progress(S, sc, !!done); if (!done) GM.challenge.leadCheck(S, n); }
+  }
   function track(icon, name) {
     if (!S.rules.chaos) return;
     const sc = scoreFor(S);
@@ -1634,6 +1659,7 @@
   function completePick() {
     if (S.online && GM.online) GM.online.pushRace(S);
     track();
+    chProgress();
     S.masked = false;
     S.xi.forEach(s => { s.fresh = false; });
     S.spinRespins = 0;
@@ -1657,7 +1683,7 @@
     const w = S.inv[k];
     const wc = WILDCARDS[w];
     if (busy || S.phase === 'spinning' || S.phase === 'reveal' || S.phase === 'done') return;
-    const consume = () => { S.inv.splice(k, 1); S.log.push(wc.icon); S.wildUsed++; GM.sound.play('wild'); charge(); wildFx(w); };
+    const consume = () => { S.inv.splice(k, 1); S.log.push(wc.icon); S.wildPlayed = (S.wildPlayed || []).concat(wc.icon); S.wildUsed++; GM.sound.play('wild'); charge(); wildFx(w); };
     switch (wc.kind) {
       case 'reveal':
         if (S.phase === 'pick') S.revealed = true; else S.revealNext = true;
@@ -1717,7 +1743,7 @@
         idx.forEach(i => { S.xi[i].pos = w === 'gegenpress' ? 'ST' : 'CB'; });
         if (w === 'bus' && S.rules.chaos) S.bus = true;  // and it stays parked in front of your goal
         GM.toast(w === 'gegenpress' ? `⚡ Gegenpress! ${idx.length} midfield slot${idx.length > 1 ? 's' : ''} → strikers` : `🚌 Bus parked: ${idx.length} slot${idx.length > 1 ? 's' : ''} → defence`);
-        if (S.phase === 'pick' && !S.reels.some(x => x.wild || fits(byId(x.id), openPos()))) { S.respins++; S.spinRespins = (S.spinRespins || 0) + 1; consume(); doSpin(); return; }
+        if (S.phase === 'pick' && !S.reels.some(x => x.wild || openPos().some(pos => canPlay(byId(x.id), pos)))) { S.respins++; S.spinRespins = (S.spinRespins || 0) + 1; consume(); doSpin(); return; }
         break;
       }
     }
@@ -1809,6 +1835,7 @@
     S.phase = 'done';
     const sc = scoreFor(S);
     S.final = sc;
+    chProgress(true);
     if (S.rules.max && !S.readonly) GM.addDist(distKey(), S.stat, S.rules.chaos ? sc.total : sc.t);  // CHAOS counts its points  // before the score is saved (see GM.dist)
     const xiSlots = S.xi.filter(s => s.p != null).map(s => ({ ...s, player: byId(s.p) }));
     if (GM.collectDraft && !S.readonly) {
@@ -2207,6 +2234,8 @@
     // the weather lasts the game: it stops at full time (and before the next game's kick-off)
     if (GM.FX) GM.FX.weather(S.rules.chaos && S.weather && S.phase !== 'done' ? S.weather : null, () => GM.$('.pitch', root));
     if (S.inv && S.inv.length > 3 && S.subbing === false && !S.playNow) S.inv.splice(3);  // a card played straight off the reels that didn't happen
+    document.body.classList.toggle('ch-mode', !!(S.ch && S.phase !== 'done'));  // challenge mode: its own look while you play
+    if (S.ch && GM.challenge && !S.chIntro && S.spin === 0 && !S.xi.some(x => x.p != null)) { S.chIntro = true; GM.challenge.intro(S); }
     if (S.phase === 'done') return renderDone();
     requestAnimationFrame(() => { fitPitch(); fitReels(); roamLayer(); });
     if (!S.readonly && saveKey()) GM.store.set(saveKey(), { ...S, rules: undefined });  // saved on every move
@@ -2216,8 +2245,8 @@
     const nReels = Math.max(3, S.reels.length);
     const sp = S.special && WILDCARDS[S.special];
     root.innerHTML = `
-      <div class="topbar"><a href="#/" class="back">‹</a><h2><span class="t-name">${icon} ${modeName().replace(/^Ultimate Wildcard CHAOS/, 'CHAOS').replace(/^Matchday XI · /, '')}</span>${S.hard ? '<small class="hard-pill">Hard</small>' : ''}</h2><span class="top-btns">${S.online ? '' : GM.lbButton(modeKey())}<button class="icon-btn" id="help">?</button></span></div>
-      ${S.vs ? `<div class="banner">⚔️ Beat <b>${GM.esc(S.vs)}</b>’s score of <b>${GM.esc(S.vss)}</b></div>` : ''}
+      <div class="topbar"><a href="#/" class="back">‹</a><h2><span class="t-name">${icon} ${modeName().replace(/^Ultimate Wildcard CHAOS/, 'CHAOS').replace(/^Matchday XI · /, '')}</span>${S.hard ? '<small class="hard-pill">Hard</small>' : ''}${S.ch ? '<small class="hard-pill ch-pill">⚔️ Challenge</small>' : ''}</h2><span class="top-btns">${S.online ? '' : GM.lbButton(modeKey())}<button class="icon-btn" id="help">?</button></span></div>
+      ${S.ch && GM.challenge ? GM.challenge.ghostHtml(S) : S.vs ? `<div class="banner">⚔️ Beat <b>${GM.esc(S.vs)}</b>’s score of <b>${GM.esc(S.vss)}</b></div>` : ''}
       ${S.online ? `<div class="opp-bar" id="oppbar">${(GM.online && GM.online.oppBar && GM.online.oppBar(S.online.code)) || `🌐 Racing <b>${GM.esc(S.online.opp)}</b>…`}</div>` : ''}
       ${counterHtml()}
       ${pitchHtml()}
@@ -2292,11 +2321,12 @@
         ${S.rules.chaos ? chartHtml() : ''}
         ${S.rules.chaos ? `<button class="btn ghost small" id="all-mgrs">👔 All managers (${mgrUnlocked().length}/${Object.keys(MANAGERS).length})</button>` : ''}
         <table class="breakdown">${sc.parts.map(([k, v]) => `<tr><td>${k}</td><td class="${v < 0 ? 'neg' : ''}">${v < 0 ? '−' + fmt(-v) : '+' + fmt(v)}</td></tr>`).join('')}</table>`}
-        ${S.vs ? `<div class="banner">${sc.total > S.vss ? '🎉 You beat' : sc.total == S.vss ? '🤝 You drew with' : '😬 You lost to'} <b>${GM.esc(S.vs)}</b> (${GM.esc(S.vss)})</div>` : ''}
+        ${S.vs && !S.ch ? `<div class="banner">${sc.total > S.vss ? '🎉 You beat' : sc.total == S.vss ? '🤝 You drew with' : '😬 You lost to'} <b>${GM.esc(S.vs)}</b> (${GM.esc(S.vss)})</div>` : ''}
         <div class="muted">Personal best: ${fmt(Math.max(best, sc.total))}</div>
       </div>
       ${S.rules.max ? (S.rules.chaos ? GM.distHtml(distKey(), S.stat, sc.total, 'CHAOS points') : GM.distHtml(distKey(), S.stat, sc.t)) : ''}
       ${S.collected ? `<a class="collected" href="#/album${S.collected.book === 'purist' ? '?b=purist' : ''}">📒 ${S.collected.n ? `<b>+${S.collected.n}</b> new player${S.collected.n === 1 ? '' : 's'} for your album` : 'No new players this time'} · ${S.collected.total.toLocaleString()} collected${S.collected.badges.length ? `<br>🏅 ${S.collected.badges.join(' · ')}` : ''} ›</a>` : ''}
+      ${S.ch || S.rematch ? '<div id="ch-h2h" class="ch-h2h"></div>' : ''}
       ${GM.report ? GM.report(xi, S.st, S.rules.treble) : ''}
       ${pitchHtml()}
       <div class="actions col">
@@ -2307,6 +2337,9 @@
         <a class="btn ghost" href="#/leaderboard?m=${encodeURIComponent(modeKey())}">🏆 Leaderboard</a>
       </div>`;
     wireChart();
+    // a friend's challenge: the head-to-head; a rematch you've just played: sent back to them
+    const chEl = GM.$('#ch-h2h', root);
+    if (chEl && GM.challenge) { if (S.rematch) GM.challenge.sendRematch(S, sc, chEl); else if (S.ch) GM.challenge.fill(chEl, S.ch.code, S.ch.play); }
     const am = GM.$('#all-mgrs', root); if (am) am.onclick = managersModal;
     const again = GM.$('#again', root); if (again) again.onclick = () => start(root, S.mode, { hard: S.hard, extreme: S.extreme, stat: S.rules.mystery ? undefined : S.stat, club: S.club, nat: S.nat });
     GM.$('#share', root).onclick = () => GM.share(resultText(sc));
@@ -2325,6 +2358,13 @@
       GM.shareImage(png, resultText(sc));
     };
     if (GM.$('#challenge', root)) GM.$('#challenge', root).onclick = async () => {
+      // a proper challenge (their XI, their line, the head-to-head, the tally); the plain link if the server can't be reached
+      const btn = GM.$('#challenge', root); btn.disabled = true;
+      const code = GM.challenge && await GM.challenge.create(S, sc);
+      btn.disabled = false;
+      const txt = S.rules.max ? `⚽ Goal Machine – my ${modeName()}${S.hard ? ' (Hard)' : ''} XI has ${fmt(S.rules.chaos ? sc.total : sc.t)} ${S.rules.chaos ? 'pts' : 'PL ' + S.st.label}. Same spins, can you beat it?`
+        : `⚽ Goal Machine – I scored ${sc.total} in ${modeName()}${S.hard ? ' (Hard)' : ''}. Same spins, can you beat me?`;
+      if (code) { GM.share(txt, GM.challenge.link(code)); return; }
       const name = await GM.askName() || 'A friend';
       const m = S.mode === 'daily' ? 'ultimate' : S.mode;
       const url = `${GM.baseUrl()}#/draft?m=${m}&s=${S.stat}${S.club ? '&c=' + encodeURIComponent(S.club) : ''}${S.nat ? '&n=' + encodeURIComponent(S.nat) : ''}${S.extreme ? '&x=1' : ''}&seed=${encodeURIComponent(S.seed)}${S.hard ? '&h=1' : ''}&vs=${encodeURIComponent(name)}&vss=${sc.total}`;

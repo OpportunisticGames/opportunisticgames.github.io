@@ -172,6 +172,7 @@
           <button class="btn small" data-challenge="${esc(f.name)}">⚔️ Play</button></div>`).join('')
         : '<p class="muted center">Add friends by their Goal Machine name, or send an invite code. Anyone you play is added automatically.</p>';
       GM.$$('[data-challenge]').forEach(b => b.onclick = () => newGame(b.dataset.challenge));
+      if (GM.challenge) GM.challenge.decorateFriends(GM.$('#ofriends'));  // your ⚔️ challenge record with each, to their rivalry page
       // tap a friend's picture: challenge, remove them, or report their picture
       GM.$$('[data-fmenu]').forEach(b => b.onclick = () => {
         const n = b.dataset.fmenu;

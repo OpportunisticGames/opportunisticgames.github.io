@@ -51,6 +51,7 @@ game mode for players; this file is about how to work on it.
   Daily, CHAOS). `RULES`, `WILDCARDS`, CHAOS `EVENTS`, reel generation (`makeReels`, seeded, so the same seed = the same
   game), scoring (`scoreFor`), rendering. The pitch is sized once by `fitPitch()`; everything under it sits in a
   fixed-height `.dock` so the layout never jumps. `render()` only draws while its own game is on screen.
+- `challenge.js` – friend challenges (`GM.challenge`): `#/c?id=CODE` (landing, `&p=` head-to-head, `&watch=` watch along), `#/rival?name=`; the draft keeps `S.ch` (the challenge you're playing), `S.prog` ([signed, total] after each signing), `S.picks`; tables `challenges` / `challenge_plays`, RPCs `challenge_create/_get/_start/_progress/_react/_history`, inbox items and push on new plays, results, reactions and rematches.
 - `online.js` – online games with friends: the hub (sub-tabs Games / Finished / League / Friends), Draft Duel,
   Scout Duel (card hand + bonus cards), Live Race and its variants Target Race and CHAOS Race (race = both play the
   same seed; the variant picks the draft mode), the opponent live feed in races, the weekly league, notifications.
@@ -137,6 +138,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
      editing). Keep every manager within about 5% of the average.
    - `chaosfx.js` – every CHAOS scene and wildcard flourish is drawn, weather, the parked bus, sacking, replay and the CHAOS picture.
    - `chaospixi.js` – the effects layer in CHAOS: Lottie vehicles and characters, PixiJS particles, the parked ambulance, Calm off.
+   - `challenges.js` – friend challenges on three phones: send, ghost bar, watch along, head-to-head, reactions, rematch (best of three), group table, tally, rivalry page, CHAOS.
    - `allbadges.js` – every one of the 100 badges is earned through the calls the games make (a new badge needs a trigger here).
    - `fixes5222.js` – the weather clears when it stops; the "Open in the app" bar on Android browsers and the ?go= hand-over.
    - `fixes5221.js` – Extreme hides clues, the full wildcard bag choice, the share picture, CHAOS resume order, weather at full time, bonus notes, badges on every level.
