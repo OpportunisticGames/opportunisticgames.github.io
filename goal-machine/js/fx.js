@@ -74,6 +74,7 @@
     for (let i = alive.length - 1; i >= 0; i--) {
       const p = alive[i], s = p.s;
       p.t += dt;
+      if (p.t < 0 && p.kill != null) { s.destroy(); alive.splice(i, 1); continue; }  // (a splash still to come: never mind)
       if (p.t < 0) continue;
       const f = p.t / p.life;
       if (f >= 1) { s.destroy(); alive.splice(i, 1); continue; }
@@ -86,6 +87,7 @@
       const sc = p.s0 + (p.s1 - p.s0) * f;
       s.scale.set(sc, sc * p.sy * (p.flip ? Math.cos(p.t * p.flip + p.ph) : 1));
       s.alpha = p.a0 * Math.min(1, p.fin ? f / p.fin : 1, p.fout ? (1 - f) / p.fout : 1);
+      if (p.kill != null) { p.kill -= dt; if (p.kill <= 0) { s.destroy(); alive.splice(i, 1); continue; } s.alpha *= p.kill / 0.8; }  // weather stopping: fades out
     }
     if (!alive.length && !wx.kind) { app.ticker.stop(); app.render(); }  // nothing left: stop drawing (and leave it clear)
     app.ticker.maxFPS = busy ? 0 : 30;  // weather on its own is fine at 30 frames a second (kinder to the battery)
@@ -119,9 +121,12 @@
     if (wx.kind === 'rain') for (let k = 0; k < 5; k++) cloud(r, W, r.left + rnd(-60, r.width));
     if (wx.kind === 'sun') for (let k = 0; k < 10; k++) { const [x, y] = at(); add({ ...W, tex: T.dot, x, y, vx: rnd(-6, 6), vy: rnd(-10, -3), tint: 0xfff3c4, add: true, glow: true, scale: rnd(0.06, 0.14), alpha: rnd(0.4, 0.8), life: rnd(1.5, 4), fadeIn: 0.2, fadeOut: 0.4 }); }
   }
+  // the weather that's already on screen fades away (clouds live for half a minute or more, so they'd hang about)
+  const fadeWeather = () => alive.forEach(p => { if (p.w && p.kill == null) p.kill = 0.8; });
   async function weather(kind, get) {
-    if (!kind || calm()) { wx.kind = null; return; }
+    if (!kind || calm()) { if (wx.kind) fadeWeather(); wx.kind = null; return; }
     if (wx.kind === kind) { wx.get = get; return; }
+    fadeWeather();
     if (!await pixi()) return;
     wx.kind = kind; wx.get = get; wx.rt = 0; wx.acc = 0; wx.warm = true;
     if (!app.ticker.started) app.ticker.start();

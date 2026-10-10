@@ -3000,3 +3000,8 @@ body.calm .sc-portrait .ph, body.calm .sc-portrait .stamp, body.calm .sc-portrai
 #bonus-notes .bn b { font-weight: 800; margin-right: 2px; }
 #bonus-notes .bn.up b { color: #7cc0ff; } #bonus-notes .bn.down b { color: #ff8a8a; }
 @keyframes bn-life { 0% { opacity: 0; transform: translateX(14px); } 10%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-6px); } }
+/* 5.22.2: a shared link opened in an Android browser offers to open in the app */
+.app-bar { position: fixed; left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); z-index: 150; display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border-radius: 14px; background: #0b3d2e; color: #fff; box-shadow: 0 8px 24px rgba(0, 0, 0, .35); font-size: .82rem; }
+.app-bar span { flex: 1; min-width: 0; }
+.app-bar .btn { white-space: nowrap; }
+.app-bar .icon-btn { color: #fff; background: transparent; border: 0; font-size: 1rem; padding: 4px; }

@@ -705,8 +705,24 @@
     }).catch(() => {});
   }
 
+  // ?go=#/…: a link handed over by the website's "Open in the app" bar (an Android intent can't carry the # part)
+  { const go = new URLSearchParams(location.search).get('go'); if (go && go[0] === '#') history.replaceState(null, '', location.pathname + go); }
   window.addEventListener('hashchange', route);
   route();
+  // A shared link (a challenge, an online game, a daily…) opened in an Android phone's browser: many apps open links
+  // there rather than in the Goal Machine app, where your account is. Offer to hand it over (or get the app).
+  if (!window.AndroidApp && /Android/i.test(navigator.userAgent) && parseHash().path) {
+    let off = false; try { off = sessionStorage.getItem('gm:appbar') === 'off'; } catch (e) { /* private mode */ }
+    if (!off) {
+      const bar = document.createElement('div'), store = 'https://play.google.com/store/apps/details?id=goal.machine';
+      const link = `intent://opportunisticgames.github.io/goal-machine/?go=${encodeURIComponent(location.hash)}#Intent;scheme=https;package=goal.machine;S.browser_fallback_url=${encodeURIComponent(store)};end`;
+      bar.className = 'app-bar';
+      const vs = parseHash().q.vs;  // a friend's "beat my score" challenge
+      bar.innerHTML = `<span>${vs ? `⚔️ ${GM.esc(vs)}’s challenge: take it on in the app, with your account` : '📱 Got the app? Open this there, with your account'}</span><a class="btn small" href="${GM.esc(link)}">Open in the app</a><button class="icon-btn" aria-label="Close">✕</button>`;
+      bar.querySelector('button').onclick = () => { bar.remove(); try { sessionStorage.setItem('gm:appbar', 'off'); } catch (e) { /* private mode */ } };
+      document.body.appendChild(bar);
+    }
+  }
   // loading screen off, then (once per release) what's new
   const splash = document.getElementById('splash');
   if (splash) { splash.classList.add('gone'); setTimeout(() => splash.remove(), 500); }

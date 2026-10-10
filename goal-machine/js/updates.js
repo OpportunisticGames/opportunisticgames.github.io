@@ -9,6 +9,13 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 71, label: '5.22.2', date: '2026-10-10', title: '📱 Links into the app',
+      items: [
+        '📱 Open a friend’s “beat my score” challenge (or any shared Goal Machine link) in an Android phone’s browser and a bar offers to take it on in the app, where your account is',
+        '☁️ The CHAOS weather really does clear at full time now: the clouds fade away instead of drifting on for half a minute',
+      ],
+    },
+    {
       v: 66, label: '5.22.1', date: '2026-10-08', title: '🔧 Fixes, and faces in focus',
       items: [
         '⚡ Extreme really is extreme now: every PL player, and just names and positions on the reels (no clubs, years or apps)',
