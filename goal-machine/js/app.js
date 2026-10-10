@@ -717,7 +717,8 @@
       const bar = document.createElement('div'), store = 'https://play.google.com/store/apps/details?id=goal.machine';
       const link = `intent://opportunisticgames.github.io/goal-machine/?go=${encodeURIComponent(location.hash)}#Intent;scheme=https;package=goal.machine;S.browser_fallback_url=${encodeURIComponent(store)};end`;
       bar.className = 'app-bar';
-      bar.innerHTML = `<span>📱 Got the app? Open this there, with your account</span><a class="btn small" href="${GM.esc(link)}">Open in the app</a><button class="icon-btn" aria-label="Close">✕</button>`;
+      const vs = parseHash().q.vs;  // a friend's "beat my score" challenge
+      bar.innerHTML = `<span>${vs ? `⚔️ ${GM.esc(vs)}’s challenge: take it on in the app, with your account` : '📱 Got the app? Open this there, with your account'}</span><a class="btn small" href="${GM.esc(link)}">Open in the app</a><button class="icon-btn" aria-label="Close">✕</button>`;
       bar.querySelector('button').onclick = () => { bar.remove(); try { sessionStorage.setItem('gm:appbar', 'off'); } catch (e) { /* private mode */ } };
       document.body.appendChild(bar);
     }

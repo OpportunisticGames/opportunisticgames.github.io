@@ -28,6 +28,11 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const href = await p2.evaluate(() => { const a = document.querySelector('.app-bar a'); return a && a.getAttribute('href'); });
   ok(href && href.startsWith('intent://opportunisticgames.github.io/goal-machine/?go=%23%2Fonline%3Fjoin%3DABCD#Intent;scheme=https;package=goal.machine;'), 'a shared link on Android offers "Open in the app" with the link handed over: ' + href);
   await p2.screenshot({ path: 'lay/appbar.png' });
+  // a friend's draft challenge ("beat my score") gets the bar too, saying whose challenge it is
+  await p2.goto(U + '#/draft?m=classic&s=goals&seed=abc123&vs=Joel&vss=512'); await p2.reload(); await p2.waitForTimeout(1500);
+  const ch = await p2.evaluate(() => { const b = document.querySelector('.app-bar'); return b && { t: b.textContent, h: b.querySelector('a').getAttribute('href') }; });
+  ok(ch && /Joel’s challenge/.test(ch.t) && ch.h.includes(encodeURIComponent('#/draft?m=classic&s=goals&seed=abc123&vs=Joel&vss=512')), 'a draft challenge link offers to open in the app: ' + (ch && ch.t));
+  await p2.screenshot({ path: 'lay/appbar_challenge.png' });
   await p2.click('.app-bar button'); ok(!(await p2.$('.app-bar')), '…and it can be closed');
   // the app receives /goal-machine/?go=%23%2F… and opens that page
   await p2.goto(U + '?go=' + encodeURIComponent('#/today')); await p2.waitForTimeout(800);
