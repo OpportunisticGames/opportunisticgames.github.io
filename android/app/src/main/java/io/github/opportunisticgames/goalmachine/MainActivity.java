@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Base64;
+import android.view.HapticFeedbackConstants;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.webkit.ValueCallback;
@@ -113,9 +114,53 @@ public class MainActivity extends Activity {
             });
         }
         setContentView(frame);
+        shortcuts();
         if (Build.VERSION.SDK_INT >= 33) {
             getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::handleBack);
         }
+    }
+
+    /** Tells the page something happened on the phone side: GM.appEvent(name, value) (e.g. "update", "downloaded"). */
+    void event(String name, String value) {
+        if (web == null) return;
+        String js = "window.GM && GM.appEvent && GM.appEvent(" + org.json.JSONObject.quote(name) + "," + org.json.JSONObject.quote(value == null ? "" : value) + ")";
+        web.post(() -> web.evaluateJavascript(js, null));
+    }
+
+    /** Long-press the app icon: straight to the daily CHAOS, Footle, your challenges or the online games. */
+    private void shortcuts() {
+        if (Build.VERSION.SDK_INT < 25) return;
+        try {
+            android.content.pm.ShortcutManager sm = getSystemService(android.content.pm.ShortcutManager.class);
+            if (sm == null) return;
+            String[][] list = {
+                { "dchaos", "Daily CHAOS", "Today's CHAOS draft", "#/draft?m=chaos&daily=1" },
+                { "footle", "Footle", "Guess today's player", "#/footle" },
+                { "challenges", "Your challenges", "Challenges you've sent and taken on", "#/challenges" },
+                { "online", "Play online", "Your games and friends", "#/online" },
+            };
+            java.util.List<android.content.pm.ShortcutInfo> out = new java.util.ArrayList<>();
+            for (String[] x : list) {
+                Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(URL + x[3]), this, MainActivity.class);
+                out.add(new android.content.pm.ShortcutInfo.Builder(this, x[0]).setShortLabel(x[1]).setLongLabel(x[2])
+                    .setIcon(android.graphics.drawable.Icon.createWithResource(this, R.mipmap.ic_launcher)).setIntent(i).build());
+            }
+            sm.setDynamicShortcuts(out);
+        } catch (Exception e) { /* a launcher without shortcuts */ }
+    }
+
+    /** Whether Android lets this app open Goal Machine links: "verified" (or chosen by the player), "off", or
+     *  "unknown" (Android 11 and older can't say). */
+    private String linkState() {
+        if (Build.VERSION.SDK_INT < 31) return "unknown";
+        try {
+            android.content.pm.verify.domain.DomainVerificationManager dm = getSystemService(android.content.pm.verify.domain.DomainVerificationManager.class);
+            android.content.pm.verify.domain.DomainVerificationUserState st = dm.getDomainVerificationUserState(getPackageName());
+            if (st == null) return "unknown";
+            Integer h = st.getHostToStateMap().get(HOST);
+            boolean on = st.isLinkHandlingAllowed() && h != null && h != android.content.pm.verify.domain.DomainVerificationUserState.DOMAIN_STATE_NONE;
+            return on ? "verified" : "off";
+        } catch (Exception e) { return "unknown"; }
     }
 
     /** A Goal Machine link (e.g. a friend's challenge) tapped while the app is already open. */
@@ -397,6 +442,81 @@ public class MainActivity extends Activity {
             } catch (Exception e) {
                 share(text);
             }
+        }
+
+        /** What this build can do, so the site can switch features on: e.g. "review,update,pgsAuth,buzz,links,shortcuts". */
+        @JavascriptInterface
+        public String features() {
+            return (PlayExtras.AVAILABLE ? "review,update,pgsPlayer,pgsAuth," : "") + "buzz,links,shortcuts,events";
+        }
+
+        /** Asks Google Play for the "Enjoying Goal Machine?" review card (Play decides whether it shows). */
+        @JavascriptInterface
+        public void askReview() {
+            PlayExtras.review(MainActivity.this);
+        }
+
+        /** Checks Play for a newer build (event "update"); with start set, begins downloading it in the background. */
+        @JavascriptInterface
+        public void checkUpdate(boolean start) {
+            PlayExtras.checkUpdate(MainActivity.this, start);
+        }
+
+        /** Installs a downloaded update and restarts the app. */
+        @JavascriptInterface
+        public void completeUpdate() {
+            PlayExtras.completeUpdate(MainActivity.this);
+        }
+
+        /** The Play Games player id (event "pgsPlayer"). */
+        @JavascriptInterface
+        public void pgsPlayer() {
+            PlayExtras.playerId(MainActivity.this);
+        }
+
+        /** A server auth code for the signed-in Play Games player (event "pgsAuth"), for a server to verify. */
+        @JavascriptInterface
+        public void pgsServerAuth(String serverClientId) {
+            PlayExtras.serverAuth(MainActivity.this, serverClientId);
+        }
+
+        /** A haptic: "tick" (a light tap), "click", "confirm" (something good), "reject" (something bad), "heavy",
+         *  or "win" (a little pattern). Follows the phone's touch-feedback setting. */
+        @JavascriptInterface
+        public void buzz(String kind) {
+            runOnUiThread(() -> {
+                try {
+                    if ("win".equals(kind) || "heavy".equals(kind)) {
+                        android.os.Vibrator v = (android.os.Vibrator) getSystemService(VIBRATOR_SERVICE);
+                        if (v == null || !v.hasVibrator()) return;
+                        long[] pattern = "win".equals(kind) ? new long[] { 0, 40, 60, 40, 60, 120 } : new long[] { 0, 90 };
+                        if (Build.VERSION.SDK_INT >= 26) v.vibrate(android.os.VibrationEffect.createWaveform(pattern, -1));
+                        else v.vibrate(pattern, -1);
+                        return;
+                    }
+                    int c = HapticFeedbackConstants.VIRTUAL_KEY;
+                    if ("tick".equals(kind)) c = Build.VERSION.SDK_INT >= 21 ? HapticFeedbackConstants.CLOCK_TICK : HapticFeedbackConstants.VIRTUAL_KEY;
+                    else if ("confirm".equals(kind)) c = Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.CONFIRM : HapticFeedbackConstants.VIRTUAL_KEY;
+                    else if ("reject".equals(kind)) c = Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.REJECT : HapticFeedbackConstants.LONG_PRESS;
+                    web.performHapticFeedback(c);
+                } catch (Exception e) { /* no vibration on this phone */ }
+            });
+        }
+
+        /** Whether Goal Machine links open in the app: "verified", "off" or "unknown". */
+        @JavascriptInterface
+        public String linksStatus() {
+            return linkState();
+        }
+
+        /** Opens Android's "Open by default" page for this app, where the player can let it open its links. */
+        @JavascriptInterface
+        public void openLinkSettings() {
+            Intent i = Build.VERSION.SDK_INT >= 31
+                ? new Intent(Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS, Uri.parse("package:" + getPackageName()))
+                : new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()));
+            try { startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
+            catch (ActivityNotFoundException e) { startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
         }
 
         /** Reloads the site after the offline screen. */

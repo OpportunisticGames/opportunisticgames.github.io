@@ -9,6 +9,17 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 77, label: '5.25', date: '2026-10-11', title: '📱 A better app',
+      items: [
+        '📳 Proper vibrations in the app: a tick on taps, a thud for big moments, a little buzz when you beat your best or win a challenge',
+        '⬆️ New app versions download inside the app: tap to download, then tap to restart',
+        '🔗 If friends’ links open in Chrome, the app tells you and takes you to the switch that fixes it (also in Settings)',
+        '🚀 Hold the app icon for shortcuts: Daily CHAOS, Footle, your challenges and online games',
+        '🔔 Notifications get a button (⚔️ Take it on, 👀 Watch, ▶️ Play now), and reminders and news are quieter, with their own switch in Android’s settings',
+        '⭐ Enjoying it? The app may ask you to rate it on Google Play (only now and then, at a good moment)',
+      ],
+    },
+    {
       v: 76, label: '5.24.1', date: '2026-10-11', title: '🧹 No more scroll line',
       items: [
         '🧹 The app no longer draws a scroll line down the right of the screen (update the app from Google Play)',

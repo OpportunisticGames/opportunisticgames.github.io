@@ -312,6 +312,7 @@
     GM.$('#ch-pic', el).onclick = () => GM.shareImage(picture(ch, A, B, an, bn), `⚽ Goal Machine – ${an === 'You' ? (GM.getName() || 'Me') : an} ${fmt(A.score)} v ${fmt(B.score)} ${bn}`);
     bestOf(GM.$('#ch-bo3', el), ch, A.name, B.name, sd.you);
     if (fresh && !live) reveal(el, A.score, B.score, v);
+    if (fresh && !live && sd.you && v > 0 && GM.native) { GM.buzz('win'); GM.native.happy('challenge'); }
   }
   // the final whistle on your own result: both scores count up, then the verdict lands (confetti if you won)
   function reveal(el, a, b, v) {
