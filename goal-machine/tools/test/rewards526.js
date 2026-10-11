@@ -117,7 +117,7 @@ async function phone(b, name, key, errs, store = {}) {
   const nextTxt = await A.textContent('.st-next');
   ok(next.length === 1 && !/Champions|Christmas/.test(nextTxt), `next season is a surprise: ${nextTxt.trim()}`);
   await A.goto(U + '#/locker?k=pitch'); await A.waitForTimeout(400);
-  const lk = await A.evaluate(() => ({ txt: document.querySelector('.lk-grid').textContent, fut: Object.values(GM.LOCKER).filter(x => x.src.s && x.src.s > GM.season().id).map(x => x.id), shown: [...document.querySelectorAll('.lk-item')].map(b => b.dataset.id) }));
+  const lk = await A.evaluate(() => ({ txt: document.querySelector('.lk-grid').textContent, fut: Object.values(GM.LOCKER).filter(x => x.src.s && x.src.s > GM.gmSeason().id).map(x => x.id), shown: [...document.querySelectorAll('.lk-item')].map(b => b.dataset.id) }));
   ok(lk.fut.length > 0 && !lk.fut.some(id => lk.shown.includes(id)) && !/Coming|Christmas/.test(lk.txt), `the Locker keeps later seasons’ items hidden (${lk.fut.length} not shown)`);
   await A.goto(U + '#/settings?s=look'); await A.waitForTimeout(400);
   await A.click('#s-szlook [data-v="false"]'); await A.waitForTimeout(200);
@@ -132,7 +132,7 @@ async function phone(b, name, key, errs, store = {}) {
   await X.clock.install({ time: new Date('2026-12-10T12:00:00Z') });
   const D = await X.newPage(); D.on('pageerror', e => errs.push('Dec: ' + e.message));
   await D.goto(U); await D.evaluate(() => { localStorage.setItem('gm:seenVersion', '999'); localStorage.setItem('gm:welcomed', '1'); }); await D.reload(); await D.waitForTimeout(1500);
-  const dec = await D.evaluate(() => ({ name: GM.season().name, cls: document.documentElement.className, music: GM.seasonMusic, vault: GM.vaultItems().map(x => x.id), t6: GM.rewardLabel(GM.levelReward ? { item: 'pitch-xmas' } : null) }));
+  const dec = await D.evaluate(() => ({ name: GM.gmSeason().name, cls: document.documentElement.className, music: GM.seasonMusic, vault: GM.vaultItems().map(x => x.id), t6: GM.rewardLabel(GM.levelReward ? { item: 'pitch-xmas' } : null) }));
   ok(dec.name === 'Christmas' && /sz-christmas/.test(dec.cls) && dec.music === 'festive', `in December it's the Christmas season, with Jingle Bells on the menus (${dec.name}, ${dec.music})`);
   ok(dec.vault.includes('title-tinkerman') && dec.vault.includes('pitch-ucl') && !dec.vault.includes('pitch-xmas'), 'October’s and November’s items are in the vault; Christmas’s are on the track');
   const th = await D.evaluate(() => ({ bg: getComputedStyle(document.body).getPropertyValue('--bg').trim(), flakes: document.querySelectorAll('.sz-fx i').length, shown: getComputedStyle(document.querySelector('.sz-fx')).display }));

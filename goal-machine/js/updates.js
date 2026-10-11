@@ -9,6 +9,12 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 81, label: '5.27.1', date: '2026-10-12', title: 'Matchday XI fixed',
+      items: [
+        '🏟️ Matchday XI (and any game with every PL player) broke on players who only had one Premier League season: their cards came up blank or the game stopped. Fixed',
+      ],
+    },
+    {
       v: 80, label: '5.27', date: '2026-10-11', title: '🎒 A tidier app: the Locker tab',
       promo: [
         { href: '#/locker', icon: '🎒', cls: 't-purple', title: 'The Locker tab', sub: 'Your season, your XI, cards, badges and kit, all in one place' },

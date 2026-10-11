@@ -169,7 +169,7 @@
   const secret = it => {
     if (has(it.id)) return false;
     const s = it.src;
-    if (s.season) return (s.s || '2026-10') > (GM.season ? GM.season().id : '');
+    if (s.season) return (s.s || '2026-10') > (GM.gmSeason ? GM.gmSeason().id : '');
     if (s.event) { const e = (GM.EVENTS || []).find(x => x.id === s.event), on = GM.activeEvent && GM.activeEvent();
       return !(on && on.id === s.event) && !!e && new Date().toISOString().slice(0, 10) < e.from; }
     return false;
@@ -182,7 +182,7 @@
     if (s.lvl) return `Reach level ${s.lvl}`;
     if (s.vault) return 'In the vault: Legendary packs and the prize wheel';
     if (s.event) { const e = (GM.EVENTS || []).find(x => x.id === s.event), on = GM.activeEvent && GM.activeEvent(); return on && on.id === s.event ? `${e.name} event, tier ${s.tier}` : `${e ? e.name + ' (event over)' : 'An event'}: in the vault now`; }
-    if (s.season) { const now = GM.season ? GM.season().id : '', sid = s.s || '2026-10', z = GM.season ? GM.season(sid) : null;
+    if (s.season) { const now = GM.gmSeason ? GM.gmSeason().id : '', sid = s.s || '2026-10', z = GM.gmSeason ? GM.gmSeason(sid) : null;
       return sid === now ? `Season track, tier ${s.season}` : sid > now ? 'Coming soon' : 'From an old season: in the vault now'; }
     if (s.missions) return `Finish ${s.missions} weekly mission${s.missions > 1 ? 's' : ''}`;
     if (s.badges) return `Earn ${s.badges} badges`;

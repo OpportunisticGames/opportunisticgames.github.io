@@ -3,6 +3,12 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.27.1 *(owner, 12 Oct 2026)*
+- Matchday XI: blank cards, then “id.split is not a function” and “Couldn’t load the player list”. 5.26’s seasons code
+  took the name `GM.season`, which already meant “format a PL season” (`GM.era` uses it for one-season players), so every
+  card for a player with a single PL season crashed (1,339 of them in the full list, so Matchday XI, Extreme and Purist
+  hit it). The game’s seasons are now `GM.gmSeason`; `layout527.js` checks both.
+
 ### Fixed in 5.26.1 *(owner, 11 Oct 2026)*
 - “We shouldn’t spoil all the things coming in future seasons.” The Locker listed later seasons’ items as “Coming in
   Season 3: 🎄 Christmas”, the Season page teased the next three seasons with item counts, and the 5.26 changelog named

@@ -97,7 +97,7 @@ game mode for players; this file is about how to work on it.
   (`GM.packBonus`, always in a 🌟 Legendary pack), the vault (`GM.vaultItems`: vault-only items, past seasons' (`src.s`
   earlier than now) and finished events'), and events (`EVENTS`: dates, a 10-tier track; items have `src.event` + `tier`;
   `gm:eventPeek` = an event id shows it early, for testing). New season items: add `src: { season: tier, s: 'YYYY-MM' }`.
-- `rewards.js` – 🏆 seasons (`SEASONS`: each month's name, icon, theme `html.sz-<theme>` (the strip along the top and tints), menu music
+- `rewards.js` – 🏆 seasons (`GM.gmSeason()`; not `GM.season`, which formats a PL season like 2008/09) (`SEASONS`: each month's name, icon, theme `html.sz-<theme>` (the strip along the top and tints), menu music
   (`audio.js` TRACKS: spooky, champions, festive, easter), Lottie visitors on Home (`VISIT`: sleigh, snowman, gift, ghost, bat,
   batmoon, pumpkin, bunny, eggs, fireworks, sun, stopwatch, flags, trophy) and items (locker.js `src.s`); a calendar month; all XP also fills a 30-tier track, `GM.seasonXP`), weekly missions (on the Today tab: `GM.missionsHtml`, `GM.loginHtml`; three
   a week from `POOL`, counted by `GM.track(event)` calls in the games), login rewards (`GM.loginCheck`), `#/season`.

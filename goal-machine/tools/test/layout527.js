@@ -47,6 +47,9 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     await A.goto(U + '#/challenges'); await A.waitForTimeout(1200);
     ok(/tab=challenges/.test(A.url()) && await A.evaluate(() => !document.querySelector('[data-panel="challenges"]').hidden && document.querySelector('#otabs').scrollWidth <= document.querySelector('#otabs').clientWidth + 1), `#/challenges → Online’s ⚔️ Challenges sub-tab (the five sub-tabs fit) ${tag}`);
     await A.screenshot({ path: `lay/l527_online_${W}.png` });
+    // 5.27.1: GM.season is the Premier League season ("2008/09"); the game's seasons are GM.gmSeason (they once clashed,
+    // and every one-season player's card crashed: Matchday XI, Extreme, Purist)
+    ok(await A.evaluate(() => GM.era({ first: 2008, last: 2008 }) === '2008/09' && GM.gmSeason().name === 'Halloween'), `one-season players' cards: 2008/09, and the game season still works ${tag}`);
     // the top bar stays out of games
     await A.goto(U + '#/draft?m=classic&s=goals&seed=l527'); await A.waitForTimeout(1200);
     ok(await A.evaluate(() => document.querySelector('.gm-status').hidden), `no top bar in a game ${tag}`);

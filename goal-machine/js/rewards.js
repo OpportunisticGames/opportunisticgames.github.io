@@ -55,7 +55,7 @@
   const seasonId = (d = new Date()) => d.toISOString().slice(0, 7);  // YYYY-MM (UTC)
   const seasonNo = id => { const [y, m] = id.split('-').map(Number); return (y - 2026) * 12 + m - 9; };  // October 2026 = Season 1
   const seasonEnds = () => { const d = new Date(); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1); };
-  GM.season = (id = seasonId()) => { const sz = SEASONS[id] || {}; return { id, n: seasonNo(id), name: sz.name || NAMES[+id.slice(5, 7) - 1], icon: sz.icon || '🏆', sub: sz.sub || '', theme: sz.theme || '', ends: seasonEnds() }; };
+  GM.gmSeason = (id = seasonId()) => { const sz = SEASONS[id] || {}; return { id, n: seasonNo(id), name: sz.name || NAMES[+id.slice(5, 7) - 1], icon: sz.icon || '🏆', sub: sz.sub || '', theme: sz.theme || '', ends: seasonEnds() }; };
 
   // this season's progress (a new month starts a new one)
   const loadS = () => { let s = GM.store.get('season', null); if (!s || s.id !== seasonId()) { s = { id: seasonId(), xp: 0, got: [] }; GM.store.set('season', s); } return s; };
@@ -67,7 +67,7 @@
     if (it && !GM.lockerHas(it.id)) return { item: it.id };
     return t % 10 === 0 ? { pack: 'legendary' } : t % 5 === 0 ? { choice: [{ pack: 'season' }, { spin: 2 }, { vault: 1 }] } : t % 3 === 0 ? { spin: 1 } : { pack: t % 2 ? 'standard' : 'season' };
   };
-  GM.seasonInfo = () => { const s = loadS(), t = tierOf(s.xp); return { ...GM.season(), xp: s.xp, tier: t, into: t >= TIERS ? TIER : s.xp - t * TIER, got: s.got }; };
+  GM.seasonInfo = () => { const s = loadS(), t = tierOf(s.xp); return { ...GM.gmSeason(), xp: s.xp, tier: t, into: t >= TIERS ? TIER : s.xp - t * TIER, got: s.got }; };
   // season XP (called with every XP, and for missions and login rewards); new tiers hand out their rewards
   GM.seasonXP = function (n) {
     if (!n) return;
@@ -188,7 +188,7 @@
       <h3 class="section-title">🪜 The season track</h3>
       <div class="st-track">${Array.from({ length: TIERS }, (_, k) => reward(k + 1)).join('')}</div>
       <h3 class="section-title">🗓️ Next season</h3>
-      <div class="st-next">${(() => { const d = new Date(), id = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1)).toISOString().slice(0, 7), z = GM.season(id);
+      <div class="st-next">${(() => { const d = new Date(), id = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1)).toISOString().slice(0, 7), z = GM.gmSeason(id);
         return `<div><span>🎁</span><b>Season ${z.n}</b><small>A new track, a new look and new things to unlock. It starts on the 1st: no peeking.</small></div>`; })()}</div>
       <p class="muted center small">When the month ends, this season’s items go into the vault: you can still find them in 🌟 Legendary packs and on the 🎡 wheel.</p>`;
   };
