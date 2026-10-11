@@ -36,7 +36,10 @@ wildcards (themed free spins or modifiers the engine already plays, so balance s
 colours behind the pitch and a kick-off line; a challenge keeps its season.
 Then: *"Each seasonal chaos should be good for seasonal rewards… all tie in"* and *"instead of normal managers… parodies of
 halloween related characters (like the adams family)"* → also 5.28: three characters a season (each on a real manager's rules,
-so balance holds), +60 season XP a game, a weekly mission, a title for 5 games, the Season page card. Still open from the
+so balance holds), +60 season XP a game, a weekly mission, a title for 5 games, the Season page card.
+Then (5.29): *"normal chaos should still be available and seasonal chaos scores shouldnt count to normal leaderboard… seasonal chaos
+is fine to be a bit more broken with op managers or wildcards"* → Seasonal CHAOS is its own mode (`szchaos`, own board); in it
+bonuses ×2, coin cards ×3, Boxing Day ×3, hot streaks ×2, the meter 1.5× faster, storms 20%, characters' perks ×2. Still open from the
 first sketch below:
 
 **The fuller spooky version (still to discuss):** for the season (or just the Spooky Season event, 24 Oct to 3 Nov):

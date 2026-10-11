@@ -58,7 +58,8 @@ game mode for players; this file is about how to work on it.
 - `draft.js` – the draft engine for every XI mode (Ultimate, Classic, Extreme, Purist, Target, Treble, Mystery, Club,
   Daily, CHAOS). `RULES`, `WILDCARDS`, CHAOS `EVENTS`, seasonal CHAOS `SZ_CHAOS` (per season: 2 wildcards keyed `sz_*` that play as an
   existing kind (`as:` for modifiers), 3 moments, colours via `body[data-cz]`; `S.sz` fixed at kick-off and carried by challenges; `inSz` gates them; `SZ_MGRS`: 3 characters a season as
-  `MANAGERS['szm_*']` = a real manager's rules (`base`, `mgrIs` matches it) with their own name/look/text, offered instead of the real ones;
+  `MANAGERS['szm_*']` = a real manager's rules (`base`, `mgrIs` matches it) with their own name/look/text, offered instead of the real ones; all of it only in the Seasonal CHAOS mode (`m=szchaos`, `RULES.szchaos`, its own board `szchaos`), which is
+  deliberately OP (`S.sz` doubles `pts`, meter ×1.5, storms 20%, seasonal coin cards ×3, perks ×2) while normal CHAOS stays normal;
   full time calls rewards.js `GM.szChaosDone` (season XP, the `szchaos` mission that's always one of the three, Locker titles `src.szc`)), reel generation (`makeReels`, seeded, so the same seed = the same
   game), scoring (`scoreFor`), rendering. The pitch is sized once by `fitPitch()`; everything under it sits in a
   fixed-height `.dock` so the layout never jumps. `render()` only draws while its own game is on screen.

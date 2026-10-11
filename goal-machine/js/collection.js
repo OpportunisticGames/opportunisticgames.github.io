@@ -279,7 +279,7 @@
     ultimatepure: 'Purist (Normal)', ultimatepureh: 'Purist (Hard)', purist: 'Purist (Extreme)',
   };
   GM.PGS_BOARDS = LB;
-  const DRAFTS = /^(ultimate|ultimatepure|classic|classicwild|extreme|purist|chaos|chaosx|target|treble|mystery|daily|dchaos|club|match|nation)/;
+  const DRAFTS = /^(ultimate|ultimatepure|classic|classicwild|extreme|purist|chaos|chaosx|szchaos|target|treble|mystery|daily|dchaos|club|match|nation)/;
   GM.pgsStat = (name, props) => { if (GM.app('pgsAvailable')) GM.app('pgsStats', JSON.stringify([{ name, props: props || {} }])); };
   // every finished game: its score to the leaderboard it belongs to (if any) and a Game Stats event
   GM.pgsRecord = (mode, score) => {
@@ -318,7 +318,7 @@
     if (ev.mode === 'nation') GM.store.set('nationsPlayed', a.nations);
     if (!purist && GM.cardsFromDraft) GM.cardsFromDraft(ev.xi);
     if (GM.addXP) GM.addXP(GM.XP.draft);  // a piece of each signing's card (once a day each)
-    if (GM.track) { GM.track('draft'); if (/^chaos/.test(ev.mode || '') || ev.chaos) GM.track('chaos'); }  // weekly missions (rewards.js)
+    if (GM.track) { GM.track('draft'); if (/^(sz)?chaos/.test(ev.mode || '') || ev.chaos) GM.track('chaos'); }  // weekly missions (rewards.js)
     const fresh = check({ type: 'draft', ...ev }, a);
     save(a);
     if (purist) save(book, 'purist');

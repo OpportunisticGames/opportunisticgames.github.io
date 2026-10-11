@@ -9,9 +9,20 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 82, label: '5.29', date: '2026-10-12', title: '✨ Seasonal CHAOS gets its own mode (and goes a bit mad)',
+      promo: [
+        { href: '#/draft?m=szchaos&s=goals', icon: '🎃', cls: 't-purple', kick: '✨ Seasonal CHAOS', title: 'Halloween CHAOS, turned up', sub: 'Double bonuses, ×3 cards and characters with doubled perks. Its own leaderboard' },
+      ],
+      items: [
+        '🌪️ Normal CHAOS is back to normal: the usual managers, wildcards and moments, and its scores on the usual board',
+        '✨ Seasonal CHAOS is its own mode with its own leaderboard, on Home under CHAOS. It’s meant to be a bit broken: every bonus is doubled, the seasonal Double or Nothing cards pay ×3, the CHAOS meter fills faster, storms come twice as often, and the season’s characters have their perks doubled',
+        '🧣 The club stripe along the top sits under the season’s band again, clear of the page titles',
+      ],
+    },
+    {
       v: 81, label: '5.28', date: '2026-10-12', title: '🎃 Seasonal CHAOS and a proper Halloween look',
       promo: [
-        { href: '#/draft?m=chaos&s=goals', icon: '🧙', cls: 't-purple', kick: '🎃 Halloween CHAOS', title: 'The witch is loose in CHAOS', sub: 'Every season brings its own CHAOS: new wildcards, new moments and its own colours' },
+        { href: '#/draft?m=szchaos&s=goals', icon: '🧙', cls: 't-purple', kick: '🎃 Halloween CHAOS', title: 'The witch is loose in CHAOS', sub: 'Every season brings its own CHAOS: new wildcards, new moments and its own colours' },
       ],
       items: [
         '🌪️ Seasonal CHAOS: every season of the year brings its own CHAOS, with two wildcards and three moments you only get that month, its own colours behind the pitch and a word at kick-off. Halloween has 🧛 Back from the Dead, 🎃 Trick or Treat, the 🧙 Witch’s Curse, a 👻 ghost goal and a 🦇 floodlight failure. The rest are a surprise until their month',

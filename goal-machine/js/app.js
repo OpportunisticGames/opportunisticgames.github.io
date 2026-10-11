@@ -145,8 +145,8 @@
     if (GM.rewardsStart) GM.rewardsStart();
     if (GM.seasonVisitPlan) GM.seasonVisitPlan(path);  // a seasonal visitor on Home now and then (rewards.js)  // login reward, Locker unlocks, the look you wear (once a session)
     if (GM.native) GM.native.start();  // the app's extras: Play updates, links check (once a session)
-    GM.sound.scene(path === 'draft' && /^chaos/.test(q.m || '') ? 'chaos' : path === 'draft' && q.ch ? 'h2h' : path);  // (a friend's challenge: the tense one)  // each game area has its own music (CHAOS has Mayhem)
-    GM.chaosLook(path === 'draft' && /^chaos/.test(q.m || ''));
+    GM.sound.scene(path === 'draft' && /^(sz)?chaos/.test(q.m || '') ? 'chaos' : path === 'draft' && q.ch ? 'h2h' : path);  // (a friend's challenge: the tense one)  // each game area has its own music (CHAOS has Mayhem)
+    GM.chaosLook(path === 'draft' && /^(sz)?chaos/.test(q.m || ''));
     GM.moneyLook(path === 'moneyball');
     GM.ownerLook(path === 'owner' || path === 'reign');
     GM.applyIntl();
@@ -165,7 +165,7 @@
   }
   function page(path, q) {
     switch (path) {
-      case 'draft': return GM.draft.start(app, ['target', 'treble', 'mystery', 'club', 'classic', 'classicwild', 'ultimatepure', 'extreme', 'purist', 'chaos', 'chaosx', 'match', 'nation'].includes(q.m) ? q.m : 'ultimate',
+      case 'draft': return GM.draft.start(app, ['target', 'treble', 'mystery', 'club', 'classic', 'classicwild', 'ultimatepure', 'extreme', 'purist', 'chaos', 'chaosx', 'szchaos', 'match', 'nation'].includes(q.m) ? q.m : 'ultimate',
         { fx: q.fx, nat: q.n, stat: q.s, seed: q.seed, vs: q.vs, vss: q.vss ? +q.vss : undefined, ch: q.ch, rematch: q.rm, hard: q.seed ? q.h === '1' : GM.isHard(), extreme: q.seed ? q.x === '1' : GM.isExtreme(), club: q.c, daily: q.daily === '1' });
       case 'today': return GM.todayPage(app);
       case 'matchday': return GM.matchday(app);
@@ -289,10 +289,12 @@
       <div class="hard-toggle three" role="group" aria-label="Difficulty">${Object.entries(GM.LEVELS).map(([k, [i, n, sub]]) => `<button class="${k === level ? 'on' : ''}" data-level="${k}">${i} ${n}<small>${sub}</small></button>`).join('')}</div>
       <div class="seg home-tabs" id="htabs">${HTABS.map(([k, l, modes]) => `<button data-t="${k}">${l}${modes.some(m => newTag(m)) ? '<i class="new-dot"></i>' : ''}</button>`).join('')}</div>
       <div data-hpanel="main">
-      <div class="chaos-card">${newTag('chaos')}<div class="chaos-head"><span>🌪️</span><div><span class="kicker">${szc ? `${GM.esc(szc.name)} · this month only` : 'Headline event'}</span><b>Ultimate Wildcard CHAOS</b><small>${szc ? `${GM.esc(szc.kick)} Its own wildcards, moments and managers, and season XP every game.` : 'Appoint a manager, fill the CHAOS meter and survive tornadoes, VAR and last-minute madness. Your XI’s total plus bonus points.'}</small></div></div>
+      <div class="chaos-card">${newTag('chaos')}<div class="chaos-head"><span>🌪️</span><div><span class="kicker">Headline event</span><b>Ultimate Wildcard CHAOS</b><small>Appoint a manager, fill the CHAOS meter and survive tornadoes, VAR and last-minute madness. Your XI’s total plus bonus points.</small></div></div>
         ${extreme ? '<span class="cx-note">⚡ Extreme: all 5,000+ players</span>' : ''}
         <div class="stat-row">${Object.keys(GM.STATS).map(s => statBtn(cpool, s)).join('')}</div>
         <a class="chaos-daily" href="#/draft?m=chaos&daily=1">${GM.calIcon()} <b>Daily CHAOS</b><span>${GM.dailyStatus('chaos').text || 'Same chaos for everyone today · one go'}</span>${GM.streak('chaos') ? `<i>🔥 ${GM.streak('chaos')}</i>` : ''}</a></div>
+      ${szc ? `<div class="chaos-card sz-chaos-card" data-cz="${GM.gmSeason().theme}"><div class="chaos-head"><span>${GM.gmSeason().icon}</span><div><span class="kicker">This month only · its own leaderboard</span><b>${GM.esc(szc.name)}</b><small>${GM.esc(szc.kick)} Its own characters in the dugout, wildcards and moments, all turned up: double bonuses, ×3 cards, more madness. +60 season XP a game.</small></div></div>
+        <div class="stat-row">${Object.keys(GM.STATS).map(s => statBtn('szchaos', s)).join('')}</div></div>` : ''}
       <div class="mode-card featured ultimate big-card">
         <span class="mode-icon">${GM.MODES[ult].icon}</span>
         <span class="mode-text"><span class="kicker">Main event</span><b>${ultName}</b><small>${ultSub}</small>
@@ -576,13 +578,13 @@
     const nations = [...new Set([GM.store.get('nation', 'England')].concat(GM.store.get('nationsPlayed', [])))].slice(0, 8).map(n => 'nation' + GM.slug(n));
     const GAMES = [
       ['⚽ Main event', ['ultimate', 'ultimatepure', 'classicwild', 'classic']],
-      ['🌪️ CHAOS', ['chaos', 'dchaos:' + today]],
+      ['🌪️ CHAOS', ['chaos', 'dchaos:' + today].concat(GM.SZ_CHAOS && GM.gmSeason && GM.SZ_CHAOS[GM.gmSeason().theme] ? ['szchaos'] : [])],
       [GM.calIcon() + ' Daily', ['daily:' + today, 'footle:' + today, 'grid:' + today, 'dmoney:' + today, 'dailies']],
     ].concat(club ? [['🏟️ Your club', ['clubs', 'club' + GM.slug(club)].concat(GM.nextMatch(club) ? ['match:' + GM.nextMatch(club).id] : [])]] : [])
       .concat(GM.intlBreak() || GM.store.get('nationsPlayed', []).length ? [['🌍 International', nations]] : [])
       .concat([['🃏 Packed XI', ['packedxi']], ['🎯 Targets', ['target', 'treble', 'mystery']], ['💰 Market', ['owner', 'money']], ['⚡ Quick', ['hopper', 'hilo', 'whoami', 'grid', 'tally']]]);
     const NAMES = { classicwild: 'Classic Wildcard', classic: 'Classic', ultimate: 'Ultimate Wildcard', ultimatepure: 'Ultimate', extreme: 'Extreme Wildcard', purist: 'Extreme Purist',
-      chaos: 'CHAOS', chaosx: 'CHAOS Extreme', target: 'Target', treble: 'The Treble', mystery: 'Mystery Target', money: 'Moneyball', owner: 'Dodgy Owner', dailies: 'Daily stars', clubs: 'Club v club', packedxi: 'Packed XI' };
+      chaos: 'CHAOS', chaosx: 'CHAOS Extreme', szchaos: 'Seasonal CHAOS', target: 'Target', treble: 'The Treble', mystery: 'Mystery Target', money: 'Moneyball', owner: 'Dodgy Owner', dailies: 'Daily stars', clubs: 'Club v club', packedxi: 'Packed XI' };
     const SUFFIX = { goals: '', assists: 'ast', apps: 'apps' };
     const hasStats = b => !!GM.MODES[b + 'ast'];
     // m → base board, stat, level (Normal / Hard / Extreme), and the option for Club v club (week) or Daily stars (sort)
