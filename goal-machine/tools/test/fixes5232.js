@@ -34,12 +34,10 @@ async function phone(b, name, key, errs) {
   await A.evaluate(() => { document.querySelectorAll('.notice').forEach(n => n.remove()); return GM.challenge.checkNew(); }); await A.waitForTimeout(300);
   ok(!(await A.$('.notice')), 'each one is shown once');
   // the Online tab
-  await A.goto(U + '#/online?tab=games'); await A.waitForTimeout(1500);
-  const games = await A.textContent('#olists');
-  ok(/Challenges/.test(games) && /Took on yours/.test(games) && /1,676–1,347/.test(games), 'the Games tab lists the challenge with the score');
+  await A.goto(U + '#/online?tab=challenges'); await A.waitForTimeout(1500);
+  const games = await A.textContent('#ochal');
+  ok(/Took on yours/.test(games) && /1,676–1,347/.test(games), 'the Online tab’s ⚔️ Challenges lists the challenge with the score');
   await A.screenshot({ path: 'lay/ch_games.png' });
-  await A.click('#otabs [data-t="done"]'); await A.waitForTimeout(200);
-  ok(/Took on yours/.test(await A.textContent('#odone')), 'and so does Finished');
   await A.click('#otabs [data-t="friends"]'); await A.waitForTimeout(200);
   const rec = await A.evaluate(() => { const m = document.querySelector('.friend .f-main'); m.insertAdjacentHTML('beforeend', '<span class="rec" id="trec"><b class="w">W4</b> <b class="d">D0</b> <b class="l">L9</b></span>'); const r = document.getElementById('trec'); const cs = r && getComputedStyle(r); return r ? { w: r.getBoundingClientRect().width, anim: cs.animationName } : null; });
   ok(rec && rec.w > 40 && rec.anim === 'none', `the W–D–L record sits still at full size (${JSON.stringify(rec)})`);
@@ -47,13 +45,13 @@ async function phone(b, name, key, errs) {
   const menu = await A.$('.modal a[href^="#/rival?name=Bob"]');
   ok(!!menu, "Bob's menu on Friends links to your challenges with him");
   await A.goto(U + '#/challenges'); await A.waitForTimeout(1200);
-  const page = await A.textContent('#app');
-  ok(/Your challenges/.test(page) && /Took on yours/.test(page) && /1–0/.test(page), 'the ⚔️ Your challenges page: every challenge and your record per friend');
+  const page = await A.textContent('#ochal');
+  ok(/tab=challenges/.test(A.url()) && /Took on yours/.test(page) && /1–0/.test(page), '#/challenges opens the ⚔️ Challenges sub-tab: every challenge and your record per friend');
   await A.screenshot({ path: 'lay/ch_list.png' });
-  await A.click('.ch-mine'); await A.waitForTimeout(1200);
+  await A.click('#ochal .ch-mine'); await A.waitForTimeout(1200);
   ok(/held off|beat|Bob/i.test(await A.textContent('#app')) && A.url().includes('&p='), 'tapping it opens the head-to-head');
   await B.goto(U + '#/challenges'); await B.waitForTimeout(1200);
-  ok(/You took on theirs/.test(await B.textContent('#app')) && /Alice/.test(await B.textContent('#app')), "Bob's list has the one he took on");
+  ok(/You took on theirs/.test(await B.textContent('#ochal')) && /Alice/.test(await B.textContent('#app')), "Bob's list has the one he took on");
   // 5.23.3: challenge a friend in the app – Alice sends a new challenge straight to Bob
   const c2 = await A.evaluate(() => GM.lb.rpc('challenge_create', { p_user: 'Alice', p_key: 'a'.repeat(28), p_mode: 'classic', p_stat: 'goals', p_seed: 's2', p_hard: false, p_score: 40, p_total: 40, p_game: {} }));
   await A.evaluate(code => { GM.share = (t, u) => { window._shared = u; }; window._S = { chCode: code }; GM.challenge.send(window._S, { total: 40 }, 'Beat me'); }, c2.code); await A.waitForTimeout(600);
@@ -73,10 +71,10 @@ async function phone(b, name, key, errs) {
   const bn = await B.evaluate(() => { const n = document.querySelector('.notice'); return n ? n.textContent + ' ' + n.getAttribute('href') : ''; });
   ok(/Alice challenged you/.test(bn) && bn.includes('#/c?id=' + c2.code), `Bob gets a card in the app (${bn.trim()})`);
   await B.goto(U + '#/'); await B.goto(U + '#/challenges'); await B.waitForTimeout(1200);
-  const bl = await B.textContent('#app');
+  const bl = await B.textContent('#ochal');
   ok(/Challenged you/.test(bl) && /beat 40/.test(bl), 'and it waits in his challenges list (' + bl.replace(/\s+/g, ' ').slice(0, 200) + ')');
   await A.goto(U + '#/challenges'); await A.waitForTimeout(1200);
-  ok(/Sent to Bob/.test(await A.textContent('#app')), "Alice's list says who she sent it to");
+  ok(/Sent to Bob/.test(await A.textContent('#ochal')), "Alice's list says who she sent it to");
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); server.close && server.close();
 })();

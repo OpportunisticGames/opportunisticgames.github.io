@@ -9,6 +9,20 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 80, label: '5.27', date: '2026-10-11', title: '🎒 A tidier app: the Locker tab',
+      promo: [
+        { href: '#/locker', icon: '🎒', cls: 't-purple', title: 'The Locker tab', sub: 'Your season, your XI, cards, badges and kit, all in one place' },
+        { href: '#/today', icon: '🎯', cls: 't-red', title: 'Missions are on Today', sub: 'This week’s missions and your login rewards, next to the dailies' },
+      ],
+      items: [
+        '🎒 The Album is now the Locker tab: 🏆 Season, 🃏 My XI, 🧩 Cards, 🏅 Badges and 👕 Kit (your pitch styles, card backs, frames, titles and the rest). Signed players, the Purist collection and the player index sit with your cards',
+        '🎁 A bar along the top of the menus: your picture, your level, the season and a 🎁 with everything waiting to be opened (packs, spins, picks). Tap any of it to go straight there',
+        '🎯 This week’s missions and the login rewards moved to Today, with the daily games, since they all reset',
+        '⚔️ Challenges have their own place on the Online tab, with your record against each friend. The ones waiting for you show on Games too',
+        '🧹 Home is shorter: straight to the games',
+      ],
+    },
+    {
       v: 79, label: '5.26.1', date: '2026-10-11', title: 'No spoilers',
       items: [
         '🤫 Next season’s things stay a surprise: the Locker only shows what’s out now (and what you own), and the Season page no longer gives away what’s coming',
@@ -17,7 +31,7 @@
     {
       v: 78, label: '5.26', date: '2026-10-11', title: '🎃 The Locker and the Halloween season',
       promo: [
-        { href: '#/locker', icon: '🎒', cls: 't-purple', title: 'Your Locker is open', sub: 'Pitch styles, card backs, celebrations, frames and titles. See what you’ve unlocked already.' },
+        { href: '#/locker?v=kit', icon: '🎒', cls: 't-purple', title: 'Your Locker is open', sub: 'Pitch styles, card backs, celebrations, frames and titles. See what you’ve unlocked already.' },
         { href: '#/season', icon: '🎃', cls: 't-red', kick: '🎃 Season 1: Halloween', title: 'The season track', sub: '30 tiers of rewards, three missions a week and a login reward every day' },
       ],
       items: [
@@ -57,7 +71,7 @@
     {
       v: 75, label: '5.24', date: '2026-10-10', title: '⚔️ Challenge friends in the app',
       promo: [
-        { href: '#/challenges', icon: '⚔️', cls: 't-red', title: 'Challenge your friends', sub: 'Finish a draft, tap ⚔️ Challenge a friend and pick your mates. They get a notification.' },
+        { href: '#/online?tab=challenges', icon: '⚔️', cls: 't-red', title: 'Challenge your friends', sub: 'Finish a draft, tap ⚔️ Challenge a friend and pick your mates. They get a notification.' },
       ],
       items: [
         '⚔️ Challenge a friend now lists your app friends: pick one or a few and they get a notification (or send a link, as before)',

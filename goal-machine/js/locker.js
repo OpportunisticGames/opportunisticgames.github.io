@@ -285,15 +285,39 @@
   };
   GM.titleHtml = name => `<i class="utitle" data-utitle="${GM.esc(name || '')}" hidden></i>`;
 
-  /* ---------------------------------------------------------------- the Locker page (#/locker) */
-  GM.lockerPage = function (root, q = {}) {
+  /* ---------------------------------------------------------------- the Locker tab (#/locker) */
+  // Everything you've got and are working towards, one tab: you (picture, frame, title) at the top, then
+  //   🏆 Season  the season pass (rewards.js)          🃏 My XI   the Packed XI (collection.js)
+  //   🧩 Cards   cards, signed players, Purist            🏅 Badges                        👕 Kit  what you wear (below)
+  // Old addresses still work: #/album → My XI, #/album?v=badges, #/packs → Cards, #/season → Season, #/locker?k=pitch → Kit.
+  const VIEWS = [['season', '🏆', 'Season'], ['xi', '🃏', 'My XI'], ['cards', '🧩', 'Cards'], ['badges', '🏅', 'Badges'], ['kit', '👕', 'Kit']];
+  GM.lockerHub = function (root, q = {}) {
+    let v = q.v === 'signed' ? 'cards' : q.v;
+    if (!v && q.k) v = 'kit';
+    if (!VIEWS.some(x => x[0] === v)) v = GM.store.get('lockerView', 'season');
+    if (!VIEWS.some(x => x[0] === v)) v = 'season';
+    GM.store.set('lockerView', v);
+    const me = (GM.account() || {}).name || GM.getName() || 'You', s = load();
+    const n = Object.values(ITEMS).filter(it => has(it.id)).length, total = Object.values(ITEMS).filter(it => !secret(it)).length;
+    const a = GM.store.get('album', { ach: {} }), badges = Object.keys(a.ach || {}).length, i = GM.seasonInfo ? GM.seasonInfo() : null;
+    const dot = { kit: GM.lockerNew() > 0, cards: GM.packsWaiting && GM.packsWaiting() > 0 };
+    root.innerHTML = `<div class="lk-me">${GM.userPic(me, 'lg')}<span><b>${GM.esc(me)}</b>${GM.titleHtml(me)}
+        <small>${i ? `${i.icon} Tier ${i.tier} · ` : ''}🏅 ${badges} badges · 👕 ${n}/${total} kit</small></span>
+        <a class="icon-btn" href="#/settings" aria-label="Settings">⚙️</a></div>
+      <div class="seg lk-views">${VIEWS.map(([k, ic, l]) => `<a class="${k === v ? 'on' : ''}" href="#/locker?v=${k}" data-v="${k}"><span>${ic}</span>${l}${dot[k] ? '<i class="new-dot"></i>' : ''}</a>`).join('')}</div>
+      <div id="lk-body" class="lk-body lk-v-${v}"></div>`;
+    const body = GM.$('#lk-body', root);
+    if (v === 'season') GM.seasonPage(body);
+    else if (v === 'kit') kit(body, q);
+    else GM.albumView(body, v === 'cards' && q.v === 'signed' ? 'signed' : v, q.c, q.t, q.open === '1' || q.open === true);
+    GM.syncFlair(); GM.fetchFlair([me]);
+  };
+  // 👕 Kit: pitch styles, card backs, celebrations, horns, frames, titles, reactions, owners
+  function kit(root, q = {}) {
     const s = load(), kind = KINDS[q.k] ? q.k : GM.store.get('lockerTab', 'pitch');
     const items = Object.values(ITEMS).filter(it => it.kind === kind && !secret(it));
-    const n = Object.values(ITEMS).filter(it => has(it.id)).length, total = Object.values(ITEMS).filter(it => !secret(it)).length;
     const me = (GM.account() || {}).name || GM.getName() || 'You';
-    root.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>🎒 Locker</h2><span></span></div>
-      <div class="lk-me">${GM.userPic(me, 'lg')}<span><b>${GM.esc(me)}</b>${GM.titleHtml(me)}<small>${n} of ${total} unlocked · <a href="#/season">🏆 Season & missions ›</a></small></span></div>
-      <div class="seg wrap lk-tabs">${Object.entries(KINDS).map(([k, v]) => {
+    root.innerHTML = `<div class="seg wrap lk-tabs">${Object.entries(KINDS).map(([k, v]) => {
         const fresh = Object.values(ITEMS).some(it => it.kind === k && s.own[it.id] && !s.seen[it.id]);
         return `<button data-k="${k}" class="${k === kind ? 'on' : ''}">${v.icon} ${v.name}${fresh ? '<i class="new-dot"></i>' : ''}</button>`;
       }).join('')}</div>
@@ -305,7 +329,7 @@
           <small>${own ? (kind === 'react' ? 'In your challenge reactions' : kind === 'owner' ? 'In Dodgy Owner' : on ? '✓ Wearing' : 'Tap to use') : '🔒 ' + how(it)}</small></button>`;
       }).join('')}</div>`;
     items.forEach(it => { if (s.own[it.id]) s.seen[it.id] = 1; }); save(s);
-    GM.$$('.lk-tabs [data-k]', root).forEach(b => b.onclick = () => { GM.store.set('lockerTab', b.dataset.k); GM.lockerPage(root, { k: b.dataset.k }); });
+    GM.$$('.lk-tabs [data-k]', root).forEach(b => b.onclick = () => { GM.store.set('lockerTab', b.dataset.k); kit(root, { k: b.dataset.k }); });
     GM.$$('.lk-item', root).forEach(b => b.onclick = () => {
       const it = ITEMS[b.dataset.id];
       if (!has(it.id)) { GM.toast(`🔒 ${GM.esc(how(it))}`); GM.buzz('reject'); return; }
@@ -314,10 +338,11 @@
       GM.applyLocker(); GM.buzz('confirm');
       if (kind === 'celeb' || kind === 'horn') GM.celebrate(false);
       if (kind === 'frame' || kind === 'title') GM.syncFlair();
-      GM.lockerPage(root, { k: kind });
+      kit(root, { k: kind });
     });
-    GM.syncFlair(); GM.fetchFlair([me]);
-  };
+    if (GM.statusBar) GM.statusBar();
+  }
+  GM.lockerPage = (root, q = {}) => GM.lockerHub(root, { ...q, v: 'kit' });  // (the old name)
   const preClass = it => (it.kind === 'pitch' ? 'pk-' + it.id.slice(6) : it.kind === 'back' ? 'cbk-' + it.id.slice(5) : it.kind === 'frame' ? 'fr-' + it.id.slice(6) : '');
   function preview(it, me) {
     if (it.kind === 'pitch') return '<i class="lk-pitch"></i>';

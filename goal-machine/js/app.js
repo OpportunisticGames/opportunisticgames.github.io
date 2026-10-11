@@ -30,8 +30,51 @@
 
   // bottom tab bar: shown on the menus, hidden mid-game so the pitch gets the whole screen
   // the Players index lives in the Album and on the home screen; Online gets the tab (with a badge for games waiting on you)
-  const TABS = [['', '⚽', 'Play'], ['today', '<i class="cal-slot"></i>', 'Today'], ['online', '🌐<i class="online-badge" hidden></i>', 'Online'], ['leaderboard', '🏆', 'Ranks'], ['album', '📒', 'Album']];
-  const MENU_PAGES = ['', 'today', 'leaderboard', 'album', 'players', 'updates', 'settings', 'about', 'h2h', 'credits'];
+  // 🎒 the Locker tab is everything you've got and are working towards: the season, your XI, cards, badges and your kit
+  const TABS = [['', '⚽', 'Play'], ['today', '<i class="cal-slot"></i>', 'Today'], ['online', '🌐<i class="online-badge" hidden></i>', 'Online'], ['leaderboard', '🏆', 'Ranks'], ['locker', '🎒<i class="locker-dot" hidden></i>', 'Locker']];
+  const TAB_OF = { album: 'locker', packs: 'locker', season: 'locker' };  // older addresses that now live in a tab
+  const MENU_PAGES = ['', 'today', 'leaderboard', 'locker', 'album', 'packs', 'season', 'players', 'updates', 'settings', 'about', 'h2h', 'credits'];
+  // the top bar on the tabs' pages: you, your level, the season and everything waiting to be opened (one tap each)
+  const TOP_PAGES = ['', 'today', 'online', 'leaderboard', 'locker', 'album', 'packs', 'season'];
+  const status = document.createElement('div');
+  status.className = 'gm-status'; status.hidden = true;
+  app.parentNode.insertBefore(status, app);
+  // 🎁 everything waiting to be opened: packs, spins on the wheel, pick-one-of-threes
+  GM.toOpenCount = () => (GM.packsWaiting ? GM.packsWaiting() : 0) + (GM.rewardsWaiting ? GM.rewardsWaiting() : 0);
+  GM.statusBar = function () {
+    const ld = GM.$('.locker-dot', tabbar), fresh = GM.lockerNew ? GM.lockerNew() : 0;
+    if (ld) ld.hidden = !fresh;
+    if (status.hidden || !GM.levelChip) return;
+    const me = (GM.account() || {}).name || GM.getName() || 'You', n = GM.toOpenCount();
+    const html = `<a class="gs-me" href="#/locker?v=kit" aria-label="Your kit">${GM.userPic(me)}${fresh ? '<i class="new-dot"></i>' : ''}</a>${GM.levelChip()}${GM.seasonChip ? GM.seasonChip() : ''}
+      <button class="gs-open ${n ? 'hot' : ''}" aria-label="To open"><span>🎁</span><b>${n}</b></button>`;
+    if (html === status._h) return;
+    status._h = html; status.innerHTML = html;
+    GM.$('.gs-open', status).onclick = () => { GM.buzz('click'); GM.toOpen(); };
+  };
+  setInterval(() => GM.statusBar(), 1500);  // packs, spins and XP arrive from all over: keep the bar honest
+  // the 🎁 sheet: one place for everything waiting, with a way to each
+  GM.toOpen = function () {
+    const packs = GM.packsWaiting ? GM.packsWaiting() : 0, spins = +GM.store.get('spins', 0), picks = (GM.store.get('choices', []) || []).length, fresh = GM.lockerNew ? GM.lockerNew() : 0;
+    const row = (id, icon, title, sub, btn) => `<button class="to-row" data-to="${id}"><span>${icon}</span><span><b>${title}</b><small>${sub}</small></span><i>${btn}</i></button>`;
+    const rows = [
+      packs ? row('packs', '🎁', `${packs} pack${packs > 1 ? 's' : ''}`, GM.packedXI && GM.packedXI().n < 11 ? 'Build your Packed XI' : 'Finish cards, improve your XI', 'Open') : '',
+      spins ? row('spin', '🎡', `${spins} spin${spins > 1 ? 's' : ''} of the prize wheel`, 'XP, packs, or something from the vault', 'Spin') : '',
+      picks ? row('pick', '🤔', `${picks} pick${picks > 1 ? 's' : ''} of three`, 'Choose your reward', 'Pick') : '',
+      fresh ? row('kit', '🎒', `${fresh} new thing${fresh > 1 ? 's' : ''} for your kit`, 'Pitch styles, card backs, frames…', 'Look') : '',
+    ].join('');
+    const m = GM.modal(`<div class="to-open"><h3 class="center">🎁 To open</h3>
+      ${rows || '<p class="muted center">Nothing waiting right now. A free pack comes every day, and levels, the season track and missions give you more.</p>'}
+      <div class="to-links"><a href="#/season">${GM.seasonInfo ? GM.seasonInfo().icon : '🏆'} Season track</a><a href="#/level">🛤️ Level road</a><a href="#/today">🎯 Missions</a></div></div>`);
+    GM.$$('[data-to]', m.el).forEach(b => b.onclick = () => {
+      const t = b.dataset.to; m.close();
+      if (t === 'packs') location.hash = '#/packs?open=1';
+      else if (t === 'spin') location.hash = '#/spin';
+      else if (t === 'pick') GM.pickReward();
+      else location.hash = '#/locker?v=kit';
+    });
+    GM.$$('.to-links a', m.el).forEach(a => a.addEventListener('click', () => m.close()));
+  };
   const tabbar = document.createElement('nav');
   tabbar.className = 'tabbar';
   tabbar.innerHTML = TABS.map(([p, i, l]) => `<a href="#/${p}" data-tab="${p}"><span>${i}</span>${l}</a>`).join('');
@@ -91,7 +134,9 @@
     const menu = MENU_PAGES.includes(path) || (path === 'online' && !q.room && !q.join);
     document.body.classList.toggle('has-tabs', menu);
     tabbar.hidden = !menu;
-    GM.$$('[data-tab]', tabbar).forEach(a => a.classList.toggle('on', a.dataset.tab === path));
+    GM.$$('[data-tab]', tabbar).forEach(a => a.classList.toggle('on', a.dataset.tab === (TAB_OF[path] || path)));
+    status.hidden = !(menu && TOP_PAGES.includes(path)); document.body.classList.toggle('has-status', !status.hidden);
+    GM.statusBar();
     if (menu && GM.account()) {  // the Online tab's badge: games waiting on you (checked at most every 30 s)
       const n = GM.store.get('onlineWaiting', 0), b = GM.$('.online-badge', tabbar);
       b.textContent = n; b.hidden = !n;
@@ -126,11 +171,11 @@
       case 'matchday': return GM.matchday(app);
       case 'nations': return GM.nationsPage(app);
       case 'level': return GM.levelPage(app);
-      case 'locker': return GM.lockerPage(app, q);  // cosmetics and unlocks (locker.js)
-      case 'season': return GM.seasonPage(app);
+      case 'locker': return GM.lockerHub(app, q);  // the Locker tab: season, My XI, cards, badges, kit (locker.js)
+      case 'season': return GM.lockerHub(app, { v: 'season' });
       case 'spin': return GM.spinPage(app);  // the prize wheel (prizes.js)  // the season track, weekly missions, login rewards (rewards.js)
       case 'clubs': return leaderboard('clubs' + (q.w === '1' ? ':1' : ''));
-      case 'packs': return GM.album(app, 'goals', 'album', q.v === 'xi' ? 'xi' : 'cards', '', GM.TIERS[q.t] ? q.t : '', q.open === '1');
+      case 'packs': return GM.lockerHub(app, { v: q.v === 'xi' ? 'xi' : 'cards', t: GM.TIERS[q.t] ? q.t : '', open: q.open });
       case 'matchfootle': return GM.footle(app, false, q.fx);
       case 'online': return GM.onlinePage(app, q);
       case 'c': return GM.challenge.page(app, q);  // a friend's "beat my score" challenge (challenge.js)
@@ -156,7 +201,8 @@
       case 'auction': return GM.auction(app, q);
       case 'leaderboard': return leaderboard(q.m);
       case 'players': return playerIndex();
-      case 'album': return GM.album(app, GM.STATS[q.s] ? q.s : 'goals', q.b === 'purist' ? 'purist' : 'album', q.v, q.c, GM.TIERS[q.t] ? q.t : '', q.open === '1');
+      case 'album': return q.b === 'purist' ? GM.album(app, GM.STATS[q.s] ? q.s : 'goals', 'purist', q.v, q.c)  // the Purist collection keeps its own page
+        : GM.lockerHub(app, { v: ['signed', 'sets', 'stats'].includes(q.v) ? 'signed' : q.v || 'xi', c: q.c, t: GM.TIERS[q.t] ? q.t : '', open: q.open });
       case 'about': return about();
       case 'credits': return credits();
       case 'h2h': return GM.h2h(app);
@@ -204,7 +250,6 @@
       const k = href.replace(/^#\/(draft\?m=)?/, '').replace(/[?&].*$/, '');
       return `<a class="tile ${cls}" href="${href}"><span class="tile-icon">${icon}</span>${best ? `<span class="tile-pb">PB ${best.toLocaleString()}</span>` : ''}${newTag(k)}<b>${title}</b><small>${sub}</small>${extra}</a>`;
     };
-    const album = GM.albumSummary();
     // The main event: pick the player pool and whether wildcards are on - six modes in two small switches (remembered)
     const POOLS = {
       classic: { icon: '⭐', short: 'Classic', on: 'classicwild', off: 'classic', about: 'Every player with 50+ PL apps, and the better known they are, the more often they turn up' },
@@ -232,14 +277,13 @@
         <div class="logo small">GOAL<span>MACHINE</span></div>
         <a class="icon-btn" href="#/updates" aria-label="Updates">📰${GM.hasUnseenUpdate() ? '<i class="new-dot"></i>' : ''}</a></div>
       <header class="hero">
-        <p>${GM.levelChip()} ${GM.seasonChip ? GM.seasonChip() : ''} ${club ? `<span class="fan-chip">${GM.clubChip(club, true)}</span> <span class="banter">${GM.esc(GM.clubBanter(club))}</span>` : `${GM.allPlayers ? GM.allPlayers.length.toLocaleString() : '5,000+'} Premier League players · 1992 to today`}</p>
+        <p>${club ? `<span class="fan-chip">${GM.clubChip(club, true)}</span> <span class="banter">${GM.esc(GM.clubBanter(club))}</span>` : `${GM.allPlayers ? GM.allPlayers.length.toLocaleString() : '5,000+'} Premier League players · 1992 to today`}</p>
         ${installHidden() || hasNativeApp ? '' : `<div class="install-bar">
           ${isAndroid ? `<a class="btn small" id="getapk" href="${GM.APK_URL}">🤖 Get the Android app</a>` : `<button class="btn small" id="install" hidden>📲 Install app</button>`}
           <button class="install-x" id="install-x" title="I already have it" aria-label="Hide">✕</button></div>`}
         ${GM.appOutdated() ? `<div class="install-bar"><a class="btn small" href="${GM.APK_URL}">📲 New version of the app – tap to update</a></div>` : ''}
       </header>
       ${GM.firstXICard()}${GM.promoHtml()}
-      ${GM.packsWaiting() ? `<a class="pack-bar" href="#/packs?open=1"><span>🎁</span><span><b>${GM.packsWaiting()} pack${GM.packsWaiting() > 1 ? 's' : ''} to open</b><small>${GM.esc(GM.packedXI().n < 11 ? 'Build your Packed XI' : 'Improve your Packed XI')}</small></span><span>›</span></a>` : ''}
       <div class="hard-toggle three" role="group" aria-label="Difficulty">${Object.entries(GM.LEVELS).map(([k, [i, n, sub]]) => `<button class="${k === level ? 'on' : ''}" data-level="${k}">${i} ${n}<small>${sub}</small></button>`).join('')}</div>
       <div class="seg home-tabs" id="htabs">${HTABS.map(([k, l, modes]) => `<button data-t="${k}">${l}${modes.some(m => newTag(m)) ? '<i class="new-dot"></i>' : ''}</button>`).join('')}</div>
       <div data-hpanel="main">
@@ -282,10 +326,6 @@
         ${tile('#/tally', 't-amber', '🔢', 'Guess the Tally', 'How many PL goals?', pb('tally'))}
         ${tile('#/grid', 't-navy wide', '🔀', 'Random Club Grid', 'Endless grids. Obscure answers score more.', pb('grid'))}
       </div>
-      <h3 class="section-title">Your collection</h3>
-      <a class="tile t-purple wide album-tile" href="#/album"><span class="tile-icon">📒</span><b>Album & badges</b>
-        <small>${album.players.toLocaleString()}/${GM.players.length.toLocaleString()} players · ${album.badges}/${album.totalBadges} badges${album.purist ? ` · 💎 ${album.purist.toLocaleString()} purist` : ''}</small>
-        <span class="bar"><i style="width:${(100 * album.players / GM.players.length).toFixed(1)}%"></i></span></a>
       <a class="tile t-navy wide" href="#/players"><span class="tile-icon">📖</span><b>Player index</b><small>All ${GM.allPlayers ? GM.allPlayers.length.toLocaleString() : '5,000+'} Premier League players, and how often you've signed them</small></a>
       ${GM.secretTiles()}
       </div>

@@ -47,7 +47,7 @@
     const c = q[0];
     const m = GM.modal(`<div class="rw-pick"><h3 class="center">🎁 Pick one</h3>${c.why ? `<p class="muted center">${GM.esc(c.why)}</p>` : ''}
       <div class="rw-opts">${c.opts.map((o, k) => `<button class="rw-opt" data-k="${k}"><span>${label(o).split(' ')[0]}</span><b>${GM.esc(label(o).split(' ').slice(1).join(' '))}</b></button>`).join('')}</div>
-      <p class="muted center small">Close it and it waits on the Season page.</p></div>`);
+      <p class="muted center small">Close it and it waits under 🎁 at the top.</p></div>`);
     GM.$$('.rw-opt', m.el).forEach(b => b.onclick = () => {
       const left = (GM.store.get('choices', []) || []).slice(1);
       GM.store.set('choices', left); m.close();

@@ -20,7 +20,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     shearer: GM.cardTier(GM.players.find(p => p.name === 'Alan Shearer')) }));
   ok(t.c.l >= 25 && t.c.l <= 60 && t.c.g > 150 && t.c.s > 400 && t.c.b + t.c.s + t.c.g + t.c.l === t.all, `tiers: ${JSON.stringify(t.c)} of ${t.all} players`);
   ok(t.hof && t.shearer === 'l', 'Hall of Famers (Shearer included) are Legends');
-  ok(await pg.evaluate(() => GM.packsWaiting() === 1) && /1 pack to open/i.test(await pg.textContent('.pack-bar')), 'a free pack every day, and Home says so');
+  ok(await pg.evaluate(() => GM.packsWaiting() === 1) && (await pg.textContent('.gm-status .gs-open b')) === '1', 'a free pack every day, and the 🎁 on the top bar says so');
   // no break or matchday in this test: a plain Daily Pack
   await pg.evaluate(() => { GM.setFixtures([['2099-01-01T15:00:00Z', 'Everton', 'Chelsea']], []); });
   ok(await pg.evaluate(() => GM.nextPackType()) === 'daily', 'on a normal day the free pack is a Daily Pack');
@@ -153,12 +153,11 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(lg.t === 'legends' && lg.wild === 'legend' && lg.legends, 'going up a rank earns a Legends pack, ending in a choice of three Legends');
   ok(lg.rest, '…and its other four pieces are Silver or better');
 
-  // the Album: level and packs at the top, then My XI, Cards, Badges, Signed
+  // the Album is in the 🎒 Locker tab: My XI, Cards (with packs to open), Badges, Signed under Cards
   await pg.goto(U + '#/album'); await pg.waitForTimeout(500);
-  ok(!!(await pg.$('.pitch.packed')) && /My XI/.test(await pg.textContent('.album-views a.on')) && !!(await pg.$('.alb-level')) && !!(await pg.$('.pack-box')), 'the Album opens on your Packed XI, with your level and packs at the top');
-  ok(/replaced the old Dream XI/.test(await pg.textContent('#app, body')), 'and says what happened to the Dream XI');
+  ok(!!(await pg.$('.pitch.packed')) && /My XI/.test(await pg.textContent('.lk-views a.on')) && !!(await pg.$('.gm-status .lvl-chip')), 'the Album opens on your Packed XI in the Locker tab, your level in the top bar');
   await pg.goto(U + '#/packs?v=cards'); await pg.waitForTimeout(400);
-  ok((await pg.$$('.card-grid .pcard')).length >= 5 && /Cards/.test(await pg.textContent('.album-views a.on')), 'the Cards section shows what you’ve started');
+  ok((await pg.$$('.card-grid .pcard')).length >= 5 && /Cards/.test(await pg.textContent('.lk-views a.on')) && !!(await pg.$('.pack-box')), 'the Cards section shows your packs and what you’ve started');
   await pg.goto(U + '#/album?v=signed'); await pg.waitForTimeout(400);
   ok(!!(await pg.$('.sets')) && !!(await pg.$('a[href="#/album?b=purist"]')), 'Signed has your sets, clubs and a way to the Purist collection');
   ok(!errs.length, errs.length ? 'page errors: ' + errs.join(' | ') : 'no page errors');
