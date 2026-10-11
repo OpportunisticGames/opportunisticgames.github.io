@@ -18,7 +18,9 @@
         '✨ Seasonal CHAOS is its own mode with its own leaderboard, on Home under CHAOS. It’s meant to be a bit broken: every bonus is doubled, the seasonal Double or Nothing cards pay ×3, the CHAOS meter fills faster, storms come twice as often, and the season’s characters have their perks doubled',
         '🧙 Halloween CHAOS goes properly mad: a witch snatches a player off the pitch, a hex magics someone’s goals into his assists (or his appearances!), two players get stitched into one monster, a legend’s ghost plays as your twelfth man, the pitch flips into the Upside Down, a defender turns into a wolf on the full moon, vampire bites, the cauldron, players scared of spiders, the night of the living dead, the headless winger, trick or treaters, a broomstick race and a séance',
         '👔 Six characters a season now (three in the dugout each game): Morticia and Wednesday Haddams and Uncle Fester join Gomez, Count Dracoola and Frankie Stein. Every season has its wild moments too',
+        '🎵 Halloween CHAOS has its own music in the game: “Monster Mash-Up”, a creepy organ over a wobbling bass that builds as the CHAOS meter fills (Christmas gets a Jingle Bells CHAOS remix)',
         '🧣 The club stripe along the top sits under the season’s band again, clear of the page titles',
+        '🃏 A player with lots of clubs no longer pushes his club badges out of the bottom of a reel card',
       ],
     },
     {

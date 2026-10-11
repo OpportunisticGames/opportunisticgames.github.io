@@ -75,6 +75,7 @@ game mode for players; this file is about how to work on it.
   Two jokers (`Jsub` wins the trick, `Jvar` gives it to the lowest of the suit led; playable any time, not as a lead); the lowest Defender and Midfielder make way. Cards: kit per suit, number/suit/name in the left strip (`.htc-edge`) so a fanned hand reads. Online (`GM.hattrickOnline`): a duel room with variant `hattrick`; only the humans' moves are stored ({t:'b',n} / {t:'p',c}, s = host/guest), and `replay` rebuilds the game from the room seed with the computers (seats 2, 3) on the never-random Hard play, so both phones agree. The final mover posts both team scores (p_all) and gm_finalise gives the higher 100–0.
 - `chaosart.js` – CHAOS artwork (`GM.CFX`): drawn scenes over the pitch for events (`play`), wildcard flourishes (`wild`),
   the weather (`WEATHER`, set per game at kick-off), extra sprites and drawn leftovers. Calm mode skips the scenes.
+- Seasonal CHAOS's in-game music: `audio.js` `SZ_TRACK` (halloween → `spookychaos`, christmas → `festivechaos`, else `chaos`), scene `szchaos`; they build with the meter like CHAOS.
 - `fx.js` – the effects layer for every game (`GM.FX`): a PixiJS canvas over the page for particles and light
   (`sparks`, `smoke`, `flare`, `burst`, `lightning`, `vortex`, `twister`, `rain`, `confetti`, `money`, `fireworks`…) and
   `GM.FX.lottie(name, …)` for LottieFiles animations in `fx/lottie/` (credits in `fx/lottie/credits.json`, shown on the

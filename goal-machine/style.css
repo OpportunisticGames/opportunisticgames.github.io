@@ -3413,3 +3413,6 @@ html[class*="sz-"]:not(.intl-break).has-club body:not(.has-status) #app { paddin
 .sz-chaos-card[data-cz="easter"] { background: radial-gradient(60% 70% at 15% 15%, rgba(249, 168, 212, .55), transparent 70%), radial-gradient(55% 70% at 90% 85%, rgba(167, 243, 208, .45), transparent 70%), #160f24; }
 .sz-chaos-card { margin-top: 14px; }
 .mgr .op { font-style: normal; font-weight: 900; color: #b45309; background: #fde047; padding: 0 5px; border-radius: 6px; margin-right: 2px; }
+/* a reel card's club badges stay on one line (a player with lots of clubs pushed a second row out of the card) */
+.stage .reel .chips { flex-wrap: nowrap; overflow: hidden; max-width: 100%; }
+.stage .reel .chips > * { flex: none; }

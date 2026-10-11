@@ -23,6 +23,13 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const themes = await pg.evaluate(() => Object.keys(GM.SZ_CHAOS));
   const bases = await pg.evaluate(() => Object.fromEntries(Object.entries(GM.draft.MANAGERS()).filter(([, m]) => m.base).map(([k, m]) => [k, m.base])));
   const GM_base = k => bases[k];
+  // the music: Seasonal CHAOS plays the season's CHAOS track, normal CHAOS its own
+  await pg.evaluate(() => { location.hash = '#/draft?m=szchaos&seed=mus1'; }); await pg.waitForTimeout(400);
+  const mus1 = await pg.evaluate(() => GM.sound.track());
+  await pg.evaluate(() => { location.hash = '#/'; }); await pg.evaluate(() => { location.hash = '#/draft?m=chaos&seed=mus2'; }); await pg.waitForTimeout(400);
+  const mus2 = await pg.evaluate(() => GM.sound.track());
+  ok(mus1 === 'spookychaos' && mus2 === 'chaos', `the music: Halloween CHAOS plays “Monster Mash-Up” (${mus1}), normal CHAOS its own (${mus2})`);
+  await pg.evaluate(() => { location.hash = '#/'; Object.keys(localStorage).filter(x => x.startsWith('gm:draftp')).forEach(x => localStorage.removeItem(x)); }); await pg.waitForTimeout(200);
   ok(Object.keys(bases).length === 54, `54 seasonal characters, six a season (three offered each game)`);
   ok(themes.length === 9, `nine seasons have their own CHAOS: ${themes.join(', ')}`);
   for (const th of themes) {

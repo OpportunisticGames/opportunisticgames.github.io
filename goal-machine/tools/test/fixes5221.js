@@ -97,9 +97,9 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   // (and the bonus notes showed up when he signed: sign one more and look)
   await pg.evaluate(() => { const S = GM.draft.state(); S.phase = 'spin'; GM.draft.render(); });
   for (let k = 0; k < 24 && !(await pg.$('#bonus-notes .bn')); k++) {
-    if (await act(() => { const cm = document.querySelector('.cm:not(.out)'); if (cm) { cm.click(); return true; } const b = document.getElementById('spin'); if (b && !b.disabled) { b.click(); return true; } return false; })) { await pg.waitForTimeout(1300); continue; }
+    if (await act(() => { const cm = document.querySelector('.cm:not(.out)'); if (cm) { cm.click(); return true; } const b = document.getElementById('spin'); if (b && !b.disabled) { b.click(); return true; } return false; })) { await pg.waitForTimeout(1800); continue; }
     await act(() => { const t = document.querySelector('.slot.target'); if (t) return t.click(); const rs = [...document.querySelectorAll('.stage .reel[data-reel]')]; (rs.find(r => !r.classList.contains('is-wild')) || rs[0] || { click() {} }).click(); });  // (an all-wildcard spin: take one)
-    await pg.waitForTimeout(700);
+    await pg.waitForTimeout(1000);  // (roomy: it runs alongside other tests)
   }
   await pg.screenshot({ path: 'lay/fx_bonusnotes.png' });
   ok(await pg.evaluate(() => !!document.getElementById('bonus-notes')), 'signing in CHAOS shows why the bonus moved, in the corner');

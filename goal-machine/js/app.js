@@ -145,7 +145,7 @@
     if (GM.rewardsStart) GM.rewardsStart();
     if (GM.seasonVisitPlan) GM.seasonVisitPlan(path);  // a seasonal visitor on Home now and then (rewards.js)  // login reward, Locker unlocks, the look you wear (once a session)
     if (GM.native) GM.native.start();  // the app's extras: Play updates, links check (once a session)
-    GM.sound.scene(path === 'draft' && /^(sz)?chaos/.test(q.m || '') ? 'chaos' : path === 'draft' && q.ch ? 'h2h' : path);  // (a friend's challenge: the tense one)  // each game area has its own music (CHAOS has Mayhem)
+    GM.sound.scene(path === 'draft' && q.m === 'szchaos' ? 'szchaos' : path === 'draft' && /^chaos/.test(q.m || '') ? 'chaos' : path === 'draft' && q.ch ? 'h2h' : path);  // (a friend's challenge: the tense one)  // each game area has its own music (CHAOS has Mayhem)
     GM.chaosLook(path === 'draft' && /^(sz)?chaos/.test(q.m || ''));
     GM.moneyLook(path === 'moneyball');
     GM.ownerLook(path === 'owner' || path === 'reign');
