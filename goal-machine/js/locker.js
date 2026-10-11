@@ -231,12 +231,12 @@
       else if (c === 'celeb-pigeon') { if (FX.lottie) FX.lottie('pigeon', { x: innerWidth / 2, y: innerHeight * 0.4 }); FX.confetti(body, 40); }
       else if (c === 'celeb-trophy') { if (FX.lottie) FX.lottie('trophy', { x: innerWidth / 2, y: innerHeight * 0.42 }); FX.shimmer(body, 0xffe14a, 30); }
       else if (c === 'celeb-flares') { [0.2, 0.5, 0.8].forEach((f, k) => setTimeout(() => FX.flare(innerWidth * f, innerHeight * 0.75, 2400, [0xff4a3d, 0x3b82f6, 0xfacc15][k]), k * 250)); }
-      else if (c === 'celeb-ghosts') { GM.sound.play('spooky'); FX.smoke(innerWidth * 0.3, innerHeight * 0.6, { tint: 0xe9d5ff, ms: 2200 }); FX.smoke(innerWidth * 0.7, innerHeight * 0.55, { tint: 0xe9d5ff, ms: 2200 }); setTimeout(() => GM.sound.play('boo'), 700); }
-      else if (c === 'celeb-starburst') { FX.shimmer(body, 0x93c5fd, 40); FX.fireworks(body, 4); }
-      else if (c === 'celeb-snowfall') { FX.snow(body, 3500); GM.sound.play('bell'); }
-      else if (c === 'celeb-ribbons') { FX.shimmer(body, 0xef4444, 30); FX.shimmer(body, 0xffffff, 30); FX.confetti(body, 60); }
-      else if (c === 'celeb-eggs') { [0xf9a8d4, 0xa7f3d0, 0xfde68a, 0xc4b5fd].forEach(t => FX.shimmer(body, t, 24)); }
-      else if (c === 'celeb-tickertape') { FX.shimmer(body, 0xfacc15, 50); FX.confetti(body, 120); FX.fireworks(body, 3); }
+      else if (c === 'celeb-ghosts') { GM.sound.play('spooky'); FX.lottie('ghost', { x: innerWidth / 2, y: innerHeight * 0.42, w: 170 }); FX.lottie('batmoon', { x: innerWidth / 2, y: innerHeight * 0.22, w: 220 }); FX.smoke(innerWidth * 0.3, innerHeight * 0.6, { tint: 0xe9d5ff, ms: 2200 }); FX.smoke(innerWidth * 0.7, innerHeight * 0.55, { tint: 0xe9d5ff, ms: 2200 }); setTimeout(() => GM.sound.play('boo'), 700); }
+      else if (c === 'celeb-starburst') { FX.shimmer(body, 0x93c5fd, 40); FX.fireworks(body, 4); FX.lottie('fireworks', { x: innerWidth / 2, y: innerHeight * 0.35, w: 300 }); }
+      else if (c === 'celeb-snowfall') { FX.snow(body, 3500); GM.sound.play('bell'); FX.lottie('snowman', { x: innerWidth / 2, y: innerHeight * 0.45, w: 180 }); }
+      else if (c === 'celeb-ribbons') { FX.lottie('trophy', { x: innerWidth / 2, y: innerHeight * 0.42, w: 180 }); FX.shimmer(body, 0xef4444, 30); FX.shimmer(body, 0xffffff, 30); FX.confetti(body, 60); }
+      else if (c === 'celeb-eggs') { FX.lottie('bunny', { x: innerWidth / 2, y: innerHeight * 0.45, w: 150 }); [0xf9a8d4, 0xa7f3d0, 0xfde68a, 0xc4b5fd].forEach(t => FX.shimmer(body, t, 24)); }
+      else if (c === 'celeb-tickertape') { FX.lottie('fireworks', { x: innerWidth / 2, y: innerHeight * 0.3, w: 300 }); FX.lottie('trophy', { x: innerWidth / 2, y: innerHeight * 0.5, w: 170 }); FX.shimmer(body, 0xfacc15, 50); FX.confetti(body, 120); FX.fireworks(body, 3); }
       else if (c === 'celeb-club' && cc) { FX.shimmer(body, hex(cc[1]), 40); FX.shimmer(body, hex(cc[2]), 30); FX.confetti(body, 60); }
       else FX.confetti(body, big ? 140 : 70);
     } catch (e) { /* the effects layer isn't ready */ }

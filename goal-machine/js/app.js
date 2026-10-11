@@ -97,7 +97,8 @@
       b.textContent = n; b.hidden = !n;
       if (GM.online && GM.online.check) GM.online.check();
     }
-    if (GM.rewardsStart) GM.rewardsStart();  // login reward, Locker unlocks, the look you wear (once a session)
+    if (GM.rewardsStart) GM.rewardsStart();
+    if (GM.seasonVisitPlan) GM.seasonVisitPlan(path);  // a seasonal visitor on Home now and then (rewards.js)  // login reward, Locker unlocks, the look you wear (once a session)
     if (GM.native) GM.native.start();  // the app's extras: Play updates, links check (once a session)
     GM.sound.scene(path === 'draft' && /^chaos/.test(q.m || '') ? 'chaos' : path === 'draft' && q.ch ? 'h2h' : path);  // (a friend's challenge: the tense one)  // each game area has its own music (CHAOS has Mayhem)
     GM.chaosLook(path === 'draft' && /^chaos/.test(q.m || ''));

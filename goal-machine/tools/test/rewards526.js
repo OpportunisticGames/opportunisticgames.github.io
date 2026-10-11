@@ -120,6 +120,8 @@ async function phone(b, name, key, errs, store = {}) {
   ok(await A.evaluate(() => !document.documentElement.classList.contains('sz-halloween') && !GM.seasonMusic), 'Settings → Seasonal look off: back to normal');
   await A.click('#s-szlook [data-v="true"]'); await A.waitForTimeout(200);
   await A.goto(U + '#/'); await A.waitForTimeout(500);
+  const hv = await A.evaluate(async () => { const n = await GM.seasonVisit(true); await new Promise(r => setTimeout(r, 2500)); return { n, on: document.querySelectorAll('.fx-lottie svg').length }; });
+  ok(['ghost', 'bat', 'pumpkin', 'batmoon'].includes(hv.n) && hv.on >= 1, `Halloween's visitors (a ghost, bats, a pumpkin) cross Home (${JSON.stringify(hv)})`);
   await A.screenshot({ path: 'lay/halloween_home.png' });
   // December: Christmas, its items on the track, October's in the vault
   const X = await b.newContext({ viewport: { width: 390, height: 844 } }); await server.attach(X);
@@ -131,6 +133,9 @@ async function phone(b, name, key, errs, store = {}) {
   ok(dec.vault.includes('title-tinkerman') && dec.vault.includes('pitch-ucl') && !dec.vault.includes('pitch-xmas'), 'October’s and November’s items are in the vault; Christmas’s are on the track');
   const th = await D.evaluate(() => ({ bg: getComputedStyle(document.body).getPropertyValue('--bg').trim(), flakes: document.querySelectorAll('.sz-fx i').length, shown: getComputedStyle(document.querySelector('.sz-fx')).display }));
   ok(th.bg === '#fdf2f2' && th.flakes > 20 && th.shown === 'block', `a proper Christmas theme: the background changes and snow falls on the menus (${JSON.stringify(th)})`);
+  const sv = await D.evaluate(async () => { const n = await GM.seasonVisit(true); await new Promise(r => setTimeout(r, 2500)); return { n, on: document.querySelectorAll('.fx-lottie svg').length }; });
+  ok(sv.n === 'sleigh' && sv.on >= 1, `a seasonal visitor: Santa's sleigh flies across Home (${JSON.stringify(sv)})`);
+  await D.screenshot({ path: 'lay/xmas_sleigh.png' });
   await D.goto(U + '#/draft?m=classic&s=goals&seed=x1'); await D.waitForTimeout(600);
   ok(await D.evaluate(() => getComputedStyle(document.querySelector('.sz-fx')).display === 'none'), 'no snow while you play a game');
   await D.goto(U + '#/season'); await D.waitForTimeout(500);

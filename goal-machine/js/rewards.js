@@ -191,6 +191,51 @@
     const pk = GM.$('#st-pick', root); if (pk) pk.onclick = () => GM.pickReward();
   };
 
+  /* ---------------------------------------------------------------- seasonal visitors (LottieFiles, fx/lottie/) */
+  // Now and then something from the season crosses Home: Santa's sleigh over the top, a ghost drifting by, a bunny
+  // hopping along the bottom, fireworks over the banner… (first visit a few seconds in, then every few minutes on Home)
+  const VISIT = {
+    christmas: [{ n: 'sleigh', w: 230, path: 'across', y: 0.16, sound: 'bell', ms: 7000 }, { n: 'snowman', w: 120, path: 'corner' }, { n: 'gift', w: 150, path: 'corner' }],
+    halloween: [{ n: 'ghost', w: 120, path: 'float', y: 0.42, sound: 'boo', ms: 9000 }, { n: 'bat', w: 90, path: 'across', y: 0.3, sound: 'spooky', ms: 5000, flip: 1 }, { n: 'pumpkin', w: 120, path: 'corner' }, { n: 'batmoon', w: 170, path: 'top' }],
+    easter: [{ n: 'bunny', w: 90, path: 'hop', ms: 9000 }, { n: 'eggs', w: 120, path: 'corner' }],
+    champions: [{ n: 'fireworks', w: 240, path: 'top' }],
+    finalday: [{ n: 'fireworks', w: 240, path: 'top' }, { n: 'trophy', w: 140, path: 'corner' }],
+    cup: [{ n: 'trophy', w: 140, path: 'corner' }],
+    window: [{ n: 'stopwatch', w: 90, path: 'corner' }],
+    title: [{ n: 'flags', w: 140, path: 'corner' }],
+    summer: [{ n: 'sun', w: 130, path: 'top' }],
+  };
+  GM.SEASON_VISITORS = VISIT;
+  let visitT = null, visitK = 0;
+  GM.seasonVisit = async function (force) {
+    const sz = SEASONS[seasonId()], list = sz && VISIT[sz.theme], FX = GM.FX;
+    if (!list || !FX || !FX.lottie || GM.store.get('seasonLook', true) === false || (!force && !document.body.classList.contains('has-tabs'))) return null;
+    const v = list[visitK++ % list.length], W = innerWidth, H = innerHeight, w = v.w;
+    const at = { across: [-w, H * (v.y || 0.2)], float: [-w, H * (v.y || 0.4)], hop: [-w, H - 210], corner: [W - w * 0.7, H - 150 - w / 2], top: [W / 2, H * 0.22] }[v.path];
+    const h = await FX.lottie(v.n, { x: v.path === 'top' || v.path === 'corner' ? at[0] : 0, y: at[1], w, loop: v.path !== 'top', flip: v.flip, cls: 'sz-visit' });
+    if (!h) return null;
+    if (v.sound) setTimeout(() => GM.sound.play(v.sound), 400);
+    const el = h.el.closest ? h.el.closest('.fx-lottie') || h.el : h.el;
+    const end = () => h.remove();
+    if (v.path === 'across' || v.path === 'float' || v.path === 'hop') {
+      el.style.left = (-w) + 'px';
+      const frames = v.path === 'float' ? [{ transform: 'translate(0,0)' }, { transform: `translate(${(W + w) * 0.33}px,-30px)` }, { transform: `translate(${(W + w) * 0.66}px,25px)` }, { transform: `translate(${W + w * 2}px,-10px)` }]
+        : v.path === 'hop' ? [{ transform: 'translate(0,0)' }, { transform: `translate(${W + w * 2}px,0)` }]
+        : [{ transform: 'translate(0,20px)' }, { transform: `translate(${(W + w) / 2}px,-25px)` }, { transform: `translate(${W + w * 2}px,10px)` }];
+      el.animate(frames, { duration: v.ms || 7000, easing: 'linear', fill: 'forwards' }).onfinish = end;
+    } else if (v.path === 'corner') {
+      el.animate([{ transform: 'translateY(60px) scale(.6)', opacity: 0 }, { transform: 'none', opacity: 1, offset: 0.12 }, { transform: 'none', opacity: 1, offset: 0.85 }, { transform: 'translateY(30px)', opacity: 0 }], { duration: 5000, fill: 'forwards' }).onfinish = end;
+    }
+    return v.n;
+  };
+  // the router calls this on every page: Home gets a visitor now and then
+  GM.seasonVisitPlan = function (path) {
+    clearTimeout(visitT);
+    if (path !== '' || GM.store.get('calm', false)) return;
+    const last = GM._visitAt || 0, wait = last ? Math.max(4000, 180000 - (Date.now() - last)) : 2500;
+    visitT = setTimeout(() => { if ((location.hash || '#/') === '#/' || location.hash === '') { GM._visitAt = Date.now(); GM.seasonVisit(); GM.seasonVisitPlan(''); } }, wait);
+  };
+
   /* ---------------------------------------------------------------- start-up */
   // a new day (login reward), the unlocks you've already earned (first time: quietly), the look you wear
   GM.rewardsStart = function () {
