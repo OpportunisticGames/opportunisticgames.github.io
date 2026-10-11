@@ -506,8 +506,16 @@
     if (rulesFor(mode, extreme).all && !GM.allPlayers) {  // fetch every PL player first
       root.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>${(GM.MODES[mode] || { icon: '🏟️' }).icon} ${(GM.MODES[mode] || { name: 'Club XI' }).name}</h2><span></span></div>
         <div class="loading-all"><div class="splash-bar"><i></i></div><p class="muted">Loading every Premier League player…</p></div>`;
-      GM.loadAll().then(() => { if (root === el && location.hash.includes('m=' + mode)) start(el, mode, opts); })
-        .catch(() => { root.innerHTML += '<p class="center">Couldn’t load the player list. Check your connection and try again.</p>'; });
+      // (two handlers, so a problem in the game itself isn't reported as the list failing to load)
+      GM.loadAll().then(() => {
+        if (root !== el || !location.hash.includes('m=' + mode)) return;
+        try { start(el, mode, opts); } catch (e) {
+          console.error(e);
+          el.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>😬 Something went wrong</h2><span></span></div>
+            <div class="result"><p>This game didn’t load properly. Tell us in Settings → Feedback if it keeps happening.</p><p class="muted"><small>${GM.esc(String(e && e.message || e))}</small></p>
+              <div class="actions col"><button class="btn big" onclick="location.reload()">🔄 Reload</button><a class="btn ghost" href="#/">🏠 Home</a></div></div>`;
+        }
+      }, () => { root.innerHTML += '<p class="center">Couldn’t load the player list. Check your connection and try again.</p>'; });
       return;
     }
     const fx = mode === 'match' ? GM.fixtureById(opts.fx) : null;
@@ -2201,9 +2209,10 @@
       <button class="btn big" id="mgo" hidden>Kick off</button></div>`;
     const el = GM.$('#mroll', root), labels = STAT_KEYS.map(k => `${GM.STATS[k].icon} ${GM.STATS[k].name}`);
     let i = 0;
-    const iv = setInterval(() => { el.textContent = labels[i++ % 3]; GM.sound.play('tick'); }, 90);
+    const iv = setInterval(() => { if (!el.isConnected) return clearInterval(iv); el.textContent = labels[i++ % 3]; GM.sound.play('tick'); }, 90);
     setTimeout(() => {
       clearInterval(iv);
+      if (!el.isConnected) return;  // left the page during the reveal
       GM.sound.play('land');
       el.textContent = `${S.st.icon} ${S.st.name}`;
       el.classList.add('landed');

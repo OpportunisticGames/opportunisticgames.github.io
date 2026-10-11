@@ -81,7 +81,7 @@
     const lv = daily ? 'normal' : GM.level();
     if (lv === 'extreme' && !GM.allPlayers) {
       root.innerHTML = `<div class="loading-all"><div class="splash-bar"><i></i></div><p class="muted">Loading every Premier League player…</p></div>`;
-      GM.loadAll().then(() => GM.moneyball(root, q)).catch(() => { root.innerHTML += '<p class="center">Couldn’t load the player list.</p>'; });
+      GM.loadAll().then(() => GM.moneyball(root, q), () => { root.innerHTML += '<p class="center">Couldn’t load the player list.</p>'; });
       return;
     }
     const key = daily ? 'dmoney:' + day : lv === 'hard' ? 'moneyh' : lv === 'extreme' ? 'moneyx' : 'money';

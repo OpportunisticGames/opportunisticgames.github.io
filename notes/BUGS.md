@@ -8,6 +8,14 @@ version they shipped in. Newest at the top.
   took the name `GM.season`, which already meant “format a PL season” (`GM.era` uses it for one-season players), so every
   card for a player with a single PL season crashed (1,339 of them in the full list, so Matchday XI, Extreme and Purist
   hit it). The game’s seasons are now `GM.gmSeason`; `layout527.js` checks both.
+- The same crash also showed as “Couldn’t load the player list”: the draft’s load handler caught errors from the game
+  itself. Now only a real load failure says that (draft, quick games, Moneyball, Dodgy Owner).
+- Spacing *(owner: “formatting and prettiness and spacing is important”)*: the back arrow was centred in a wide column on
+  pages with 🏆/? buttons (now in the corner); top bars touched the seasonal strip (pages without the top bar get room
+  for it); long titles ran into the 🏆 (they shrink); the 🏆 and ? were different sizes; card edges vanished on the cut
+  corners (an inset shadow clipped by the shape; now a layer that follows it) and the goals number was clipped by the
+  corner; “How cards work” sat on the cards; the level road cut off the next reward; the Locker header wrapped mid-phrase.
+  Mystery Target's reveal timer no longer runs after you leave.
 
 ### Fixed in 5.26.1 *(owner, 11 Oct 2026)*
 - “We shouldn’t spoil all the things coming in future seasons.” The Locker listed later seasons’ items as “Coming in

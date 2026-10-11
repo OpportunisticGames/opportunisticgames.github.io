@@ -101,7 +101,7 @@
     return [{ pack: 'level' }];
   };
   GM.roadHtml = function (lvl) {
-    const from = Math.max(2, lvl - 2), to = from + 11;
+    const from = Math.max(2, lvl), to = from + 11;  // starts at the level you're on, so the next one is in full view
     return `<div class="road">${Array.from({ length: to - from + 1 }, (_, k) => from + k).map(n => {
       const rs = GM.levelReward(n), got = n <= lvl;
       return `<div class="road-n ${got ? 'got' : ''} ${n === lvl + 1 ? 'next' : ''}"><span>${n}</span><b>${rs.map(r => GM.esc(label(r))).join(' + ')}</b></div>`;

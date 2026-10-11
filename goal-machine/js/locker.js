@@ -302,7 +302,7 @@
     const a = GM.store.get('album', { ach: {} }), badges = Object.keys(a.ach || {}).length, i = GM.seasonInfo ? GM.seasonInfo() : null;
     const dot = { kit: GM.lockerNew() > 0, cards: GM.packsWaiting && GM.packsWaiting() > 0 };
     root.innerHTML = `<div class="lk-me">${GM.userPic(me, 'lg')}<span><b>${GM.esc(me)}</b>${GM.titleHtml(me)}
-        <small>${i ? `${i.icon} Tier ${i.tier} · ` : ''}🏅 ${badges} badges · 👕 ${n}/${total} kit</small></span>
+        <small class="lk-stats">${i ? `<span>${i.icon} Tier ${i.tier}</span>` : ''}<span>🏅 ${badges} badges</span><span>👕 ${n}/${total} kit</span></small></span>
         <a class="icon-btn" href="#/settings" aria-label="Settings">⚙️</a></div>
       <div class="seg lk-views">${VIEWS.map(([k, ic, l]) => `<a class="${k === v ? 'on' : ''}" href="#/locker?v=${k}" data-v="${k}"><span>${ic}</span>${l}${dot[k] ? '<i class="new-dot"></i>' : ''}</a>`).join('')}</div>
       <div id="lk-body" class="lk-body lk-v-${v}"></div>`;

@@ -9,9 +9,12 @@
 (function () {
   GM.UPDATES = [
     {
-      v: 81, label: '5.27.1', date: '2026-10-12', title: 'Matchday XI fixed',
+      v: 81, label: '5.27.1', date: '2026-10-12', title: 'Matchday XI fixed, tidier screens',
       items: [
         '🏟️ Matchday XI (and any game with every PL player) broke on players who only had one Premier League season: their cards came up blank or the game stopped. Fixed',
+        '🧹 Tidier screens: the back arrow sits in the corner again, buttons stay clear of the seasonal strip along the top, long titles don’t run into the 🏆, and the 🏆 and ? buttons match',
+        '🃏 Player cards: the edge now runs all the way round the cut corners, the goals number no longer gets clipped, and “How cards work” has room to breathe',
+        '🛤️ The level road starts at your level, so the next reward is in full view',
       ],
     },
     {

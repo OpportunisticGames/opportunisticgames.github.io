@@ -1325,7 +1325,7 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
 .htp-go { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .htp-x { border: 0; background: none; color: var(--muted); font-size: .9rem; cursor: pointer; }
 /* the ‹ in the top bar: a proper finger-sized target (it was just the character, so near misses did nothing) */
-.topbar .back { display: inline-flex; align-items: center; justify-content: center; min-width: 48px; min-height: 48px; margin: -6px 0 -6px -12px; padding: 0 6px; border-radius: 14px; -webkit-tap-highlight-color: transparent; }
+.topbar .back { justify-self: start; display: inline-flex; align-items: center; justify-content: center; min-width: 48px; min-height: 48px; margin: -6px 0 -6px -12px; padding: 0 6px; border-radius: 14px; -webkit-tap-highlight-color: transparent; }
 .topbar .back:active { background: var(--inset); }
 .ht-preview { box-sizing: border-box; width: 100%; max-width: 100%; overflow: hidden; }
 .htp-info > b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1621,13 +1621,18 @@ html.intl-break body::after { content: ''; position: fixed; top: 0; left: 0; rig
 @keyframes hint-g { to { box-shadow: inset 0 0 0 .3em #d4af37, inset 0 0 2.6em #facc15; } }
 @keyframes hint-l { to { box-shadow: inset 0 0 0 .3em #e879f9, inset 0 0 3em #a855f7; } }
 @keyframes hint-w { 0% { box-shadow: inset 0 0 2.4em #ef4444; } 33% { box-shadow: inset 0 0 2.4em #22c55e; } 66% { box-shadow: inset 0 0 2.4em #3b82f6; } 100% { box-shadow: inset 0 0 2.4em #ef4444; } }
-.pc-front { display: grid; grid-template-columns: 3em 1fr; grid-template-rows: 1fr auto auto auto; grid-template-areas: 'top photo' 'name name' 'stats stats' 'foot foot';
-  padding: .9em .8em 1.9em; color: #2b1a0c; background: linear-gradient(160deg, #f6d6ad 0%, #cf9460 45%, #8a5a2f 100%); box-shadow: inset 0 0 0 .3em rgba(255, 255, 255, .35); }
-.tier-s .pc-front { color: #1f2937; background: linear-gradient(160deg, #ffffff 0%, #dfe4ea 40%, #8e99a8 100%); }
-.tier-g .pc-front { color: #3b2a00; background: linear-gradient(160deg, #fff8c9 0%, #f5cf3d 40%, #b8860b 100%); box-shadow: inset 0 0 0 .3em rgba(255, 255, 255, .55); }
-.tier-l .pc-front { color: #fff; background: linear-gradient(160deg, #1e0a4a 0%, #6d28d9 45%, #c026d3 100%); box-shadow: inset 0 0 0 .3em #f0abfc; }
+/* the card's edge follows its cut corners: the face is the edge colour, and the tier's colours sit on a layer inset by the edge's width */
+.pc-front { display: grid; grid-template-columns: 3.1em 1fr; grid-template-rows: 1fr auto auto auto; grid-template-areas: 'top photo' 'name name' 'stats stats' 'foot foot';
+  padding: 1.15em .9em 1.9em 1em; color: #2b1a0c; isolation: isolate;
+  --pc-bg: linear-gradient(160deg, #f6d6ad 0%, #cf9460 45%, #8a5a2f 100%); --pc-edge: linear-gradient(rgba(255, 255, 255, .45), rgba(255, 255, 255, .45));
+  background: var(--pc-edge), var(--pc-bg); }
+.pc-front::before { content: ''; position: absolute; inset: .3em; z-index: -1; background: var(--pc-bg);
+  clip-path: polygon(12% 0, 88% 0, 100% 6%, 100% 89%, 50% 100%, 0 89%, 0 6%); }
+.tier-s .pc-front { color: #1f2937; --pc-bg: linear-gradient(160deg, #ffffff 0%, #dfe4ea 40%, #8e99a8 100%); --pc-edge: linear-gradient(#f8fafc, #94a3b8); }
+.tier-g .pc-front { color: #3b2a00; --pc-bg: linear-gradient(160deg, #fff8c9 0%, #f5cf3d 40%, #b8860b 100%); --pc-edge: linear-gradient(#fffbe6, #e0b232); }
+.tier-l .pc-front { color: #fff; --pc-bg: linear-gradient(160deg, #1e0a4a 0%, #6d28d9 45%, #c026d3 100%); --pc-edge: linear-gradient(#f5d0fe, #e879f9); }
 .pc-top { grid-area: top; display: flex; flex-direction: column; align-items: center; gap: .1em; line-height: 1; }
-.pc-num { font: 700 2.3em/1 Oswald, sans-serif; }
+.pc-num { font: 700 2.2em/1 Oswald, sans-serif; letter-spacing: -.01em; }
 .pc-top small { font: 800 .6em Inter, sans-serif; opacity: .75; }
 .pc-pos { font: 700 1em Oswald, sans-serif; margin-top: .2em; }
 .pc-flag { font-size: 1.3em; }
@@ -1656,7 +1661,7 @@ html.intl-break body::after { content: ''; position: fixed; top: 0; left: 0; rig
 @keyframes card-sheen { 60%, 100% { background-position: 200% 0; } }
 @keyframes card-holo { to { filter: hue-rotate(360deg); } }
 .pc-wild { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: .3em; color: #fff; text-align: center;
-  background: radial-gradient(circle at 50% 35%, #3f3f46, #09090b 70%); box-shadow: inset 0 0 0 .3em #fde047; }
+  --pc-bg: radial-gradient(circle at 50% 35%, #3f3f46, #09090b 70%); --pc-edge: linear-gradient(#fde047, #fde047); background: var(--pc-edge), var(--pc-bg); }
 .pw-joker { font-size: 4.2em; line-height: 1; animation: pop 1s ease-in-out infinite alternate; }
 .pc-wild b { font: 700 1.5em Oswald, sans-serif; letter-spacing: .08em; color: #fde047; }
 .pw-kind { font: 800 .8em Inter, sans-serif; }
@@ -1665,6 +1670,7 @@ html.intl-break body::after { content: ''; position: fixed; top: 0; left: 0; rig
 .pitch.packed .slot.tier-l { box-shadow: 0 0 0 2px #c084fc, 0 0 14px #a855f7; } .pitch.packed .slot.tier-g { box-shadow: 0 0 0 2px #facc15; }
 .pitch.packed .slot.tier-s { box-shadow: 0 0 0 2px #cbd5e1; }
 .how-cards summary { cursor: pointer; }
+.how-cards { margin: 12px 0 14px; } .how-cards[open] .how-list { margin-top: 8px; }
 
 /* ================================================================ packs: the foil, the box, the opening */
 .po-foil { position: relative; width: 180px; height: 256px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; overflow: hidden; color: #fff;
@@ -3343,3 +3349,15 @@ body.calm .gm-status .gs-open.hot span { animation: none; }
 .tabbar a span { position: relative; }
 .tabbar .locker-dot { position: absolute; top: -2px; right: -6px; width: 10px; height: 10px; border-radius: 50%; background: var(--bad); border: 2px solid var(--nav); }
 .tabbar .locker-dot[hidden] { display: none; }
+
+/* the seasonal strip along the top: keep pages' top bars (and their buttons) clear of it */
+html[class*="sz-"]:not(.intl-break) body:not(.has-status) #app, html.intl-break body:not(.has-status) #app { padding-top: 26px; }
+/* the buttons on the right of a page's top bar (🏆, ?) are one size and line up with the back arrow */
+.top-btns { align-items: center; }
+.top-btns > .icon-btn, .top-btns > a.icon-btn, .top-btns > button.icon-btn { box-sizing: border-box; width: 40px; height: 40px; min-width: 40px; padding: 0; margin: 0;
+  display: inline-grid; place-items: center; font: 800 1.05rem Inter, sans-serif; line-height: 1; border-radius: 12px; }
+/* a long title never runs into the buttons beside it: it gets smaller instead */
+.topbar h2 { min-width: 0; padding: 0 6px; }
+.topbar:has(.top-btns) h2 { font-size: clamp(.95rem, 4.4vw, 1.3rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.lk-stats { display: flex; flex-wrap: wrap; gap: 2px 10px; } .lk-stats span { white-space: nowrap; }
+.road { scroll-padding: 0 16px; padding-right: 16px; }
