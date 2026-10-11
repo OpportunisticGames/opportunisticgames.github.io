@@ -117,6 +117,7 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 2026-10-12 | CHAOS drafts (Halloween CHAOS especially) scroll on the phone, and the fog and pumpkins move with it | 5.30.1: `fitPitch` shrinks the slots whenever the page overflows (not just at kick-off), scales the game down as a last resort, and the decorations sit in page coordinates |
 | 2026-10-12 | Seasonal CHAOS on Hard played like Normal: clubs and numbers showed | 5.30: Hard works in Seasonal CHAOS, with its own Hard board |
 | 2026-10-02 | CHAOS: van Gaal + a Centurion Throw + Hat-Trick Hero = a guaranteed ×3 on a 100-goal striker in any slot | 5.18: van Gaal's any-position rule is off on themed spins; the Hat-Trick is its own spin now; the armband passes down in CHAOS |
 | 2026-10-02 | The coin landed the moment you tapped it and CHAOS effects just appeared (battery saver turns on the phone's "reduce motion") | 5.18: the game's own Animations setting (Full by default) |

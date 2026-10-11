@@ -9,6 +9,13 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 85, label: '5.30.1', date: '2026-10-12', title: '📱 CHAOS fits on one screen again',
+      items: [
+        '📱 CHAOS drafts (Halloween CHAOS especially) could scroll on some phones, and the fog and pumpkins slid off the pitch when they did. The game now always fits on one screen: if anything grows after kick-off (bigger text, a longer line in the counter), the pitch tightens to fit, and on a small phone with big text the whole game scales down a touch',
+        '🎃 The pumpkin in the bottom-right corner no longer sits on the formation',
+      ],
+    },
+    {
       v: 84, label: '5.30', date: '2026-10-12', title: '🎃 Halloween CHAOS looks the part (and ten characters a season)',
       promo: [
         { href: '#/draft?m=szchaos&s=goals', icon: '🎃', cls: 't-purple', kick: '🎃 Halloween CHAOS', title: 'A night in the graveyard', sub: 'Moonlight, fog, cobwebs and bats over the pitch, and ten spooky characters in the dugout' },
