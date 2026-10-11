@@ -33,14 +33,18 @@
     if (!n) return;
     const before = GM.levelOf(xp()), after = GM.levelOf(xp() + n);
     GM.store.set('xp', xp() + n);
+    if (GM.seasonXP) GM.seasonXP(n);  // the season track counts the same XP (rewards.js)
     if (after.n > before.n) {
       const promo = after.rank !== before.rank;
       setTimeout(() => {
         GM.toast(`⬆️ <b>Level ${after.n}</b>${promo ? ` · promoted to ${after.icon} <b>${after.rank}</b>!` : ''}`, 3200);
         GM.sound.play('levelup'); if (promo) setTimeout(() => GM.sound.play('cheer'), 450);
-        if (GM.givePack) GM.givePack(1, promo ? `promoted to ${after.rank}` : `level ${after.n}`, promo ? 'legends' : 'level');
+        // the level road (prizes.js): each level's own reward(s), and a Promotion pack on a new rank
+        for (let lv = before.n + 1; lv <= after.n; lv++) (GM.levelReward ? GM.levelReward(lv) : [{ pack: 'level' }]).forEach(r => GM.grant ? GM.grant(r, `level ${lv}`) : GM.givePack(1, `level ${lv}`, 'level'));
+        if (promo && GM.givePack) GM.givePack(1, `promoted to ${after.rank}`, 'legends');
       }, 1500);
       GM.syncProfile();
+      if (GM.lockerCheck) setTimeout(() => GM.lockerCheck(), 1600);  // level rewards in the Locker
     }
     GM.$$('.lvl-chip').forEach(el => { el.outerHTML = GM.levelChip(); });
   };
@@ -61,14 +65,16 @@
     root.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>${l.icon} Your level</h2><span></span></div>
       <div class="lvl-hero"><span class="lvl-big">${l.icon}</span><b>Level ${l.n}</b><small>${l.rank}</small>
         <div class="bar lvl-bar"><i style="width:${100 * l.into / l.need}%"></i></div>
-        <small>${l.into.toLocaleString()} / ${l.need.toLocaleString()} XP to level ${l.n + 1} · 🎁 a pack every level${l.next ? ` · ${l.next[1]} ${l.next[2]} at level ${l.next[0]}` : ''}</small></div>
+        <small>${l.into.toLocaleString()} / ${l.need.toLocaleString()} XP to level ${l.n + 1} · 🎁 a reward every level${l.next ? ` · ${l.next[1]} ${l.next[2]} at level ${l.next[0]}` : ''}</small></div>
+      <h3 class="section-title">🛤️ The level road</h3>${GM.roadHtml ? GM.roadHtml(l.n) : ''}
       <h3 class="section-title">🪜 The ladder</h3>
       <div class="lvl-ladder">${RANKS.map(([n, i, name]) => `<div class="${l.n >= n ? 'got' : ''}${l.rank === name ? ' now' : ''}"><span>${l.n >= n ? i : '🔒'}</span><b>${name}</b><small>Level ${n}</small></div>`).join('')}</div>
       <h3 class="section-title">⚡ Earning XP</h3>
       <div class="lvl-earn"><div><span>⚽</span>Finish a draft<b>+${GM.XP.draft}</b></div><div><span>📅</span>Play a daily game<b>+${GM.XP.daily}</b></div>
         <div><span>🎮</span>Any other game<b>+${GM.XP.game}</b></div><div><span>🏅</span>Earn a badge<b>+${GM.XP.badge}</b></div>
         <div><span>🌐</span>Online game (win)<b>+${GM.XP.online} (+${GM.XP.win})</b></div><div><span>🎁</span>Open a pack<b>+${GM.XP.pack}</b></div></div>
-      <p class="muted center">${total.toLocaleString()} XP in all. Your level shows next to your name on the leaderboards.</p>`;
+      <p class="muted center">${total.toLocaleString()} XP in all. Your level shows next to your name on the leaderboards.</p>
+      <div class="actions"><a class="btn" href="#/season">🏆 This season’s track</a><a class="btn ghost" href="#/locker">🎒 Locker</a></div>`;
   };
 
   /* ================================================================ club v club */

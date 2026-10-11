@@ -97,6 +97,8 @@
       b.textContent = n; b.hidden = !n;
       if (GM.online && GM.online.check) GM.online.check();
     }
+    if (GM.rewardsStart) GM.rewardsStart();
+    if (GM.seasonVisitPlan) GM.seasonVisitPlan(path);  // a seasonal visitor on Home now and then (rewards.js)  // login reward, Locker unlocks, the look you wear (once a session)
     if (GM.native) GM.native.start();  // the app's extras: Play updates, links check (once a session)
     GM.sound.scene(path === 'draft' && /^chaos/.test(q.m || '') ? 'chaos' : path === 'draft' && q.ch ? 'h2h' : path);  // (a friend's challenge: the tense one)  // each game area has its own music (CHAOS has Mayhem)
     GM.chaosLook(path === 'draft' && /^chaos/.test(q.m || ''));
@@ -124,6 +126,9 @@
       case 'matchday': return GM.matchday(app);
       case 'nations': return GM.nationsPage(app);
       case 'level': return GM.levelPage(app);
+      case 'locker': return GM.lockerPage(app, q);  // cosmetics and unlocks (locker.js)
+      case 'season': return GM.seasonPage(app);
+      case 'spin': return GM.spinPage(app);  // the prize wheel (prizes.js)  // the season track, weekly missions, login rewards (rewards.js)
       case 'clubs': return leaderboard('clubs' + (q.w === '1' ? ':1' : ''));
       case 'packs': return GM.album(app, 'goals', 'album', q.v === 'xi' ? 'xi' : 'cards', '', GM.TIERS[q.t] ? q.t : '', q.open === '1');
       case 'matchfootle': return GM.footle(app, false, q.fx);
@@ -227,7 +232,7 @@
         <div class="logo small">GOAL<span>MACHINE</span></div>
         <a class="icon-btn" href="#/updates" aria-label="Updates">📰${GM.hasUnseenUpdate() ? '<i class="new-dot"></i>' : ''}</a></div>
       <header class="hero">
-        <p>${GM.levelChip()} ${club ? `<span class="fan-chip">${GM.clubChip(club, true)}</span> <span class="banter">${GM.esc(GM.clubBanter(club))}</span>` : `${GM.allPlayers ? GM.allPlayers.length.toLocaleString() : '5,000+'} Premier League players · 1992 to today`}</p>
+        <p>${GM.levelChip()} ${GM.seasonChip ? GM.seasonChip() : ''} ${club ? `<span class="fan-chip">${GM.clubChip(club, true)}</span> <span class="banter">${GM.esc(GM.clubBanter(club))}</span>` : `${GM.allPlayers ? GM.allPlayers.length.toLocaleString() : '5,000+'} Premier League players · 1992 to today`}</p>
         ${installHidden() || hasNativeApp ? '' : `<div class="install-bar">
           ${isAndroid ? `<a class="btn small" id="getapk" href="${GM.APK_URL}">🤖 Get the Android app</a>` : `<button class="btn small" id="install" hidden>📲 Install app</button>`}
           <button class="install-x" id="install-x" title="I already have it" aria-label="Hide">✕</button></div>`}
@@ -360,6 +365,7 @@
         ${grp('look', `<div class="setting"><b>Appearance</b><small>Auto follows your phone's light or dark setting. Club paints the game in your favourite club's colours</small>${seg('s-theme', GM.THEMES, GM.getTheme())}</div>
         <div class="setting"><b>Favourite club</b><small>Unlocks Club Footle and Club XI, and brings your club's colours to the app</small>
           <select class="input" id="s-club"><option value="">None</option>${GM.clubOptions().map(c => `<option ${c === GM.favClub() ? 'selected' : ''}>${GM.esc(c)}</option>`).join('')}</select></div>
+        <div class="setting"><b>Seasonal look</b><small>Each season dresses the app up (Halloween, Christmas, Easter…) and plays its own music on the menus</small>${seg('s-szlook', { true: `${GM.season ? GM.season().icon : '🎃'} On`, false: 'Off' }, GM.store.get('seasonLook', true) !== false)}</div>
         <div class="setting"><b>Animations</b><small>Full: the coin flips, the tornado tears through, the ambulance drives on. Calm keeps movement to a minimum</small>${seg('s-calm', { false: '🎬 Full', true: '🍃 Calm' }, GM.calm())}</div>`)}
         ${grp('sound', `<div class="setting"><b>Sound effects</b><small>Whistles, reels, the crowd and the goal horn</small>${seg('s-sfx', { true: '🔊 On', false: '🔇 Off' }, snd.sfx)}
           <label class="vol">🔈<input type="range" id="s-sfxvol" min="0" max="1" step="0.05" value="${snd.sfxVol}">🔊</label></div>
@@ -443,6 +449,7 @@
     wire('s-level', v => GM.setLevel(v));
     wire('s-buzz', v => GM.store.set('buzz', v === 'true'));
     wire('s-calm', v => { GM.store.set('calm', v === 'true'); GM.applyCalm(); });
+    wire('s-szlook', v => { GM.store.set('seasonLook', v === 'true'); if (GM.applySeason) GM.applySeason(); GM.sound.scene('settings'); });
     GM.$('#s-club').onchange = e => { GM.setFavClub(e.target.value); GM.sound.play('whistle'); if (e.target.value) GM.toast(`🏟️ Welcome, ${GM.esc(GM.clubShort(e.target.value))} fan!`); };
     wire('s-sfx', v => { GM.sound.set('sfx', v === 'true'); GM.sound.play('whistle'); });
     const bgInfo = () => {

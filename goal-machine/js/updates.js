@@ -9,6 +9,29 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 78, label: '5.26', date: '2026-10-11', title: '🎃 The Locker and the Halloween season',
+      promo: [
+        { href: '#/locker', icon: '🎒', cls: 't-purple', title: 'Your Locker is open', sub: 'Pitch styles, card backs, celebrations, frames and titles. See what you’ve unlocked already.' },
+        { href: '#/season', icon: '🎃', cls: 't-red', kick: '🎃 Season 1: Halloween', title: 'The season track', sub: '30 tiers of rewards, three missions a week and a login reward every day' },
+      ],
+      items: [
+        '🎒 The Locker: 64 things to unlock and show off. Pitch styles (Under the lights, Nineties, Snow day, a cold wet night in Stoke, Neon, Golden turf…), card backs, celebrations and horns for a new best, frames and titles',
+        '🖼️ Your frame and title show to everyone: on the leaderboards, your friends’ lists, the online hub and on challenges you send',
+        '🏟️ Club colours: a pitch, card back, frame, celebration and an “Ultra” title in your club’s colours, for playing dailies for them',
+        '🗓️ Seasons with a theme: 🎃 Halloween now, then ⭐ Champions Nights, 🎄 Christmas, 💸 Transfer Window, 🏆 Cup Run, 🏁 Title Race, 🐣 Easter, 🎉 Final Day and ☀️ Summer Tournament, each dresses the whole app up: its own background and colours, a strip along the top, things falling on the menus (snow at Christmas, bats at Halloween, stars for Champions Nights, petals at Easter, ticker tape on Final Day), its own items, music on the menus (Jingle Bells at Christmas), and animated visitors on Home now and then (Santa’s sleigh, a snowman, a ghost, bats across the moon, an Easter bunny, fireworks). Turn it off in Settings → Look',
+        '🏆 Seasons: every XP you earn also fills this month’s season track: 30 tiers, each with a reward. Your level is still for life; the track starts again each month',
+        '🎯 Weekly missions: three a week, the same for everyone. Each is worth 300 season XP, and all three earn a Mission pack',
+        '📅 Login rewards: a seven-day card of season XP, packs and a Locker item on day 7',
+        '🛤️ The level road: every level has its own reward now (a Locker item, a spin, a pick-one-of-three or a Legendary pack every 10), not just a pack',
+        '🎡 The prize wheel: spins from the road, the season track, login day 4 and missions. Season XP, packs, a vault item or a 🌟 Legendary pack',
+        '🌟 Legendary packs, and now and then any pack has a bonus as well as players: a Locker item, a spin or season XP',
+        '🏛️ The vault: when a season or event ends its items go into the vault, so you can still find them in Legendary packs and on the wheel. There are vault-only things too (Cup final day, Rainbow laces, Cult Hero…)',
+        '🎃 Events: limited-time tracks with their own items. First up: Spooky Season (24 Oct to 2 Nov), with a haunted pitch, cobweb cards, a pumpkin frame, ghosts in the stands and the Ghoul-keeper title',
+        '🕴️ Two new owners for Dodgy Owner: 🌟 The Celebrity (sponsors pay double) and 🤝 The Supporters’ Trust (the fans own the club). Unlock them in the Locker',
+        '💬 Eight new challenge reactions to unlock (🎺 Vuvuzela!, 🚑 Call an ambulance, 🍿 Grabbing popcorn…)',
+      ],
+    },
+    {
       v: 77, label: '5.25', date: '2026-10-11', title: '📱 A better app',
       items: [
         '📳 Proper vibrations in the app: a tick on taps, a thud for big moments, a little buzz when you beat your best or win a challenge',

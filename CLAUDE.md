@@ -23,6 +23,12 @@ game mode for players; this file is about how to work on it.
   the head coaches in Dodgy Owner and Reign Check (Pep Cardigola, José Moaninho and friends). No AI model names in commits, PRs or files.
 - **Secret games** (`js/secret.js`): locked knock-offs unlocked by doing something (Reign Check, Hat-Trick, Goal Royale).
   The owner's tester link `#/tester?code=owner-test-2026` unlocks them all on that device for play-testing.
+- **Build visuals properly, with the tools we have** (the owner asked for this): anything that moves or celebrates uses
+  real animations, not emoji or plain CSS stand-ins. Search LottieFiles (its MCP) for characters and objects, download
+  them with `candidates.json` + the `lottie.yml` workflow, preview with `tools/lottie_preview.html`, pick, credit; use the
+  PixiJS effects layer (`GM.FX`: particles, light, weather) for sparks, confetti, snow, smoke; real sounds via
+  `fx/sfx/wanted.json` + `sounds.yml`; music as `audio.js` TRACKS. Plain CSS is fine for cheap background layers (like
+  the falling snow on the menus), but the moments people notice should be the real thing. Always keep the Calm fallback.
 - Write plainly in the owner's British English (the game's tone: short, friendly, football-y).
 - Every release: add an entry at the top of `GM.UPDATES` in `js/updates.js`, then run `python3 tools/bump_version.py`
   from `goal-machine/` (it bumps every `?v=` in `index.html` and the service worker cache). `v` = the next cache
@@ -77,6 +83,20 @@ game mode for players; this file is about how to work on it.
   add the credit, delete `cand/`.
 - Manager portraits: `fx/mgr/<key>.jpg` (free-licence Wikipedia photos, 320px) with face positions in `fx/mgr/credits.json`, fetched by
   `managers.yml` / `tools/fetch_managers.py` (add the article to `ARTICLES` for a new manager); shown by `GM.CFX.faceImg`.
+- `locker.js` – 🎒 the Locker (`GM.LOCKER`, 64 items): pitch styles (`body.pk-*`), card backs (`body.cbk-*`), celebrations + horns
+  (`GM.celebrate()` on a new best / challenge win), frames (`.fr-*` on pictures) and titles (`GM.titleHtml(name)`) that others
+  see (server `players.flair`: `set_flair`, `get_flair`, fetched with the pictures), challenge reactions, Dodgy Owner owners
+  (`OWNERS.celeb/trust` have `locked`). Each item's `src` says how you get it (lvl, season tier, missions, badges, club
+  dailies, login); `GM.lockerCheck()` hands out what you've earned. A new item = one line in `L` (+ CSS for its look).
+- `prizes.js` – 🎁 one way to give any reward (`GM.grant({pack|item|xp|spin|vault|choice})`), the level road
+  (`GM.levelReward(n)`), the prize wheel (`#/spin`, `WHEEL`), pick-one-of-three (`GM.pickReward`), a pack's bonus slot
+  (`GM.packBonus`, always in a 🌟 Legendary pack), the vault (`GM.vaultItems`: vault-only items, past seasons' (`src.s`
+  earlier than now) and finished events'), and events (`EVENTS`: dates, a 10-tier track; items have `src.event` + `tier`;
+  `gm:eventPeek` = an event id shows it early, for testing). New season items: add `src: { season: tier, s: 'YYYY-MM' }`.
+- `rewards.js` – 🏆 seasons (`SEASONS`: each month's name, icon, theme `html.sz-<theme>` (the strip along the top and tints), menu music
+  (`audio.js` TRACKS: spooky, champions, festive, easter), Lottie visitors on Home (`VISIT`: sleigh, snowman, gift, ghost, bat,
+  batmoon, pumpkin, bunny, eggs, fireworks, sun, stopwatch, flags, trophy) and items (locker.js `src.s`); a calendar month; all XP also fills a 30-tier track, `GM.seasonXP`), weekly missions (three
+  a week from `POOL`, counted by `GM.track(event)` calls in the games), login rewards (`GM.loginCheck`), `#/season`.
 - `promo.js` – the Home banner: matchday, the newest feature releases from the last 3 weeks (an entry's `promo` list, or a slide made from its title), a challenge waiting for you, a daily "Try today" game (`TRY`), news from `announcements`. Give a feature release a `promo` entry to choose its slide.
 - `modes.js` – quick games (Club Hopper, Higher or Lower, Who Am I?, Club Grid, Guess the Tally); `h2h.js` – pass-the-phone series.
 - `daily.js` – Today page, Footle, daily streaks. `collection.js` – Album, badges, Dream XIs. `report.js` – full-time report.
@@ -148,6 +168,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    - `chaospixi.js` – the effects layer in CHAOS: Lottie vehicles and characters, PixiJS particles, the parked ambulance, Calm off.
    - `challenges.js` – friend challenges on three phones: send, ghost bar, watch along, head-to-head, reactions, rematch (best of three), group table, tally, rivalry page, CHAOS.
    - `allbadges.js` – every one of the 100 badges is earned through the calls the games make (a new badge needs a trigger here).
+   - `rewards526.js` – the Locker and seasons: unlocks from what you've done, wearing styles, frames/titles seen by a friend, the season track, missions, login rewards, the locked owners.
    - `app525.js` – the app's extras with a pretend AndroidApp: haptics, Play updates, the links nudge and Settings row, the review card's timing, old builds untouched.
    - `fixes5232.js` – your challenges: the in-app card when someone takes yours on, the Online tab lists, `#/challenges`, the friend menu.
    - `fixes5231.js` – Make a Sub can be called off, the Joker becomes any wildcard, Benítez the Tinkerman halves a player.

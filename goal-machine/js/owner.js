@@ -59,7 +59,9 @@
             <li>🏛️ Your score is your <b>legacy</b>: league points, the Cup, the fans, profit and your own ambition. There’s more than one way to win.</li></ul>
           ${lv === 'hard' ? '<p class="muted">🥵 Hard: weaker squads, less money, names and positions only, and OVR ranges until you scout.</p>' : lv === 'extreme' ? '<p class="muted">⚡ Extreme: every PL player, squads of unknowns, OVR ranges until you scout.</p>' : ''}
           <h3 class="section-title">What kind of owner are you?</h3>
-          <div class="cb-mgrs">${Object.entries(E.OWNERS).map(([k, o]) => `<button class="cb-mgr" data-owner="${k}"><span>${o.icon}</span><b>${o.name}</b><small>${o.text}<br><b class="ow-amb">🎯 ${o.ambition}</b></small></button>`).join('')}</div>`;
+          <div class="cb-mgrs">${Object.entries(E.OWNERS).map(([k, o]) => o.locked && !(GM.ownerUnlocked && GM.ownerUnlocked(o.locked))
+            ? `<a class="cb-mgr locked" href="#/locker?k=owner"><span>🔒</span><b>${o.name}</b><small>Unlock in the 🎒 Locker</small></a>`
+            : `<button class="cb-mgr" data-owner="${k}"><span>${o.icon}</span><b>${o.name}</b><small>${o.text}<br><b class="ow-amb">🎯 ${o.ambition}</b></small></button>`).join('')}</div>`;
         else if (n === 1) body = `<h3 class="section-title">Which club are you buying?</h3>
           <div class="cb-mgrs">${E.clubOffers(seed).map(c => { const T = E.SITUATIONS[c.sit]; return `<button class="cb-mgr" data-club="${esc(c.club)}" data-sit="${c.sit}"><span>${T.icon}</span><b>${esc(c.club)}</b><small>${T.name}: ${T.text}</small></button>`; }).join('')}</div>`;
         else body = `<h3 class="section-title">Hire your first head coach</h3>

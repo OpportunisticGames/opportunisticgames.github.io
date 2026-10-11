@@ -50,6 +50,9 @@
     local: { icon: '🏠', name: 'The Local Lad', text: 'A lifelong fan who won the lottery. The fans adore you (+25), but every dodgy deal costs you with them too.', fans: 25, ambition: 'Finish in the top half with the fans on 85+', amb: (S, pos) => pos <= 10 && S.fans >= 85 },
     crypto: { icon: '🪙', name: 'The Crypto Bro', text: 'Your fortune is in MoonDoge. Every week it moons or rugs: wild swings in your cash. To the moon!', heat: 10, ambition: 'Reach the Cup semi-finals', amb: S => S.cup.won || S.cup.ties.filter(t => t.through).length >= 3 },
     stripper: { icon: '🏚️', name: 'The Asset Stripper', text: 'You bought the club to squeeze it. Skim money into your own account every week (Money tab); it counts towards your legacy. Just don’t get relegated.', ambition: 'Skim £40m and stay up', amb: (S, pos) => (S.skim || 0) >= 40 && pos <= 17 },
+    // unlocked in the Locker (locker.js: owner-celeb, owner-trust)
+    celeb: { icon: '🌟', name: 'The Celebrity', locked: 'celeb', text: 'A film star who bought the club for the documentary. The fans love the cameras (+10) and sponsors pay double, but the heat never quite goes away.', cash: 15, heat: 15, fans: 10, ambition: 'Finish in the top six or win the Cup', amb: (S, pos) => pos <= 6 || S.cup.won },
+    trust: { icon: '🤝', name: 'The Supporters’ Trust', locked: 'trust', text: 'The fans own the club. They start on 90, but every bit of heat costs you with them twice over. Not much money.', cash: -15, fans: 45, ambition: 'Stay up with the fans on 90+', amb: (S, pos) => pos <= 17 && S.fans >= 90 },
   };
   // The club you buy: same league, different situations
   const SITUATIONS = {
@@ -466,7 +469,7 @@
     const L = LEVELS[S.lv], wages = r1(wageBill(S) / 1000);
     S.cash = r1(S.cash - wages); book(S, 'Wages', -wages);
     S.cash = r1(S.cash + L.tv); book(S, 'TV money', L.tv);
-    if (S.sponsor) { const sp = SPONSORS[S.sponsor.id]; const last = S.results.filter(x => x.week === S.week); const v = sp.week + last.filter(x => x.res === 'W').length * (sp.win || 0); S.cash = r1(S.cash + v); book(S, 'Sponsor', v); }
+    if (S.sponsor) { const sp = SPONSORS[S.sponsor.id]; const last = S.results.filter(x => x.week === S.week); const v = (sp.week + last.filter(x => x.res === 'W').length * (sp.win || 0)) * (S.owner === 'celeb' ? 2 : 1); S.cash = r1(S.cash + v); book(S, 'Sponsor', v); }
     // legs and heads
     const C = COACHES[S.coach] || {};
     S.squad.forEach(x => {
@@ -493,7 +496,9 @@
     if (S.owner === 'crypto') { const r2 = rng(S, 'moon'), v = r1(r2() < 0.5 ? 1 + r2() * 4 : -(1 + r2() * 3.5)); S.cash = r1(S.cash + v); book(S, 'MoonDoge', v); if (Math.abs(v) >= 3.5) notes.push(v > 0 ? `🚀 MoonDoge mooned: +£${v}m!` : `📉 MoonDoge rugged: −£${-v}m.`); }
     // at 100 heat there's no investigation: you're simply out
     if (S.heat >= 100 && !S.over) { S.over = 'expelled'; notes.push('⚖️ You’ve failed the league’s fit and proper persons test. You’re banned from owning a club.'); }
+    if (S.owner === 'trust' && S.heat > (S.heatSeen || 0)) S.fans = clamp(S.fans - 2 * (S.heat - (S.heatSeen || 0)), 0, 100);  // the Trust's members hate a dodgy deal
     S.heat = clamp(S.heat - 2, 0, 100);
+    S.heatSeen = S.heat;
     S.fans = clamp(S.fans + (S.fans < 55 ? 1 : -0.3), 0, 100);
     if (S.ignoredCap && S.owner !== 'petro' && wageBill(S) / 1000 > L.cap) { S.heat = clamp(S.heat + 2, 0, 100); }
     if (S.cash < 0) { S.heat = clamp(S.heat + 1, 0, 100); S.fans = clamp(S.fans - 1, 0, 100); }

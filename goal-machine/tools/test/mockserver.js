@@ -18,7 +18,7 @@ module.exports = function makeServer() {
   };
   const view = r => ({ quick: !!r.quick, created: r.created, bids_in: Object.keys(r.secret || {}).filter(k => k === 'host' || k === 'guest'), code: r.code, kind: r.kind, variant: r.variant, stat: r.stat, seed: r.seed, host: r.host, guest: r.guest, moves: r.moves, race: r.race, turn: r.turn, status: r.status, result: r.result, seen: r.seen, now: now(), updated: r.updated });
   // friend challenges (challenge_* in SQL)
-  const chs = {}, plays = [], invites = []; let pid = 0;
+  const chs = {}, plays = [], invites = [], flairs = {}; let pid = 0;
   const chName = (a) => auth(a.p_user, a.p_key) || (a.p_name && a.p_name.trim()) || 'A friend';
   const chUser = (a) => auth(a.p_user, a.p_key) || null;
   const tok = () => Math.random().toString(36).slice(2);
@@ -51,6 +51,8 @@ module.exports = function makeServer() {
       if (plays.find(x => x.code === p.code && x.owner && x.token === a.p_token)) { p.owner_reaction = a.p_reaction; return 'ok'; }
       return 'no_play';
     },
+    set_flair(a) { const u = auth(a.p_user, a.p_key); if (!u) return 'auth'; flairs[u.toLowerCase()] = { name: u, f: a.p_frame || undefined, t: a.p_title || undefined }; return 'ok'; },
+    get_flair(a) { const out = {}; (a.p_names || []).forEach(n => { const f = flairs[n.toLowerCase()]; if (f) out[f.name] = { f: f.f, t: f.t }; }); return out; },
     challenge_send(a) {
       const u = auth(a.p_user, a.p_key); if (!u) return { error: 'auth' };
       const c = chs[(a.p_code || '').toUpperCase()]; if (!c || c.owner_user !== u) return { error: 'not_yours' };

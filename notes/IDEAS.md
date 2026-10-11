@@ -23,6 +23,40 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### Rewards: cosmetics, seasons, unlocks ✅ 5.26 (first part) *(owner, 11 Oct 2026)*
+- **Owner:** "build out these cosmetics and other rewards… maybe there could be more cosmetics for your own club too…
+  maybe the level system is the season pass and that resets every season… unlock game modes, new managers, new owners in
+  dodgy owner… power ups that you could use online too? Not that made huge differences, but either looked cool or gave
+  you a small thing."
+- **Built in 5.26:** the Locker (64 items in 8 kinds, club-colour versions), frames and titles everyone sees, monthly
+  seasons (30 tiers), weekly missions, login rewards, two unlockable Dodgy Owner owners, unlockable challenge reactions.
+- **Level v season:** we kept the level for life (it's your rank on the boards; wiping it monthly would feel bad) and
+  made the season a separate monthly track fed by the same XP. Say if you'd rather the level itself reset.
+- **Owner (11 Oct), built into 5.26 too:** "packs and other rewards, spins, choices of what reward you like, maybe
+  occasionally a pack can have both players and another reward… a legendary pack… some form of clash royale looking
+  level/tier system… temporary promotional tiers… have both a season pass and levels. Once a season is over the rewards
+  go into packs and other ways to unlock them." → the level road, the prize wheel, pick-one-of-three, a pack's bonus
+  slot, 🌟 Legendary packs, the vault, and events (Spooky Season first).
+- **Owner (11 Oct):** "can you make the next few seasons? Like a halloween season, a christmas season, an Easter season,
+  a champions league season… app themes for each season too… christmas music" → built: October Halloween, Nov Champions
+  Nights, Dec Christmas, Jan Transfer Window, Feb Cup Run, Mar Title Race, Apr Easter, May Final Day, Jun Summer
+  Tournament: each has 5–6 items, a full theme ("like a proper theme not just a banner": background and panel colours in
+  light and dark, a falling layer on the menus such as snow, the strip) and four have their own menu music (Jingle Bells is out of
+  copyright; the Champions Nights anthem is our own, not the real one). July onwards still needs planning.
+- **Each month from now:** new season items (`src.s`) and, now and then, an event (`EVENTS`) keep it fresh; the old
+  ones drop into the vault.
+- **Next, to talk through:**
+  1. **New CHAOS managers as rewards:** each needs a balance run (~25 min) and a portrait, so one or two at a time:
+     e.g. a level-25 manager and a season-tier one. Who?
+  2. **Online "small things":** we kept online fair (no score boosts). Ideas that stay fair: live taunts in races (an
+     air horn on their phone when you sign a 100+), a walk-out card with your frame and title at the start of a duel,
+     a "lucky charm" that only changes the animation. Or a tiny boost everyone can get, like a free re-spin once per
+     Quick Match day for both players?
+  3. **Fresh items every season:** each month 3–4 new season-exclusive items at tiers 10/20/30 (this month's are fixed
+     at the track's tiers for now; repeats turn into packs).
+  4. **Game modes as rewards:** the secret games could also unlock from the season track or level, as a second way in.
+  5. **More club items:** your club's anthem on a new best, club-coloured Hat-Trick cards, a club crest frame.
+
 ### What other mobile games have that we don't *(owner asked, 11 Oct 2026)*
 - **Owner:** "What other things do normal apps/mobile games have that we don't yet?" Then: "go ahead with that set, add
   all ideas into the ideas collection!"

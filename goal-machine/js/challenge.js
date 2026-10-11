@@ -70,6 +70,7 @@
         if (!r || r.error || !r.code) return null;
         GM.store.set('ch:' + r.code, { play: r.play, token: r.token, own: true });
         GM.store.set('chmine', [r.code].concat(GM.store.get('chmine', [])).slice(0, 40));
+        if (GM.track && !parent) GM.track('challenge');
         return r.code;
       } catch (e) { return null; }
     },
@@ -225,7 +226,7 @@
       return;
     }
     if (mine && mine.status === 'done') return result(app, ch, mine.id);
-    app.innerHTML = top('⚔️ Challenge') + `<div class="ch-hero">${GM.userPic ? GM.userPic(owner.name, 'xl') : ''}<b>${esc(owner.name)} challenges you</b>
+    app.innerHTML = top('⚔️ Challenge') + `<div class="ch-hero">${GM.userPic ? GM.userPic(owner.name, 'xl') : ''}<b>${esc(owner.name)} challenges you</b>${owner.username && GM.titleHtml ? GM.titleHtml(owner.username) : ''}
         <span>${esc(modeName(ch))}: beat <b>${fmt(owner.score)}</b> ${esc(unitOf(owner))}</span><small>Same spins as they had. Their line shows as you go.</small></div>
       <div class="actions col"><button class="btn big" id="ch-go">${mine ? '▶ Carry on' : '⚔️ Take it on'}</button></div>
       ${done.length > 1 || live.length ? `<h3 class="section-title">The table</h3>${table}` : ''}`;
@@ -295,7 +296,7 @@
       ${(ga.wild || []).length || (gb.wild || []).length ? `<p class="ch-wild"><span>${esc(an)}: ${(ga.wild || []).join(' ') || 'no wildcards'}</span><span>${esc(bn)}: ${(gb.wild || []).join(' ') || 'no wildcards'}</span></p>` : ''}
       ${ga.mgr && ga.mgr === gb.mgr ? `<p class="ch-wild"><span>👔 Both went with ${esc(ga.mgr)}</span></p>` : ''}
       ${groupTable(ch)}
-      ${sd.token ? `<h3 class="section-title">💬 Say something</h3><div class="ch-reacts">${REACTS.map(r => `<button class="btn small ghost" data-react="${esc(r)}">${esc(r)}</button>`).join('')}</div>` : ''}
+      ${sd.token ? `<h3 class="section-title">💬 Say something</h3><div class="ch-reacts">${REACTS.concat(GM.extraReactions ? GM.extraReactions() : []).map(r => `<button class="btn small ghost" data-react="${esc(r)}">${esc(r)}</button>`).join('')}</div>` : ''}
       <div class="actions col">
         ${sd.you ? `<button class="btn big" id="ch-rematch">🔁 Rematch (new spins)</button>` : `<a class="btn big" href="#/c?id=${ch.code}">⚔️ Take it on yourself</a>`}
         <button class="btn ghost" id="ch-pic">🖼️ Share the head-to-head</button>
@@ -312,6 +313,7 @@
     GM.$('#ch-pic', el).onclick = () => GM.shareImage(picture(ch, A, B, an, bn), `⚽ Goal Machine – ${an === 'You' ? (GM.getName() || 'Me') : an} ${fmt(A.score)} v ${fmt(B.score)} ${bn}`);
     bestOf(GM.$('#ch-bo3', el), ch, A.name, B.name, sd.you);
     if (fresh && !live) reveal(el, A.score, B.score, v);
+    if (fresh && !live && sd.you && v > 0) { if (GM.track) GM.track('chwin'); if (GM.celebrate) setTimeout(() => GM.celebrate(true), 2200); }
     if (fresh && !live && sd.you && v > 0 && GM.native) { GM.buzz('win'); GM.native.happy('challenge'); }
   }
   // the final whistle on your own result: both scores count up, then the verdict lands (confetti if you won)
