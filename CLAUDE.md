@@ -51,13 +51,15 @@ game mode for players; this file is about how to work on it.
 - `core.js` – shared helpers: storage (`GM.store`, keys prefixed `gm:`), seeded RNG (`GM.rng`), avatars and photo
   caching (`GM.avatar`, `GM._ph`), modals and notices, the leaderboard client (`GM.lb`: `top`, `mine`, `submit`),
   the in-game 🏆 pop-up (`GM.lbButton`, `GM.lbModal`, `GM.lbYou`), `GM.APP_MIN_BUILD`, accounts, backups.
-- `app.js` – the router (`#/path?query`), Home (with sub-tabs), Settings, Ranks (`leaderboard()`), About, the
-  CHAOS look (`GM.chaosLook`).
+- `app.js` – the router (`#/path?query`), the tab bar (Play · Today · Online · Ranks · 🎒 Locker), the top bar on the tabs'
+  pages (`GM.statusBar`: picture, level, season tier, 🎁 `GM.toOpen()` sheet of packs/spins/picks/new kit), Home (with
+  sub-tabs), Settings, Ranks (`leaderboard()`), About, the CHAOS look (`GM.chaosLook`). Old addresses map into tabs:
+  `#/album`, `#/packs`, `#/season` all draw the Locker tab (`TAB_OF`).
 - `draft.js` – the draft engine for every XI mode (Ultimate, Classic, Extreme, Purist, Target, Treble, Mystery, Club,
   Daily, CHAOS). `RULES`, `WILDCARDS`, CHAOS `EVENTS`, reel generation (`makeReels`, seeded, so the same seed = the same
   game), scoring (`scoreFor`), rendering. The pitch is sized once by `fitPitch()`; everything under it sits in a
   fixed-height `.dock` so the layout never jumps. `render()` only draws while its own game is on screen.
-- `challenge.js` – friend challenges (`GM.challenge`): `#/c?id=CODE` (landing, `&p=` head-to-head, `&watch=` watch along), `#/rival?name=`; the draft keeps `S.ch` (the challenge you're playing), `S.prog` ([signed, total] after each signing), `S.picks`; tables `challenges` / `challenge_plays`, RPCs `challenge_create/_get/_start/_progress/_react/_history/_mine/_send` (`_send` sends yours to app friends: `challenge_invites`, pushed as `cm:`) (`_mine` feeds the lists on the Online tab, `#/challenges` and the in-app card), inbox items and push on new plays, results, reactions and rematches.
+- `challenge.js` – friend challenges (`GM.challenge`): `#/c?id=CODE` (landing, `&p=` head-to-head, `&watch=` watch along), `#/rival?name=`; the draft keeps `S.ch` (the challenge you're playing), `S.prog` ([signed, total] after each signing), `S.picks`; tables `challenges` / `challenge_plays`, RPCs `challenge_create/_get/_start/_progress/_react/_history/_mine/_send` (`_send` sends yours to app friends: `challenge_invites`, pushed as `cm:`) (`_mine` feeds the Online tab's ⚔️ Challenges sub-tab (`#/challenges` redirects there) and the in-app card), inbox items and push on new plays, results, reactions and rematches.
 - `online.js` – online games with friends: the hub (sub-tabs Games / Finished / League / Friends), Draft Duel,
   Scout Duel (card hand + bonus cards), Live Race and its variants Target Race and CHAOS Race (race = both play the
   same seed; the variant picks the draft mode), the opponent live feed in races, the weekly league, notifications.
@@ -83,7 +85,9 @@ game mode for players; this file is about how to work on it.
   add the credit, delete `cand/`.
 - Manager portraits: `fx/mgr/<key>.jpg` (free-licence Wikipedia photos, 320px) with face positions in `fx/mgr/credits.json`, fetched by
   `managers.yml` / `tools/fetch_managers.py` (add the article to `ARTICLES` for a new manager); shown by `GM.CFX.faceImg`.
-- `locker.js` – 🎒 the Locker (`GM.LOCKER`, 64 items): pitch styles (`body.pk-*`), card backs (`body.cbk-*`), celebrations + horns
+- `locker.js` – 🎒 the Locker tab (`GM.lockerHub(root, {v})`: views `season` (rewards.js `GM.seasonPage`), `xi`/`cards`/`signed`/`badges`
+  (collection.js `GM.albumView`) and `kit`, what you wear). Future seasons' and unstarted events' items stay hidden (`GM.lockerSecret`).
+  The kit (`GM.LOCKER`, 64 items): pitch styles (`body.pk-*`), card backs (`body.cbk-*`), celebrations + horns
   (`GM.celebrate()` on a new best / challenge win), frames (`.fr-*` on pictures) and titles (`GM.titleHtml(name)`) that others
   see (server `players.flair`: `set_flair`, `get_flair`, fetched with the pictures), challenge reactions, Dodgy Owner owners
   (`OWNERS.celeb/trust` have `locked`). Each item's `src` says how you get it (lvl, season tier, missions, badges, club
@@ -95,7 +99,7 @@ game mode for players; this file is about how to work on it.
   `gm:eventPeek` = an event id shows it early, for testing). New season items: add `src: { season: tier, s: 'YYYY-MM' }`.
 - `rewards.js` – 🏆 seasons (`SEASONS`: each month's name, icon, theme `html.sz-<theme>` (the strip along the top and tints), menu music
   (`audio.js` TRACKS: spooky, champions, festive, easter), Lottie visitors on Home (`VISIT`: sleigh, snowman, gift, ghost, bat,
-  batmoon, pumpkin, bunny, eggs, fireworks, sun, stopwatch, flags, trophy) and items (locker.js `src.s`); a calendar month; all XP also fills a 30-tier track, `GM.seasonXP`), weekly missions (three
+  batmoon, pumpkin, bunny, eggs, fireworks, sun, stopwatch, flags, trophy) and items (locker.js `src.s`); a calendar month; all XP also fills a 30-tier track, `GM.seasonXP`), weekly missions (on the Today tab: `GM.missionsHtml`, `GM.loginHtml`; three
   a week from `POOL`, counted by `GM.track(event)` calls in the games), login rewards (`GM.loginCheck`), `#/season`.
 - `promo.js` – the Home banner: matchday, the newest feature releases from the last 3 weeks (an entry's `promo` list, or a slide made from its title), a challenge waiting for you, a daily "Try today" game (`TRY`), news from `announcements`. Give a feature release a `promo` entry to choose its slide.
 - `modes.js` – quick games (Club Hopper, Higher or Lower, Who Am I?, Club Grid, Guess the Tally); `h2h.js` – pass-the-phone series.
@@ -168,6 +172,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    - `chaospixi.js` – the effects layer in CHAOS: Lottie vehicles and characters, PixiJS particles, the parked ambulance, Calm off.
    - `challenges.js` – friend challenges on three phones: send, ghost bar, watch along, head-to-head, reactions, rematch (best of three), group table, tally, rivalry page, CHAOS.
    - `allbadges.js` – every one of the 100 badges is earned through the calls the games make (a new badge needs a trigger here).
+   - `layout527.js` – the 5.27 layout: the top bar and 🎁 sheet, the Locker tab's views and the old addresses that land in it, missions on Today, Online's Challenges sub-tab (390 and 360 px).
    - `rewards526.js` – the Locker and seasons: unlocks from what you've done, wearing styles, frames/titles seen by a friend, the season track, missions, login rewards, the locked owners.
    - `app525.js` – the app's extras with a pretend AndroidApp: haptics, Play updates, the links nudge and Settings row, the review card's timing, old builds untouched.
    - `fixes5232.js` – your challenges: the in-app card when someone takes yours on, the Online tab lists, `#/challenges`, the friend menu.

@@ -3,6 +3,12 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.26.1 *(owner, 11 Oct 2026)*
+- “We shouldn’t spoil all the things coming in future seasons.” The Locker listed later seasons’ items as “Coming in
+  Season 3: 🎄 Christmas”, the Season page teased the next three seasons with item counts, and the 5.26 changelog named
+  every season. Now `GM.lockerSecret` hides a later season’s items (and an event’s before it starts) unless you own one,
+  the Season page just says a new season starts on the 1st, and the changelog only names Halloween.
+
 ### Fixed in 5.24.1 *(owner, 11 Oct 2026)*
 - The scroll lines were still there after 5.24's CSS: they're the Android WebView's own scrollbars (drawn by the app,
   not the page), one for the page and a stray one. MainActivity now turns them off (`setVerticalScrollBarEnabled(false)`,
@@ -77,6 +83,9 @@ version they shipped in. Newest at the top.
 - Rain was lines across the pitch: now drops, ripples and clouds. Too many screen flashes and throbbing backdrops: cut right down.
 
 ## Open
+- **The scroll line on the right is still there after reinstalling** *(owner, 11 Oct 2026)*. The phone is on app build 54,
+  and the fix (`setVerticalScrollBarEnabled(false)`) arrived in build 56. Play still serves 54 while build 58 is in
+  review. Check again once 58 is live; if the line is still there on 58, hide Chromium's own overlay scrollbar too.
 
 | Reported | Bug | Status |
 |---|---|---|

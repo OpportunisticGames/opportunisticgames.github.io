@@ -3300,3 +3300,46 @@ body.has-tabs .sz-fx { display: block; } body.calm .sz-fx { display: none !impor
 .sz-fx.flutter i { animation-name: sz-flutter; }
 @keyframes sz-flutter { 0% { transform: translate(0, 0); } 25% { transform: translate(20px, 25vh) rotate(10deg); } 50% { transform: translate(-15px, 50vh) rotate(-10deg); } 75% { transform: translate(25px, 75vh) rotate(8deg); } 100% { transform: translate(0, calc(100vh + 80px)); } }
 html[data-theme="light"] .sz-fx i { text-shadow: 0 0 2px rgba(40, 70, 120, .9), 0 0 6px rgba(40, 70, 120, .4) !important; }
+
+/* ---------------------------------------------------------------- 5.27: the top bar, the 🎁 sheet and the Locker tab */
+.gm-status { position: sticky; top: 0; z-index: 45; max-width: 560px; margin: 0 auto; display: flex; align-items: center; gap: 8px;
+  padding: calc(8px + var(--strip, 0px) + env(safe-area-inset-top)) 16px 8px; background: var(--nav); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.gm-status[hidden] { display: none; }
+html[class*="sz-"]:not(.intl-break) .gm-status, html.intl-break .gm-status { --strip: 16px; }
+body.has-status #app { padding-top: 8px; }
+.gm-status .gs-me { position: relative; flex: none; text-decoration: none; }
+.gm-status .gs-me .avatar { width: 38px; height: 38px; font-size: .85rem; }
+.gm-status .gs-me .new-dot { position: absolute; top: -2px; right: -2px; }
+.gm-status .lvl-chip, .gm-status .season-chip { padding: 6px 12px 8px; font-size: .85rem; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); color: var(--text); }
+.season-chip { overflow: hidden; }
+.season-chip i { position: absolute; left: 0; bottom: 0; height: 3px; background: #f59e0b; }
+.gm-status .gs-open { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: 800 .95rem Inter, sans-serif; cursor: pointer; }
+.gm-status .gs-open span { font-size: 1.15rem; }
+.gm-status .gs-open.hot { background: linear-gradient(180deg, #ffd34d, #f5a700); border-color: #c98a00; color: #3a2500; box-shadow: 0 3px 0 #b07a00; }
+.gm-status .gs-open.hot span { animation: gs-wiggle 2.4s ease-in-out infinite; display: inline-block; }
+@keyframes gs-wiggle { 0%, 80%, 100% { transform: rotate(0); } 85% { transform: rotate(-12deg); } 90% { transform: rotate(10deg); } 95% { transform: rotate(-6deg); } }
+body.calm .gm-status .gs-open.hot span { animation: none; }
+@media (max-width: 360px) { .gm-status { gap: 5px; padding-left: 10px; padding-right: 10px; } .gm-status .lvl-chip, .gm-status .season-chip { padding: 5px 8px 7px; font-size: .78rem; } }
+.to-open { display: grid; gap: 8px; }
+.to-row { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); color: var(--text); text-align: left; font: inherit; cursor: pointer; }
+.to-row > span:first-child { font-size: 1.7rem; text-align: center; }
+.to-row b { display: block; } .to-row small { color: var(--muted); font-size: .78rem; }
+.to-row i { font-style: normal; font-weight: 800; padding: 6px 12px; border-radius: 10px; background: var(--accent); color: #0a2a1f; }
+.to-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 14px; margin-top: 6px; font-size: .85rem; }
+/* the Locker tab */
+.lk-me .icon-btn { margin-left: auto; width: 38px; height: 38px; font-size: 1.05rem; }
+.lk-views { margin: 0 0 12px; }
+.lk-views a { flex: 1; position: relative; display: grid; justify-items: center; gap: 1px; padding: 7px 2px; border-radius: 10px; color: var(--muted); font: 700 clamp(.66rem, 2.9vw, .8rem) Inter, sans-serif; text-decoration: none; white-space: nowrap; }
+.lk-views a span { font-size: 1.2rem; line-height: 1.1; }
+.lk-views a.on { background: var(--accent); color: #0a2a1f; box-shadow: 0 3px 0 var(--btn-edge); }
+.lk-views a .new-dot { position: absolute; top: 3px; right: 8px; }
+.lk-body .alb-head { grid-template-columns: 1fr; }
+.hard-toggle.four { grid-template-columns: repeat(4, 1fr); }
+.hard-toggle.four > * { white-space: nowrap; min-width: 0; font-size: clamp(.68rem, 3vw, .82rem); text-align: center; }
+.hard-toggle.four small { opacity: .7; font-size: .85em; }
+.alb-xi-head { display: flex; align-items: flex-start; gap: 8px; } .alb-xi-head p { flex: 1; margin-top: 0; }
+.st-go { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.online-tabs button { font-size: clamp(.64rem, 2.9vw, .78rem); }
+.tabbar a span { position: relative; }
+.tabbar .locker-dot { position: absolute; top: -2px; right: -6px; width: 10px; height: 10px; border-radius: 50%; background: var(--bad); border: 2px solid var(--nav); }
+.tabbar .locker-dot[hidden] { display: none; }

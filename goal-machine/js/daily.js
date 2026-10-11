@@ -162,7 +162,6 @@
     root.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>${GM.calIcon()} Today</h2><span></span></div>
       <div class="streak-hero"><div class="flame ${s ? 'lit' : ''}">🔥</div><div><b>${s}</b><span>day streak</span><small>Best ${GM.bestStreak()} · play any daily to keep it going</small></div></div>
       ${GM.matchBanner ? GM.matchBanner() + GM.intlBanner() : ''}
-      ${GM.packsWaiting && GM.packsWaiting() ? `<a class="pack-bar" href="#/packs?open=1"><span>🎁</span><span><b>${GM.packsWaiting()} pack${GM.packsWaiting() > 1 ? 's' : ''} to open</b><small>A free one every day</small></span><span>›</span></a>` : ''}
       <div class="daily-list">${games.map(g => {
         const G = GAMES[g], st = GM.dailyStatus(g), gs = GM.streak(g);
         const name = g === 'club' ? `${esc(club)} Footle` : G.name;
@@ -171,6 +170,8 @@
           <span class="dr-streak">${gs ? `🔥${gs}` : ''}</span><span class="dr-go">${st.done ? 'View' : st.text ? 'Continue' : 'Play'}</span></a>`;
       }).join('')}</div>
       ${GM.shareDayText() ? '<button class="btn big share-day" id="shareday">📤 Share my day</button>' : ''}
+      ${GM.missionsHtml ? GM.missionsHtml() : ''}
+      ${GM.loginHtml ? GM.loginHtml() : ''}
       ${club ? '' : `<a class="pick-club" href="#/settings?s=look">🏟️ Pick your favourite club to unlock a daily <b>Club Footle</b> and your club's colours</a>`}
       <h3 class="section-title">Last 4 weeks</h3>
       <div class="calendar">${cal.join('')}</div>

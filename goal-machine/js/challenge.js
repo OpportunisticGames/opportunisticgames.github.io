@@ -144,16 +144,15 @@
       mineCache = { t: Date.now(), rows: rows || [] }; return mineCache.rows;
     },
     rowHtml,
-    // the Online tab: live and recent challenges on Games, finished ones on Finished
-    async fillOnline(gamesEl, doneEl) {
+    // the Online tab: challenges waiting for you also go on Games; all of them live on the ⚔️ Challenges sub-tab
+    async fillOnline(gamesEl, listEl) {
       const rows = await this.mine(true);
-      if (!rows || !rows.length) return;
-      const day = 864e5, recent = rows.filter(r => r.status !== 'done' ? Date.now() - Date.parse(r.at) < 7 * day : Date.now() - Date.parse(r.at) < 2 * day).slice(0, 4);
-      const more = `<a class="more-link" href="#/challenges">All your challenges ›</a>`;
+      if (listEl && listEl.isConnected) listEl.innerHTML = listHtml(rows);
+      const n = document.querySelector('[data-n="challenges"]'), waiting = (rows || []).filter(r => r.status === 'invited');
+      if (n) { n.textContent = waiting.length || ''; n.classList.toggle('hot', !!waiting.length); }
       const qm = gamesEl && gamesEl.querySelector('#oqm');
-      if (gamesEl && gamesEl.isConnected && recent.length) (qm || gamesEl.lastElementChild || gamesEl).insertAdjacentHTML(qm ? 'afterend' : 'beforeend', `<h3 class="section-title">⚔️ Challenges</h3><div class="ch-table">${recent.map(rowHtml).join('')}</div>${more}`);
-      const done = rows.filter(r => r.status === 'done').slice(0, 10);
-      if (doneEl && doneEl.isConnected && done.length) doneEl.insertAdjacentHTML('afterbegin', `<h3 class="section-title">⚔️ Challenges</h3><div class="ch-table">${done.map(rowHtml).join('')}</div>${more}<h3 class="section-title">🌐 Online games</h3>`);
+      if (gamesEl && gamesEl.isConnected && waiting.length) (qm || gamesEl.lastElementChild || gamesEl).insertAdjacentHTML(qm ? 'afterend' : 'beforeend',
+        `<h3 class="section-title">⚔️ Challenges for you <span class="count">${waiting.length}</span></h3><div class="ch-table">${waiting.slice(0, 4).map(rowHtml).join('')}</div>`);
     },
     // a card at the top of the screen when someone takes on your challenge, finishes it, or you're sent one
     async checkNew() {
@@ -480,25 +479,25 @@
     const score = inv ? `beat ${fmt(r.theirs)}` : !r.pid ? fmt(r.mine) : done ? `${fmt(r.mine)}–${fmt(r.theirs)}` : `${fmt(r.theirs || 0)}…`;
     return `<a class="ch-row ch-mine ${done ? '' : 'live'}" href="${rowHref(r)}"><span class="ch-rank">${icon}</span><span class="ch-who">${r.opp ? GM.userPic(r.opp) : ''}<span><b>${who}</b><small>${sub}</small></span></span><span class="ch-score">${score}</span></a>`;
   }
-  async function listPage(app) {
-    app.innerHTML = top('⚔️ Your challenges', '#/online') + '<p class="center muted">Loading…</p>';
-    if (!GM.account()) { app.innerHTML = top('⚔️ Your challenges', '#/online') + '<p class="center muted">Claim a name on the Online tab to keep your challenges.</p>'; return; }
-    const rows = await GM.challenge.mine(true);
-    if (!rows) { app.innerHTML = top('⚔️ Your challenges', '#/online') + '<p class="center muted">Couldn’t load your challenges – are you online?</p>'; return; }
+  // every challenge you've sent or taken on, with your record against each friend (the ⚔️ Challenges sub-tab of Online)
+  function listHtml(rows) {
+    if (!GM.account()) return '<p class="center muted">Claim a name on the Online tab to keep your challenges.</p>';
+    if (!rows) return '<p class="center muted">Couldn’t load your challenges – are you online?</p>';
+    if (!rows.length) return '<p class="center muted">No challenges yet. Finish a draft and tap ⚔️ Challenge a friend: they play the same spins and try to beat you.</p>';
     const by = tally(rows.filter(r => r.status === 'done' && r.pid).map(r => ({ opp: r.opp, mine: r.mine, theirs: r.theirs })));
     const recs = Object.values(by).sort((a, b) => (b.w + b.l + b.d) - (a.w + a.l + a.d));
-    app.innerHTML = top('⚔️ Your challenges', '#/online') + (rows.length ? `
-      ${recs.length ? `<div class="ch-recs">${recs.map(t => `<a href="#/rival?name=${enc(t.name)}">${GM.userPic(t.name)}<b>${esc(t.name)}</b><small>⚔️ ${t.w}–${t.l}${t.d ? ` (${t.d}d)` : ''}</small></a>`).join('')}</div>` : ''}
-      <div class="ch-table">${rows.map(rowHtml).join('')}</div>`
-      : '<p class="center muted">No challenges yet. Finish a draft and tap ⚔️ Challenge a friend.</p>');
+    return `${recs.length ? `<div class="ch-recs">${recs.map(t => `<a href="#/rival?name=${enc(t.name)}">${GM.userPic(t.name)}<b>${esc(t.name)}</b><small>⚔️ ${t.w}–${t.l}${t.d ? ` (${t.d}d)` : ''}</small></a>`).join('')}</div>` : ''}
+      <div class="ch-table">${rows.map(rowHtml).join('')}</div>`;
   }
+  // (#/challenges, from older links and notifications: the sub-tab)
+  function listPage() { location.replace('#/online?tab=challenges'); }
   async function rival(app, name) {
-    app.innerHTML = top('📜 ' + esc(name), '#/online') + '<p class="center muted">Loading…</p>';
-    if (!GM.account()) { app.innerHTML = top('📜 ' + esc(name), '#/online') + '<p class="center muted">Claim a name on the Online tab to keep a record of your challenges.</p>'; return; }
+    app.innerHTML = top('📜 ' + esc(name), '#/online?tab=challenges') + '<p class="center muted">Loading…</p>';
+    if (!GM.account()) { app.innerHTML = top('📜 ' + esc(name), '#/online?tab=challenges') + '<p class="center muted">Claim a name on the Online tab to keep a record of your challenges.</p>'; return; }
     let h = []; try { h = await rpc('challenge_history', auth()); } catch (e) { h = null; }
-    if (!h) { app.innerHTML = top('📜 ' + esc(name), '#/online') + '<p class="center muted">Couldn’t load your record – are you online?</p>'; return; }
+    if (!h) { app.innerHTML = top('📜 ' + esc(name), '#/online?tab=challenges') + '<p class="center muted">Couldn’t load your record – are you online?</p>'; return; }
     const t = tally(h)[name.toLowerCase()];
-    if (!t) { app.innerHTML = top('📜 ' + esc(name), '#/online') + `<p class="center muted">No challenges with ${esc(name)} yet. Finish a draft and tap ⚔️ Challenge a friend.</p>`; return; }
+    if (!t) { app.innerHTML = top('📜 ' + esc(name), '#/online?tab=challenges') + `<p class="center muted">No challenges with ${esc(name)} yet. Finish a draft and tap ⚔️ Challenge a friend.</p>`; return; }
     const games = t.games;  // newest first
     let streak = 0, sw = null;
     for (const g of games) { const r = Math.sign(g.mine - g.theirs); if (sw === null) sw = r; if (r !== sw || r === 0) break; streak++; }
@@ -508,7 +507,7 @@
     const theirBack = games.filter(g => g.theirs > g.mine).map(g => [behind(g, false), g]).sort((a, b) => b[0] - a[0])[0];
     const close = games.slice().sort((a, b) => Math.abs(a.mine - a.theirs) - Math.abs(b.mine - b.theirs))[0];
     const mn = m => ((GM.MODES || {})[m] || { name: m }).name;
-    app.innerHTML = top('📜 You v ' + esc(t.name), '#/online') + `<div class="ch-hero">${GM.userPic ? GM.userPic(t.name, 'xl') : ''}<b class="ch-rec">You ${t.w} – ${t.l} ${esc(t.name)}</b>${t.d ? `<small>${t.d} draw${t.d > 1 ? 's' : ''}</small>` : ''}
+    app.innerHTML = top('📜 You v ' + esc(t.name), '#/online?tab=challenges') + `<div class="ch-hero">${GM.userPic ? GM.userPic(t.name, 'xl') : ''}<b class="ch-rec">You ${t.w} – ${t.l} ${esc(t.name)}</b>${t.d ? `<small>${t.d} draw${t.d > 1 ? 's' : ''}</small>` : ''}
         ${streak > 1 && sw ? `<span>${sw > 0 ? `🔥 You’ve won the last ${streak}` : `🥶 ${esc(t.name)} has won the last ${streak}`}</span>` : ''}</div>
       <div class="ch-facts">
         ${myBack && myBack[0] > 0 ? `<a href="#/c?id=${myBack[1].code}"><b>💪 Your best comeback</b><span>${fmt(myBack[0])} behind, won ${fmt(myBack[1].mine)}–${fmt(myBack[1].theirs)}</span></a>` : ''}

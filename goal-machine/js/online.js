@@ -76,12 +76,13 @@
     if (q.join) return join(root, q.join);
     if (q.room) return room(root, q.room, q);
     // sub-tabs keep it short: your games first, with finished games, the league and friends a tap away
-    const TABS = [['games', '🎮 Games'], ['done', '✅ Finished'], ['league', '🏆 League'], ['friends', '👥 Friends']];
+    const TABS = [['games', '🎮 Games'], ['challenges', '⚔️ Challenges'], ['done', '✅ Done'], ['league', '🏆 League'], ['friends', '👥 Friends']];
     let tab = TABS.some(t => t[0] === q.tab) ? q.tab : GM.store.get('onlineTab', 'games');
     root.innerHTML = `${top('Online')}
       <div class="online-me"><a href="#/settings?s=account" class="me-pic">${GM.userPic(me())}</a><span>Playing as <b>🔒 ${esc(me())}</b>${GM.titleHtml ? GM.titleHtml(me()) : ''}</span><button class="btn small" id="onew">⚔️ New game</button></div>
       <div class="seg online-tabs" id="otabs">${TABS.map(([k, l]) => `<button data-t="${k}">${l}<i class="ot-n" data-n="${k}"></i></button>`).join('')}</div>
       <div data-panel="games"><div id="olists"><p class="muted center">Loading your games…</p></div></div>
+      <div data-panel="challenges"><div id="ochal"><p class="muted center">Loading your challenges…</p></div></div>
       <div data-panel="done"><div id="odone"></div></div>
       <div data-panel="league">
         <h3 class="section-title">This week<span class="more" id="lgreset"></span></h3>
@@ -161,7 +162,7 @@
           : `<div class="og-empty"><b>Nothing waiting on you</b><span>Start a game, or check back when it’s your turn.</span><button class="btn" id="onew2">⚔️ New game</button></div>`)
         + (theirs.length ? block('⏳ Their move', theirs, '') : '');
       GM.$('#odone').innerHTML = done.length ? `<div class="og-list">${done.slice(0, 30).map(line).join('')}</div>` : '<p class="muted center">No finished games yet.</p>';
-      if (GM.challenge) GM.challenge.fillOnline(GM.$('#olists'), GM.$('#odone'));  // your challenges: live/recent on Games, finished on Finished
+      if (GM.challenge) GM.challenge.fillOnline(GM.$('#olists'), GM.$('#ochal'));  // your challenges: their own sub-tab (and the ones waiting for you on Games)
       const nb = GM.$('#onew2'); if (nb) nb.onclick = () => newGame();
       GM.$$('[data-quick]').forEach(b => b.onclick = () => newGame(b.dataset.quick));
       GM.$('#oqm').onclick = quickMatch;

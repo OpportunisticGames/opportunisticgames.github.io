@@ -41,7 +41,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(await pg.$$eval('.ach.secret b', e => e.every(x => x.textContent === '???')) && (await pg.$$('.ach.secret')).length === 13, 'thirteen secret badges show as ??? (CHAOS keeps its own secrets)');
   await pg.goto(U + '#/album?v=badges&c=online'); await pg.waitForTimeout(400);
   ok(await pg.$$eval('.ach.got b', e => e.map(x => x.textContent).join()).then(s => /Kick-off/.test(s) && /Away Win/.test(s) && /Chaos Merchant/.test(s)), 'online badges from a won CHAOS Race');
-  for (const [v, want] of [['xi', '#/album'], ['cards', 'v=cards'], ['signed', 'v=signed'], ['sets', 'v=signed'], ['stats', 'v=signed']]) { await pg.goto(U + '#/album?v=' + v); await pg.waitForTimeout(300); ok(await pg.$eval('.album-views a.on', e => e.getAttribute('href')).then(h => v === 'xi' ? h === want : h.includes(want)), 'album section ' + v + (v === 'sets' || v === 'stats' ? ' (now under Signed)' : '')); }
+  for (const [v, want] of [['xi', 'xi'], ['cards', 'cards'], ['signed', 'cards'], ['sets', 'cards'], ['stats', 'cards']]) { await pg.goto(U + '#/'); await pg.goto(U + '#/album?v=' + v); await pg.waitForTimeout(300); ok(await pg.$eval('.lk-views a.on', e => e.dataset.v) === want && (want !== 'cards' || v === 'cards' || !!(await pg.$('.alb-sub a.on[href="#/album?v=signed"]'))), 'album section ' + v + ' (now in the 🎒 Locker tab' + (v === 'xi' || v === 'cards' ? ')' : ', under Cards → Signed)')); }
   await pg.screenshot({ path: 'lay/badges.png', fullPage: true });
   // sound defaults: effects on everywhere; the Play version (no Soundtrack) starts with the game's own music on
   const snd = async play => {

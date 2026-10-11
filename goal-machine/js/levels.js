@@ -74,7 +74,7 @@
         <div><span>🎮</span>Any other game<b>+${GM.XP.game}</b></div><div><span>🏅</span>Earn a badge<b>+${GM.XP.badge}</b></div>
         <div><span>🌐</span>Online game (win)<b>+${GM.XP.online} (+${GM.XP.win})</b></div><div><span>🎁</span>Open a pack<b>+${GM.XP.pack}</b></div></div>
       <p class="muted center">${total.toLocaleString()} XP in all. Your level shows next to your name on the leaderboards.</p>
-      <div class="actions"><a class="btn" href="#/season">🏆 This season’s track</a><a class="btn ghost" href="#/locker">🎒 Locker</a></div>`;
+      <div class="actions"><a class="btn" href="#/season">🏆 This season’s track</a><a class="btn ghost" href="#/locker?v=kit">👕 Your kit</a></div>`;
   };
 
   /* ================================================================ club v club */

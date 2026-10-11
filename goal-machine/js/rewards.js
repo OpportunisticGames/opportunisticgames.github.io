@@ -83,7 +83,7 @@
     if (GM.eventXP) GM.eventXP(n);  // an event on: its track fills too
     GM.$$('.season-chip').forEach(el => { el.outerHTML = GM.seasonChip(); });
   };
-  GM.seasonChip = () => { const i = GM.seasonInfo(); return `<a class="season-chip" href="#/season" title="${GM.esc(i.name)}">🏆 S${i.n} · T${i.tier}${GM.rewardsWaiting && GM.rewardsWaiting() ? '<i class="new-dot"></i>' : ''}</a>`; };
+  GM.seasonChip = () => { const i = GM.seasonInfo(); return `<a class="season-chip" href="#/season" title="Season ${i.n}: ${GM.esc(i.name)}">${i.icon} Tier ${i.tier}<i style="width:${i.tier >= TIERS ? 100 : Math.round(100 * i.into / TIER)}%"></i></a>`; };
 
   /* ---------------------------------------------------------------- weekly missions */
   // [id, what, how many, the event that counts, an optional test on its data]
@@ -154,41 +154,43 @@
       const it = Object.values(GM.LOCKER).find(x => x.src.login && !GM.lockerHas(x.id));
       if (it) { GM.giveItem(it.id, null, true); what = `${GM.LOCKER_KINDS[it.kind].icon} ${it.name}`; } else if (GM.givePack) { GM.givePack(1, null, 'legends'); what = 'A Promotion pack'; }
     }
-    setTimeout(() => GM.notice({ pic: `<span class="notice-icon">${d.icon}</span>`, title: `Day ${(l.n % 7) + 1} login reward`, sub: `${what} · tap for the season`, href: '#/season', ms: 6000 }), 1500);
+    setTimeout(() => GM.notice({ pic: `<span class="notice-icon">${d.icon}</span>`, title: `Day ${(l.n % 7) + 1} login reward`, sub: `${what} · tap for this week’s missions`, href: '#/today', ms: 6000 }), 1500);
     return d;
   };
 
   /* ---------------------------------------------------------------- the page (#/season) */
+  // this week's missions and the login card: on the Today tab (they reset, like the dailies)
+  GM.missionsHtml = function () {
+    const ms = GM.missions(), wdays = Math.max(1, Math.ceil((weekEnds() - Date.now()) / 864e5));
+    return `<h3 class="section-title">🎯 This week’s missions <span class="more">${wdays} day${wdays > 1 ? 's' : ''} left</span></h3>
+      <div class="st-missions">${ms.map(m => `<div class="st-m ${m.done ? 'done' : ''}"><span>${m.done ? '✅' : '🎯'}</span><span><b>${GM.esc(m.text)}</b><div class="bar"><i style="width:${Math.round(100 * m.have / m.need)}%"></i></div></span><small>${m.done ? `+${MISSION_XP}` : `${m.have}/${m.need}`}</small></div>`).join('')}
+        <p class="muted small center">Each one: +${MISSION_XP} season XP. All three: a 🎯 Mission pack and a 🎡 spin.</p></div>`;
+  };
+  GM.loginHtml = function () {
+    const l = GM.store.get('login', { last: '', n: 0 });
+    return `<h3 class="section-title">📅 Login rewards</h3>
+      <div class="st-login">${DAYS.map((d, k) => { const cur = l.n % 7, claimedToday = l.last === GM.today();
+        const today = claimedToday ? k === (cur + 6) % 7 : k === cur;
+        return `<div class="${k < cur ? 'got' : ''} ${today ? 'today' : ''}"><small>Day ${k + 1}</small><span>${d.icon}</span><b>${d.text}</b></div>`; }).join('')}</div>`;
+  };
+  // the season pass: the Season view of the Locker tab (also #/season, from the top bar)
   GM.seasonPage = function (root) {
-    const i = GM.seasonInfo(), ms = GM.missions(), l = GM.store.get('login', { last: '', n: 0 }), lv = GM.myLevel();
-    const days = Math.max(1, Math.ceil((i.ends - Date.now()) / 864e5)), wdays = Math.max(1, Math.ceil((weekEnds() - Date.now()) / 864e5));
+    const i = GM.seasonInfo(), lv = GM.myLevel();
+    const days = Math.max(1, Math.ceil((i.ends - Date.now()) / 864e5));
     const reward = t => { const r = tierReward(t), got = i.got.includes(t), it = r.item && GM.LOCKER[r.item];
       const label = GM.esc(GM.rewardLabel(r));
       return `<div class="st-tier ${got || t <= i.tier ? 'got' : ''} ${t === i.tier + 1 ? 'next' : ''} ${it ? 'item' : ''}"><span>${t}</span><b>${label}</b></div>`; };
-    root.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>🏆 Season ${i.n}</h2><span></span></div>
-      <div class="st-hero"><small>Season ${i.n} · ${days} day${days > 1 ? 's' : ''} left</small><b>${i.icon} ${GM.esc(i.name)}</b>${i.sub ? `<small>${GM.esc(i.sub)}</small>` : ''}
+    root.innerHTML = `<div class="st-hero"><small>Season ${i.n} · ${days} day${days > 1 ? 's' : ''} left</small><b>${i.icon} ${GM.esc(i.name)}</b>${i.sub ? `<small>${GM.esc(i.sub)}</small>` : ''}
         <div class="st-lvl"><span>Tier <b>${i.tier}</b>/${TIERS}</span><div class="bar"><i style="width:${Math.round(100 * i.into / TIER)}%"></i></div><span>${i.tier >= TIERS ? '🏁 Done!' : `${i.into}/${TIER} XP`}</span></div>
         <small>All your XP counts here too. Your level (${lv.icon} ${lv.n}) is for life; the track starts again each month.</small>
-        <a class="btn small" href="#/locker">🎒 Your Locker${GM.lockerNew() ? ' <i class="new-dot inline"></i>' : ''}</a></div>
-      <div class="st-prizes"><a class="st-p" href="#/spin"><span>🎡</span><b>${+GM.store.get('spins', 0)}</b><small>spin${+GM.store.get('spins', 0) === 1 ? '' : 's'}</small></a>
-        <button class="st-p" id="st-pick" ${(GM.store.get('choices', []) || []).length ? '' : 'disabled'}><span>🎁</span><b>${(GM.store.get('choices', []) || []).length}</b><small>to pick</small></button>
-        <a class="st-p" href="#/level"><span>${lv.icon}</span><b>${lv.n}</b><small>level road</small></a></div>
+        <span class="st-go"><a class="btn small" href="#/today">🎯 Missions</a><a class="btn small" href="#/level">🛤️ Level road</a></span></div>
       ${GM.eventHtml ? GM.eventHtml() : ''}
-      <h3 class="section-title">🎯 This week’s missions <span class="more">${wdays} day${wdays > 1 ? 's' : ''} left</span></h3>
-      <div class="st-missions">${ms.map(m => `<div class="st-m ${m.done ? 'done' : ''}"><span>${m.done ? '✅' : '🎯'}</span><span><b>${GM.esc(m.text)}</b><div class="bar"><i style="width:${Math.round(100 * m.have / m.need)}%"></i></div></span><small>${m.done ? `+${MISSION_XP}` : `${m.have}/${m.need}`}</small></div>`).join('')}
-        <p class="muted small center">Each one: +${MISSION_XP} season XP. All three: a 🎯 Mission pack and a 🎡 spin.</p></div>
-      <h3 class="section-title">📅 Login rewards</h3>
-      <div class="st-login">${DAYS.map((d, k) => { const cur = l.n % 7, claimedToday = l.last === GM.today(), done = k < cur || (cur === 0 && claimedToday && l.n > 0 && k === 6);
-        const today = claimedToday ? k === (cur + 6) % 7 : k === cur;
-        return `<div class="${k < cur ? 'got' : ''} ${today ? 'today' : ''}"><small>Day ${k + 1}</small><span>${d.icon}</span><b>${d.text}</b></div>`; }).join('')}</div>
       <h3 class="section-title">🪜 The season track</h3>
       <div class="st-track">${Array.from({ length: TIERS }, (_, k) => reward(k + 1)).join('')}</div>
-      <h3 class="section-title">🗓️ Coming up</h3>
-      <div class="st-next">${[1, 2, 3].map(k => { const d = new Date(); const id = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + k, 1)).toISOString().slice(0, 7), z = GM.season(id);
-        const items = Object.values(GM.LOCKER).filter(x => x.src.s === id);
-        return `<div><span>${z.icon}</span><b>Season ${z.n}: ${GM.esc(z.name)}</b><small>${GM.esc(z.sub || 'A new track of rewards')}</small>${items.length ? `<small class="st-teas">${items.map(x => GM.LOCKER_KINDS[x.kind].icon).join(' ')} ${items.length} new things to unlock</small>` : ''}</div>`; }).join('')}</div>
+      <h3 class="section-title">🗓️ Next season</h3>
+      <div class="st-next">${(() => { const d = new Date(), id = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1)).toISOString().slice(0, 7), z = GM.season(id);
+        return `<div><span>🎁</span><b>Season ${z.n}</b><small>A new track, a new look and new things to unlock. It starts on the 1st: no peeking.</small></div>`; })()}</div>
       <p class="muted center small">When the month ends, this season’s items go into the vault: you can still find them in 🌟 Legendary packs and on the 🎡 wheel.</p>`;
-    const pk = GM.$('#st-pick', root); if (pk) pk.onclick = () => GM.pickReward();
   };
 
   /* ---------------------------------------------------------------- seasonal visitors (LottieFiles, fx/lottie/) */
@@ -244,7 +246,7 @@
     const first = !GM.store.get('locker', null);
     if (first && GM.favClub && GM.favClub()) GM.store.set('clubDailies', Math.min(30, Object.keys(GM.store.get('dlog', {})).length));
     GM.lockerCheck(first);
-    if (first && GM.lockerNew()) setTimeout(() => GM.notice({ pic: '<span class="notice-icon">🎒</span>', title: 'Your Locker is open', sub: `${GM.lockerNew()} things unlocked already from what you’ve done · tap to look`, href: '#/locker', ms: 8000 }), 2500);
+    if (first && GM.lockerNew()) setTimeout(() => GM.notice({ pic: '<span class="notice-icon">🎒</span>', title: 'Your Locker is open', sub: `${GM.lockerNew()} things unlocked already from what you’ve done · tap to look`, href: '#/locker?v=kit', ms: 8000 }), 2500);
     else GM.loginCheck();
     GM.applyLocker();
     GM.applySeason();
