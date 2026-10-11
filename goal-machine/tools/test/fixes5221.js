@@ -85,6 +85,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
 
   // 4. CHAOS: carry on? comes before the manager
   await pg.evaluate(() => Object.keys(localStorage).filter(k => k.startsWith('gm:draftp')).forEach(k => localStorage.removeItem(k)));
+  await pg.evaluate(() => { GM._forceMgr = 'ancelotti'; });  // (+3 a title medal: his bonus moves on most signings, so a note is sure to show)
   await pg.goto(U + '#/'); await pg.goto(U + '#/draft?m=chaos'); await pg.waitForTimeout(1500);
   // a manager, then a couple of signings, then leave
   for (let k = 0; k < 40; k++) { const n = await pg.evaluate(() => GM.draft.state().xi.filter(x => x.p != null).length); if (n >= 2) break;
@@ -95,9 +96,9 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   // (and the bonus notes showed up when he signed)
   // (and the bonus notes showed up when he signed: sign one more and look)
   await pg.evaluate(() => { const S = GM.draft.state(); S.phase = 'spin'; GM.draft.render(); });
-  for (let k = 0; k < 12 && !(await pg.$('#bonus-notes .bn')); k++) {
+  for (let k = 0; k < 24 && !(await pg.$('#bonus-notes .bn')); k++) {
     if (await act(() => { const cm = document.querySelector('.cm:not(.out)'); if (cm) { cm.click(); return true; } const b = document.getElementById('spin'); if (b && !b.disabled) { b.click(); return true; } return false; })) { await pg.waitForTimeout(1300); continue; }
-    await act(() => { const t = document.querySelector('.slot.target'); if (t) return t.click(); const rs = [...document.querySelectorAll('.stage .reel[data-reel]')]; (rs.find(r => !r.classList.contains('is-wild')) || { click() {} }).click(); });
+    await act(() => { const t = document.querySelector('.slot.target'); if (t) return t.click(); const rs = [...document.querySelectorAll('.stage .reel[data-reel]')]; (rs.find(r => !r.classList.contains('is-wild')) || rs[0] || { click() {} }).click(); });  // (an all-wildcard spin: take one)
     await pg.waitForTimeout(700);
   }
   await pg.screenshot({ path: 'lay/fx_bonusnotes.png' });

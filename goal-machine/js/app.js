@@ -228,6 +228,7 @@
     if (on) { document.documentElement.dataset.theme = 'dark'; GM.app('setBars', '#1a1622', false); } else if (!document.body.classList.contains('chaos-mode') && !document.body.classList.contains('money-mode')) GM.applyTheme();
   };
   GM.chaosLook = function (chaos) {
+    if (!chaos) delete document.body.dataset.cz;  // (the season's CHAOS look goes with it)
     if (chaos === document.body.classList.contains('chaos-mode')) return;
     document.body.classList.toggle('chaos-mode', chaos);
     if (chaos) { document.documentElement.dataset.theme = 'dark'; GM.app('setBars', '#12001f', false); } else GM.applyTheme();
@@ -269,6 +270,7 @@
         <b>${g === 'club' ? GM.esc(GM.clubShort(club)) + ' Footle' : G.name}</b><small>${st.text || sub}</small></a>`;
     };
     const h2h = GM.store.get('h2h', null);
+    const szc = GM.SZ_CHAOS && GM.gmSeason && GM.SZ_CHAOS[GM.gmSeason().theme];  // this month's CHAOS
     // sub-tabs keep Home short: the main event up front, everything else a tap away (the dailies live in the Today tab)
     const HTABS = [['main', '⚽ Main', ['chaos']], ['targets', '🎯 Targets', []], ['market', '💰 Market', ['owner', 'moneyball', 'auction']], ['quick', '⚡ Quick & more', []]];
     const htab = HTABS.some(t => t[0] === GM.store.get('homeTab')) ? GM.store.get('homeTab') : 'main';
@@ -287,7 +289,7 @@
       <div class="hard-toggle three" role="group" aria-label="Difficulty">${Object.entries(GM.LEVELS).map(([k, [i, n, sub]]) => `<button class="${k === level ? 'on' : ''}" data-level="${k}">${i} ${n}<small>${sub}</small></button>`).join('')}</div>
       <div class="seg home-tabs" id="htabs">${HTABS.map(([k, l, modes]) => `<button data-t="${k}">${l}${modes.some(m => newTag(m)) ? '<i class="new-dot"></i>' : ''}</button>`).join('')}</div>
       <div data-hpanel="main">
-      <div class="chaos-card">${newTag('chaos')}<div class="chaos-head"><span>🌪️</span><div><span class="kicker">Headline event</span><b>Ultimate Wildcard CHAOS</b><small>Appoint a manager, fill the CHAOS meter and survive tornadoes, VAR and last-minute madness. Your XI’s total plus bonus points.</small></div></div>
+      <div class="chaos-card">${newTag('chaos')}<div class="chaos-head"><span>🌪️</span><div><span class="kicker">${szc ? `${GM.esc(szc.name)} · this month only` : 'Headline event'}</span><b>Ultimate Wildcard CHAOS</b><small>${szc ? `${GM.esc(szc.kick)} Its own wildcards, moments and managers, and season XP every game.` : 'Appoint a manager, fill the CHAOS meter and survive tornadoes, VAR and last-minute madness. Your XI’s total plus bonus points.'}</small></div></div>
         ${extreme ? '<span class="cx-note">⚡ Extreme: all 5,000+ players</span>' : ''}
         <div class="stat-row">${Object.keys(GM.STATS).map(s => statBtn(cpool, s)).join('')}</div>
         <a class="chaos-daily" href="#/draft?m=chaos&daily=1">${GM.calIcon()} <b>Daily CHAOS</b><span>${GM.dailyStatus('chaos').text || 'Same chaos for everyone today · one go'}</span>${GM.streak('chaos') ? `<i>🔥 ${GM.streak('chaos')}</i>` : ''}</a></div>
@@ -405,7 +407,7 @@
         ${grp('look', `<div class="setting"><b>Appearance</b><small>Auto follows your phone's light or dark setting. Club paints the game in your favourite club's colours</small>${seg('s-theme', GM.THEMES, GM.getTheme())}</div>
         <div class="setting"><b>Favourite club</b><small>Unlocks Club Footle and Club XI, and brings your club's colours to the app</small>
           <select class="input" id="s-club"><option value="">None</option>${GM.clubOptions().map(c => `<option ${c === GM.favClub() ? 'selected' : ''}>${GM.esc(c)}</option>`).join('')}</select></div>
-        <div class="setting"><b>Seasonal look</b><small>Each season dresses the app up (Halloween, Christmas, Easter…) and plays its own music on the menus</small>${seg('s-szlook', { true: `${GM.season ? GM.season().icon : '🎃'} On`, false: 'Off' }, GM.store.get('seasonLook', true) !== false)}</div>
+        <div class="setting"><b>Seasonal look</b><small>Each season dresses the app up (Halloween, Christmas, Easter…) and plays its own music on the menus</small>${seg('s-szlook', { true: `${GM.gmSeason ? GM.gmSeason().icon : '🎃'} On`, false: 'Off' }, GM.store.get('seasonLook', true) !== false)}</div>
         <div class="setting"><b>Animations</b><small>Full: the coin flips, the tornado tears through, the ambulance drives on. Calm keeps movement to a minimum</small>${seg('s-calm', { false: '🎬 Full', true: '🍃 Calm' }, GM.calm())}</div>`)}
         ${grp('sound', `<div class="setting"><b>Sound effects</b><small>Whistles, reels, the crowd and the goal horn</small>${seg('s-sfx', { true: '🔊 On', false: '🔇 Off' }, snd.sfx)}
           <label class="vol">🔈<input type="range" id="s-sfxvol" min="0" max="1" step="0.05" value="${snd.sfxVol}">🔊</label></div>

@@ -63,7 +63,8 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(calls.some(c => /^month_scores\?/.test(c)) && await pg.$eval('#lbp', e => e.value) === '1', 'boards open on This month');
   const lay = await pg.evaluate(() => { const g = document.querySelector('.lbx-games'), r = [...g.children].map(a => a.getBoundingClientRect().top);
     return { oneRow: r.every(t => Math.abs(t - r[0]) < 2), games: g.children.length, selects: document.querySelectorAll('.lbx-filters select').length, you: document.querySelector('#lbbody').firstElementChild.id }; });
-  ok(lay.oneRow && lay.games >= 8 && lay.selects === 4, `simple layout: ${lay.games} games in one row, then 4 drop-downs (version, stat, Normal/Hard, month)`);
+  // (7 games without a favourite club; an international break adds one)
+  ok(lay.oneRow && lay.games >= 7 && lay.selects === 4, `simple layout: ${lay.games} games in one row, then 4 drop-downs (version, stat, Normal/Hard, month)`);
   ok(lay.you === 'lbyou', 'your own position comes first, above the board');
   await pg.selectOption('#lbs', 'assists'); await pg.waitForTimeout(600);
   ok(/m=ultimateast/.test(await pg.evaluate(() => location.hash)), 'choosing Assists switches board');

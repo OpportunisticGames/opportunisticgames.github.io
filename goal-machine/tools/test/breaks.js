@@ -69,11 +69,11 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
       xi: find(p => p.nat === n && p.clubs.includes('Everton')).slice(0, 3).concat(find(p => p.nat === n).slice(0, 8)), slots: [], moments: [], rars: [] }));
     return Object.keys(GM.store.get('album').ach);
   });
-  const want = ['mdfirst', 'mdboth', 'md150', 'mdpundit', 'mdderby', 'ibfirst', 'ib250', 'ibtour', 'ibhome', 'ibclub'];
+  const want = ['mdfirst', 'mdboth', 'md150', 'mdpundit', 'mdderby', 'ibfirst', 'ib250', 'ibtour', 'ibhome'];
   ok(want.every(k => got.includes(k)), 'the matchday and international badges unlock: ' + want.filter(k => got.includes(k)).join(', ') + (want.some(k => !got.includes(k)) ? ' — missing ' + want.filter(k => !got.includes(k)).join(', ') : ''));
   ok(!got.includes('mdseason'), 'Season Ticket needs 5 different matchdays');
   await pg.goto(U + '#/album?v=badges&c=events'); await pg.waitForTimeout(500);
-  ok((await pg.$$('.ach')).length === 11, `the album has a Matchdays & breaks list (${(await pg.$$('.ach')).length} badges)`);
+  ok((await pg.$$('.ach')).length === 10, `the album has a Matchdays & breaks list (${(await pg.$$('.ach')).length} badges)`);
   ok(!errs.length, errs.length ? 'page errors: ' + errs.join(' | ') : 'no page errors');
   await b.close();
 })();

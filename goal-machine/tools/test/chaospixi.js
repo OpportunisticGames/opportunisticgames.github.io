@@ -44,7 +44,7 @@ const ONLY = (process.argv[2] || '').split(',').filter(Boolean);
     if (HOLD.includes(ev)) ok(await pg.waitForSelector('.cm-held', { timeout: 3000 }).then(() => true, () => false), `${ev}: the player's card is picked up`);
     await pg.screenshot({ path: `lay/px_${ev}.png` });
     if (HOLD.includes(ev)) { await pg.waitForTimeout(900); await pg.screenshot({ path: `lay/px_${ev}2.png` }); }
-    for (let k = 0; k < 40 && await pg.$('.cm:not(.out)'); k++) { await pg.click('.cm:not(.out)').catch(() => {}); await pg.waitForTimeout(250); }
+    for (let k = 0; k < 40 && await pg.$('.cm:not(.out)'); k++) { await pg.click('.cm:not(.out)', { timeout: 400 }).catch(() => {}); await pg.waitForTimeout(250); }
     for (let k = 0; k < 30; k++) { const ph = await pg.evaluate(() => GM.draft.state().phase); if (ph === 'pick') break; await pg.waitForTimeout(200); }
   }
   if (!ONLY.length || ONLY.includes('weather')) {

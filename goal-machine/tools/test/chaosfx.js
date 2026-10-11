@@ -42,7 +42,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
       ok(!!there, `${ev}: drawn scene over the pitch`);
       await pg.screenshot({ path: `lay/fx_${ev}.png` });
     }
-    for (let k = 0; k < 40 && await pg.$('.cm:not(.out)'); k++) { await pg.click('.cm:not(.out)').catch(() => {}); await pg.waitForTimeout(250); }
+    for (let k = 0; k < 40 && await pg.$('.cm:not(.out)'); k++) { await pg.click('.cm:not(.out)', { timeout: 400 }).catch(() => {}); await pg.waitForTimeout(250); }
     for (let k = 0; k < 30; k++) { const ph = await pg.evaluate(() => GM.draft.state().phase); if (ph === 'pick') break; await pg.waitForTimeout(200); }
   }
   // wildcards: a flourish for each; the bus stays parked
@@ -64,7 +64,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.evaluate(() => { const S = GM.draft.state(); S.xi.forEach((x, i) => { if (x.p == null) { const id = GM.players.findIndex((p, k) => p.poss.includes(x.pos) && !S.xi.some(y => y.p === k)); x.p = id; x.v = { goals: GM.players[id].goals, assists: GM.players[id].ast, apps: GM.players[id].apps }; x.g = x.v.goals; x.at = S.spin; } }); S.reels = [{ id: 0 }]; });
   await pg.evaluate(() => { const S = GM.draft.state(); const i = S.xi.length - 1, pos = S.xi[i].pos; S.xi[i].p = null; S.xi[i].g = 0; S.xi[i].v = null; const id = GM.players.findIndex((p, k) => p.poss.includes(pos) && !S.xi.some(y => y.p === k) && p.goals > 20); S.reels = [{ id }]; S.phase = 'pick'; S.pending = 0; GM.draft.render(); });
   await pg.click('.slot.target'); await pg.waitForSelector('.result-total', { timeout: 15000 });
-  for (let k = 0; k < 10 && await pg.$('.cm:not(.out)'); k++) { await pg.click('.cm:not(.out)').catch(() => {}); await pg.waitForTimeout(300); }
+  for (let k = 0; k < 10 && await pg.$('.cm:not(.out)'); k++) { await pg.click('.cm:not(.out)', { timeout: 400 }).catch(() => {}); await pg.waitForTimeout(300); }
   await pg.evaluate(() => document.querySelectorAll('.modal-wrap').forEach(m => m.remove()));
   ok(!!(await pg.$('.pc-replay')), 'full time: a replay button under the chart');
   await pg.click('.pc-replay'); await pg.waitForTimeout(3500);

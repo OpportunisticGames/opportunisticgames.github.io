@@ -57,7 +57,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     if (ev === 'blackhole') { await pg.click('.cm'); await pg.waitForTimeout(800); ok(!!(await pg.$('.cm-hole')) || await pg.evaluate(() => GM.FX && GM.FX.on && GM.FX._alive() > 0), 'the black hole opens on the pitch'); await pg.screenshot({ path: 'lay/chaos_hole.png' }); }
     if (ev === 'gamble') { await pg.waitForSelector('.fruit'); await pg.click('.fruit'); await pg.waitForTimeout(2600); ok(await pg.$$eval('.fruit-strip.stop', e => e.length) === 3, '🎰 the fruit machine spins and stops on three symbols'); }
     if (ev === 'quake') { await pg.click('.cm'); await pg.waitForTimeout(900); ok(!!(await pg.$('.crack.tearing')), '🌍 the earthquake tears a crack across the pitch'); }
-    for (let k = 0; k < 40 && await pg.$('.cm:not(.out)'); k++) { await pg.click('.cm:not(.out)').catch(() => {}); await pg.waitForTimeout(250); }
+    for (let k = 0; k < 40 && await pg.$('.cm:not(.out)'); k++) { await pg.click('.cm:not(.out)', { timeout: 400 }).catch(() => {}); await pg.waitForTimeout(250); }
     await pg.waitForTimeout(400);
     if (ev === 'injury') parkedAfterInjury = await pg.evaluate(() => ({ n: Object.values(GM.draft.state().parked || {}).filter(k => k === 'ambulance').length, drawn: document.querySelectorAll('.slot .parked svg').length }));
     // wait out the spin and drop the reels so the next event can go
@@ -82,7 +82,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     return { i, full };
   });
   await pg.click('.wild-btn[data-w="0"]'); await pg.waitForTimeout(600);
-  for (let k = 0; k < 30 && await pg.$('.cm:not(.out)'); k++) { await pg.click('.cm:not(.out)').catch(() => {}); await pg.waitForTimeout(250); }
+  for (let k = 0; k < 30 && await pg.$('.cm:not(.out)'); k++) { await pg.click('.cm:not(.out)', { timeout: 400 }).catch(() => {}); await pg.waitForTimeout(250); }
   const healed = await pg.evaluate(i => GM.draft.state().xi[i], wild.i);
   ok(healed.mod === 'healed' && healed.g > 1, `🏥 Physio Room: back to ${healed.g} (was 1, injured)`);
   await pg.click('.wild-btn[data-w="0"]'); await pg.waitForTimeout(400);

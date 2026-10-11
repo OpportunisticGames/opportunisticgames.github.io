@@ -24,7 +24,7 @@
   const needAll = (root, opts, again, always) => {
     if (GM.allPlayers || (!always && (opts.back || GM.isHard() || !GM.isExtreme()))) return false;
     root.innerHTML = `<div class="loading-all"><div class="splash-bar"><i></i></div><p class="muted">Loading every Premier League player…</p></div>`;
-    GM.loadAll().then(again).catch(() => { root.innerHTML += '<p class="center">Couldn’t load the player list. Check your connection and try again.</p>'; });
+    GM.loadAll().then(again, () => { root.innerHTML += '<p class="center">Couldn’t load the player list. Check your connection and try again.</p>'; });
     return true;
   };
   const tag = (hard, extreme) => (hard ? ' · Hard' : extreme ? ' · Extreme' : '');

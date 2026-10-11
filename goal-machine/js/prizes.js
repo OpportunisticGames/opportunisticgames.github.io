@@ -19,9 +19,9 @@
   /* ---------------------------------------------------------------- the vault */
   // items you can find in packs and on the wheel: past seasons', past events', and vault-only ones you don't have yet
   GM.vaultItems = function () {
-    const sid = GM.season ? GM.season().id : '', today = new Date().toISOString().slice(0, 10);
+    const sid = GM.gmSeason ? GM.gmSeason().id : '', today = new Date().toISOString().slice(0, 10);
     const over = id => { const e = EVENTS.find(x => x.id === id); return !!e && today >= e.to; };  // an event's items only once it's finished
-    return Object.values(L()).filter(it => !GM.lockerHas(it.id) && (it.src.vault || (it.src.season && (it.src.s || '2026-10') < sid) || (it.src.event && over(it.src.event))));
+    return Object.values(L()).filter(it => !GM.lockerHas(it.id) && (it.src.vault || ((it.src.season || it.src.szc) && (it.src.s || '2026-10') < sid) || (it.src.event && over(it.src.event))));
   };
   const vaultPick = rng => { const v = GM.vaultItems(); return v.length ? v[Math.floor(rng() * v.length)] : null; };
 
@@ -33,7 +33,7 @@
     else if (r.xp && GM.seasonXP) { GM.seasonXP(r.xp); if (!quiet) GM.toast(`⚡ <b>+${r.xp} season XP</b>${why ? ` · ${GM.esc(why)}` : ''}`, 2400); }
     else if (r.spin) { GM.store.set('spins', +GM.store.get('spins', 0) + r.spin); if (!quiet) setTimeout(() => GM.toast(`🎡 <b>+${r.spin} spin${r.spin > 1 ? 's' : ''}</b> on the prize wheel${why ? ` · ${GM.esc(why)}` : ''}`, 2600), 300); GM.rewardDots(); }
     else if (r.vault) { const it = vaultPick(Math.random); return it ? GM.grant({ item: it.id }, why, quiet) : GM.grant({ pack: 'legendary' }, why, quiet); }
-    else if (r.choice) { GM.store.set('choices', (GM.store.get('choices', []) || []).concat([{ opts: r.choice, why: why || '' }])); if (!quiet) setTimeout(() => GM.pickReward(), 900); GM.rewardDots(); }
+    else if (r.choice) { GM.store.set('choices', (GM.store.get('choices', []) || []).concat([{ opts: r.choice, why: why || '' }])); if (!quiet) setTimeout(() => { if (document.body.classList.contains('has-tabs')) GM.pickReward(); else GM.toast('🎁 <b>Pick one of three</b> is waiting under the 🎁 on the menus', 2800); }, 900); GM.rewardDots(); }  // never over a game
     return r;
   };
   // the dots on the season chip: spins to use, a choice waiting
@@ -63,15 +63,24 @@
     { r: { vault: 1 }, w: 5, c: '#9333ea' }, { r: { pack: 'legendary' }, w: 3, c: '#eab308' },
   ];
   GM.WHEEL = WHEEL;
+  // the wheel dresses for the season: its colours, and something in the middle (a pumpkin at Halloween)
+  const WHEEL_LOOK = {
+    halloween: { cols: ['#ea580c', '#3b0764', '#c2410c', '#1c1917', '#f97316', '#581c87', '#65a30d', '#7c2d12'], hub: 'pumpkin', rim: '#1c1917' },
+    christmas: { cols: ['#b91c1c', '#166534', '#dc2626', '#f8fafc', '#15803d', '#991b1b', '#ca8a04', '#14532d'], hub: 'gift', rim: '#ca8a04' },
+    easter: { cols: ['#f9a8d4', '#a7f3d0', '#c4b5fd', '#fde68a', '#fbcfe8', '#bbf7d0', '#ddd6fe', '#fef3c7'], hub: 'eggs', rim: '#fff' },
+  };
   GM.spinPage = function (root) {
     const n = +GM.store.get('spins', 0), seg = 360 / WHEEL.length;
+    const look = (GM.store.get('seasonLook', true) !== false && GM.gmSeason && WHEEL_LOOK[GM.gmSeason().theme]) || null, col = k => (look ? look.cols[k % look.cols.length] : WHEEL[k].c);
     root.innerHTML = `<div class="topbar"><a href="#/season" class="back">‹</a><h2>🎡 Prize wheel</h2><span></span></div>
-      <div class="wh-wrap"><div class="wh-pointer">▼</div><div class="wh" id="wh" style="background:conic-gradient(${WHEEL.map((s, k) => `${s.c} ${k * seg}deg ${(k + 1) * seg}deg`).join(',')})">
-        ${WHEEL.map((s, k) => `<span style="transform:rotate(${k * seg + seg / 2}deg)"><i>${label(s.r).split(' ')[0]}</i></span>`).join('')}</div></div>
+      <div class="wh-wrap"><div class="wh-pointer">▼</div><div class="wh" id="wh" style="background:conic-gradient(${WHEEL.map((s, k) => `${col(k)} ${k * seg}deg ${(k + 1) * seg}deg`).join(',')})${look ? `;border-color:${look.rim}` : ''}">
+        ${WHEEL.map((s, k) => `<span style="transform:rotate(${k * seg + seg / 2}deg)"><i>${label(s.r).split(' ')[0]}</i></span>`).join('')}</div>${look ? '<div class="wh-hub" id="wh-hub"></div>' : ''}</div>
       <p class="center"><b id="wh-n">${n}</b> spin${n === 1 ? '' : 's'} left</p>
       <div class="actions col"><button class="btn big" id="wh-go" ${n ? '' : 'disabled'}>🎡 Spin!</button></div>
       <p class="muted center small">Spins come from the level road, the season track, login rewards and missions.</p>
-      <div class="wh-key">${WHEEL.map(s => `<span><i style="background:${s.c}"></i>${GM.esc(label(s.r))}</span>`).join('')}</div>`;
+      <div class="wh-key">${WHEEL.map((s, k) => `<span><i style="background:${col(k)}"></i>${GM.esc(label(s.r))}</span>`).join('')}</div>`;
+    const hub = GM.$('#wh-hub', root);
+    if (hub && GM.FX && GM.FX.lottie) GM.FX.lottie(look.hub, { into: hub, loop: true }).then(h => { if (!h) hub.classList.add('plain'); });
     let turn = 0;
     GM.$('#wh-go', root).onclick = () => {
       const left = +GM.store.get('spins', 0); if (!left) return;
@@ -101,7 +110,7 @@
     return [{ pack: 'level' }];
   };
   GM.roadHtml = function (lvl) {
-    const from = Math.max(2, lvl - 2), to = from + 11;
+    const from = Math.max(2, lvl), to = from + 11;  // starts at the level you're on, so the next one is in full view
     return `<div class="road">${Array.from({ length: to - from + 1 }, (_, k) => from + k).map(n => {
       const rs = GM.levelReward(n), got = n <= lvl;
       return `<div class="road-n ${got ? 'got' : ''} ${n === lvl + 1 ? 'next' : ''}"><span>${n}</span><b>${rs.map(r => GM.esc(label(r))).join(' + ')}</b></div>`;

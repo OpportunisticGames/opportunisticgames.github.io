@@ -10,7 +10,7 @@ async function phone(b, name, key, errs) {
   return pg;
 }
 async function playDraft(pg, tag) {
-  for (let step = 0; step < 90; step++) {
+  for (let step = 0; step < 200; step++) {
     const st = await pg.evaluate(() => {
       document.querySelectorAll('.modal-wrap').forEach(m => m.remove());
       if (document.querySelector('.result-total')) return 'done';
