@@ -37,6 +37,12 @@ formations, and badges round 2.
   level/tier system… temporary promotional tiers… have both a season pass and levels. Once a season is over the rewards
   go into packs and other ways to unlock them." → the level road, the prize wheel, pick-one-of-three, a pack's bonus
   slot, 🌟 Legendary packs, the vault, and events (Spooky Season first).
+- **Owner (11 Oct):** "can you make the next few seasons? Like a halloween season, a christmas season, an Easter season,
+  a champions league season… app themes for each season too… christmas music" → built: October Halloween, Nov Champions
+  Nights, Dec Christmas, Jan Transfer Window, Feb Cup Run, Mar Title Race, Apr Easter, May Final Day, Jun Summer
+  Tournament: each has 5–6 items, a full theme ("like a proper theme not just a banner": background and panel colours in
+  light and dark, a falling layer on the menus such as snow, the strip) and four have their own menu music (Jingle Bells is out of
+  copyright; the Champions Nights anthem is our own, not the real one). July onwards still needs planning.
 - **Each month from now:** new season items (`src.s`) and, now and then, an event (`EVENTS`) keep it fresh; the old
   ones drop into the vault.
 - **Next, to talk through:**

@@ -13,10 +13,49 @@
   const TIER = 250, TIERS = 30, MISSION_XP = 300;
   const NAMES = ['Transfer Window', 'Cup Run', 'Title Race', 'Squeaky Bum Time', 'Final Day', 'Summer Tournament', 'Pre-season Tour', 'Opening Day',
     'Deadline Day', 'Autumn Leaves', 'Bonfire Night', 'Festive Fixtures'];
+  // The season calendar: each month's name, its look (html.sz-<theme>: colours, the strip along the top, decorations on
+  // Home), its music for the menus (audio.js TRACKS) and its exclusive Locker items (locker.js, src.s = the month).
+  // A month that isn't here gets a plain season with the old name.
+  const SEASONS = {
+    '2026-10': { name: 'Halloween', icon: '🎃', theme: 'halloween', music: 'spooky', sub: 'Fright night at the ground: a haunted pitch, ghosts in the stands and the creepiest organ in the league' },
+    '2026-11': { name: 'Champions Nights', icon: '⭐', theme: 'champions', music: 'champions', sub: 'Big European nights under the lights: starry pitches and a grand anthem of our own' },
+    '2026-12': { name: 'Christmas', icon: '🎄', theme: 'christmas', music: 'festive', sub: 'Festive fixtures: snow on the pitch, sleigh bells and a Boxing Day hero' },
+    '2027-01': { name: 'Transfer Window', icon: '💸', theme: 'window', music: 'boardroom', sub: 'The January window: contracts, cash and a deadline-day dash' },
+    '2027-02': { name: 'Cup Run', icon: '🏆', theme: 'cup', sub: 'Giant-killings, replays and ribbons on the trophy' },
+    '2027-03': { name: 'Title Race', icon: '🏁', theme: 'title', sub: 'Squeaky bum time: it all goes down to the wire' },
+    '2027-04': { name: 'Easter', icon: '🐣', theme: 'easter', music: 'easter', sub: 'Spring has sprung: pastel kits, flowers on the touchline and an egg hunt' },
+    '2027-05': { name: 'Final Day', icon: '🎉', theme: 'finalday', music: 'champions', sub: 'Trophies, ticker tape and a lap of honour' },
+    '2027-06': { name: 'Summer Tournament', icon: '☀️', theme: 'summer', sub: 'Sun, flags and a summer of international football' },
+  };
+  GM.SEASONS = SEASONS;
+  // the look and music follow the season (Settings → Look → Seasonal look can turn them off)
+  GM.applySeason = function () {
+    const sz = SEASONS[seasonId()], on = GM.store.get('seasonLook', true) !== false, h = document.documentElement;
+    [...h.classList].filter(c => c.startsWith('sz-')).forEach(c => h.classList.remove(c));
+    if (sz && on) h.classList.add('sz-' + sz.theme);
+    GM.seasonMusic = sz && on ? sz.music || null : null;
+    // the falling layer on the menus: what falls, how many, and how
+    GM.$$('.sz-fx').forEach(e => e.remove());
+    const FALL = { christmas: ['❄️❄❅❆', 26, ''], halloween: ['🦇🍂🍁', 10, 'flutter'], champions: ['✦✧⭐', 22, 'twinkle'], easter: ['🌸🌼🌷', 14, 'flutter'],
+      finalday: ['🎊▪▪▪', 22, ''], cup: ['🎀', 8, 'flutter'], window: ['💸', 7, 'flutter'], summer: ['☀️', 0, ''], title: ['🔥', 0, ''] };
+    const f = sz && on && FALL[sz.theme];
+    if (!f || !f[1]) return;
+    const box = document.createElement('div'); box.className = 'sz-fx ' + f[2]; box.setAttribute('aria-hidden', 'true');
+    const chars = [...f[0]], r = GM.rng('szfx:' + sz.theme), COL = ['#fde047', '#ef4444', '#3b82f6', '#22c55e', '#f9a8d4'];
+    for (let k = 0; k < f[1]; k++) {
+      const i = document.createElement('i'), ch = chars[r.int(chars.length)];
+      i.textContent = ch;
+      const size = f[2] === 'twinkle' ? 8 + r.int(10) : 10 + r.int(12);
+      i.style.cssText = `left:${r.int(100)}%;font-size:${size}px;animation-duration:${(f[2] === 'twinkle' ? 1.5 + r() * 2.5 : 9 + r() * 12).toFixed(1)}s;animation-delay:-${(r() * 20).toFixed(1)}s;--dx:${r.int(80) - 40}px;--rot:${r.int(360)}deg;--y:${r.int(95)}%`
+        + (ch === '▪' ? `;color:${COL[r.int(COL.length)]};font-size:${8 + r.int(6)}px` : sz.theme === 'christmas' ? ';color:#fff;text-shadow:0 0 4px rgba(255,255,255,.6)' : '');
+      box.appendChild(i);
+    }
+    document.body.appendChild(box);
+  };
   const seasonId = (d = new Date()) => d.toISOString().slice(0, 7);  // YYYY-MM (UTC)
   const seasonNo = id => { const [y, m] = id.split('-').map(Number); return (y - 2026) * 12 + m - 9; };  // October 2026 = Season 1
   const seasonEnds = () => { const d = new Date(); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1); };
-  GM.season = () => { const id = seasonId(); return { id, n: seasonNo(id), name: NAMES[+id.slice(5, 7) - 1], ends: seasonEnds() }; };
+  GM.season = (id = seasonId()) => { const sz = SEASONS[id] || {}; return { id, n: seasonNo(id), name: sz.name || NAMES[+id.slice(5, 7) - 1], icon: sz.icon || '🏆', sub: sz.sub || '', theme: sz.theme || '', ends: seasonEnds() }; };
 
   // this season's progress (a new month starts a new one)
   const loadS = () => { let s = GM.store.get('season', null); if (!s || s.id !== seasonId()) { s = { id: seasonId(), xp: 0, got: [] }; GM.store.set('season', s); } return s; };
@@ -127,7 +166,7 @@
       const label = GM.esc(GM.rewardLabel(r));
       return `<div class="st-tier ${got || t <= i.tier ? 'got' : ''} ${t === i.tier + 1 ? 'next' : ''} ${it ? 'item' : ''}"><span>${t}</span><b>${label}</b></div>`; };
     root.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>🏆 Season ${i.n}</h2><span></span></div>
-      <div class="st-hero"><small>Season ${i.n} · ${days} day${days > 1 ? 's' : ''} left</small><b>${GM.esc(i.name)}</b>
+      <div class="st-hero"><small>Season ${i.n} · ${days} day${days > 1 ? 's' : ''} left</small><b>${i.icon} ${GM.esc(i.name)}</b>${i.sub ? `<small>${GM.esc(i.sub)}</small>` : ''}
         <div class="st-lvl"><span>Tier <b>${i.tier}</b>/${TIERS}</span><div class="bar"><i style="width:${Math.round(100 * i.into / TIER)}%"></i></div><span>${i.tier >= TIERS ? '🏁 Done!' : `${i.into}/${TIER} XP`}</span></div>
         <small>All your XP counts here too. Your level (${lv.icon} ${lv.n}) is for life; the track starts again each month.</small>
         <a class="btn small" href="#/locker">🎒 Your Locker${GM.lockerNew() ? ' <i class="new-dot inline"></i>' : ''}</a></div>
@@ -144,6 +183,10 @@
         return `<div class="${k < cur ? 'got' : ''} ${today ? 'today' : ''}"><small>Day ${k + 1}</small><span>${d.icon}</span><b>${d.text}</b></div>`; }).join('')}</div>
       <h3 class="section-title">🪜 The season track</h3>
       <div class="st-track">${Array.from({ length: TIERS }, (_, k) => reward(k + 1)).join('')}</div>
+      <h3 class="section-title">🗓️ Coming up</h3>
+      <div class="st-next">${[1, 2, 3].map(k => { const d = new Date(); const id = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + k, 1)).toISOString().slice(0, 7), z = GM.season(id);
+        const items = Object.values(GM.LOCKER).filter(x => x.src.s === id);
+        return `<div><span>${z.icon}</span><b>Season ${z.n}: ${GM.esc(z.name)}</b><small>${GM.esc(z.sub || 'A new track of rewards')}</small>${items.length ? `<small class="st-teas">${items.map(x => GM.LOCKER_KINDS[x.kind].icon).join(' ')} ${items.length} new things to unlock</small>` : ''}</div>`; }).join('')}</div>
       <p class="muted center small">When the month ends, this season’s items go into the vault: you can still find them in 🌟 Legendary packs and on the 🎡 wheel.</p>`;
     const pk = GM.$('#st-pick', root); if (pk) pk.onclick = () => GM.pickReward();
   };
@@ -159,6 +202,7 @@
     if (first && GM.lockerNew()) setTimeout(() => GM.notice({ pic: '<span class="notice-icon">🎒</span>', title: 'Your Locker is open', sub: `${GM.lockerNew()} things unlocked already from what you’ve done · tap to look`, href: '#/locker', ms: 8000 }), 2500);
     else GM.loginCheck();
     GM.applyLocker();
+    GM.applySeason();
     GM.syncFlair();
   };
 })();

@@ -87,7 +87,8 @@ game mode for players; this file is about how to work on it.
   (`GM.packBonus`, always in a 🌟 Legendary pack), the vault (`GM.vaultItems`: vault-only items, past seasons' (`src.s`
   earlier than now) and finished events'), and events (`EVENTS`: dates, a 10-tier track; items have `src.event` + `tier`;
   `gm:eventPeek` = an event id shows it early, for testing). New season items: add `src: { season: tier, s: 'YYYY-MM' }`.
-- `rewards.js` – 🏆 seasons (a calendar month; all XP also fills a 30-tier track, `GM.seasonXP`), weekly missions (three
+- `rewards.js` – 🏆 seasons (`SEASONS`: each month's name, icon, theme `html.sz-<theme>` (the strip along the top and tints), menu music
+  (`audio.js` TRACKS: spooky, champions, festive, easter) and items (locker.js `src.s`); a calendar month; all XP also fills a 30-tier track, `GM.seasonXP`), weekly missions (three
   a week from `POOL`, counted by `GM.track(event)` calls in the games), login rewards (`GM.loginCheck`), `#/season`.
 - `promo.js` – the Home banner: matchday, the newest feature releases from the last 3 weeks (an entry's `promo` list, or a slide made from its title), a challenge waiting for you, a daily "Try today" game (`TRY`), news from `announcements`. Give a feature release a `promo` entry to choose its slide.
 - `modes.js` – quick games (Club Hopper, Higher or Lower, Who Am I?, Club Grid, Guess the Tally); `h2h.js` – pass-the-phone series.

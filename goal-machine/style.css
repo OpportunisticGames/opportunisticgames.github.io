@@ -3215,3 +3215,88 @@ body.cbk-spooky .pc-back, .lk-pre.cbk-spooky .lk-back { background: repeating-ra
 @keyframes fr-rainbow { 0% { outline-color: #ef4444; } 20% { outline-color: #f59e0b; } 40% { outline-color: #22c55e; } 60% { outline-color: #3b82f6; } 80% { outline-color: #a855f7; } 100% { outline-color: #ef4444; } }
 .avatar.fr-pumpkin, .fr-pumpkin .avatar { box-shadow: 0 0 0 2px #fdba74, 0 0 0 5px #ea580c, 0 0 12px rgba(234, 88, 12, .7); }
 body.calm .avatar.fr-rainbow { animation: none; }
+/* ================================================================ the seasons ahead (rewards.js SEASONS): their items' looks */
+body.pk-ucl .pitch, .lk-pre.pk-ucl .lk-pitch { background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, .18) 0 9%, transparent 10%), radial-gradient(circle at 20% 20%, #fff 0 1px, transparent 2px), radial-gradient(circle at 80% 30%, #fff 0 1px, transparent 2px), radial-gradient(circle at 60% 80%, #fff 0 1px, transparent 2px), repeating-linear-gradient(180deg, #0b2a5b 0 34px, #0a2550 34px 68px); }
+body.pk-xmas .pitch, .lk-pre.pk-xmas .lk-pitch { background: radial-gradient(circle at 10% 4%, #fde047 0 2px, transparent 3px), radial-gradient(circle at 30% 4%, #ef4444 0 2px, transparent 3px), radial-gradient(circle at 50% 4%, #22c55e 0 2px, transparent 3px), radial-gradient(circle at 70% 4%, #3b82f6 0 2px, transparent 3px), radial-gradient(circle at 90% 4%, #fde047 0 2px, transparent 3px), radial-gradient(ellipse at 50% 110%, rgba(255, 255, 255, .55), transparent 45%), repeating-linear-gradient(180deg, #2f7a55 0 34px, #2a704e 34px 68px); }
+body.pk-deadline .pitch, .lk-pre.pk-deadline .lk-pitch { background: radial-gradient(circle at 50% 50%, transparent 0 16%, rgba(250, 204, 21, .35) 16.5% 17.5%, transparent 18%), repeating-linear-gradient(180deg, #14532d 0 34px, #124a28 34px 68px); }
+body.pk-cupnight .pitch, .lk-pre.pk-cupnight .lk-pitch { background: radial-gradient(ellipse at 0 0, rgba(255, 255, 255, .3), transparent 40%), radial-gradient(ellipse at 100% 0, rgba(255, 255, 255, .3), transparent 40%), repeating-linear-gradient(180deg, #15603a 0 34px, #135634 34px 68px); }
+body.pk-titlerace .pitch, .lk-pre.pk-titlerace .lk-pitch { background: linear-gradient(180deg, rgba(251, 146, 60, .35), transparent 50%), repeating-linear-gradient(180deg, #1c7a4a 0 34px, #1a7045 34px 68px); }
+body.pk-spring .pitch, .lk-pre.pk-spring .lk-pitch { background: radial-gradient(circle at 6% 50%, #f9a8d4 0 3px, transparent 4px), radial-gradient(circle at 94% 30%, #fde68a 0 3px, transparent 4px), radial-gradient(circle at 94% 70%, #c4b5fd 0 3px, transparent 4px), radial-gradient(circle at 6% 85%, #fde68a 0 3px, transparent 4px), repeating-linear-gradient(180deg, #34a35d 0 34px, #2f9755 34px 68px); }
+body.pk-trophyday .pitch, .lk-pre.pk-trophyday .lk-pitch { background: repeating-linear-gradient(135deg, rgba(250, 204, 21, .14) 0 12px, transparent 12px 40px), repeating-linear-gradient(180deg, #1c7a4a 0 34px, #1a7045 34px 68px); }
+body.pk-summer .pitch, .lk-pre.pk-summer .lk-pitch { background: radial-gradient(circle at 88% 8%, rgba(253, 224, 71, .7) 0 6%, transparent 25%), repeating-linear-gradient(180deg, #3cb371 0 34px, #35a866 34px 68px); }
+body.cbk-starball .pc-back, .lk-pre.cbk-starball .lk-back { background: radial-gradient(circle, #fff 0 8%, transparent 9%) 0 0 / 1.4em 1.4em, #0b2a5b; box-shadow: inset 0 0 0 .3em #c0c0c0; }
+body.cbk-wrapping .pc-back, .lk-pre.cbk-wrapping .lk-back { background: linear-gradient(90deg, transparent 45%, #fde047 45% 55%, transparent 55%), linear-gradient(transparent 45%, #fde047 45% 55%, transparent 55%), repeating-linear-gradient(45deg, #b91c1c 0 .6em, #dc2626 .6em 1.2em); box-shadow: inset 0 0 0 .3em #166534; }
+body.cbk-contract .pc-back, .lk-pre.cbk-contract .lk-back { background: repeating-linear-gradient(180deg, #fffbeb 0 .55em, #e7e5e4 .55em .6em); box-shadow: inset 0 0 0 .3em #1e3a8a; }
+body.cbk-ribbons .pc-back, .lk-pre.cbk-ribbons .lk-back { background: repeating-linear-gradient(60deg, #dc2626 0 .7em, #fff .7em 1.4em, #1d4ed8 1.4em 2.1em); box-shadow: inset 0 0 0 .3em #c0c0c0; }
+body.cbk-chequered .pc-back, .lk-pre.cbk-chequered .lk-back { background: conic-gradient(#111 25%, #fff 0 50%, #111 0 75%, #fff 0) 0 0 / 1.2em 1.2em; box-shadow: inset 0 0 0 .3em #facc15; }
+body.cbk-egg .pc-back, .lk-pre.cbk-egg .lk-back { background: linear-gradient(135deg, #f9a8d4 25%, transparent 25%) -.6em 0 / 1.2em 1.2em, linear-gradient(225deg, #f9a8d4 25%, transparent 25%) -.6em 0 / 1.2em 1.2em, #a7f3d0; box-shadow: inset 0 0 0 .3em #c4b5fd; }
+body.cbk-medal .pc-back, .lk-pre.cbk-medal .lk-back { background: radial-gradient(circle, #fde047 0 30%, #b45309 31% 34%, transparent 35%), linear-gradient(180deg, #dc2626 0 30%, #1d4ed8 30% 60%, #0b3d2e 60%); box-shadow: inset 0 0 0 .3em #fde047; }
+body.cbk-tropical .pc-back, .lk-pre.cbk-tropical .lk-back { background: radial-gradient(circle at 30% 30%, #f97316 0 18%, transparent 19%), repeating-linear-gradient(120deg, #14b8a6 0 .6em, #0d9488 .6em 1.2em); box-shadow: inset 0 0 0 .3em #fde047; }
+.avatar.fr-starry, .fr-starry .avatar { box-shadow: 0 0 0 2px #e5e7eb, 0 0 0 4px #0b2a5b, 0 0 12px rgba(147, 197, 253, .8); }
+.avatar.fr-holly, .fr-holly .avatar { box-shadow: 0 0 0 2px #dc2626, 0 0 0 4px #166534, 0 0 0 6px #dc2626; }
+.avatar.fr-cash, .fr-cash .avatar { box-shadow: 0 0 0 2px #bbf7d0, 0 0 0 4px #15803d, 0 0 10px rgba(34, 197, 94, .6); }
+.avatar.fr-cup, .fr-cup .avatar { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #9ca3af, 0 0 0 6px #dc2626; }
+.avatar.fr-champion, .fr-champion .avatar { box-shadow: 0 0 0 2px #fde047, 0 0 0 4px #15803d, 0 0 12px rgba(250, 204, 21, .6); }
+.avatar.fr-pastel, .fr-pastel .avatar { box-shadow: 0 0 0 2px #f9a8d4, 0 0 0 4px #a7f3d0, 0 0 0 6px #c4b5fd; }
+.avatar.fr-medal, .fr-medal .avatar { box-shadow: 0 0 0 3px #fde047, 0 0 0 5px #b45309, 0 0 14px rgba(250, 204, 21, .8); }
+.avatar.fr-sun, .fr-sun .avatar { box-shadow: 0 0 0 2px #fde047, 0 0 14px 4px rgba(251, 146, 60, .7); }
+.st-next { display: grid; gap: 6px; }
+.st-next > div { display: grid; grid-template-columns: 34px 1fr; column-gap: 8px; padding: 10px 12px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); }
+.st-next > div > span { grid-row: span 3; font-size: 1.6rem; align-self: center; } .st-next small { color: var(--muted); font-size: .76rem; } .st-next .st-teas { color: var(--accent2, #f5c542); font-weight: 700; }
+/* the season's look (html.sz-<theme>): a strip of its emojis along the top, a tint on Home's hero and the season chip */
+html[class*="sz-"]:not(.intl-break) body::after { position: fixed; top: 0; left: 0; right: 0; height: 18px; z-index: 46; pointer-events: none; overflow: hidden; white-space: nowrap;
+  font-size: 12px; line-height: 18px; letter-spacing: 6px; text-align: center; background: var(--sz-strip, transparent); }
+html.sz-halloween:not(.intl-break) body::after { content: '🎃 🦇 👻 🕸️ 🎃 🦇 👻 🕸️ 🎃 🦇 👻 🕸️ 🎃 🦇 👻 🕸️ 🎃 🦇 👻'; --sz-strip: linear-gradient(90deg, #1e1b4b, #581c87, #c2410c); }
+html.sz-champions:not(.intl-break) body::after { content: '⭐ ✨ ⭐ ✨ ⭐ ✨ ⭐ ✨ ⭐ ✨ ⭐ ✨ ⭐ ✨ ⭐ ✨ ⭐ ✨ ⭐'; --sz-strip: linear-gradient(90deg, #0b2a5b, #1e3a8a, #0b2a5b); }
+html.sz-christmas:not(.intl-break) body::after { content: '🎄 ❄️ 🎁 ⭐ 🎄 ❄️ 🎁 ⭐ 🎄 ❄️ 🎁 ⭐ 🎄 ❄️ 🎁 ⭐ 🎄 ❄️ 🎁'; --sz-strip: linear-gradient(90deg, #991b1b, #166534, #991b1b); }
+html.sz-window:not(.intl-break) body::after { content: '💸 📝 ⏰ 💼 💸 📝 ⏰ 💼 💸 📝 ⏰ 💼 💸 📝 ⏰ 💼 💸 📝'; --sz-strip: linear-gradient(90deg, #14532d, #1f2937, #14532d); }
+html.sz-cup:not(.intl-break) body::after { content: '🏆 🎀 ⚽ 🏆 🎀 ⚽ 🏆 🎀 ⚽ 🏆 🎀 ⚽ 🏆 🎀 ⚽ 🏆 🎀 ⚽'; --sz-strip: linear-gradient(90deg, #b91c1c, #f8fafc, #1d4ed8); }
+html.sz-title:not(.intl-break) body::after { content: '🏁 🔥 😬 🏁 🔥 😬 🏁 🔥 😬 🏁 🔥 😬 🏁 🔥 😬 🏁 🔥 😬'; --sz-strip: linear-gradient(90deg, #111827, #f97316, #111827); }
+html.sz-easter:not(.intl-break) body::after { content: '🐣 🌷 🥚 🐰 🐣 🌷 🥚 🐰 🐣 🌷 🥚 🐰 🐣 🌷 🥚 🐰 🐣 🌷'; --sz-strip: linear-gradient(90deg, #f9a8d4, #a7f3d0, #c4b5fd); }
+html.sz-finalday:not(.intl-break) body::after { content: '🎉 🏆 🥇 🎊 🎉 🏆 🥇 🎊 🎉 🏆 🥇 🎊 🎉 🏆 🥇 🎊 🎉 🏆'; --sz-strip: linear-gradient(90deg, #b45309, #fde047, #b45309); }
+html.sz-summer:not(.intl-break) body::after { content: '☀️ 🌍 🏖️ ⚽ ☀️ 🌍 🏖️ ⚽ ☀️ 🌍 🏖️ ⚽ ☀️ 🌍 🏖️ ⚽ ☀️ 🌍'; --sz-strip: linear-gradient(90deg, #0ea5e9, #fde047, #0ea5e9); }
+html.sz-halloween .season-chip { background: linear-gradient(90deg, #581c87, #c2410c); color: #fff; }
+html.sz-champions .season-chip { background: linear-gradient(90deg, #0b2a5b, #1e40af); color: #fff; }
+html.sz-christmas .season-chip { background: linear-gradient(90deg, #b91c1c, #166534); color: #fff; }
+html.sz-easter .season-chip { background: linear-gradient(90deg, #f9a8d4, #c4b5fd); color: #3b0764; }
+html.sz-halloween .st-hero { background: radial-gradient(circle at 85% 10%, rgba(250, 204, 21, .35), transparent 30%), linear-gradient(135deg, #1e1b4b, #581c87 55%, #c2410c); }
+html.sz-champions .st-hero, html.sz-finalday .st-hero { background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, .3) 0 2px, transparent 3px), linear-gradient(135deg, #0b2a5b, #1e40af 60%, #c0c0c0); }
+html.sz-christmas .st-hero { background: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, .5) 0 2px, transparent 3px), radial-gradient(circle at 70% 60%, rgba(255, 255, 255, .5) 0 2px, transparent 3px), linear-gradient(135deg, #7f1d1d, #b91c1c 50%, #166534); }
+html.sz-easter .st-hero { background: linear-gradient(135deg, #db2777, #a78bfa 55%, #34d399); }
+html.sz-summer .st-hero { background: linear-gradient(135deg, #0369a1, #0ea5e9 55%, #f59e0b); }
+html.sz-window .st-hero { background: linear-gradient(135deg, #14532d, #15803d 55%, #1f2937); }
+html.sz-cup .st-hero { background: linear-gradient(135deg, #1d4ed8, #b91c1c); }
+html.sz-title .st-hero { background: linear-gradient(135deg, #111827, #c2410c); }
+html[class*="sz-"]:not(.intl-break) #app { padding-top: 22px; }
+html[class*="sz-"].has-club body::before { top: 18px; }
+
+/* ================================================================ the season's theme: the whole app's background and panels change
+   (not in the Club look, and CHAOS / Moneyball / Hat-Trick keep their own), plus a falling layer on the menus (rewards.js) */
+html.sz-halloween[data-theme="dark"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #140b24; --bg2: #24123d; --panel: #2b1747; --panel2: #361d58; --bg-grad: #5b21b6; --nav: rgba(20,11,36,.94); --modal: #24123d; --muted: #c4b5fd; --accent2: #fb923c; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+html.sz-halloween[data-theme="light"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #fff4e6; --bg-grad: #fed7aa; --panel2: #fff7ed; --bg2: #ffffff; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+html.sz-champions[data-theme="dark"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #06142e; --bg2: #0b1f45; --panel: #10285a; --panel2: #153170; --bg-grad: #1e40af; --nav: rgba(6,20,46,.94); --modal: #0b1f45; --muted: #a5b4fc; --accent2: #93c5fd; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+html.sz-champions[data-theme="light"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #eef3fb; --bg-grad: #c7d7f5; --panel2: #f3f7fe; --bg2: #ffffff; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+html.sz-christmas[data-theme="dark"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #0b2016; --bg2: #12301f; --panel: #163d29; --panel2: #1d4a33; --bg-grad: #991b1b; --nav: rgba(11,32,22,.94); --modal: #12301f; --muted: #bbe5c9; --accent2: #fde047; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+html.sz-christmas[data-theme="light"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #fdf2f2; --bg-grad: #fecaca; --panel2: #f0f9f2; --bg2: #ffffff; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+html.sz-window[data-theme="dark"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #0b1712; --bg2: #13241c; --panel: #183026; --panel2: #1f3b2f; --bg-grad: #166534; --nav: rgba(11,23,18,.94); --modal: #13241c; --muted: #a7c4b5; --accent2: #86efac; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+html.sz-window[data-theme="light"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #f0f7f1; --bg-grad: #bbf7d0; --panel2: #f3faf5; --bg2: #ffffff; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+html.sz-cup[data-theme="dark"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #0b1224; --bg2: #141d38; --panel: #1a2546; --panel2: #202d55; --bg-grad: #991b1b; --nav: rgba(11,18,36,.94); --modal: #141d38; --muted: #b4bfd8; --accent2: #fca5a5; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+html.sz-cup[data-theme="light"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #f4f6fb; --bg-grad: #fecaca; --panel2: #f6f8fc; --bg2: #ffffff; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+html.sz-title[data-theme="dark"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #120d0a; --bg2: #211711; --panel: #2a1d15; --panel2: #35251b; --bg-grad: #c2410c; --nav: rgba(18,13,10,.94); --modal: #211711; --muted: #e7c3a8; --accent2: #fb923c; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+html.sz-title[data-theme="light"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #fff7ed; --bg-grad: #fed7aa; --panel2: #fffaf3; --bg2: #ffffff; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+html.sz-easter[data-theme="dark"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #1d1430; --bg2: #2a1d45; --panel: #32245a; --panel2: #3c2c69; --bg-grad: #be185d; --nav: rgba(29,20,48,.94); --modal: #2a1d45; --muted: #e9d5ff; --accent2: #f9a8d4; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+html.sz-easter[data-theme="light"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #fdf4ff; --bg-grad: #fbcfe8; --panel2: #f5f3ff; --bg2: #ffffff; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+html.sz-finalday[data-theme="dark"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #171104; --bg2: #251c08; --panel: #30240b; --panel2: #3b2c0f; --bg-grad: #a16207; --nav: rgba(23,17,4,.94); --modal: #251c08; --muted: #f0dca0; --accent2: #fde047; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+html.sz-finalday[data-theme="light"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #fffbeb; --bg-grad: #fde68a; --panel2: #fffcf0; --bg2: #ffffff; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+html.sz-summer[data-theme="dark"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #062a3a; --bg2: #0b3a4f; --panel: #0f4760; --panel2: #13546f; --bg-grad: #0e7490; --nav: rgba(6,42,58,.94); --modal: #0b3a4f; --muted: #a5e4f5; --accent2: #fde047; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+html.sz-summer[data-theme="light"]:not(.club-theme) body:not(.chaos-mode):not(.money-mode):not(.ht-mode) { --bg: #f0f9ff; --bg-grad: #fef08a; --panel2: #f2fbff; --bg2: #ffffff; background: radial-gradient(1200px 700px at 50% -220px, var(--bg-grad), var(--bg)) fixed, var(--bg); }
+/* the falling layer: snow, bats, stars, petals, ticker tape… only on the menu pages, and never in Calm mode */
+.sz-fx { position: fixed; inset: 0; pointer-events: none; z-index: 40; overflow: hidden; display: none; }
+body.has-tabs .sz-fx { display: block; } body.calm .sz-fx { display: none !important; }
+.sz-fx i { position: absolute; top: -40px; font-style: normal; opacity: .75; animation: sz-fall linear infinite; will-change: transform; }
+@keyframes sz-fall { to { transform: translate(var(--dx, 30px), calc(100vh + 80px)) rotate(var(--rot, 180deg)); } }
+.sz-fx.twinkle i { animation: sz-twinkle ease-in-out infinite alternate; top: var(--y); }
+@keyframes sz-twinkle { from { opacity: .1; transform: scale(.6); } to { opacity: .8; transform: scale(1.1); } }
+.sz-fx.flutter i { animation-name: sz-flutter; }
+@keyframes sz-flutter { 0% { transform: translate(0, 0); } 25% { transform: translate(20px, 25vh) rotate(10deg); } 50% { transform: translate(-15px, 50vh) rotate(-10deg); } 75% { transform: translate(25px, 75vh) rotate(8deg); } 100% { transform: translate(0, calc(100vh + 80px)); } }
+html[data-theme="light"] .sz-fx i { text-shadow: 0 0 2px rgba(40, 70, 120, .9), 0 0 6px rgba(40, 70, 120, .4) !important; }

@@ -364,6 +364,7 @@
         ${grp('look', `<div class="setting"><b>Appearance</b><small>Auto follows your phone's light or dark setting. Club paints the game in your favourite club's colours</small>${seg('s-theme', GM.THEMES, GM.getTheme())}</div>
         <div class="setting"><b>Favourite club</b><small>Unlocks Club Footle and Club XI, and brings your club's colours to the app</small>
           <select class="input" id="s-club"><option value="">None</option>${GM.clubOptions().map(c => `<option ${c === GM.favClub() ? 'selected' : ''}>${GM.esc(c)}</option>`).join('')}</select></div>
+        <div class="setting"><b>Seasonal look</b><small>Each season dresses the app up (Halloween, Christmas, Easter…) and plays its own music on the menus</small>${seg('s-szlook', { true: `${GM.season ? GM.season().icon : '🎃'} On`, false: 'Off' }, GM.store.get('seasonLook', true) !== false)}</div>
         <div class="setting"><b>Animations</b><small>Full: the coin flips, the tornado tears through, the ambulance drives on. Calm keeps movement to a minimum</small>${seg('s-calm', { false: '🎬 Full', true: '🍃 Calm' }, GM.calm())}</div>`)}
         ${grp('sound', `<div class="setting"><b>Sound effects</b><small>Whistles, reels, the crowd and the goal horn</small>${seg('s-sfx', { true: '🔊 On', false: '🔇 Off' }, snd.sfx)}
           <label class="vol">🔈<input type="range" id="s-sfxvol" min="0" max="1" step="0.05" value="${snd.sfxVol}">🔊</label></div>
@@ -447,6 +448,7 @@
     wire('s-level', v => GM.setLevel(v));
     wire('s-buzz', v => GM.store.set('buzz', v === 'true'));
     wire('s-calm', v => { GM.store.set('calm', v === 'true'); GM.applyCalm(); });
+    wire('s-szlook', v => { GM.store.set('seasonLook', v === 'true'); if (GM.applySeason) GM.applySeason(); GM.sound.scene('settings'); });
     GM.$('#s-club').onchange = e => { GM.setFavClub(e.target.value); GM.sound.play('whistle'); if (e.target.value) GM.toast(`🏟️ Welcome, ${GM.esc(GM.clubShort(e.target.value))} fan!`); };
     wire('s-sfx', v => { GM.sound.set('sfx', v === 'true'); GM.sound.play('whistle'); });
     const bgInfo = () => {

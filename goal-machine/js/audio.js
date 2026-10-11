@@ -280,6 +280,7 @@
     Cmaj7: [[55, 59, 60, 64], 48], Am7: [[55, 57, 60, 64], 45], Fmaj7: [[53, 57, 60, 64], 41], G7: [[53, 55, 59, 62], 43],
     Dm7: [[53, 57, 60, 62], 38], Em7: [[55, 59, 62, 64], 40], E7: [[52, 56, 59, 62], 40],
     Cm: [[51, 55, 60], 48], Ab: [[51, 56, 60], 44], Eb: [[51, 55, 58], 51], Fm: [[53, 56, 60], 41], Db: [[53, 56, 61], 49],
+    A: [[57, 61, 64], 45], Bm: [[54, 59, 62], 47], D7: [[54, 57, 60, 62], 50], Gm: [[55, 58, 62], 43], A7: [[55, 57, 61, 64], 45],
   };
   const _ = null;
   const TRACKS = {
@@ -382,6 +383,65 @@
       { bars: 4, chords: ['Ab', 'Bb', 'Cm', 'G'], kick: 1, hats: 16, bass: 'drive', roll: 1 },
     ],
   };
+  // The seasons' tracks (rewards.js SEASONS): played on the menus while that season's look is on
+  // Christmas: 'Jingle Bells' (a traditional tune, out of copyright), 132 bpm in C, with bells on everything
+  TRACKS.festive = {
+    bpm: 132, inst: { bassType: 'triangle', bassLp: 800, keys: 1, arpType: 'sine', arpVol: 0.02, hatVol: 0.03, swing: 0.06 },
+    tunes: {
+      jingle: [[76, _, 76, _, 76, _, _, _], [76, _, 76, _, 76, _, _, _], [76, _, 79, _, 72, _, _, 74], [76, _, _, _, _, _, _, _],
+        [77, _, 77, _, 77, _, _, 77], [77, _, 76, _, 76, _, 76, 76], [76, _, 74, _, 74, _, 76, _], [74, _, _, _, 79, _, _, _],
+        [76, _, 76, _, 76, _, _, _], [76, _, 76, _, 76, _, _, _], [76, _, 79, _, 72, _, _, 74], [76, _, _, _, _, _, _, _],
+        [77, _, 77, _, 77, _, _, 77], [77, _, 76, _, 76, _, 76, 76], [79, _, 79, _, 77, _, 74, _], [72, _, _, _, _, _, _, _]],
+    },
+    song: [
+      { bars: 4, chords: ['C', 'F', 'G', 'C'], pad: 1, hats: 16, bass: 'long', intro: 1 },
+      { bars: 16, chords: ['C', 'C', 'C', 'C', 'F', 'C', 'D7', 'G', 'C', 'C', 'C', 'C', 'F', 'C', 'G7', 'C'], pad: 1, kick: 1, hats: 16, bass: 'bounce', tune: 'jingle' },
+      { bars: 8, chords: ['F', 'C', 'G', 'C'], pad: 1, hats: 16, bass: 'walk', arp: 1 },
+      { bars: 16, chords: ['C', 'C', 'C', 'C', 'F', 'C', 'D7', 'G', 'C', 'C', 'C', 'C', 'F', 'C', 'G7', 'C'], pad: 1, kick: 1, clap: 1, hats: 16, open: 1, bass: 'bounce', stab: 1, arp: 1, tune: 'jingle', fill: 1 },
+    ],
+  };
+  // Halloween: 'Fright Night', 96 bpm in D minor - a creepy organ, a slow creep and a chromatic shiver
+  TRACKS.spooky = {
+    bpm: 96, inst: { bassType: 'sawtooth', bassLp: 380, keys: 1, arpType: 'square', arpVol: 0.014, hatVol: 0.018, kickVol: 0.3, soft: 1 },
+    tunes: {
+      creep: [[74, _, 73, _, 74, _, 69, _], [70, _, 69, _, 68, _, 69, _], [74, _, 77, _, 76, _, 73, _], [74, _, _, _, _, _, _, _],
+        [81, _, 80, _, 81, _, 77, _], [78, _, 77, _, 76, _, 74, _], [73, _, 74, _, 76, _, 73, _], [69, _, _, _, 62, _, _, _]],
+    },
+    song: [
+      { bars: 4, chords: ['Dm', 'Bb', 'Gm', 'A'], pad: 1, bass: 'long', intro: 1 },
+      { bars: 8, chords: ['Dm', 'Bb', 'Gm', 'A'], pad: 1, kick: 1, hats: 8, bass: 'pulse', arp: 1, tune: 'creep' },
+      { bars: 4, chords: ['Gm', 'A7', 'Dm', 'A'], pad: 1, bass: 'long', roll: 1 },
+      { bars: 8, chords: ['Dm', 'Bb', 'Gm', 'A'], pad: 1, kick: 1, clap: 1, hats: 8, bass: 'pulse', stab: 1, arp: 1, tune: 'creep', fill: 1 },
+    ],
+  };
+  // Champions Nights and Final Day: 'Under the Lights', 104 bpm in D - a grand fanfare of our own for the big nights
+  TRACKS.champions = {
+    bpm: 104, inst: { bassType: 'triangle', bassLp: 700, stabVol: 0.03, leadSaw: 1, arpVol: 0.016 },
+    tunes: {
+      fanfare: [[74, _, _, 78, 81, _, _, _], [86, _, 85, _, 83, _, 81, _], [83, _, _, 81, 79, _, 78, _], [81, _, _, _, _, _, _, _],
+        [86, _, _, 85, 83, _, 81, _], [79, _, 81, _, 83, _, 86, _], [85, _, 83, _, 81, _, 76, _], [74, _, _, _, _, _, _, _]],
+    },
+    song: [
+      { bars: 4, chords: ['D', 'G', 'A', 'D'], pad: 1, bass: 'long', hats: 8, intro: 1 },
+      { bars: 8, chords: ['D', 'Bm', 'G', 'A'], pad: 1, kick: 1, hats: 8, bass: 'pulse', stab: 1, tune: 'fanfare' },
+      { bars: 8, chords: ['G', 'A', 'Bm', 'D'], pad: 1, bass: 'long', arp: 1, roll: 1 },
+      { bars: 8, chords: ['D', 'Bm', 'G', 'A'], pad: 1, kick: 1, clap: 1, hats: 16, open: 1, bass: 'bounce', stab: 1, arp: 1, tune: 'fanfare', fill: 1 },
+    ],
+  };
+  // Easter: 'Spring Has Sprung', 118 bpm in F - bouncy and bright, a hop in every bar
+  TRACKS.easter = {
+    bpm: 118, inst: { bassType: 'triangle', bassLp: 900, keys: 1, arpType: 'sine', arpVol: 0.02, swing: 0.12, rim: 1 },
+    tunes: {
+      hop: [[72, _, 77, _, 81, _, 77, _], [79, _, 76, _, 72, _, _, _], [74, _, 77, _, 82, _, 81, _], [77, _, _, _, _, _, _, _],
+        [81, 81, 79, _, 77, _, 76, _], [74, _, 76, _, 77, _, 79, _], [81, _, 79, _, 76, _, 72, _], [77, _, _, _, _, _, _, _]],
+    },
+    song: [
+      { bars: 4, chords: ['F', 'Bb', 'C', 'F'], pad: 1, hats: 8, bass: 'pulse', intro: 1 },
+      { bars: 8, chords: ['F', 'Dm', 'Bb', 'C'], pad: 1, kick: 1, clap: 1, hats: 8, bass: 'bounce', tune: 'hop' },
+      { bars: 8, chords: ['Bb', 'C', 'F', 'Dm'], pad: 1, hats: 16, bass: 'walk', arp: 1 },
+      { bars: 8, chords: ['F', 'Dm', 'Bb', 'C'], pad: 1, kick: 1, clap: 1, hats: 16, bass: 'bounce', stab: 1, arp: 1, tune: 'hop', fill: 1 },
+    ],
+  };
   // which track plays where
   const SCENES = {
     anthem: ['', 'today', 'leaderboard', 'album', 'players', 'updates', 'settings', 'about', 'credits'],
@@ -391,7 +451,7 @@
     derby: ['h2h', 'h2hplay', 'hilo', 'hopper', 'online', 'auction', 'royale'],
     chaos: ['chaos'],
   };
-  const trackFor = path => Object.keys(SCENES).find(k => SCENES[k].includes(path)) || 'anthem';
+  const trackFor = path => { const t = Object.keys(SCENES).find(k => SCENES[k].includes(path)) || 'anthem'; return t === 'anthem' && GM.seasonMusic && TRACKS[GM.seasonMusic] ? GM.seasonMusic : t; };  // the menus play the season's music
   let scene = 'anthem';
 
   function startMusic(name, from, until) {

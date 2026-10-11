@@ -28,7 +28,7 @@ async function phone(b, name, key, errs, store = {}) {
   ok(await A.evaluate(() => !!document.querySelector('.season-chip')), 'Home shows the season chip');
   // the Locker page: wear things
   await A.goto(U + '#/locker?k=pitch'); await A.waitForTimeout(500);
-  ok((await A.$$('.lk-item')).length === 12 && (await A.$$('.lk-item.locked')).length > 0, 'the Locker lists pitch styles, some locked with how to get them');
+  ok((await A.$$('.lk-item')).length >= 20 && (await A.$$('.lk-item.locked')).length > 0, 'the Locker lists pitch styles, some locked with how to get them');
   await A.screenshot({ path: 'lay/locker.png' });
   await A.click('.lk-item[data-id="pitch-night"]'); await A.waitForTimeout(200);
   ok(await A.evaluate(() => document.body.classList.contains('pk-night')), 'wearing Under the lights: the pitch changes');
@@ -108,6 +108,34 @@ async function phone(b, name, key, errs, store = {}) {
   await A.evaluate(() => GM.addXP(150 * 3 + 10)); await A.waitForTimeout(2500);
   ok(await A.evaluate(() => GM.lockerHas('pitch-haunted') && GM.eventInfo().tier >= 3), 'XP fills the event track too: tier 3 is the Haunted ground pitch');
   await A.screenshot({ path: 'lay/season_event.png', fullPage: true });
+  // 🗓️ the season calendar: October is Halloween (its look and music), and the seasons ahead are built
+  ok(await A.evaluate(() => Object.keys(GM.SEASONS).length >= 9 && document.documentElement.classList.contains('sz-halloween') && GM.seasonMusic === 'spooky'), 'October is the Halloween season: its look and its music on the menus');
+  await A.goto(U + '#/season'); await A.waitForTimeout(400);
+  const next = await A.evaluate(() => [...document.querySelectorAll('.st-next b')].map(b => b.textContent));
+  ok(next.length === 3 && /Champions Nights/.test(next[0]) && /Christmas/.test(next[1]), `coming up: ${next.join(' · ')}`);
+  await A.goto(U + '#/locker?k=pitch'); await A.waitForTimeout(400);
+  ok(/Coming in Season 3: 🎄 Christmas/.test(await A.textContent('.lk-grid')), 'the Locker teases next seasons’ items (“Coming in Season 3: 🎄 Christmas”)');
+  await A.goto(U + '#/settings?s=look'); await A.waitForTimeout(400);
+  await A.click('#s-szlook [data-v="false"]'); await A.waitForTimeout(200);
+  ok(await A.evaluate(() => !document.documentElement.classList.contains('sz-halloween') && !GM.seasonMusic), 'Settings → Seasonal look off: back to normal');
+  await A.click('#s-szlook [data-v="true"]'); await A.waitForTimeout(200);
+  await A.goto(U + '#/'); await A.waitForTimeout(500);
+  await A.screenshot({ path: 'lay/halloween_home.png' });
+  // December: Christmas, its items on the track, October's in the vault
+  const X = await b.newContext({ viewport: { width: 390, height: 844 } }); await server.attach(X);
+  await X.clock.install({ time: new Date('2026-12-10T12:00:00Z') });
+  const D = await X.newPage(); D.on('pageerror', e => errs.push('Dec: ' + e.message));
+  await D.goto(U); await D.evaluate(() => { localStorage.setItem('gm:seenVersion', '999'); localStorage.setItem('gm:welcomed', '1'); }); await D.reload(); await D.waitForTimeout(1500);
+  const dec = await D.evaluate(() => ({ name: GM.season().name, cls: document.documentElement.className, music: GM.seasonMusic, vault: GM.vaultItems().map(x => x.id), t6: GM.rewardLabel(GM.levelReward ? { item: 'pitch-xmas' } : null) }));
+  ok(dec.name === 'Christmas' && /sz-christmas/.test(dec.cls) && dec.music === 'festive', `in December it's the Christmas season, with Jingle Bells on the menus (${dec.name}, ${dec.music})`);
+  ok(dec.vault.includes('title-tinkerman') && dec.vault.includes('pitch-ucl') && !dec.vault.includes('pitch-xmas'), 'October’s and November’s items are in the vault; Christmas’s are on the track');
+  const th = await D.evaluate(() => ({ bg: getComputedStyle(document.body).getPropertyValue('--bg').trim(), flakes: document.querySelectorAll('.sz-fx i').length, shown: getComputedStyle(document.querySelector('.sz-fx')).display }));
+  ok(th.bg === '#fdf2f2' && th.flakes > 20 && th.shown === 'block', `a proper Christmas theme: the background changes and snow falls on the menus (${JSON.stringify(th)})`);
+  await D.goto(U + '#/draft?m=classic&s=goals&seed=x1'); await D.waitForTimeout(600);
+  ok(await D.evaluate(() => getComputedStyle(document.querySelector('.sz-fx')).display === 'none'), 'no snow while you play a game');
+  await D.goto(U + '#/season'); await D.waitForTimeout(500);
+  ok(/Snow and fairy lights/.test(await D.textContent('.st-track')), 'the Christmas track has its items (Snow and fairy lights at tier 6)');
+  await D.screenshot({ path: 'lay/christmas_season.png' });
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();
 })();
