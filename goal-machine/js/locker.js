@@ -73,6 +73,16 @@
     ['title-gaffer', 'title', 'The Gaffer', { lvl: 12 }],
     ['title-supersub', 'title', 'Super Sub', { login: 1 }],
     ['title-tinkerman', 'title', 'Tinkerman', { season: 1 }],
+    // a title for playing each season's CHAOS (5 games in that month); hidden until its season like the rest
+    ['title-witch', 'title', 'Witch Hunter', { szc: 5, s: '2026-10' }],
+    ['title-bigear', 'title', 'Big-Ear Night Owl', { szc: 5, s: '2026-11' }],
+    ['title-boxing', 'title', 'Boxing Day Legend', { szc: 5, s: '2026-12' }],
+    ['title-deadline', 'title', 'Deadline Day Dealer', { szc: 5, s: '2027-01' }],
+    ['title-giant', 'title', 'Giant-Killer', { szc: 5, s: '2027-02' }],
+    ['title-squeaky', 'title', 'Squeaky Bum', { szc: 5, s: '2027-03' }],
+    ['title-egg', 'title', 'Egg Hunter', { szc: 5, s: '2027-04' }],
+    ['title-finalday', 'title', 'Final-Day Hero', { szc: 5, s: '2027-05' }],
+    ['title-beach', 'title', 'Beach Baller', { szc: 5, s: '2027-06' }],
     ['title-bus', 'title', 'Parks the Bus', { season: 9 }],
     ['title-chaos', 'title', 'CHAOS Merchant', { missions: 8 }],
     ['title-mogul', 'title', 'Moneyball Mogul', { season: 15 }],
@@ -169,7 +179,7 @@
   const secret = it => {
     if (has(it.id)) return false;
     const s = it.src;
-    if (s.season) return (s.s || '2026-10') > (GM.gmSeason ? GM.gmSeason().id : '');
+    if (s.season || s.szc) return (s.s || '2026-10') > (GM.gmSeason ? GM.gmSeason().id : '');
     if (s.event) { const e = (GM.EVENTS || []).find(x => x.id === s.event), on = GM.activeEvent && GM.activeEvent();
       return !(on && on.id === s.event) && !!e && new Date().toISOString().slice(0, 10) < e.from; }
     return false;
@@ -184,6 +194,8 @@
     if (s.event) { const e = (GM.EVENTS || []).find(x => x.id === s.event), on = GM.activeEvent && GM.activeEvent(); return on && on.id === s.event ? `${e.name} event, tier ${s.tier}` : `${e ? e.name + ' (event over)' : 'An event'}: in the vault now`; }
     if (s.season) { const now = GM.gmSeason ? GM.gmSeason().id : '', sid = s.s || '2026-10', z = GM.gmSeason ? GM.gmSeason(sid) : null;
       return sid === now ? `Season track, tier ${s.season}` : sid > now ? 'Coming soon' : 'From an old season: in the vault now'; }
+    if (s.szc) { const now = GM.gmSeason ? GM.gmSeason().id : '', z = GM.gmSeason ? GM.gmSeason(s.s) : null;
+      return s.s === now ? `Play ${s.szc} games of ${z.name} CHAOS this month (${Math.min(GM.szChaosCount ? GM.szChaosCount() : 0, s.szc)}/${s.szc})` : s.s > now ? 'Coming soon' : 'From an old season: in the vault now'; }
     if (s.missions) return `Finish ${s.missions} weekly mission${s.missions > 1 ? 's' : ''}`;
     if (s.badges) return `Earn ${s.badges} badges`;
     if (s.club) return `Play ${s.club} daily game${s.club > 1 ? 's' : ''} for ${clubShort()}`;
@@ -206,8 +218,8 @@
     const got = [];
     Object.values(ITEMS).forEach(it => {
       const s = it.src;
-      const ok = (s.lvl && lvl >= s.lvl) || (s.badges && badges >= s.badges) || (s.missions && missions >= s.missions) || (s.club && clubN >= s.club);
-      if (ok && GM.giveItem(it.id, s.lvl ? `level ${s.lvl}` : s.badges ? `${s.badges} badges` : s.missions ? `${s.missions} missions` : `${s.club} dailies for ${clubShort()}`, quiet || got.length > 2)) got.push(it.id);
+      const ok = (s.lvl && lvl >= s.lvl) || (s.badges && badges >= s.badges) || (s.missions && missions >= s.missions) || (s.club && clubN >= s.club) || (s.szc && ((GM.store.get('szChaos', {}) || {})[s.s] || 0) >= s.szc);
+      if (ok && GM.giveItem(it.id, s.lvl ? `level ${s.lvl}` : s.badges ? `${s.badges} badges` : s.missions ? `${s.missions} missions` : s.szc ? 'seasonal CHAOS' : `${s.club} dailies for ${clubShort()}`, quiet || got.length > 2)) got.push(it.id);
     });
     if (got.length > 3 && !quiet) setTimeout(() => GM.toast(`🎒 <b>${got.length} new things</b> in your Locker`, 3000), 800);
     return got;

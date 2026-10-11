@@ -21,7 +21,7 @@
   GM.vaultItems = function () {
     const sid = GM.gmSeason ? GM.gmSeason().id : '', today = new Date().toISOString().slice(0, 10);
     const over = id => { const e = EVENTS.find(x => x.id === id); return !!e && today >= e.to; };  // an event's items only once it's finished
-    return Object.values(L()).filter(it => !GM.lockerHas(it.id) && (it.src.vault || (it.src.season && (it.src.s || '2026-10') < sid) || (it.src.event && over(it.src.event))));
+    return Object.values(L()).filter(it => !GM.lockerHas(it.id) && (it.src.vault || ((it.src.season || it.src.szc) && (it.src.s || '2026-10') < sid) || (it.src.event && over(it.src.event))));
   };
   const vaultPick = rng => { const v = GM.vaultItems(); return v.length ? v[Math.floor(rng() * v.length)] : null; };
 

@@ -405,7 +405,8 @@
     return got;
   }
   const mgrUnlocked = () => { const u = GM.store.get('mgrs', null) || mgrLegacy(); return MGR_START.concat(Array.isArray(u) ? u : []).filter((k, n, a) => MANAGERS[k] && a.indexOf(k) === n); };
-  const mgrPool = () => (S && (S.dailyChaos || S.online || S.fx || GM._forceMgr) ? Object.keys(MANAGERS) : mgrUnlocked());
+  const realMgrs = () => Object.keys(MANAGERS).filter(k => !MANAGERS[k].sz);  // (not the seasons' characters)
+  const mgrPool = () => (S && (S.dailyChaos || S.online || S.fx || GM._forceMgr) ? realMgrs() : mgrUnlocked());
   // after a CHAOS game: count it, and unlock any manager whose feat you've just pulled off
   function mgrProgress(sc) {
     mgrUnlocked();  // an older player's earlier games count first
@@ -427,12 +428,12 @@
   function managersModal() {
     if (GM.CFX) GM.CFX.loadFaces();
     const have = mgrUnlocked();
-    GM.modal(`<h3>👔 CHAOS managers</h3><p class="muted small">${have.length} of ${Object.keys(MANAGERS).length} unlocked. Do the feat in a CHAOS game to unlock the rest.</p>
-      <div class="mgr-all">${MGR_START.concat(Object.keys(UNLOCK), Object.keys(MANAGERS)).filter((k, n, a) => MANAGERS[k] && a.indexOf(k) === n).map(k => { const m = MANAGERS[k], on = have.includes(k);
+    GM.modal(`<h3>👔 CHAOS managers</h3><p class="muted small">${have.length} of ${realMgrs().length} unlocked. Do the feat in a CHAOS game to unlock the rest.</p>
+      <div class="mgr-all">${MGR_START.concat(Object.keys(UNLOCK), realMgrs()).filter((k, n, a) => MANAGERS[k] && a.indexOf(k) === n).map(k => { const m = MANAGERS[k], on = have.includes(k);
         return `<div class="mgr-row ${on ? '' : 'locked'}">${on ? mgrIco(k) : '<span class="mgr-ico">🔒</span>'}<div><b>${m.name}</b>${on ? `<small class="up">✅ ${m.perk}</small><small class="down">⚠️ ${m.catch}</small>` : `<small>🔓 ${UNLOCK[k] ? UNLOCK[k][0] : ''}</small>`}</div></div>`; }).join('')}</div>
       <div class="actions"><button class="btn" data-close>Done</button></div>`);
   }
-  const mgrIs = k => !!(S && S.rules && S.rules.chaos && S.manager === k);
+  const mgrIs = k => !!(S && S.rules && S.rules.chaos && S.manager && (S.manager === k || (MANAGERS[S.manager] && MANAGERS[S.manager].base === k)));  // (a seasonal character counts as the manager he's based on)
   // a manager's tweaks to the CHAOS itself: wildcard weights (wild) and extra cards (allow), how often events (ev, 0 =
   // never) and big moments (big) come up, rare ones (rare), the meter's speed (meterX) and start (meter), storms (noStorm)
   const tw = () => (S && S.rules && S.rules.chaos && S.manager && MANAGERS[S.manager] && MANAGERS[S.manager].tw) || {};
@@ -627,6 +628,61 @@
           const i = pickF(r, f); scale(S.xi[i], 0.7, 'halved'); return { note: `${nm(i)}’s head is already on the beach: <b>−30%</b>.`, run: c => c.visit(i, ART('paper')) }; } },
       } },
   };
+  // the season's managers: in a season's CHAOS the dugout is all characters (parodies), each playing by one real manager's
+  // rules (base) so the balance is the same; rel renames his lines in the breakdown. [key, base, icon, name, perk, catch, lot, rel]
+  const SZ_MGRS = {
+    halloween: [
+      ['gomez', 'mourinho', '🕷️', 'Gomez Haddams', 'The family crypt: defenders and keeper +70%, and 🚌 Park the Bus is back in the deck', 'Cara mia!: strikers −25% (he’s distracted)', 'bat', [['Mourinho’s back line', 'The crypt'], ['Third-season syndrome', 'Cara mia']]],
+      ['dracoola', 'holloway', '🧛', 'Count Dracoola', 'Creature of the night: the CHAOS meter fills 50% faster', 'Things that go bump: tornadoes, black holes and great escapes three times as likely', 'bat', []],
+      ['frankie', 'dyche', '🧟', 'Frankie Stein', 'Bolted together: your XI +12%', 'Stiff legs: the CHAOS meter fills at half speed', 'ghost', [['Solid', 'Bolted together']]],
+    ],
+    champions: [
+      ['maestro', 'pep', '🎻', 'Maestro Anthemo', 'The anthem: midfielders +70%, and 🧲 Old Teammates cards turn up three times as often', 'Lost in the music: strikers −20%', null, [['Pep’s midfield', 'The orchestra'], ['Overthinking it', 'Lost in the music']]],
+      ['catenaccio', 'mourinho', '🏰', 'Count Catenaccio', 'The fortress: defenders and keeper +70%, and 🚌 Park the Bus is back in the deck', 'One-nil merchants: strikers −25%', null, [['Mourinho’s back line', 'The fortress'], ['Third-season syndrome', 'One-nil merchants']]],
+      ['awaydays', 'ange', '✈️', 'Captain Away-Days', 'Away-day spirit: strikers +15%, and rare and legendary moments six times as likely', 'Jet lag: defenders −5%', null, [['Angeball', 'Away-day spirit'], ['High line', 'Jet lag']]],
+    ],
+    christmas: [
+      ['santa', 'redknapp', '🎅', 'Santa Claws', 'Presents!: starts you with ⏰ Deadline Day, 🎰 Roll Again and 🔥 Hot Streak, +5 for every wildcard you play', 'Naughty list: −3 for every one-club man', 'sleigh', [['Wheeler-dealer', 'Presents'], ['“He’d have sold them”', 'Naughty list']]],
+      ['rudolph', 'keegan', '🦌', 'Rudolph the Red-Nosed Gaffer', 'Lights the way: strikers +50%, and 💥 CHAOS UNLEASHED is twice as likely', 'Head in the clouds: defenders −20%', 'gift', [['“I would love it”', 'Lights the way'], ['All-out attack', 'Head in the clouds']]],
+      ['frosty', 'pulis', '⛄', 'Frosty the Snowmanager', 'Frozen solid: no red cards, injuries, hamstrings or slips', 'Snowed under: your XI −2%', 'snowman', [['Route one', 'Snowed under']]],
+    ],
+    window: [
+      ['delboy', 'benitez', '💼', 'Del Boy Trotter', 'Lovely jubbly: wildcards turn up more often, +2 for every one you play', 'This time next year: every third wildcard you play, he flogs someone – one of your players counts half', 'stopwatch', [['Facts', 'Lovely jubbly']]],
+      ['arfur', 'allardyce', '🧥', 'Arfur Dealey', 'Nice little earner: +10 for every player with 4+ PL clubs, and 🔍 Scout’s IQ turns up twice as often', 'Strictly cash: −10 for every Hall of Famer', null, [['Big Sam’s journeymen', 'Nice little earners'], ['No big egos', 'Strictly cash']]],
+      ['faxman', 'warnock', '📠', 'The Fax Machine', 'Deal done: every signing +15%', 'Paper jam: 1 signing in 10 counts for nothing', null, []],
+    ],
+    cup: [
+      ['nigel', 'dyche', '🥾', 'Non-League Nigel', 'Part-timers’ graft: your XI +12%', 'Day job: the CHAOS meter fills at half speed', null, [['Solid', 'Part-timers’ graft']]],
+      ['giantgary', 'keegan', '🪓', 'Giant-Killer Gary', 'Cup magic: strikers +50%, and 💥 CHAOS UNLEASHED is twice as likely', 'Gung-ho: defenders −20%', 'trophy', [['“I would love it”', 'Cup magic'], ['All-out attack', 'Gung-ho']]],
+      ['replayray', 'moyes', '🔁', 'Replay Ray', 'Takes it to a replay: +12 for every ten-season veteran, and no wildcard storms', 'No glamour: your top scorer −20%', null, [['Steady veterans', 'Replay specialists'], ['No superstars', 'No glamour']]],
+    ],
+    title: [
+      ['squeaky', 'warnock', '😬', 'Squeaky Bum Sid', 'Nerves jangling: every signing +15%', 'Bottle job: 1 signing in 10 counts for nothing', null, []],
+      ['goaldiff', 'ancelotti', '🧮', 'Mr Goal Difference', 'Counts the medals: +3 for every PL title medal', 'No passengers: −10 for every player with 5+ clubs', null, [['Title medals', 'The medal count'], ['No journeymen', 'No passengers']]],
+      ['runin', 'klopp', '🏁', 'The Run-In', 'Ten-game run: +15 for every pair of teammates, and the CHAOS meter starts half full', 'Running on empty: −10 for every ten-season veteran', 'flags', [['Heavy metal chemistry', 'Ten-game run'], ['Full throttle', 'Running on empty']]],
+    ],
+    easter: [
+      ['bunnyman', 'klopp', '🐰', 'Bugsy Bunnyman', 'Hop to it: +15 for every pair of teammates, and the CHAOS meter starts half full', 'Burrowed out: −10 for every ten-season veteran', 'bunny', [['Heavy metal chemistry', 'Hop to it'], ['Full throttle', 'Burrowed out']]],
+      ['humpty', 'vangaal', '🥚', 'Humpty Dumpty', 'Sits anywhere: any outfield player can play any outfield position (not on themed spins)', 'Had a great fall: out of position, a player counts 85%', 'eggs', []],
+      ['hennypenny', 'pulis', '🐔', 'Henny Penny', 'The sky won’t fall: no red cards, injuries, hamstrings or slips', 'Flapping: your XI −2%', null, [['Route one', 'Flapping']]],
+    ],
+    finalday: [
+      ['silverware', 'ancelotti', '🏆', 'Silverware Sally', 'Polishes the medals: +3 for every PL title medal', 'No passengers: −10 for every player with 5+ clubs', 'trophy', [['Title medals', 'Polished medals'], ['No journeymen', 'No passengers']]],
+      ['partypat', 'holloway', '🎉', 'Party Pat', 'Party time: the CHAOS meter fills 50% faster', 'Pitch invasion: tornadoes, black holes and great escapes three times as likely', 'fireworks', []],
+      ['relreg', 'moyes', '😭', 'Relegation Reg', 'Last-day survivor: +12 for every ten-season veteran, and no wildcard storms', 'Can’t look: your top scorer −20%', null, [['Steady veterans', 'Survivors'], ['No superstars', 'Can’t look']]],
+    ],
+    summer: [
+      ['sunny', 'dyche', '☀️', 'Sunny Delight', 'Topped up the tan: your XI +12%', 'Siesta: the CHAOS meter fills at half speed', 'sun', [['Solid', 'Topped up the tan']]],
+      ['tourist', 'allardyce', '🧳', 'Tourist Terry', 'Seen the world: +10 for every player with 4+ PL clubs, and 🔍 Scout’s IQ turns up twice as often', 'Lost passport: −10 for every Hall of Famer', null, [['Big Sam’s journeymen', 'Seen the world'], ['No big egos', 'Lost passport']]],
+      ['penpete', 'conte', '🥅', 'Penalty Pete', 'Three at the back for the shoot-out: centre-backs +40% (kick-off switches you to 3-4-3)', 'Can’t watch: −8 for every wildcard you play', null, [['Back three', 'Shoot-out back three'], ['Touchline fury', 'Can’t watch']]],
+    ],
+  };
+  Object.entries(SZ_MGRS).forEach(([sz, list]) => list.forEach(([k, base, icon, name, perk, ctch, lot, rel]) => {
+    const b = MANAGERS[base]; if (!b) return;
+    const relabel = l => rel.reduce((t, [a, z]) => t.split(a).join(z), l);
+    MANAGERS['szm_' + k] = { ...b, icon, name, perk, catch: ctch, base, sz, lot, lines: b.lines ? (x => b.lines(x).map(([l, v, ...rest]) => [relabel(l), v, ...rest])) : b.lines };
+  }));
+  const szMgrs = () => (S && S.sz && SZ_MGRS[S.sz] ? SZ_MGRS[S.sz].map(m => 'szm_' + m[0]) : null);
   // into the engine's lists, each tagged with its season (only that season's turn up; see inSz)
   Object.entries(SZ_CHAOS).forEach(([sz, d]) => {
     Object.entries(d.wild).forEach(([k, w]) => { WILDCARDS['sz_' + k] = { ...w, chaos: true, sz }; });
@@ -1164,7 +1220,7 @@
   // three managers to choose from (the same three for everyone on this seed and spin)
   function mgrChoices(not) {
     const r = GM.rng(`${S.seed}|mgr|${S.spin}`), out = [];
-    const keys = mgrPool().filter(k => k !== not);
+    const keys = (szMgrs() || mgrPool()).filter(k => k !== not);  // in a season's CHAOS, its characters
     const fm = S.forceMgr || GM._forceMgr;  // tests and the balance simulation (tools/test/managers.js)
     if (fm && MANAGERS[fm] && !not) out.push(fm);
     while (out.length < Math.min(3, keys.length + (fm && !not ? 1 : 0))) { const k = keys[Math.floor(r() * keys.length)]; if (!out.includes(k)) out.push(k); }
@@ -1174,12 +1230,13 @@
   const hired = () => setTimeout(() => { if (GM.CFX && onThisGame() && S.manager) GM.CFX.play('hired', GM.$('.pitch', root), S.manager, GM.esc(MANAGERS[S.manager].name)); }, 450);
   function appoint(k) {
     S.manager = k; S.log.push('👔');
-    if (k === 'conte' && S.xi.every(x => x.p == null)) {  // only before anyone has signed
+    const kb = (MANAGERS[k] && MANAGERS[k].base) || k;
+    if (kb === 'conte' && S.xi.every(x => x.p == null)) {  // only before anyone has signed
       S.form = ['GK', 'CB', 'CB', 'CB', 'LM', 'CM', 'CM', 'RM', 'ST', 'ST', 'ST'];
       S.xi = S.form.map(pos => ({ pos, p: null, g: 0, mod: null, as: null }));
       fitKey = '';
     }
-    if (k === 'redknapp') ['deadline', 'respin', 'hot'].forEach(w => { if (S.inv.length < 3) S.inv.push(w); });
+    if (kb === 'redknapp') ['deadline', 'respin', 'hot'].forEach(w => { if (S.inv.length < 3) S.inv.push(w); });
     if (tw().meter && !S.chaosDue) S.meter = Math.max(S.meter || 0, tw().meter);
   }
   // the three managers on offer at kick-off; a friend's challenge offers exactly the three they had (from their unlocks)
@@ -1232,7 +1289,11 @@
   // a fruit machine: three windows of spinning symbols and a lever to pull
   const FRUIT = ['⚽', '🏆', '🍒', '7️⃣', '💰'];
   const fruitHtml = () => `<button class="fruit" aria-label="Pull the lever"><span class="fruit-top">JACKPOT</span><span class="fruit-wins">${[0, 1, 2].map(k => `<span class="fruit-win"><span class="fruit-strip">${FRUIT.concat(FRUIT, FRUIT).map(x => `<i>${x}</i>`).join('')}</span></span>`).join('')}</span><span class="fruit-lever"><i></i></span><span class="coin-go">👆 Pull the lever</span></button>`;
-  const mgrIco = k => (GM.CFX && GM.CFX.hasFace(k) ? `<span class="mgr-ico ph">${GM.CFX.faceImg(k, 0.55)}</span>` : `<span class="mgr-ico">${MANAGERS[k].icon}</span>`);
+  // a seasonal character shows its LottieFiles drawing when there is one (swapped in once it's ready)
+  const mgrIco = k => { const m = MANAGERS[k], st = m.lot && GM.FX && GM.FX.still && GM.FX.still(m.lot);
+    if (st) return `<span class="mgr-ico lot">${st}</span>`;
+    if (m.lot && GM.FX && GM.FX.makeStill) GM.FX.makeStill(m.lot).then(svg => { if (svg) GM.$$(`.mgr-ico[data-lot="${m.lot}"]`).forEach(e => { e.innerHTML = svg; e.classList.add('lot'); }); });
+    return GM.CFX && GM.CFX.hasFace(k) ? `<span class="mgr-ico ph">${GM.CFX.faceImg(k, 0.55)}</span>` : `<span class="mgr-ico"${m.lot ? ` data-lot="${m.lot}"` : ''}>${m.icon}</span>`; };
   const mgrCard = k => { const m = MANAGERS[k]; return `<button class="mgr" data-mgr="${k}">${mgrIco(k)}<b>${m.name}</b><small class="up">✅ ${m.perk}</small><small class="down">⚠️ ${m.catch}</small></button>`; };
   /* A moment in three acts. 1: the entrance, full screen with its own scene and sound (you flip the coin here, or pick
      a manager). 2: the action, as the card drops to the bottom and whatever it is happens on your pitch while the
@@ -2071,6 +2132,7 @@
     if (bull) setTimeout(() => GM.sound.play('horn'), 1700);
     if (!S.readonly && !(S.online && S.mode === 'target')) {  // a Target Race's target is its own, so it stays off the Target board
       if (S.mode === 'daily' && sc.total > GM.best('daily')) GM.store.set('best:daily', sc.total);
+      if (S.rules.chaos && S.sz && GM.szChaosDone) GM.szChaosDone(S.sz);  // this season's CHAOS feeds the season (rewards.js)
       const { isBest } = await GM.recordScore(modeKey(), sc.total, S.target && !S.rules.max && !S.rules.treble ? { t: sc.t, g: S.target } : { t: sc.t });
       if (isBest && sc.total > 0 && S.mode !== 'daily') GM.toast('🏆 New personal best!');
       if (isBest && sc.total > 0 && S.mode !== 'daily' && GM.track) { GM.track('pb'); if (GM.celebrate) setTimeout(() => GM.celebrate(true), 1700); }  // your celebration (Locker)
@@ -2524,7 +2586,7 @@
         ${S.rules.max && !S.rules.chaos ? '' : `${S.rules.chaos ? '' : `<div class="result-score">${fmt(sc.total)}<small>points</small></div>`}
         ${S.rules.chaos && (S.newMgrs || []).length ? `<div class="mgr-new">🔓 New manager${S.newMgrs.length > 1 ? 's' : ''} unlocked: ${S.newMgrs.map(k => `${MANAGERS[k].icon} <b>${MANAGERS[k].name}</b>`).join(', ')}</div>` : ''}
         ${S.rules.chaos ? chartHtml() : ''}
-        ${S.rules.chaos ? `<button class="btn ghost small" id="all-mgrs">👔 All managers (${mgrUnlocked().length}/${Object.keys(MANAGERS).length})</button>` : ''}
+        ${S.rules.chaos ? `<button class="btn ghost small" id="all-mgrs">👔 All managers (${mgrUnlocked().length}/${realMgrs().length})</button>` : ''}
         <table class="breakdown">${sc.parts.map(([k, v]) => `<tr><td>${k}</td><td class="${v < 0 ? 'neg' : ''}">${v < 0 ? '−' + fmt(-v) : '+' + fmt(v)}</td></tr>`).join('')}</table>`}
         ${S.vs && !S.ch ? `<div class="banner">${sc.total > S.vss ? '🎉 You beat' : sc.total == S.vss ? '🤝 You drew with' : '😬 You lost to'} <b>${GM.esc(S.vs)}</b> (${GM.esc(S.vss)})</div>` : ''}
         <div class="muted">Personal best: ${fmt(Math.max(best, sc.total))}</div>

@@ -15,6 +15,8 @@
       ],
       items: [
         '🌪️ Seasonal CHAOS: every season of the year brings its own CHAOS, with two wildcards and three moments you only get that month, its own colours behind the pitch and a word at kick-off. Halloween has 🧛 Back from the Dead, 🎃 Trick or Treat, the 🧙 Witch’s Curse, a 👻 ghost goal and a 🦇 floodlight failure. The rest are a surprise until their month',
+        '👔 Seasonal managers: in a season’s CHAOS the dugout is all characters. Halloween brings 🕷️ Gomez Haddams, 🧛 Count Dracoola and 🧟 Frankie Stein, each playing by a real manager’s rules (so they’re just as fair), with perks and catches of their own',
+        '🏆 It all ties into the season: every game of the season’s CHAOS gives +60 season XP, one weekly mission is always the season’s CHAOS, and 5 games earn the season’s title (Halloween: 🏷️ Witch Hunter). The Season page and the CHAOS card on Home show it',
         '⚔️ A friend’s challenge keeps the season it was set in, so you both get the same chaos',
         '🏟️ Matchday XI (and any game with every PL player) broke on players who only had one Premier League season: their cards came up blank or the game stopped. Fixed',
         '🧹 Tidier screens: the back arrow sits in the corner again, buttons stay clear of the seasonal strip along the top, long titles don’t run into the 🏆, and the 🏆 and ? buttons match',

@@ -126,9 +126,22 @@
   // the same three for everyone this week, each counting a different thing
   const pick = wk => {
     const r = GM.rng('missions:' + wk), out = [], seen = new Set();
+    // one of the three is always this season's CHAOS, when the season has one
+    const sz = GM.gmSeason && GM.gmSeason(), szc = sz && GM.SZ_CHAOS && GM.SZ_CHAOS[sz.theme];
+    if (szc) { out.push(['szchaos', `Play 3 games of ${szc.name}`, 3, 'szchaos']); seen.add('szchaos'); }
     for (let k = 0; k < 40 && out.length < 3; k++) { const m = POOL[r.int(POOL.length)]; if (!seen.has(m[3])) { seen.add(m[3]); out.push(m); } }
     return out;
   };
+  // a game of this season's CHAOS: season XP on top, a count towards the season's CHAOS title (locker.js), the mission
+  const SZ_XP = 60;
+  GM.szChaosDone = function (theme) {
+    const z = GM.gmSeason(); if (!z || z.theme !== theme) return;  // (a challenge from last month doesn't count for this one)
+    const c = GM.store.get('szChaos', {}) || {}; c[z.id] = (c[z.id] || 0) + 1; GM.store.set('szChaos', c);
+    GM.track('szchaos'); GM.seasonXP(SZ_XP);
+    setTimeout(() => GM.toast(`${z.icon} <b>+${SZ_XP} season XP</b> for playing ${GM.esc(z.name)} CHAOS`, 2800), 2200);
+    if (GM.lockerCheck) setTimeout(() => GM.lockerCheck(), 2600);
+  };
+  GM.szChaosCount = () => { const z = GM.gmSeason(); return (GM.store.get('szChaos', {}) || {})[z.id] || 0; };
   const loadM = () => { let m = GM.store.get('missions', null); if (!m || m.wk !== weekId()) { m = { wk: weekId(), n: {}, done: [], bonus: false, days: [] }; GM.store.set('missions', m); } return m; };
   GM.missions = () => { const m = loadM(); return pick(m.wk).map(([id, text, need, ev]) => ({ id, text, need, ev, have: Math.min(need, m.n[id] || 0), done: m.done.includes(id) })); };
   GM.missionsLeft = () => GM.missions().filter(x => !x.done).length;
@@ -191,6 +204,13 @@
         const today = claimedToday ? k === (cur + 6) % 7 : k === cur;
         return `<div class="${k < cur ? 'got' : ''} ${today ? 'today' : ''}"><small>Day ${k + 1}</small><span>${d.icon}</span><b>${d.text}</b></div>`; }).join('')}</div>`;
   };
+  // this season's CHAOS on the Season page: what it brings, the title you earn by playing it, a way in
+  const szChaosCard = z => {
+    const szc = GM.SZ_CHAOS && GM.SZ_CHAOS[z.theme]; if (!szc) return '';
+    const t = Object.values(GM.LOCKER || {}).find(x => x.src.szc && (x.src.s || '') === z.id), n = GM.szChaosCount(), need = t ? t.src.szc : 0, got = t && GM.lockerHas(t.id);
+    return `<a class="szc-card sz-${z.theme}" href="#/draft?m=chaos&s=goals"><span class="szc-k">This month only</span><b>${GM.esc(szc.name)}</b><small>${GM.esc(szc.kick)} Its own wildcards, moments and managers.</small>
+      <span class="szc-row"><span>+${SZ_XP} season XP a game</span>${t ? `<span>${got ? '✅' : `${Math.min(n, need)}/${need}`} 🏷️ “${GM.esc(t.name)}” title</span>` : ''}</span><i>Play ›</i></a>`;
+  };
   // the season pass: the Season view of the Locker tab (also #/season, from the top bar)
   GM.seasonPage = function (root) {
     const i = GM.seasonInfo(), lv = GM.myLevel();
@@ -202,6 +222,7 @@
         <div class="st-lvl"><span>Tier <b>${i.tier}</b>/${TIERS}</span><div class="bar"><i style="width:${Math.round(100 * i.into / TIER)}%"></i></div><span>${i.tier >= TIERS ? '🏁 Done!' : `${i.into}/${TIER} XP`}</span></div>
         <small>All your XP counts here too. Your level (${lv.icon} ${lv.n}) is for life; the track starts again each month.</small>
         <span class="st-go"><a class="btn small" href="#/today">🎯 Missions</a><a class="btn small" href="#/level">🛤️ Level road</a></span></div>
+      ${szChaosCard(i)}
       ${GM.eventHtml ? GM.eventHtml() : ''}
       <h3 class="section-title">🪜 The season track</h3>
       <div class="st-track">${Array.from({ length: TIERS }, (_, k) => reward(k + 1)).join('')}</div>

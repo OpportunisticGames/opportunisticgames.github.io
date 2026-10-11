@@ -33,7 +33,11 @@ a witch visitor, drawn leaves instead of emoji, and a Halloween prize wheel with
 
 Then: *"Can you create a themed chaos for every season please"* → built in 5.28 (`SZ_CHAOS` in draft.js): each season has two
 wildcards (themed free spins or modifiers the engine already plays, so balance stays close), three moments, its own
-colours behind the pitch and a kick-off line; a challenge keeps its season. Still open from the first sketch below:
+colours behind the pitch and a kick-off line; a challenge keeps its season.
+Then: *"Each seasonal chaos should be good for seasonal rewards… all tie in"* and *"instead of normal managers… parodies of
+halloween related characters (like the adams family)"* → also 5.28: three characters a season (each on a real manager's rules,
+so balance holds), +60 season XP a game, a weekly mission, a title for 5 games, the Season page card. Still open from the
+first sketch below:
 
 **The fuller spooky version (still to discuss):** for the season (or just the Spooky Season event, 24 Oct to 3 Nov):
 - **Look:** CHAOS by moonlight: a night pitch with fog (GM.FX smoke), a full moon, bats over the stands (Lottie), an organ
