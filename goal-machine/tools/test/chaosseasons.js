@@ -23,7 +23,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const themes = await pg.evaluate(() => Object.keys(GM.SZ_CHAOS));
   const bases = await pg.evaluate(() => Object.fromEntries(Object.entries(GM.draft.MANAGERS()).filter(([, m]) => m.base).map(([k, m]) => [k, m.base])));
   const GM_base = k => bases[k];
-  ok(Object.keys(bases).length === 27, `27 seasonal characters, three a season`);
+  ok(Object.keys(bases).length === 54, `54 seasonal characters, six a season (three offered each game)`);
   ok(themes.length === 9, `nine seasons have their own CHAOS: ${themes.join(', ')}`);
   for (const th of themes) {
     await pg.evaluate(() => Object.keys(localStorage).filter(x => x.startsWith('gm:draftp')).forEach(x => localStorage.removeItem(x)));

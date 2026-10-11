@@ -39,7 +39,10 @@ halloween related characters (like the adams family)"* → also 5.28: three char
 so balance holds), +60 season XP a game, a weekly mission, a title for 5 games, the Season page card.
 Then (5.29): *"normal chaos should still be available and seasonal chaos scores shouldnt count to normal leaderboard… seasonal chaos
 is fine to be a bit more broken with op managers or wildcards"* → Seasonal CHAOS is its own mode (`szchaos`, own board); in it
-bonuses ×2, coin cards ×3, Boxing Day ×3, hot streaks ×2, the meter 1.5× faster, storms 20%, characters' perks ×2. Still open from the
+bonuses ×2, coin cards ×3, Boxing Day ×3, hot streaks ×2, the meter 1.5× faster, storms 20%, characters' perks ×2.
+Then *"go crazy… a witch taking a player away… goals magiced to assists or even appearances or players get merged… scared of
+spiders"* and *"you also only made three managers?"* → 14 more Halloween moments from reusable wild tricks (`WILD`), 2–3 for
+each other season, and six characters a season. Still open from the
 first sketch below:
 
 **The fuller spooky version (still to discuss):** for the season (or just the Spooky Season event, 24 Oct to 3 Nov):

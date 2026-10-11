@@ -629,6 +629,132 @@
           const i = pickF(r, f); scale(S.xi[i], 0.7, 'halved'); return { note: `${nm(i)}’s head is already on the beach: <b>−30%</b>.`, run: c => c.visit(i, ART('paper')) }; } },
       } },
   };
+  /* ---------------------------------------------------------------- Seasonal CHAOS: the wild stuff
+     Reusable tricks that bend the rules (only in Seasonal CHAOS, where it's meant to be a bit broken). Each season dresses
+     them in its own words: o = { icon, name, rar, tone, look, lot, say: (...names) => text, run: lottie or scene }. */
+  const vacate = i => { const s = S.xi[i]; if (s.p != null) S.used = (S.used || []).concat(s.p); s.p = null; s.g = 0; s.v = null; s.mod = null; s.as = null;
+    if (S.splat) S.splat = S.splat.filter(x => x !== i); unpark(i); if (S.marks) { const m = { ...S.marks }; delete m[i]; S.marks = m; } if (S.wonky) delete S.wonky[i]; };
+  const others = st => STAT_KEYS.filter(k => k !== st);
+  const WILD = {
+    // a player is taken off the pitch altogether: his place opens up again for a new signing
+    steal: o => ({ rar: 'u', tone: 'bad', ...o, go: r => {
+      const f = filledIdx(); if (!f.length) return { note: o.none || 'Nobody to take. Yet.' };
+      const i = pickF(r, f), who = nm(i); vacate(i);
+      return { note: o.say(who), run: c => { if (o.cross) c.cross(o.cross, 0.3, 3200); } }; } }),
+    // a player's goals are magicked into one of his other numbers (assists… or even appearances)
+    transfig: o => ({ rar: 'r', tone: 'weird', ...o, go: r => {
+      const f = filledIdx(); if (!f.length) return { note: o.none || 'The spell fizzles: nobody to cast it on.' };
+      const i = pickF(r, f), x = S.xi[i], into = pickF(r, others(S.stat)), was = x.g;
+      const t = x.v[S.stat]; x.v[S.stat] = x.v[into]; x.v[into] = t; x.g = x.v[S.stat]; x.mod = x.g >= was ? 'boosted' : 'halved'; mark(i, '#bolt');
+      return { note: o.say(nm(i), GM.STATS[S.stat].label, GM.STATS[into].label, fmt(was), fmt(x.g)), run: c => { c.visit(i, ART('bolt'), 'strike', 300, 'spooky'); if (o.cross) c.cross(o.cross, 0.25, 3000); } }; } }),
+    // two players stitched into one: their numbers added together, and the other place opens up again
+    merge: o => ({ rar: 'r', tone: 'good', ...o, go: r => {
+      const f = filledIdx(); if (f.length < 2) return { note: o.none || 'Not enough players to stitch together yet.' };
+      const a = pickF(r, f), b = pickF(r, f.filter(i => i !== a)), na = nm(a), nb = nm(b), A = S.xi[a], B = S.xi[b];
+      STAT_KEYS.forEach(k => { A.v[k] += B.v[k]; }); A.g = A.v[S.stat]; A.mod = 'boosted'; vacate(b); mark(a, '#bolt');
+      return { note: o.say(na, nb), run: c => c.visit(a, ART('bolt'), 'strike', 200, 'crack') }; } }),
+    // the ghost of a legend plays as a twelfth man: his numbers count as a bonus
+    ghost12: o => ({ rar: 'r', tone: 'good', ...o, go: r => {
+      const pool = GM.players.filter(p => p.hon.H && !S.xi.some(x => x.p === p.id)), p = pool.length ? pickF(r, pool) : null;
+      if (!p) return { note: 'No ghosts tonight.' };
+      const v = pv(p)[S.stat]; S.bonus.push([`${o.icon} ${p.name} (the ghost)`, v]);
+      return { note: o.say(GM.esc(p.name), fmt(v), GM.STATS[S.stat].label), run: c => { if (o.cross) c.cross(o.cross, 0.5, 4200); } }; } }),
+    // the formation turns upside down: the empty places in defence and attack swap
+    flip: o => ({ rar: 'u', tone: 'weird', ...o, go: () => {
+      let n = 0; S.xi.forEach(x => { if (x.p != null) return; const g = GM.GROUP[x.pos]; if (g === 'D') { x.pos = 'ST'; n++; } else if (g === 'F') { x.pos = 'CB'; n++; } });
+      fitKey = ''; return { note: n ? o.say(n) : (o.none || 'The pitch spins round… and lands the right way up. Phew.') }; } }),
+    // a defender turns into a striker: up front now, and stronger for it
+    werewolf: o => ({ rar: 'u', tone: 'good', ...o, go: r => {
+      const f = filledIdx().filter(i => GM.GROUP[S.xi[i].pos] === 'D'); if (!f.length) return { note: o.none || 'No defenders to change yet.' };
+      const i = pickF(r, f); S.xi[i].pos = 'ST'; scale(S.xi[i], 1.6, 'boosted'); fitKey = '';
+      return { note: o.say(nm(i)), run: c => { if (o.lot) c.lotAt(o.lot, i, -40, 2400); } }; } }),
+    // one player drains another: a third of one's numbers go to the other
+    drain: o => ({ rar: 'u', tone: 'weird', ...o, go: r => {
+      const f = filledIdx(); if (f.length < 2) return { note: o.none || 'Nobody to bite yet.' };
+      const a = pickF(r, f), b = pickF(r, f.filter(i => i !== a)), A = S.xi[a], B = S.xi[b];
+      STAT_KEYS.forEach(k => { const t = Math.floor(B.v[k] / 3); B.v[k] -= t; A.v[k] += t; }); A.g = A.v[S.stat]; B.g = B.v[S.stat]; A.mod = 'boosted'; B.mod = 'halved';
+      return { note: o.say(nm(a), nm(b)), run: c => { if (o.lot) c.lotAt(o.lot, b, -40, 2200); c.visit(a, ART('heart'), 'pop', 600); } }; } }),
+    // a potion: double or half, nobody knows which
+    potion: o => ({ rar: 'c', tone: 'weird', ...o, go: r => {
+      const f = filledIdx(); if (!f.length) return { note: o.none || 'Nobody to drink it yet.' };
+      const i = pickF(r, f), up = r() < 0.55; scale(S.xi[i], up ? 2 : 0.5, up ? 'boosted' : 'halved');
+      return { note: o.say(nm(i), up), run: c => c.visit(i, ART('bolt'), 'strike', 200, up ? 'good' : 'bad') }; } }),
+    // a player is spooked by something: his numbers drop
+    scared: o => ({ rar: 'c', tone: 'bad', ...o, go: r => {
+      const f = filledIdx(); if (!f.length) return { note: o.none || 'Nobody to frighten yet.' };
+      const i = pickF(r, f); scale(S.xi[i], 0.6, 'halved');
+      return { note: o.say(nm(i)), run: c => { if (o.lot) c.lotAt(o.lot, i, -50, 2600); } }; } }),
+    // everyone who's been hurt comes back, and stronger
+    rise: o => ({ rar: 'u', tone: 'good', ...o, go: () => {
+      const h = filledIdx().filter(i => HURT.includes(S.xi[i].mod)); if (!h.length) { const p = pts(10); S.bonus.push([`${o.icon} ${o.name}`, p]); return { note: o.none ? o.none(p) : `Nobody hurt to bring back: <b>+${p}</b> bonus instead.` }; }
+      h.forEach(i => { heal(i); scale(S.xi[i], 1.25, 'boosted'); });
+      return { note: o.say(h.length), run: c => h.forEach((i, k) => c.visit(i, ART('bolt'), 'pop', k * 250)) }; } }),
+    // a player's number vanishes until full time… but he's doubled
+    hidden: o => ({ rar: 'u', tone: 'weird', ...o, go: r => {
+      const f = filledIdx().filter(i => !(S.splat || []).includes(i)); if (!f.length) return { note: o.none || 'Nothing to hide yet.' };
+      const i = pickF(r, f); scale(S.xi[i], 2, 'boosted'); S.splat = (S.splat || []).concat(i);
+      return { note: o.say(nm(i)), run: c => { if (o.lot) c.lotAt(o.lot, i, -40, 2400); } }; } }),
+    // lose a wildcard, or get two
+    trick: o => ({ rar: 'c', tone: 'weird', ...o, go: r => {
+      const treat = r() < 0.55 || !S.inv.length;
+      if (treat) { const cards = Object.keys(WILDCARDS).filter(k => WILDCARDS[k].chaos && inSz(k)); let n = 0; while (S.inv.length < 3 && n < 2) { S.inv.push(pickF(r, cards)); n++; } return { note: o.say(true, n), run: c => c.bag() }; }
+      const w = S.inv.splice(Math.floor(r() * S.inv.length), 1)[0]; return { note: o.say(false, WILDCARDS[w].icon + ' ' + WILDCARDS[w].name), run: c => c.bag() }; } }),
+    // a bonus out of nowhere
+    bonus: o => ({ rar: 'c', tone: 'good', ...o, go: () => { const p = pts(o.n || 15); S.bonus.push([`${o.icon} ${o.name}`, p]); return { note: o.say(p), run: c => { if (o.cross) c.cross(o.cross, o.y || 0.3, 3600); else if (o.fw) c.fireworks(); } }; } }),
+  };
+  const SZ_WILD = {
+    halloween: {
+      snatch: WILD.steal({ icon: '🧙', name: 'Snatched by a witch', cross: 'witch', look: ['dark', 'spooky'], lot: 'witch', say: n => `A witch swoops down and carries ${n} off on her broomstick. He’s gone. His place is open again: sign someone new.` }),
+      hex: WILD.transfig({ icon: '🪄', name: 'Hexed', cross: 'witch', look: ['dark', 'spooky'], lot: 'witch', rar: 'l', say: (n, a, b, was, now) => `A hex turns ${n}’s ${a} into his ${b}: <b>${was} → ${now}</b>.` }),
+      stitched: WILD.merge({ icon: '🧟', name: 'Stitched together', look: ['dark', 'boo'], lot: 'ghost', say: (a, b) => `In a lab under the stand, ${a} and ${b} are stitched into one monster of a player: their numbers <b>added together</b>. ${b}’s place opens up again.` }),
+      twelfth: WILD.ghost12({ icon: '👻', name: 'The twelfth man', cross: 'ghost', look: ['dark', 'boo'], lot: 'ghost', say: (n, v, l) => `The ghost of ${n} drifts out of the tunnel and plays for you: <b>+${v}</b> ${l}.` }),
+      upside: WILD.flip({ icon: '🙃', name: 'The Upside Down', look: ['dark', 'spooky'], lot: 'bat', say: n => `The pitch flips upside down: <b>${n}</b> empty place${n > 1 ? 's' : ''} swap between defence and attack.` }),
+      fullmoon: WILD.werewolf({ icon: '🐺', name: 'Full moon', look: ['dark', 'boo'], say: n => `A full moon rises and ${n} turns into a wolf: he’s a striker now, and <b>×1.6</b>.` }),
+      bite: WILD.drain({ icon: '🧛', name: 'Vampire bite', look: ['dark', 'spooky'], lot: 'bat', say: (a, b) => `${a} sinks his teeth into ${b} and drains a third of his numbers.` }),
+      cauldron: WILD.potion({ icon: '🧪', name: 'The cauldron', look: ['casino', 'drumroll'], lot: 'pumpkin', say: (n, up) => up ? `${n} drinks from the cauldron and it’s gone right: <b>×2</b>.` : `${n} drinks from the cauldron. Wrong potion: <b>halved</b>.` }),
+      spiders: WILD.scared({ icon: '🕷️', name: 'Scared of spiders', look: ['dark', 'boo'], lot: 'spider', say: n => `A spider drops down from the crossbar and ${n} won’t go near the goal again: <b>−40%</b>.` }),
+      zombies: WILD.rise({ icon: '🧟', name: 'Night of the living dead', look: ['dark', 'boo'], say: n => `Your injured rise from the treatment table: <b>${n}</b> player${n > 1 ? 's' : ''} back to full numbers, then <b>+25%</b>.` }),
+      headless: WILD.hidden({ icon: '🎃', name: 'The headless winger', look: ['dark', 'spooky'], lot: 'pumpkin', say: n => `${n} loses his head (it’s a pumpkin now). You can’t see his number till full time… but it’s <b>doubled</b>.` }),
+      treaters: WILD.trick({ icon: '🍬', name: 'Trick or treaters', look: ['party', 'boo'], say: (treat, w) => treat ? `Trick or treaters knock on the dressing room door. Treat! <b>${w}</b> free wildcard${w > 1 ? 's' : ''}.` : `Trick or treaters knock. Trick! They run off with your ${w}.` }),
+      broom: WILD.bonus({ icon: '🧹', name: 'Broomstick race', cross: 'witch', y: 0.2, n: 20, look: ['party', 'cheer'], say: p => `The half-time broomstick race goes your way: <b>+${p}</b> bonus.` }),
+      seance: { rar: 'c', icon: '🔮', name: 'The séance', tone: 'good', look: ['dark', 'spooky'], go: () => { S.revealNext = true; const p = pts(6); S.bonus.push(['🔮 The séance', p]); return { note: `The spirits whisper what’s coming: your next spin is <b>scouted</b>, and <b>+${p}</b> bonus.` }; } },
+    },
+    christmas: {
+      elf: WILD.drain({ icon: '🧝', name: 'Elf on the shelf', look: ['gold', 'bell'], lot: 'gift', say: (a, b) => `A mischievous elf moves a third of ${b}’s numbers onto ${a}’s shelf.` }),
+      ghosts: WILD.ghost12({ icon: '👻', name: 'The ghost of Christmas past', look: ['dark', 'bell'], say: (n, v, l) => `The ghost of Christmas past brings back ${n}: <b>+${v}</b> ${l}.` }),
+      miracle: WILD.rise({ icon: '🌟', name: 'A Christmas miracle', look: ['gold', 'bell'], say: n => `A Christmas miracle: <b>${n}</b> hurt player${n > 1 ? 's' : ''} back to full numbers, then <b>+25%</b>.` }),
+    },
+    champions: {
+      galacticos: WILD.merge({ icon: '🌌', name: 'Galácticos', look: ['gold', 'cheer'], say: (a, b) => `The president wants a Galáctico: ${a} and ${b} become one superstar, their numbers <b>added</b>. ${b}’s place opens up again.` }),
+      legend: WILD.ghost12({ icon: '🏆', name: 'A legend in the stands', look: ['party', 'cheer'], say: (n, v, l) => `${n} pulls his boots back on for one more European night: <b>+${v}</b> ${l}.` }),
+    },
+    window: {
+      hijack: WILD.steal({ icon: '🚁', name: 'Hijacked deal', look: ['money', 'whoosh'], say: n => `A rival club’s helicopter lands on the pitch and flies ${n} away. His place is open again.` }),
+      swapdeal: WILD.transfig({ icon: '📝', name: 'Contract typo', look: ['news', 'stamp'], say: (n, a, b, was, now) => `A typo in ${n}’s contract swaps his ${a} for his ${b}: <b>${was} → ${now}</b>.` }),
+    },
+    cup: {
+      magic: WILD.potion({ icon: '✨', name: 'Cup magic', look: ['gold', 'drumroll'], say: (n, up) => up ? `The magic of the cup: ${n} plays the game of his life, <b>×2</b>.` : `The magic of the cup works the other way for ${n}: <b>halved</b>.` }),
+      giant: WILD.werewolf({ icon: '🪓', name: 'Giant-killer', look: ['party', 'cheer'], say: n => `${n} goes up front for the last ten minutes: a striker now, and <b>×1.6</b>.` }),
+    },
+    title: {
+      flip: WILD.flip({ icon: '🔄', name: 'Tactical overhaul', look: ['tv', 'whistle'], say: n => `With the title on the line, everything changes: <b>${n}</b> empty place${n > 1 ? 's' : ''} swap between defence and attack.` }),
+      nerves: WILD.scared({ icon: '😰', name: 'The nerves', look: ['red', 'groan'], say: n => `${n} can’t handle the pressure: <b>−40%</b>.` }),
+    },
+    easter: {
+      egg: WILD.hidden({ icon: '🥚', name: 'Hidden egg', look: ['gold', 'shimmer'], lot: 'eggs', say: n => `${n} is hidden inside a giant egg: you can’t see his number till full time… but it’s <b>doubled</b>.` }),
+      hatch: WILD.merge({ icon: '🐣', name: 'Double yolk', look: ['party', 'cheer'], lot: 'eggs', say: (a, b) => `A double yolk: ${a} and ${b} hatch as one player, their numbers <b>added</b>. ${b}’s place opens up again.` }),
+    },
+    finalday: {
+      lastday: WILD.transfig({ icon: '📺', name: 'Last-day scramble', look: ['tv', 'drumroll'], say: (n, a, b, was, now) => `The final-day tables go haywire: ${n}’s ${a} are counted as ${b}: <b>${was} → ${now}</b>.` }),
+      parade: WILD.bonus({ icon: '🎉', name: 'Victory parade', fw: 1, n: 25, look: ['party', 'cheer'], say: p => `An early victory parade: <b>+${p}</b> bonus.` }),
+    },
+    summer: {
+      heatstroke: WILD.scared({ icon: '🥵', name: 'Heatstroke', look: ['fire', 'sunny'], lot: 'sun', say: n => `${n} forgot his sun cream: <b>−40%</b>.` }),
+      penalties: WILD.potion({ icon: '🥅', name: 'Penalty shoot-out', look: ['casino', 'drumroll'], say: (n, up) => up ? `${n} steps up and buries it: <b>×2</b>.` : `${n} steps up… and skies it: <b>halved</b>.` }),
+    },
+  };
+  Object.entries(SZ_WILD).forEach(([sz, list]) => { if (SZ_CHAOS[sz]) Object.assign(SZ_CHAOS[sz].xev, list); });
+
   // the season's managers: in a season's CHAOS the dugout is all characters (parodies), each playing by one real manager's
   // rules (base) so the balance is the same; rel renames his lines in the breakdown. [key, base, icon, name, perk, catch, lot, rel]
   const SZ_MGRS = {
@@ -678,8 +804,61 @@
       ['penpete', 'conte', '🥅', 'Penalty Pete', 'Three at the back for the shoot-out: centre-backs +40% (kick-off switches you to 3-4-3)', 'Can’t watch: −8 for every wildcard you play', null, [['Back three', 'Shoot-out back three'], ['Touchline fury', 'Can’t watch']]],
     ],
   };
+  // three more a season (six in all; three are offered each game)
+  const MORE = {
+    halloween: [
+      ['morticia', 'pep', '🖤', 'Morticia Haddams', 'Elegance itself: midfielders +70%, and 🧲 Old Teammates cards turn up three times as often', 'Too gloomy up front: strikers −20%', 'bat'],
+      ['wednesday', 'warnock', '🕸️', 'Wednesday Haddams', 'Deadpan: every signing +15%', 'Doesn’t do joy: 1 signing in 10 counts for nothing', 'spider'],
+      ['fester', 'keegan', '💡', 'Uncle Fester', 'Lights up the place: strikers +50%, and 💥 CHAOS UNLEASHED is twice as likely', 'Leaves the back door open: defenders −20%', 'pumpkin'],
+    ],
+    champions: [
+      ['butler', 'ancelotti', '🤵', 'The Big-Ear Butler', 'Polishes the silver: +3 for every PL title medal', 'No journeymen at this club: −10 for every player with 5+ clubs', 'trophy'],
+      ['watchman', 'pulis', '🔦', 'The Night Watchman', 'Nothing gets past him: no red cards, injuries, hamstrings or slips', 'Plays it safe: your XI −2%', null],
+      ['comeback', 'holloway', '🔥', 'Captain Comeback', 'Never dead: the CHAOS meter fills 50% faster', 'Always chasing it: tornadoes, black holes and great escapes three times as likely', null],
+    ],
+    christmas: [
+      ['grinch', 'moyes', '💚', 'The Grinch', 'Steals the show: +12 for every ten-season veteran, and no wildcard storms', 'Hates a superstar: your top scorer −20%', null],
+      ['mrsclaus', 'benitez', '🍪', 'Mrs Claus', 'Wraps every present: wildcards turn up more often, +2 for every one you play', 'Busy, busy: every third wildcard you play, someone sits out half the game', 'gift'],
+      ['headelf', 'warnock', '🧝', 'The Head Elf', 'Works all night: every signing +15%', 'Gets the list wrong: 1 signing in 10 counts for nothing', 'gift'],
+    ],
+    window: [
+      ['agentzero', 'keegan', '🕶️', 'Super-Agent Zero', 'Only strikers: strikers +50%, and 💥 CHAOS UNLEASHED is twice as likely', 'Defenders don’t pay: defenders −20%', null],
+      ['loanranger', 'redknapp', '🤠', 'The Loan Ranger', 'Saddlebags full: starts you with ⏰ Deadline Day, 🎰 Roll Again and 🔥 Hot Streak, +5 for every wildcard you play', 'Never keeps anyone: −3 for every one-club man', null],
+      ['yellowtie', 'holloway', '👔', 'The Yellow Tie', 'Breaking news: the CHAOS meter fills 50% faster', 'Live on air: tornadoes, black holes and great escapes three times as likely', 'stopwatch'],
+    ],
+    cup: [
+      ['sponge', 'benitez', '🧽', 'Magic Sponge Martin', 'Cures anything: wildcards turn up more often, +2 for every one you play', 'Overworked: every third wildcard you play, someone sits out half the game', null],
+      ['ballboy', 'pulis', '🏃', 'The Ball Boy', 'Quick throw-ins: no red cards, injuries, hamstrings or slips', 'Time-wasting: your XI −2%', null],
+      ['finalcolin', 'ancelotti', '🏆', 'Cup Final Colin', 'Big-game player: +3 for every PL title medal', 'No passengers on the coach: −10 for every player with 5+ clubs', 'trophy'],
+    ],
+    title: [
+      ['bottler', 'keegan', '🍾', 'The Bottler', '“I would love it”: strikers +50%, and 💥 CHAOS UNLEASHED is twice as likely', 'Loses his head: defenders −20%', null],
+      ['drawspec', 'dyche', '🤝', 'The Draw Specialist', 'Hard to beat: your XI +12%', 'Hard to watch: the CHAOS meter fills at half speed', null],
+      ['momentum', 'ange', '📈', 'Momentum Max', 'On a run: strikers +15%, and rare and legendary moments six times as likely', 'Never sits back: defenders −5%', 'flags'],
+    ],
+    easter: [
+      ['cottontail', 'ange', '🐇', 'Peter Cottontail', 'Hops forward: strikers +15%, and rare and legendary moments six times as likely', 'Leaves gaps: defenders −5%', 'bunny'],
+      ['egghunter', 'allardyce', '🧺', 'The Egg Hunter', 'Finds them anywhere: +10 for every player with 4+ PL clubs, and 🔍 Scout’s IQ turns up twice as often', 'No golden eggs: −10 for every Hall of Famer', 'eggs'],
+      ['chocolate', 'warnock', '🍫', 'Chocolate Charlie', 'Sugar rush: every signing +15%', 'The crash: 1 signing in 10 counts for nothing', null],
+    ],
+    finalday: [
+      ['tickertape', 'keegan', '🎊', 'Tickertape Tina', 'Go for it: strikers +50%, and 💥 CHAOS UNLEASHED is twice as likely', 'Forgot to defend: defenders −20%', 'fireworks'],
+      ['polisher', 'pulis', '✨', 'The Trophy Polisher', 'Keeps it spotless: no red cards, injuries, hamstrings or slips', 'Too careful: your XI −2%', 'trophy'],
+      ['champagne', 'redknapp', '🍾', 'Champagne Charlie', 'Cracks it open: starts you with ⏰ Deadline Day, 🎰 Roll Again and 🔥 Hot Streak, +5 for every wildcard you play', 'Spends it all: −3 for every one-club man', null],
+    ],
+    summer: [
+      ['beachbum', 'holloway', '🏄', 'Beach Bum Barry', 'Surf’s up: the CHAOS meter fills 50% faster', 'Wipeouts: tornadoes, black holes and great escapes three times as likely', 'sun'],
+      ['sunhat', 'pulis', '👒', 'Sun Hat Sam', 'Stays in the shade: no red cards, injuries, hamstrings or slips', 'Too relaxed: your XI −2%', null],
+      ['flipflop', 'vangaal', '🩴', 'Flip-Flop Phil', 'Anything goes: any outfield player can play any outfield position (not on themed spins)', 'Slips about: out of position, a player counts 85%', null],
+    ],
+  };
+  Object.entries(MORE).forEach(([sz, l]) => { SZ_MGRS[sz] = SZ_MGRS[sz].concat(l.map(m => m.concat([[]]))); });
+  // the borrowed rules' lines in the breakdown, without the real managers' names
+  const BASE_REL = { pep: [['Pep’s midfield', 'The midfield']], mourinho: [['Mourinho’s back line', 'The back line']], allardyce: [['Big Sam’s journeymen', 'Journeymen']],
+    keegan: [['“I would love it”', 'All-out attack']], redknapp: [['“He’d have sold them”', 'One-club men']], ange: [['Angeball', 'Attack']] };
   Object.entries(SZ_MGRS).forEach(([sz, list]) => list.forEach(([k, base, icon, name, perk, ctch, lot, rel]) => {
     const b = MANAGERS[base]; if (!b) return;
+    rel = (rel || []).concat(BASE_REL[base] || []);
     const relabel = l => rel.reduce((t, [a, z]) => t.split(a).join(z), l);
     MANAGERS['szm_' + k] = { ...b, icon, name, perk, catch: ctch, base, sz, lot, lines: b.lines ? (x => b.lines(x).map(([l, v, ...rest]) => [relabel(l), v > 0 ? v * 2 : v, ...rest])) : b.lines };  // (perks doubled: they're meant to be OP)
   }));
