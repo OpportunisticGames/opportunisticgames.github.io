@@ -88,6 +88,7 @@ async function phone(b, name, key, errs, store = {}) {
   await A.click('#wh-go'); await A.waitForTimeout(4200);
   const sp = await A.evaluate(() => ({ n: +GM.store.get('spins', 0), shown: document.getElementById('wh-n').textContent }));
   ok(sp.n === spins0 - 1 || sp.n === spins0, `the prize wheel spins and pays out (${spins0} → ${sp.n} spins left)`);
+  await A.goto(U + '#/today'); await A.waitForTimeout(300);  // (it opens by itself on the menus; during a game it waits under 🎁)
   await A.evaluate(() => GM.grant({ choice: [{ pack: 'season' }, { spin: 2 }, { vault: 1 }] }, 'season tier 5'));
   await A.waitForTimeout(1200);
   ok((await A.$$('.rw-opt')).length === 3, 'pick one of three: a Season pack, 2 spins or a vault item');

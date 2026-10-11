@@ -1623,7 +1623,7 @@ html.intl-break body::after { content: ''; position: fixed; top: 0; left: 0; rig
 @keyframes hint-w { 0% { box-shadow: inset 0 0 2.4em #ef4444; } 33% { box-shadow: inset 0 0 2.4em #22c55e; } 66% { box-shadow: inset 0 0 2.4em #3b82f6; } 100% { box-shadow: inset 0 0 2.4em #ef4444; } }
 /* the card's edge follows its cut corners: the face is the edge colour, and the tier's colours sit on a layer inset by the edge's width */
 .pc-front { display: grid; grid-template-columns: 3.1em 1fr; grid-template-rows: 1fr auto auto auto; grid-template-areas: 'top photo' 'name name' 'stats stats' 'foot foot';
-  padding: 1.15em .9em 1.9em 1em; color: #2b1a0c; isolation: isolate;
+  padding: 1.15em .8em 1.9em; color: #2b1a0c; isolation: isolate;
   --pc-bg: linear-gradient(160deg, #f6d6ad 0%, #cf9460 45%, #8a5a2f 100%); --pc-edge: linear-gradient(rgba(255, 255, 255, .45), rgba(255, 255, 255, .45));
   background: var(--pc-edge), var(--pc-bg); }
 .pc-front::before { content: ''; position: absolute; inset: .3em; z-index: -1; background: var(--pc-bg);

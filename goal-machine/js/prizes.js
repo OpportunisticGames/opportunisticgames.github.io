@@ -33,7 +33,7 @@
     else if (r.xp && GM.seasonXP) { GM.seasonXP(r.xp); if (!quiet) GM.toast(`⚡ <b>+${r.xp} season XP</b>${why ? ` · ${GM.esc(why)}` : ''}`, 2400); }
     else if (r.spin) { GM.store.set('spins', +GM.store.get('spins', 0) + r.spin); if (!quiet) setTimeout(() => GM.toast(`🎡 <b>+${r.spin} spin${r.spin > 1 ? 's' : ''}</b> on the prize wheel${why ? ` · ${GM.esc(why)}` : ''}`, 2600), 300); GM.rewardDots(); }
     else if (r.vault) { const it = vaultPick(Math.random); return it ? GM.grant({ item: it.id }, why, quiet) : GM.grant({ pack: 'legendary' }, why, quiet); }
-    else if (r.choice) { GM.store.set('choices', (GM.store.get('choices', []) || []).concat([{ opts: r.choice, why: why || '' }])); if (!quiet) setTimeout(() => GM.pickReward(), 900); GM.rewardDots(); }
+    else if (r.choice) { GM.store.set('choices', (GM.store.get('choices', []) || []).concat([{ opts: r.choice, why: why || '' }])); if (!quiet) setTimeout(() => { if (document.body.classList.contains('has-tabs')) GM.pickReward(); else GM.toast('🎁 <b>Pick one of three</b> is waiting under the 🎁 on the menus', 2800); }, 900); GM.rewardDots(); }  // never over a game
     return r;
   };
   // the dots on the season chip: spins to use, a choice waiting

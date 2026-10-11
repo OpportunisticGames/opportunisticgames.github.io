@@ -16,6 +16,11 @@ version they shipped in. Newest at the top.
   corners (an inset shadow clipped by the shape; now a layer that follows it) and the goals number was clipped by the
   corner; “How cards work” sat on the cards; the level road cut off the next reward; the Locker header wrapped mid-phrase.
   Mystery Target's reveal timer no longer runs after you leave.
+- Found by the full test run: a season track “pick one of three” opened its pop-up by itself almost a second later, even if
+  you'd started your next game, and sat over the pitch. Now it only opens by itself on the menus; during a game it waits
+  under 🎁 with a short note. (Seasonal CHAOS's season XP made it come up more often.)
+- Stale tests brought up to date: `breaks.js` (a badge that no longer exists), `progress.js` (the games row depends on
+  the date), `watch.js` (a longer CHAOS game needs more steps), `secrets.js` (Home's CHAOS card says “this month only”).
 
 ### Fixed in 5.26.1 *(owner, 11 Oct 2026)*
 - “We shouldn’t spoil all the things coming in future seasons.” The Locker listed later seasons’ items as “Coming in
