@@ -83,11 +83,9 @@ version they shipped in. Newest at the top.
 - Rain was lines across the pitch: now drops, ripples and clouds. Too many screen flashes and throbbing backdrops: cut right down.
 
 ## Open
-- **The scroll line on the right is still there after reinstalling** *(owner, 11 Oct 2026)*. The page itself doesn't
-  overflow (checked at Pixel size with a pretend app), so it's the app drawing it. Build 56+ turns the WebView's
-  scrollbars off (`setVerticalScrollBarEnabled(false)`). First check: the build number at the bottom of Settings. If it's
-  below 56, the Play Store is still serving an older build (58 is in review). If it's 56 or above, the next step is in the
-  app: hide Chromium's own overlay scrollbar as well.
+- **The scroll line on the right is still there after reinstalling** *(owner, 11 Oct 2026)*. The phone is on app build 54,
+  and the fix (`setVerticalScrollBarEnabled(false)`) arrived in build 56. Play still serves 54 while build 58 is in
+  review. Check again once 58 is live; if the line is still there on 58, hide Chromium's own overlay scrollbar too.
 
 | Reported | Bug | Status |
 |---|---|---|
