@@ -23,6 +23,12 @@ game mode for players; this file is about how to work on it.
   the head coaches in Dodgy Owner and Reign Check (Pep Cardigola, José Moaninho and friends). No AI model names in commits, PRs or files.
 - **Secret games** (`js/secret.js`): locked knock-offs unlocked by doing something (Reign Check, Hat-Trick, Goal Royale).
   The owner's tester link `#/tester?code=owner-test-2026` unlocks them all on that device for play-testing.
+- **Build visuals properly, with the tools we have** (the owner asked for this): anything that moves or celebrates uses
+  real animations, not emoji or plain CSS stand-ins. Search LottieFiles (its MCP) for characters and objects, download
+  them with `candidates.json` + the `lottie.yml` workflow, preview with `tools/lottie_preview.html`, pick, credit; use the
+  PixiJS effects layer (`GM.FX`: particles, light, weather) for sparks, confetti, snow, smoke; real sounds via
+  `fx/sfx/wanted.json` + `sounds.yml`; music as `audio.js` TRACKS. Plain CSS is fine for cheap background layers (like
+  the falling snow on the menus), but the moments people notice should be the real thing. Always keep the Calm fallback.
 - Write plainly in the owner's British English (the game's tone: short, friendly, football-y).
 - Every release: add an entry at the top of `GM.UPDATES` in `js/updates.js`, then run `python3 tools/bump_version.py`
   from `goal-machine/` (it bumps every `?v=` in `index.html` and the service worker cache). `v` = the next cache
