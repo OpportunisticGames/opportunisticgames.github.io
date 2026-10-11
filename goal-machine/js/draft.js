@@ -961,7 +961,7 @@
     const at = (el, x, y, s) => { if (el) Object.assign(el.style, { left: x + 'px', top: y + 'px', width: s + 'px', height: s + 'px' }); };
     at(box.querySelector('.web.l'), x0 - 2, y0 - 2, web); at(box.querySelector('.web.r'), x0 + r.width - web + 2, y0 - 2, web);
     const fog = box.querySelector('.fog'); if (fog) Object.assign(fog.style, { left: x0 + 'px', top: (y0 + r.height * 0.55) + 'px', width: r.width + 'px', height: (r.height * 0.45) + 'px' });
-    at(box.querySelector('.corner.l'), x0 + 4, y0 + r.height - pk - 4, pk); at(box.querySelector('.corner.r'), x0 + r.width - pk - 4, y0 + r.height - pk - 4, pk);
+    at(box.querySelector('.corner.l'), x0 + 4, y0 + r.height - pk - 4, pk); at(box.querySelector('.corner.r'), x0 + r.width - pk - 4, y0 + r.height - pk - 24, pk);  // (above the formation, bottom right)
   }
   async function czFly(box, v) {
     if (!box.isConnected || !onThisGame() || document.querySelector('.cm:not(.out)')) return;  // (not over a moment's card)
@@ -2748,14 +2748,27 @@
     if (!pitch || !root.isConnected || S.phase === 'done') return;
     const rows = GM.$$('.pitch-row', pitch).length || 4;
     const key = [innerWidth, innerHeight, S.mode, S.hard, S.rules.wild !== false, !!S.vs, !!S.online, rows].join('|');
-    if (key === fitKey) return;
+    // (the game is one screen, never a scroll: if something grew since kick-off (bigger text, a longer line in the
+    // counter), the slots shrink to fit, even though the key hasn't changed; they never grow mid-game)
+    const over = () => document.scrollingElement.scrollHeight - innerHeight;
+    if (key === fitKey && over() <= 0) return;
+    const fresh = key !== fitKey;
     fitKey = key;
-    const cur = parseFloat(getComputedStyle(root).getPropertyValue('--slot-h')) || 52;
-    // the game's own content (the page itself always stretches to the screen, so measure #app, padding included)
-    const spare = window.innerHeight - (root.getBoundingClientRect().bottom + window.scrollY);
-    const next = Math.max(46, Math.min(86, Math.floor(cur + spare / rows)));
-    if (Math.abs(next - cur) >= 1) root.style.setProperty('--slot-h', next + 'px');
-    root.classList.toggle('slots-compact', next < 62);
+    if (fresh) root.style.zoom = '';
+    for (let k = 0; k < 4; k++) {
+      const cur = parseFloat(getComputedStyle(root).getPropertyValue('--slot-h')) || 52;
+      // the game's own content (the page itself always stretches to the screen, so measure #app, padding included)
+      const spare = Math.min(window.innerHeight - (root.getBoundingClientRect().bottom + window.scrollY), -over());
+      const want = cur + (fresh && k === 0 ? window.innerHeight - (root.getBoundingClientRect().bottom + window.scrollY) : spare) / rows;
+      const next = Math.max(46, Math.min(86, Math.floor(want)));
+      if (Math.abs(next - cur) >= 1) root.style.setProperty('--slot-h', next + 'px');
+      root.classList.toggle('slots-compact', next < 62);
+      if (over() <= 0 || next === 46) break;
+    }
+    // still too tall at the smallest slots (a small phone with big text): scale the whole game down to fit
+    if (over() > 0) { const z = (parseFloat(root.style.zoom) || 1) * innerHeight / document.scrollingElement.scrollHeight; root.style.zoom = Math.max(0.8, Math.floor(z * 1000) / 1000); }
+    if (over() > 0) scrollTo(0, 0);
+    const deco = document.querySelector('.cz-deco'); if (deco) czPlace(deco);
   }
   window.addEventListener('resize', () => { if (S && root) { fitPitch(); fitReels(); } });
   if (document.fonts) document.fonts.ready.then(() => { fitKey = ''; if (S && root) { fitPitch(); fitReels(); } });

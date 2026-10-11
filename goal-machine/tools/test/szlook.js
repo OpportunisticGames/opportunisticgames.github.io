@@ -42,6 +42,23 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.click('#spin'); await idle(pg);
   const h = await pg.evaluate(() => ({ hard: GM.draft.state().hard, blind: document.querySelector('.stage').classList.contains('hard'), chips: document.querySelectorAll('.stage .reel .chips > *').length, key: GM.draft.modeKey('szchaos', 'goals', true) }));
   ok(h.hard && h.blind && h.chips === 0 && h.key === 'szchaosh', `Hard Seasonal CHAOS hides the clubs and has its own board (${h.key})`);
+  // one screen, never a scroll: bigger text on a smaller phone still fits, and the decorations stay on the pitch
+  for (const [W, H, fs, m] of [[390, 800, '120%', 'szchaos'], [360, 700, '130%', 'szchaos'], [360, 700, '130%', 'chaos']]) {
+    const c2 = await b.newContext({ viewport: { width: W, height: H } }); await fast(c2, { calm: false, speed: 3 });
+    await c2.route(/wikimedia|premierleague|transfermarkt|supabase/, r => r.abort());
+    const p2 = await c2.newPage(); p2.on('pageerror', e => errs.push(e.message));
+    await p2.goto(U); await p2.evaluate(fs => { localStorage.setItem('gm:seenVersion', '999'); localStorage.setItem('gm:welcomed', '1'); }, fs);
+    await p2.goto(U); await p2.waitForTimeout(500);
+    await p2.evaluate(fs => { const st = document.createElement('style'); st.textContent = 'html{font-size:' + fs + ' !important}'; document.head.appendChild(st); }, fs);
+    await p2.evaluate(m => { GM._forceSz = 'halloween'; location.hash = '#/draft?m=' + m + '&h=1&seed=fit' + m; }, m);
+    await p2.waitForSelector('.cm-pick [data-mgr]'); await p2.click('.cm-pick [data-mgr]'); await idle(p2);
+    for (let i = 0; i < 2; i++) { await p2.click('#spin', { timeout: 3000 }).catch(() => {}); await idle(p2); await p2.evaluate(() => { const r = document.querySelector('.stage .reel[data-reel]:not(.is-wild)'); r && r.click(); }); await p2.waitForTimeout(200); await p2.evaluate(() => { const t = document.querySelector('.slot.target'); t && t.click(); }); await idle(p2); }
+    await p2.mouse.wheel(0, 400); await p2.waitForTimeout(200);
+    const f = await p2.evaluate(() => { const p = document.querySelector('.pitch').getBoundingClientRect(), w = document.querySelector('.cz-deco .web.l');
+      return { over: document.scrollingElement.scrollHeight - innerHeight, y: scrollY, web: w ? Math.round(w.getBoundingClientRect().top - p.top) : null }; });
+    ok(f.over <= 0 && f.y === 0 && (m === 'chaos' || Math.abs(f.web) < 6), `${m} at ${W}×${H} with ${fs} text: one screen, no scroll (over ${f.over}px, scrolled ${f.y}px${m === 'chaos' ? '' : ', the cobweb stays on the pitch'})`);
+    await c2.close();
+  }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await b.close();
 })();

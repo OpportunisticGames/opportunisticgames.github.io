@@ -3405,7 +3405,8 @@ body.chaos-mode[data-cz="halloween"] .btn.spin { background: radial-gradient(120
 @keyframes cz-pump { 50% { box-shadow: 0 6px 0 #7c2d12, 0 0 40px rgba(255, 120, 20, .8), 0 0 70px rgba(168, 85, 247, .3); } }
 body.calm.chaos-mode[data-cz="halloween"]::before, body.calm.chaos-mode[data-cz="halloween"]::after, body.calm.chaos-mode[data-cz="halloween"] .btn.spin, body.calm.chaos-mode[data-cz="halloween"] .topbar h2 { animation: none; }
 /* the decorations that live on the pitch (draft.js czDeco: cobwebs, pumpkins, bats and a spider; gone in Calm) */
-.cz-deco { position: fixed; inset: 0; z-index: 8; pointer-events: none; }
+.cz-deco { position: absolute; left: 0; top: 0; width: 100%; height: 0; z-index: 8; pointer-events: none; }  /* (page coordinates: it stays on the pitch) */
+html:has(#app.page-draft) { overscroll-behavior: none; }
 .cz-deco > div { position: absolute; }
 .cz-deco .web { opacity: .75; filter: invert(.9) drop-shadow(0 0 4px rgba(168, 85, 247, .6)); }
 .cz-deco .web.l { transform: scaleX(-1); }
