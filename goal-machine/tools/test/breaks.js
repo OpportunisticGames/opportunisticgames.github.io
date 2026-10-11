@@ -18,7 +18,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   // difficulty: one switch, and the old Hard setting carries over
   ok(await pg.evaluate(() => GM.level() === 'hard' && GM.isHard()), 'someone who had Hard on before starts on Hard');
   ok((await pg.$$('.hard-toggle [data-level]')).length === 3 && !(await pg.$('[data-cpool]')) && !(await pg.$('[data-pool="extreme"]')), 'Home has Normal / Hard / Extreme, and no pool switches on the cards');
-  const links = () => pg.evaluate(() => ({ chaos: document.querySelector('.chaos-card .stat-btn').getAttribute('href'), main: document.querySelector('.mode-card .stat-btn').getAttribute('href') }));
+  const links = () => pg.evaluate(() => ({ chaos: document.querySelector('.chaos-card:not(.sz-chaos-card) .stat-btn').getAttribute('href'), main: document.querySelector('.mode-card .stat-btn').getAttribute('href') }));
   await pg.click('[data-level="extreme"]'); await pg.waitForTimeout(400);
   let l = await links();
   ok(/m=chaosx/.test(l.chaos) && /m=extreme/.test(l.main) && !(await pg.evaluate(() => GM.isHard())), `Extreme: CHAOS and the Main event use every player (${l.chaos}, ${l.main})`);
