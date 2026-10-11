@@ -4,13 +4,15 @@
 const { chromium } = require(require('child_process').execSync('npm root -g').toString().trim() + '/playwright');
 require('fs').mkdirSync('lay', { recursive: true });
 const U = 'http://localhost:8765/goal-machine/';
+const { fast, idle } = require('./helpers');  // Calm on and the game's timers 10× faster: this checks the rules, not the look
 const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) process.exitCode = 1; };
 (async () => {
   const b = await chromium.launch(), errs = [];
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
+  await fast(ctx);
   await ctx.route(/wikimedia|premierleague|transfermarkt|supabase/, r => r.abort());
   const pg = await ctx.newPage(); pg.on('pageerror', e => errs.push(e.message));
-  await pg.goto(U); await pg.evaluate(() => { localStorage.setItem('gm:seenVersion', '999'); localStorage.setItem('gm:welcomed', '1'); localStorage.setItem('gm:calm', 'false'); });
+  await pg.goto(U); await pg.evaluate(() => { localStorage.setItem('gm:seenVersion', '999'); localStorage.setItem('gm:welcomed', '1'); });
   await pg.goto(U); await pg.waitForTimeout(800);
   const themes = await pg.evaluate(() => Object.keys(GM.SZ_CHAOS));
   const bases = await pg.evaluate(() => Object.fromEntries(Object.entries(GM.draft.MANAGERS()).filter(([, m]) => m.base).map(([k, m]) => [k, m.base])));
@@ -31,7 +33,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     ok(offer.length === 3 && offer.every(k => k.startsWith('szm_')), `${th}: the managers are the season's characters (${names.join(', ')})`);
     // the one based on Redknapp / Conte proves the rules come with him
     const pickK = offer.find(k => ['redknapp', 'conte'].includes(GM_base(k))) || offer[0];
-    await pg.click(`.cm-pick [data-mgr="${pickK}"]`); await pg.waitForTimeout(500);
+    await pg.click(`.cm-pick [data-mgr="${pickK}"]`); await idle(pg);
     const ap = await pg.evaluate(() => { const S = GM.draft.state(), m = GM.draft.MANAGERS()[S.manager]; return { base: m.base, inv: S.inv.length, form: S.form.filter(p => p === 'CB').length }; });
     if (ap.base === 'redknapp') ok(ap.inv === 3, `${th}: ${names[offer.indexOf(pickK)]} hands out Redknapp's three wildcards at kick-off`);
     if (ap.base === 'conte') ok(ap.form === 3, `${th}: ${names[offer.indexOf(pickK)]} switches to a back three, like Conte`);
@@ -48,12 +50,11 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
       });
       await pg.evaluate(e => { GM.draft.state().forceEv = e; }, ev);
       await pg.click('#spin');
-      await pg.waitForSelector('.cm', { timeout: 5000 }).catch(() => {});
-      await pg.waitForTimeout(700);
+      await pg.waitForSelector('.cm .cm-text', { timeout: 5000 }).catch(() => {});
+      await pg.waitForTimeout(120);
       const card = await pg.evaluate(() => (document.querySelector('.cm') || {}).textContent || '');
       if (ev === 'sz_witch') await pg.screenshot({ path: 'lay/sz_witch.png' });
-      for (let k = 0; k < 40 && await pg.$('.cm:not(.out)'); k++) { await pg.click('.cm:not(.out)').catch(() => {}); await pg.waitForTimeout(250); }
-      for (let k = 0; k < 30; k++) { const ph = await pg.evaluate(() => GM.draft.state().phase); if (ph === 'pick') break; await pg.waitForTimeout(200); }
+      await idle(pg);
       const name = await pg.evaluate(e => { const x = GM.draft.state(); return (x.moments || []).length; }, ev);
       ok(card.length > 20 && !/undefined|NaN/.test(card), `${th} · ${ev.slice(3)}: “${card.replace(/\s+/g, ' ').trim().slice(0, 90)}…”`);
     }
@@ -70,7 +71,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
       const good = r.played && (r.kind === 'modifier' ? r.mod === (r.as || w) : r.kind === 'hot' ? r.hot >= r.before.hot + 3 : r.reels > 0 && r.filterOk);
       ok(good, `${th} · ${await pg.evaluate(w => GM.draft.WILDCARDS[w].icon + ' ' + GM.draft.WILDCARDS[w].name, w)} plays (${r.kind}${r.as ? ' as ' + r.as : ''}${r.reels ? ', ' + r.reels + ' on the reels' : ''})`);
       await pg.evaluate(() => { const S = GM.draft.state(); S.modifier = null; S.hot = 0; });
-      for (let k = 0; k < 20 && await pg.$('.cm:not(.out)'); k++) { await pg.click('.cm:not(.out)').catch(() => {}); await pg.waitForTimeout(250); }
+      await idle(pg);
     }
   }
   ok(await pg.evaluate(() => GM.draft.game().sz === 'summer'), 'a challenge carries its season, so a friend gets the same chaos');
