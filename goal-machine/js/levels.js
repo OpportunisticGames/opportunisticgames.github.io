@@ -33,6 +33,7 @@
     if (!n) return;
     const before = GM.levelOf(xp()), after = GM.levelOf(xp() + n);
     GM.store.set('xp', xp() + n);
+    if (GM.seasonXP) GM.seasonXP(n);  // the season track counts the same XP (rewards.js)
     if (after.n > before.n) {
       const promo = after.rank !== before.rank;
       setTimeout(() => {
@@ -41,6 +42,7 @@
         if (GM.givePack) GM.givePack(1, promo ? `promoted to ${after.rank}` : `level ${after.n}`, promo ? 'legends' : 'level');
       }, 1500);
       GM.syncProfile();
+      if (GM.lockerCheck) setTimeout(() => GM.lockerCheck(), 1600);  // level rewards in the Locker
     }
     GM.$$('.lvl-chip').forEach(el => { el.outerHTML = GM.levelChip(); });
   };
@@ -68,7 +70,8 @@
       <div class="lvl-earn"><div><span>⚽</span>Finish a draft<b>+${GM.XP.draft}</b></div><div><span>📅</span>Play a daily game<b>+${GM.XP.daily}</b></div>
         <div><span>🎮</span>Any other game<b>+${GM.XP.game}</b></div><div><span>🏅</span>Earn a badge<b>+${GM.XP.badge}</b></div>
         <div><span>🌐</span>Online game (win)<b>+${GM.XP.online} (+${GM.XP.win})</b></div><div><span>🎁</span>Open a pack<b>+${GM.XP.pack}</b></div></div>
-      <p class="muted center">${total.toLocaleString()} XP in all. Your level shows next to your name on the leaderboards.</p>`;
+      <p class="muted center">${total.toLocaleString()} XP in all. Your level shows next to your name on the leaderboards.</p>
+      <div class="actions"><a class="btn" href="#/season">🏆 This season’s track</a><a class="btn ghost" href="#/locker">🎒 Locker</a></div>`;
   };
 
   /* ================================================================ club v club */

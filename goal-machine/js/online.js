@@ -79,7 +79,7 @@
     const TABS = [['games', '🎮 Games'], ['done', '✅ Finished'], ['league', '🏆 League'], ['friends', '👥 Friends']];
     let tab = TABS.some(t => t[0] === q.tab) ? q.tab : GM.store.get('onlineTab', 'games');
     root.innerHTML = `${top('Online')}
-      <div class="online-me"><a href="#/settings?s=account" class="me-pic">${GM.userPic(me())}</a><span>Playing as <b>🔒 ${esc(me())}</b></span><button class="btn small" id="onew">⚔️ New game</button></div>
+      <div class="online-me"><a href="#/settings?s=account" class="me-pic">${GM.userPic(me())}</a><span>Playing as <b>🔒 ${esc(me())}</b>${GM.titleHtml ? GM.titleHtml(me()) : ''}</span><button class="btn small" id="onew">⚔️ New game</button></div>
       <div class="seg online-tabs" id="otabs">${TABS.map(([k, l]) => `<button data-t="${k}">${l}<i class="ot-n" data-n="${k}"></i></button>`).join('')}</div>
       <div data-panel="games"><div id="olists"><p class="muted center">Loading your games…</p></div></div>
       <div data-panel="done"><div id="odone"></div></div>
@@ -169,7 +169,7 @@
       // the Games tab shows how many are waiting on you; the list itself marks your moves loudly
       const n = GM.$('[data-n="games"]'); if (n) { n.textContent = yours.length || ''; n.classList.toggle('hot', !!yours.length); }
       GM.$('#ofriends').innerHTML = friends.length ? friends.map(f => `<div class="friend"><button class="f-av" data-fmenu="${esc(f.name)}" title="Options">${GM.userPic(f.name)}</button>
-          <span class="f-main"><b>${esc(f.name)}</b>${f.w + f.d + f.l ? record(f) : '<small class="muted">No games yet</small>'}</span>
+          <span class="f-main"><b>${esc(f.name)}</b>${GM.titleHtml ? GM.titleHtml(f.name) : ''}${f.w + f.d + f.l ? record(f) : '<small class="muted">No games yet</small>'}</span>
           <button class="btn small" data-challenge="${esc(f.name)}">⚔️ Play</button></div>`).join('')
         : '<p class="muted center">Add friends by their Goal Machine name, or send an invite code. Anyone you play is added automatically.</p>';
       GM.$$('[data-challenge]').forEach(b => b.onclick = () => newGame(b.dataset.challenge));

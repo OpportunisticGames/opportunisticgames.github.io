@@ -66,6 +66,10 @@
     l[day] = { ...(l[day] || {}), [game]: value };
     store.set('dlog', l);
     if (Object.keys(l[day]).length > before && GM.addXP) GM.addXP(GM.XP.daily);
+    if (Object.keys(l[day]).length > before && before === 0) {  // the first daily of the day: missions, and one for your club (the Locker's club items)
+      if (GM.track) GM.track('daily');
+      if (GM.favClub && GM.favClub()) { GM.store.set('clubDailies', +GM.store.get('clubDailies', 0) + 1); if (GM.lockerCheck) GM.lockerCheck(); }
+    }
     if (before === 2 && Object.keys(l[day]).length === 3 && day === GM.today() && GM.givePack) GM.givePack(1, 'three daily games today', 'dailies');
     if (GM.notify) GM.notify.sync();  // no streak or daily reminder once you've played today
   };

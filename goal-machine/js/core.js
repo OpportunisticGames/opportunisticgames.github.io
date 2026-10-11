@@ -466,6 +466,7 @@ GM.fillPics = async function () {
       Object.entries(got || {}).forEach(([n, img]) => { GM.pics[n.toLowerCase()] = img; });
     } catch (e) { want.forEach(n => { delete GM.pics[n]; }); return; }
   }
+  if (GM.fetchFlair) GM.fetchFlair([...GM.$$('[data-user]').map(e => e.dataset.user), ...GM.$$('[data-utitle]').map(e => e.dataset.utitle)]);  // frames and titles (locker.js)
   GM.$$('[data-user]').forEach(e => {
     const img = GM.pics[e.dataset.user.toLowerCase()], cur = e.querySelector('img');
     if (img && !cur) e.insertAdjacentHTML('beforeend', `<img src="${img}" alt="">`);
@@ -473,7 +474,7 @@ GM.fillPics = async function () {
   });
 };
 // fill pictures in whenever new ones appear on the page
-new MutationObserver(() => { clearTimeout(GM._picT); GM._picT = setTimeout(() => { if (document.querySelector('[data-user]')) GM.fillPics(); }, 60); })
+new MutationObserver(() => { clearTimeout(GM._picT); GM._picT = setTimeout(() => { if (document.querySelector('[data-user], [data-utitle]')) GM.fillPics(); }, 60); })
   .observe(document.body, { childList: true, subtree: true });
 // a chosen photo → a 160×160 JPEG, cropped to the middle square
 GM.shrinkPhoto = function (file) {
@@ -595,7 +596,7 @@ document.addEventListener('click', e => { const b = e.target.closest && e.target
 GM.lbMonth = () => GM.store.get('lbMonth', true) !== false;
 // This month / All time, for boards that aren't for one day or match
 GM.lbPeriod = key => (/:/.test(key) ? '' : `<div class="hard-toggle small lb-period">${[[1, '📅 This month'], [0, '🏆 All time']].map(([v, l]) => `<a class="${+GM.lbMonth() === v ? 'on' : ''}" data-per="${v}">${l}</a>`).join('')}</div>`);
-GM.lbLevel = r => (r.level ? `<i class="lv-tag">Lv ${r.level}</i>` : '');
+GM.lbLevel = r => (r.level ? `<i class="lv-tag">Lv ${r.level}</i>` : '') + (GM.titleHtml && r.name ? GM.titleHtml(r.name) : '');  // and their Locker title
 GM.lbRow = (name, me) => `class="lb-row ${name === me ? 'me' : ''}"${name === me ? '' : ` data-name="${GM.esc(name)}"`}`;
 GM.lbReportHint = '<p class="muted center small">Tap a name to report it if it’s offensive</p>';
 document.addEventListener('click', async e => {

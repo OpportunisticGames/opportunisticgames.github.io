@@ -9,6 +9,23 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 78, label: '5.26', date: '2026-10-11', title: '🎒 The Locker and Season 1',
+      promo: [
+        { href: '#/locker', icon: '🎒', cls: 't-purple', title: 'Your Locker is open', sub: 'Pitch styles, card backs, celebrations, frames and titles. See what you’ve unlocked already.' },
+        { href: '#/season', icon: '🏆', cls: 't-red', kick: '🏆 Season 1: Autumn Leaves', title: 'The season track', sub: '30 tiers of rewards, three missions a week and a login reward every day' },
+      ],
+      items: [
+        '🎒 The Locker: 64 things to unlock and show off. Pitch styles (Under the lights, Nineties, Snow day, a cold wet night in Stoke, Neon, Golden turf…), card backs, celebrations and horns for a new best, frames and titles',
+        '🖼️ Your frame and title show to everyone: on the leaderboards, your friends’ lists, the online hub and on challenges you send',
+        '🏟️ Club colours: a pitch, card back, frame, celebration and an “Ultra” title in your club’s colours, for playing dailies for them',
+        '🏆 Seasons: every XP you earn also fills this month’s season track: 30 tiers, each with a reward. Your level is still for life; the track starts again each month',
+        '🎯 Weekly missions: three a week, the same for everyone. Each is worth 300 season XP, and all three earn a Mission pack',
+        '📅 Login rewards: a seven-day card of season XP, packs and a Locker item on day 7',
+        '🕴️ Two new owners for Dodgy Owner: 🌟 The Celebrity (sponsors pay double) and 🤝 The Supporters’ Trust (the fans own the club). Unlock them in the Locker',
+        '💬 Eight new challenge reactions to unlock (🎺 Vuvuzela!, 🚑 Call an ambulance, 🍿 Grabbing popcorn…)',
+      ],
+    },
+    {
       v: 77, label: '5.25', date: '2026-10-11', title: '📱 A better app',
       items: [
         '📳 Proper vibrations in the app: a tick on taps, a thud for big moments, a little buzz when you beat your best or win a challenge',

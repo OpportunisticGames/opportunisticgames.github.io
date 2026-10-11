@@ -293,6 +293,7 @@
     let delay = 600;
     if (fresh.length && GM.givePack) GM.givePack(fresh.length, fresh.length > 1 ? `${fresh.length} new badges` : 'new badge', 'badge');
     if (fresh.length && GM.addXP) GM.addXP(GM.XP.badge * fresh.length);
+    if (fresh.length && GM.track) { GM.track('badge', fresh.length); if (GM.lockerCheck) setTimeout(() => GM.lockerCheck(), 3000); }
     fresh.forEach(x => GM.pgsStat('badgeUnlocked', { badge: x.name }));
     fresh.forEach(x => { setTimeout(() => GM.toast(`🏅 Badge unlocked: ${x.icon} <b>${x.name}</b>`, 2600), delay); delay += 2800; });
     const stars = newPlayers.filter(p => p.hon.H || p.hon.B || p.goals >= 100);
@@ -317,6 +318,7 @@
     if (ev.mode === 'nation') GM.store.set('nationsPlayed', a.nations);
     if (!purist && GM.cardsFromDraft) GM.cardsFromDraft(ev.xi);
     if (GM.addXP) GM.addXP(GM.XP.draft);  // a piece of each signing's card (once a day each)
+    if (GM.track) { GM.track('draft'); if (/^chaos/.test(ev.mode || '') || ev.chaos) GM.track('chaos'); }  // weekly missions (rewards.js)
     const fresh = check({ type: 'draft', ...ev }, a);
     save(a);
     if (purist) save(book, 'purist');
@@ -337,6 +339,7 @@
       if (!o.kinds.includes(g.kind)) o.kinds.push(g.kind);
     }
     if (GM.addXP) GM.addXP(won ? GM.XP.win : GM.XP.online);
+    if (GM.track) { GM.track('online'); if (won) GM.track('onwin'); }
     GM.pgsStat('onlineGameFinished', { kind: g.kind || 'game', won: !!won });
     const fresh = check({ type: 'online', kind: g.kind, variant: g.variant, won }, a);
     save(a);
@@ -346,6 +349,7 @@
   /** Called when any other game finishes. */
   GM.checkGame = function (mode, score, extra) {
     if (GM.addXP) GM.addXP(mode === 'pack' ? GM.XP.pack : GM.XP.game);
+    if (GM.track) GM.track(mode === 'pack' ? 'pack' : mode === 'owner' ? 'owner' : mode === 'hattrick' ? 'hattrick' : 'game');
     if (mode === 'pack') {
       GM.pgsStat('packOpened', { packType: (extra && extra.type) || 'standard' });
       ((extra && extra.finished) || []).forEach(t => GM.pgsStat('cardFinished', { tier: t }));
