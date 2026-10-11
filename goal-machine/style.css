@@ -3379,7 +3379,43 @@ html[data-theme="light"] .fx-lottie.sz-spider { filter: none; }
 .wh-hub.plain::after { content: '🎁'; font-size: 2rem; }
 
 /* each season's CHAOS has its own colours behind the pitch (draft.js SZ_CHAOS sets body[data-cz]) */
-body.chaos-mode[data-cz="halloween"]::before { background: radial-gradient(40% 30% at 20% 20%, rgba(255,120,20,.38), transparent 70%), radial-gradient(35% 30% at 85% 30%, rgba(120,40,200,.32), transparent 70%), radial-gradient(45% 35% at 50% 90%, rgba(80,200,60,.18), transparent 70%), #0b0614; }
+/* 🎃 Halloween CHAOS: a moonlit night over a graveyard, fog rolling along the bottom, pumpkin colours on everything */
+body.chaos-mode[data-cz="halloween"]::before { inset: 0; animation: cz-moon 6s ease-in-out infinite alternate;
+  background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 130' preserveAspectRatio='xMidYMax slice'><g fill='%2306020c'><path d='M0 130V104c40-8 80-6 120-1s80 4 120-2 90-6 120 1 40 3 40 3V130z'/><path d='M26 108 30 58 14 40l15 11 2-26 5 23 13-15-9 21 10-6-11 12 2 46z'/><path d='M376 108l-3-44 12-18-14 12-2-20-4 18-11-10 8 16-9-4 10 10 1 40z'/><path d='M78 108V86a11 11 0 0 1 22 0v22z'/><path d='M140 106V92a8 8 0 0 1 16 0v14z'/><path d='M214 106V78h-9v-6h9v-9h6v9h9v6h-9v28z'/><path d='M282 106V82a13 13 0 0 1 26 0v24z'/><path d='M334 106V94a7 7 0 0 1 14 0v12z'/><path d='M110 104h80v2h-80zM112 92h2v14h-2zM124 92h2v14h-2zM166 92h2v14h-2zM178 92h2v14h-2zM188 92h2v14h-2z'/></g></svg>") center bottom / auto 130px no-repeat,
+    radial-gradient(circle at 20% calc(100% - 96px), #fffbe6 0 30px, rgba(255, 236, 170, .55) 33px, rgba(255, 190, 90, .18) 80px, transparent 170px),
+    radial-gradient(1.5px 1.5px at 12% 74%, #fff, transparent), radial-gradient(1px 1px at 40% 70%, #fff, transparent), radial-gradient(1.5px 1.5px at 66% 76%, #fff, transparent),
+    radial-gradient(1px 1px at 84% 68%, #fff, transparent), radial-gradient(1px 1px at 52% 82%, #fff, transparent), radial-gradient(1.5px 1.5px at 92% 80%, #fff, transparent), radial-gradient(1px 1px at 4% 64%, #fff, transparent),
+    radial-gradient(60% 50% at 90% 10%, rgba(255, 110, 20, .28), transparent 70%), radial-gradient(60% 50% at 10% 40%, rgba(110, 30, 190, .38), transparent 70%),
+    linear-gradient(180deg, #120526, #1d0838 45%, #0b0414); }
+@keyframes cz-moon { to { filter: brightness(1.12); } }
+html:has(body.chaos-mode[data-cz="halloween"]) { background: #0b0414; }
+body.chaos-mode[data-cz="halloween"] .topbar h2 { color: #ff8a1f; text-shadow: 0 0 12px rgba(255, 120, 20, .75), 2px 2px 0 #3b0764; animation: cz-flicker 4s infinite steps(1); }
+@keyframes cz-flicker { 0%, 40%, 44%, 100% { opacity: 1; } 42% { opacity: .55; } 43% { opacity: .9; } }
+body.chaos-mode[data-cz="halloween"] .counter { background: linear-gradient(160deg, rgba(59, 7, 100, .9), rgba(24, 6, 40, .92)); border-color: rgba(255, 138, 31, .6); box-shadow: 0 0 18px rgba(255, 120, 20, .25); }
+body.chaos-mode[data-cz="halloween"] .counter-num b { color: #ff9a3c; text-shadow: 0 0 14px rgba(255, 120, 20, .7); }
+body.chaos-mode[data-cz="halloween"] .chaos-meter { color: #ff9a3c; }
+body.chaos-mode[data-cz="halloween"] .chaos-meter i.on { background: linear-gradient(90deg, #a855f7, #ff8a1f); box-shadow: 0 0 10px #ff8a1f; }
+body.chaos-mode[data-cz="halloween"] .pitch { background: radial-gradient(80% 60% at 85% 0%, rgba(255, 244, 200, .16), transparent 70%), linear-gradient(180deg, rgba(30, 10, 60, .35), rgba(10, 4, 20, .45)),
+  repeating-linear-gradient(180deg, #164a35 0 34px, #13412f 34px 68px); border-color: rgba(255, 138, 31, .45); box-shadow: 0 0 0 2px rgba(168, 85, 247, .45), 0 0 26px rgba(255, 120, 20, .35); }
+body.chaos-mode[data-cz="halloween"] .slot.empty { border-color: rgba(255, 138, 31, .75); background: rgba(20, 5, 35, .35); box-shadow: inset 0 0 12px rgba(255, 120, 20, .18); }
+body.chaos-mode[data-cz="halloween"] .reel { background: linear-gradient(160deg, #2e1050, #140a20); border-color: rgba(255, 138, 31, .6); animation: none; box-shadow: 0 0 0 2px rgba(255, 138, 31, .4), 0 0 16px rgba(168, 85, 247, .35); }
+body.chaos-mode[data-cz="halloween"] .reel.is-wild { background: linear-gradient(160deg, #ff8a1f, #7e22ce 70%); }
+body.chaos-mode[data-cz="halloween"] .btn.spin { background: radial-gradient(120% 140% at 50% 0%, #ffb35c, #f97316 45%, #c2410c); color: #2a0a12; animation: cz-pump 2.4s ease-in-out infinite;
+  box-shadow: 0 6px 0 #7c2d12, 0 0 28px rgba(255, 120, 20, .55); text-shadow: 0 1px 0 rgba(255, 220, 160, .6); }
+@keyframes cz-pump { 50% { box-shadow: 0 6px 0 #7c2d12, 0 0 40px rgba(255, 120, 20, .8), 0 0 70px rgba(168, 85, 247, .3); } }
+body.calm.chaos-mode[data-cz="halloween"]::before, body.calm.chaos-mode[data-cz="halloween"]::after, body.calm.chaos-mode[data-cz="halloween"] .btn.spin, body.calm.chaos-mode[data-cz="halloween"] .topbar h2 { animation: none; }
+/* the decorations that live on the pitch (draft.js czDeco: cobwebs, pumpkins, bats and a spider; gone in Calm) */
+.cz-deco { position: fixed; inset: 0; z-index: 8; pointer-events: none; }
+.cz-deco > div { position: absolute; }
+.cz-deco .web { opacity: .75; filter: invert(.9) drop-shadow(0 0 4px rgba(168, 85, 247, .6)); }
+.cz-deco .web.l { transform: scaleX(-1); }
+.cz-deco .fog { background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 80'><filter id='b'><feGaussianBlur stdDeviation='9'/></filter><g filter='url(%23b)' fill='%23c4b5fd' opacity='.22'><ellipse cx='60' cy='50' rx='80' ry='14'/><ellipse cx='200' cy='44' rx='70' ry='12'/><ellipse cx='330' cy='52' rx='90' ry='15'/></g></svg>") 0 100% / 300px 100% repeat-x; opacity: .9; animation: cz-fog 26s linear infinite; }
+@keyframes cz-fog { to { background-position: 300px 100%; } }
+.cz-deco .web svg { width: 100% !important; height: 100% !important; }
+.cz-deco .corner svg { width: 100% !important; height: 100% !important; filter: drop-shadow(0 0 10px rgba(255, 140, 30, .7)); }
+body.calm .cz-deco { display: none; }
+/* the other seasons: their colours, held still (the normal CHAOS colour spin would turn them into another season's) */
+body.chaos-mode[data-cz]:not([data-cz="halloween"])::before { animation: none; }
 body.chaos-mode[data-cz="champions"]::before { background: radial-gradient(40% 30% at 20% 20%, rgba(80,140,255,.38), transparent 70%), radial-gradient(35% 30% at 85% 30%, rgba(255,255,255,.16), transparent 70%), radial-gradient(45% 35% at 50% 90%, rgba(30,60,160,.34), transparent 70%), #040b24; }
 body.chaos-mode[data-cz="christmas"]::before { background: radial-gradient(40% 30% at 20% 20%, rgba(220,40,40,.34), transparent 70%), radial-gradient(35% 30% at 85% 30%, rgba(30,160,80,.32), transparent 70%), radial-gradient(45% 35% at 50% 90%, rgba(255,215,0,.18), transparent 70%), #0d0a12; }
 body.chaos-mode[data-cz="window"]::before { background: radial-gradient(40% 30% at 20% 20%, rgba(40,200,120,.32), transparent 70%), radial-gradient(35% 30% at 85% 30%, rgba(200,200,200,.14), transparent 70%), radial-gradient(45% 35% at 50% 90%, rgba(255,215,0,.18), transparent 70%), #071510; }

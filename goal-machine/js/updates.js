@@ -9,9 +9,22 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 84, label: '5.30', date: '2026-10-12', title: '🎃 Halloween CHAOS looks the part (and ten characters a season)',
+      promo: [
+        { href: '#/draft?m=szchaos&s=goals', icon: '🎃', cls: 't-purple', kick: '🎃 Halloween CHAOS', title: 'A night in the graveyard', sub: 'Moonlight, fog, cobwebs and bats over the pitch, and ten spooky characters in the dugout' },
+      ],
+      items: [
+        '🌕 Halloween CHAOS looks like Halloween now: a full moon rising over a graveyard, fog rolling across the pitch, cobwebs in its corners, pumpkins glowing at the bottom, bats, a ghost and the witch flying over now and then, a spider dropping in, and pumpkin orange on the spin button, the score and the slots. It’s never sunny either: fog, rain or a gale',
+        '🎲 No more doubling everything for the sake of it: Seasonal CHAOS is chaotic through its cards instead. The triple-or-nothing cards (🎃 Trick or Treat and friends) pay ×3 or nothing at all, the CHAOS meter fills faster and wildcard storms come more often',
+        '👔 Ten characters a season (three in the dugout each game). Halloween adds 🧻 The Mummy, 🧙 Witch Hazel, 🐺 The Wolfman and 🎃 Jack O’Lantern',
+        '🧠 Hard mode works in Seasonal CHAOS: clubs and numbers are hidden like everywhere else, and Hard scores have their own board',
+        '⬆️ The season’s CHAOS sits at the top of Home while it’s on',
+      ],
+    },
+    {
       v: 82, label: '5.29', date: '2026-10-12', title: '✨ Seasonal CHAOS gets its own mode (and goes a bit mad)',
       promo: [
-        { href: '#/draft?m=szchaos&s=goals', icon: '🎃', cls: 't-purple', kick: '✨ Seasonal CHAOS', title: 'Halloween CHAOS, turned up', sub: 'Double bonuses, ×3 cards and characters with doubled perks. Its own leaderboard' },
+        { href: '#/draft?m=szchaos&s=goals', icon: '🎃', cls: 't-purple', kick: '✨ Seasonal CHAOS', title: 'Halloween CHAOS, turned up', sub: 'Triple-or-nothing cards, more moments and its own leaderboard' },
       ],
       items: [
         '🌪️ Normal CHAOS is back to normal: the usual managers, wildcards and moments, and its scores on the usual board',

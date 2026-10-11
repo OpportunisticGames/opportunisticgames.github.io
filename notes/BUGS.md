@@ -117,6 +117,7 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 2026-10-12 | Seasonal CHAOS on Hard played like Normal: clubs and numbers showed | 5.30: Hard works in Seasonal CHAOS, with its own Hard board |
 | 2026-10-02 | CHAOS: van Gaal + a Centurion Throw + Hat-Trick Hero = a guaranteed ×3 on a 100-goal striker in any slot | 5.18: van Gaal's any-position rule is off on themed spins; the Hat-Trick is its own spin now; the armband passes down in CHAOS |
 | 2026-10-02 | The coin landed the moment you tapped it and CHAOS effects just appeared (battery saver turns on the phone's "reduce motion") | 5.18: the game's own Animations setting (Full by default) |
 | 2026-10-02 | Cards showed the first club a player played for (Kane = Norwich, Rio = West Ham), not the club he's known for | 5.13.3: the card shows the club with the most Premier League seasons (`p.main`, worked out from the club stints; the first club if a player has none) |
