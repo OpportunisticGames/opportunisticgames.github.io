@@ -112,9 +112,11 @@ async function phone(b, name, key, errs, store = {}) {
   ok(await A.evaluate(() => Object.keys(GM.SEASONS).length >= 9 && document.documentElement.classList.contains('sz-halloween') && GM.seasonMusic === 'spooky'), 'October is the Halloween season: its look and its music on the menus');
   await A.goto(U + '#/season'); await A.waitForTimeout(400);
   const next = await A.evaluate(() => [...document.querySelectorAll('.st-next b')].map(b => b.textContent));
-  ok(next.length === 3 && /Champions Nights/.test(next[0]) && /Christmas/.test(next[1]), `coming up: ${next.join(' · ')}`);
+  const nextTxt = await A.textContent('.st-next');
+  ok(next.length === 1 && !/Champions|Christmas/.test(nextTxt), `next season is a surprise: ${nextTxt.trim()}`);
   await A.goto(U + '#/locker?k=pitch'); await A.waitForTimeout(400);
-  ok(/Coming in Season 3: 🎄 Christmas/.test(await A.textContent('.lk-grid')), 'the Locker teases next seasons’ items (“Coming in Season 3: 🎄 Christmas”)');
+  const lk = await A.evaluate(() => ({ txt: document.querySelector('.lk-grid').textContent, fut: Object.values(GM.LOCKER).filter(x => x.src.s && x.src.s > GM.season().id).map(x => x.id), shown: [...document.querySelectorAll('.lk-item')].map(b => b.dataset.id) }));
+  ok(lk.fut.length > 0 && !lk.fut.some(id => lk.shown.includes(id)) && !/Coming|Christmas/.test(lk.txt), `the Locker keeps later seasons’ items hidden (${lk.fut.length} not shown)`);
   await A.goto(U + '#/settings?s=look'); await A.waitForTimeout(400);
   await A.click('#s-szlook [data-v="false"]'); await A.waitForTimeout(200);
   ok(await A.evaluate(() => !document.documentElement.classList.contains('sz-halloween') && !GM.seasonMusic), 'Settings → Seasonal look off: back to normal');

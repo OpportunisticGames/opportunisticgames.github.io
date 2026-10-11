@@ -165,6 +165,16 @@
   const has = id => { const it = ITEMS[id]; return !!it && (!!it.src.def || !!load().own[id]); };
   const worn = kind => { const e = load().eq[kind]; return e && has(e) ? e : Object.values(ITEMS).find(x => x.kind === kind && x.src.def)?.id || null; };
 
+  // things still to come (a later season's items, an event that hasn't started) stay a surprise: not shown until they're out or yours
+  const secret = it => {
+    if (has(it.id)) return false;
+    const s = it.src;
+    if (s.season) return (s.s || '2026-10') > (GM.season ? GM.season().id : '');
+    if (s.event) { const e = (GM.EVENTS || []).find(x => x.id === s.event), on = GM.activeEvent && GM.activeEvent();
+      return !(on && on.id === s.event) && !!e && new Date().toISOString().slice(0, 10) < e.from; }
+    return false;
+  };
+  GM.lockerSecret = secret;
   // how you'd get it, in words
   const how = it => {
     const s = it.src;
@@ -173,7 +183,7 @@
     if (s.vault) return 'In the vault: Legendary packs and the prize wheel';
     if (s.event) { const e = (GM.EVENTS || []).find(x => x.id === s.event), on = GM.activeEvent && GM.activeEvent(); return on && on.id === s.event ? `${e.name} event, tier ${s.tier}` : `${e ? e.name + ' (event over)' : 'An event'}: in the vault now`; }
     if (s.season) { const now = GM.season ? GM.season().id : '', sid = s.s || '2026-10', z = GM.season ? GM.season(sid) : null;
-      return sid === now ? `Season track, tier ${s.season}` : sid > now ? `Coming in Season ${z.n}: ${z.icon} ${z.name}` : 'From an old season: in the vault now'; }
+      return sid === now ? `Season track, tier ${s.season}` : sid > now ? 'Coming soon' : 'From an old season: in the vault now'; }
     if (s.missions) return `Finish ${s.missions} weekly mission${s.missions > 1 ? 's' : ''}`;
     if (s.badges) return `Earn ${s.badges} badges`;
     if (s.club) return `Play ${s.club} daily game${s.club > 1 ? 's' : ''} for ${clubShort()}`;
@@ -278,8 +288,8 @@
   /* ---------------------------------------------------------------- the Locker page (#/locker) */
   GM.lockerPage = function (root, q = {}) {
     const s = load(), kind = KINDS[q.k] ? q.k : GM.store.get('lockerTab', 'pitch');
-    const items = Object.values(ITEMS).filter(it => it.kind === kind);
-    const n = Object.values(ITEMS).filter(it => has(it.id)).length, total = Object.keys(ITEMS).length;
+    const items = Object.values(ITEMS).filter(it => it.kind === kind && !secret(it));
+    const n = Object.values(ITEMS).filter(it => has(it.id)).length, total = Object.values(ITEMS).filter(it => !secret(it)).length;
     const me = (GM.account() || {}).name || GM.getName() || 'You';
     root.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>🎒 Locker</h2><span></span></div>
       <div class="lk-me">${GM.userPic(me, 'lg')}<span><b>${GM.esc(me)}</b>${GM.titleHtml(me)}<small>${n} of ${total} unlocked · <a href="#/season">🏆 Season & missions ›</a></small></span></div>

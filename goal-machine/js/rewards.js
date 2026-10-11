@@ -183,10 +183,9 @@
         return `<div class="${k < cur ? 'got' : ''} ${today ? 'today' : ''}"><small>Day ${k + 1}</small><span>${d.icon}</span><b>${d.text}</b></div>`; }).join('')}</div>
       <h3 class="section-title">🪜 The season track</h3>
       <div class="st-track">${Array.from({ length: TIERS }, (_, k) => reward(k + 1)).join('')}</div>
-      <h3 class="section-title">🗓️ Coming up</h3>
-      <div class="st-next">${[1, 2, 3].map(k => { const d = new Date(); const id = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + k, 1)).toISOString().slice(0, 7), z = GM.season(id);
-        const items = Object.values(GM.LOCKER).filter(x => x.src.s === id);
-        return `<div><span>${z.icon}</span><b>Season ${z.n}: ${GM.esc(z.name)}</b><small>${GM.esc(z.sub || 'A new track of rewards')}</small>${items.length ? `<small class="st-teas">${items.map(x => GM.LOCKER_KINDS[x.kind].icon).join(' ')} ${items.length} new things to unlock</small>` : ''}</div>`; }).join('')}</div>
+      <h3 class="section-title">🗓️ Next season</h3>
+      <div class="st-next">${(() => { const d = new Date(), id = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1)).toISOString().slice(0, 7), z = GM.season(id);
+        return `<div><span>🎁</span><b>Season ${z.n}</b><small>A new track, a new look and new things to unlock. It starts on the 1st: no peeking.</small></div>`; })()}</div>
       <p class="muted center small">When the month ends, this season’s items go into the vault: you can still find them in 🌟 Legendary packs and on the 🎡 wheel.</p>`;
     const pk = GM.$('#st-pick', root); if (pk) pk.onclick = () => GM.pickReward();
   };

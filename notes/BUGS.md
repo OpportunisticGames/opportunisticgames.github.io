@@ -3,6 +3,12 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.26.1 *(owner, 11 Oct 2026)*
+- “We shouldn’t spoil all the things coming in future seasons.” The Locker listed later seasons’ items as “Coming in
+  Season 3: 🎄 Christmas”, the Season page teased the next three seasons with item counts, and the 5.26 changelog named
+  every season. Now `GM.lockerSecret` hides a later season’s items (and an event’s before it starts) unless you own one,
+  the Season page just says a new season starts on the 1st, and the changelog only names Halloween.
+
 ### Fixed in 5.24.1 *(owner, 11 Oct 2026)*
 - The scroll lines were still there after 5.24's CSS: they're the Android WebView's own scrollbars (drawn by the app,
   not the page), one for the page and a stray one. MainActivity now turns them off (`setVerticalScrollBarEnabled(false)`,
