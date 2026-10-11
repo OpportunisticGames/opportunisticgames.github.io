@@ -184,6 +184,9 @@
     heli: { w: 140, h: 140, faces: 'right' }, ufo: { w: 190, h: 190, speed: 2 }, dog: { w: 74, h: 74, faces: 'left' }, pigeon: { w: 74, h: 74 },
     runner: { w: 76, h: 76, faces: 'left' }, trophy: { w: 170, h: 170 }, heartbreak: { w: 100, h: 100 }, tornado: { w: 170, h: 170 },
     taxman: { w: 66, h: 66, faces: 'right' }, crate: { w: 96, h: 96 }, coach: { w: 150, h: 150, faces: 'right' }, tvvan: { w: 120, h: 120, faces: 'right' },
+    // the seasons' CHAOS (draft.js SZ_CHAOS): the same LottieFiles characters that visit Home
+    witch: { w: 150, h: 150, faces: 'right' }, ghost: { w: 110, h: 110, faces: 'right' }, bat: { w: 90, h: 90, faces: 'left' }, sleigh: { w: 210, h: 120, faces: 'right' },
+    snowman: { w: 100, h: 100 }, gift: { w: 100, h: 100 }, bunny: { w: 90, h: 90, faces: 'right' }, eggs: { w: 100, h: 100 }, stopwatch: { w: 80, h: 80 }, sun: { w: 120, h: 120 },
   };
   const FX = () => (GM.FX && GM.FX.on ? GM.FX : null);
   const at = (r, fx, fy) => [r.left + fx * r.width, r.top + fy * r.height];

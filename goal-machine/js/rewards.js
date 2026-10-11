@@ -34,20 +34,38 @@
     [...h.classList].filter(c => c.startsWith('sz-')).forEach(c => h.classList.remove(c));
     if (sz && on) h.classList.add('sz-' + sz.theme);
     GM.seasonMusic = sz && on ? sz.music || null : null;
+    // a cobweb in the top corner of the menus at Halloween (a LottieFiles web; the spider visits from it now and then)
+    GM.$$('.sz-corner').forEach(e => e.remove());
+    if (sz && on && sz.theme === 'halloween' && GM.FX && GM.FX.lottie && !GM.store.get('calm', false)) {
+      const c = document.createElement('div'); c.className = 'sz-corner'; c.setAttribute('aria-hidden', 'true'); document.body.appendChild(c);
+      GM.FX.lottie('cobweb', { into: c, loop: true, speed: 0.6, fit: 'xMaxYMin meet' });
+    }
     // the falling layer on the menus: what falls, how many, and how
     GM.$$('.sz-fx').forEach(e => e.remove());
-    const FALL = { christmas: ['❄️❄❅❆', 26, ''], halloween: ['🦇🍂🍁', 10, 'flutter'], champions: ['✦✧⭐', 22, 'twinkle'], easter: ['🌸🌼🌷', 14, 'flutter'],
-      finalday: ['🎊▪▪▪', 22, ''], cup: ['🎀', 8, 'flutter'], window: ['💸', 7, 'flutter'], summer: ['☀️', 0, ''], title: ['🔥', 0, ''] };
+    // drawn shapes (SVG), not emoji: leaves, petals, paper confetti; the snow and stars are plain white glyphs
+    const svg = (path, fill, vb = 24) => `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${vb} ${vb}'>${path.replace(/FILL/g, fill)}</svg>`)}")`;
+    const LEAF = "<path d='M12 1c1.6 2.6 4.2 3.2 6.6 2.6-.6 2.4.2 4.4 2.4 5.6-2 1.2-2.6 3-2 5.2-2.4-.4-4.4.4-5.6 2.6l-.4 6h-2l-.4-6C9.4 15 7.4 14.2 5 14.6c.6-2.2 0-4-2-5.2C5.2 8.2 6 6.2 5.4 3.8 7.8 4.4 10.4 3.8 12 1z' fill='FILL'/><path d='M12 4v19' stroke='rgba(0,0,0,.25)' stroke-width='.8'/>";
+    const OAK = "<path d='M12 2c2 1 2 3 1 4 2-1 4 0 4 2s-2 2-3 2c2 0 4 1 3 3s-3 1-4 1c1 1 1 3-1 4l0 5h-1l0-5c-2-1-2-3-1-4-1 0-3 1-4-1s1-3 3-3c-1 0-3 0-3-2s2-3 4-2c-1-1-1-3 1-4z' fill='FILL'/>";
+    const PETAL = "<ellipse cx='12' cy='12' rx='6' ry='10' fill='FILL'/><ellipse cx='10' cy='9' rx='2' ry='4' fill='rgba(255,255,255,.45)'/>";
+    const PAPER = "<rect x='4' y='8' width='16' height='8' rx='1.5' fill='FILL'/>";
+    const RIBBON = "<path d='M2 10c5-6 9 6 14 0s6-2 6-2v6s-1-4-6 2-9-6-14 0z' fill='FILL'/>";
+    const FALL = {
+      christmas: { glyph: '❄❅❆', n: 26 },
+      halloween: { n: 12, mode: 'flutter', art: [[LEAF, '#ea580c'], [LEAF, '#b91c1c'], [OAK, '#a16207'], [OAK, '#c2410c'], [LEAF, '#d97706']] },
+      champions: { glyph: '✦✧', n: 22, mode: 'twinkle' },
+      easter: { n: 14, mode: 'flutter', art: [[PETAL, '#f9a8d4'], [PETAL, '#fbcfe8'], [PETAL, '#ffffff'], [PETAL, '#c4b5fd']] },
+      finalday: { n: 22, art: [[PAPER, '#fde047'], [PAPER, '#ef4444'], [PAPER, '#3b82f6'], [PAPER, '#22c55e'], [PAPER, '#f9a8d4']] },
+      cup: { n: 8, mode: 'flutter', art: [[RIBBON, '#dc2626'], [RIBBON, '#1d4ed8'], [RIBBON, '#f8fafc']] },
+    };
     const f = sz && on && FALL[sz.theme];
-    if (!f || !f[1]) return;
-    const box = document.createElement('div'); box.className = 'sz-fx ' + f[2]; box.setAttribute('aria-hidden', 'true');
-    const chars = [...f[0]], r = GM.rng('szfx:' + sz.theme), COL = ['#fde047', '#ef4444', '#3b82f6', '#22c55e', '#f9a8d4'];
-    for (let k = 0; k < f[1]; k++) {
-      const i = document.createElement('i'), ch = chars[r.int(chars.length)];
-      i.textContent = ch;
-      const size = f[2] === 'twinkle' ? 8 + r.int(10) : 10 + r.int(12);
-      i.style.cssText = `left:${r.int(100)}%;font-size:${size}px;animation-duration:${(f[2] === 'twinkle' ? 1.5 + r() * 2.5 : 9 + r() * 12).toFixed(1)}s;animation-delay:-${(r() * 20).toFixed(1)}s;--dx:${r.int(80) - 40}px;--rot:${r.int(360)}deg;--y:${r.int(95)}%`
-        + (ch === '▪' ? `;color:${COL[r.int(COL.length)]};font-size:${8 + r.int(6)}px` : sz.theme === 'christmas' ? ';color:#fff;text-shadow:0 0 4px rgba(255,255,255,.6)' : '');
+    if (!f || !f.n) return;
+    const box = document.createElement('div'); box.className = 'sz-fx ' + (f.mode || ''); box.setAttribute('aria-hidden', 'true');
+    const r = GM.rng('szfx:' + sz.theme), chars = [...(f.glyph || '')], arts = (f.art || []).map(([pth, c]) => svg(pth, c));
+    for (let k = 0; k < f.n; k++) {
+      const i = document.createElement('i'), size = f.mode === 'twinkle' ? 8 + r.int(10) : 12 + r.int(12);
+      i.style.cssText = `left:${r.int(100)}%;animation-duration:${(f.mode === 'twinkle' ? 1.5 + r() * 2.5 : 9 + r() * 12).toFixed(1)}s;animation-delay:-${(r() * 20).toFixed(1)}s;--dx:${r.int(80) - 40}px;--rot:${r.int(360)}deg;--y:${r.int(95)}%`;
+      if (arts.length) { i.className = 'art'; i.style.width = i.style.height = size + 'px'; i.style.backgroundImage = arts[r.int(arts.length)]; }
+      else { i.textContent = chars[r.int(chars.length)]; i.style.fontSize = size + 'px'; i.style.color = '#fff'; i.style.textShadow = '0 0 4px rgba(255,255,255,.6)'; }
       box.appendChild(i);
     }
     document.body.appendChild(box);
@@ -198,7 +216,8 @@
   // hopping along the bottom, fireworks over the banner… (first visit a few seconds in, then every few minutes on Home)
   const VISIT = {
     christmas: [{ n: 'sleigh', w: 230, path: 'across', y: 0.16, sound: 'bell', ms: 7000 }, { n: 'snowman', w: 120, path: 'corner' }, { n: 'gift', w: 150, path: 'corner' }],
-    halloween: [{ n: 'ghost', w: 120, path: 'float', y: 0.42, sound: 'boo', ms: 9000 }, { n: 'bat', w: 90, path: 'across', y: 0.3, sound: 'spooky', ms: 5000, flip: 1 }, { n: 'pumpkin', w: 120, path: 'corner' }, { n: 'batmoon', w: 170, path: 'top' }],
+    halloween: [{ n: 'ghost', w: 120, path: 'float', y: 0.42, sound: 'boo', ms: 9000 }, { n: 'spider', w: 150, path: 'dangle' }, { n: 'witch', w: 150, path: 'across', y: 0.24, sound: 'spooky', ms: 6500 },
+      { n: 'bat', w: 90, path: 'across', y: 0.3, sound: 'spooky', ms: 5000, flip: 1 }, { n: 'pumpkin', w: 120, path: 'corner' }, { n: 'batmoon', w: 170, path: 'top' }],
     easter: [{ n: 'bunny', w: 90, path: 'hop', ms: 9000 }, { n: 'eggs', w: 120, path: 'corner' }],
     champions: [{ n: 'fireworks', w: 240, path: 'top' }],
     finalday: [{ n: 'fireworks', w: 240, path: 'top' }, { n: 'trophy', w: 140, path: 'corner' }],
@@ -213,8 +232,12 @@
     const sz = SEASONS[seasonId()], list = sz && VISIT[sz.theme], FX = GM.FX;
     if (!list || !FX || !FX.lottie || GM.store.get('seasonLook', true) === false || (!force && !document.body.classList.contains('has-tabs'))) return null;
     const v = list[visitK++ % list.length], W = innerWidth, H = innerHeight, w = v.w;
-    const at = { across: [-w, H * (v.y || 0.2)], float: [-w, H * (v.y || 0.4)], hop: [-w, H - 210], corner: [W - w * 0.7, H - 150 - w / 2], top: [W / 2, H * 0.22] }[v.path];
-    const h = await FX.lottie(v.n, { x: v.path === 'top' || v.path === 'corner' ? at[0] : 0, y: at[1], w, loop: v.path !== 'top', flip: v.flip, cls: 'sz-visit' });
+    // (dangle: the spider lets itself down on its thread from the cobweb in the corner, and climbs back up)
+    const web = GM.$('.sz-corner'), wr = web && web.getBoundingClientRect();
+    if (v.path === 'dangle' && !wr) return null;
+    const at = { across: [-w, H * (v.y || 0.2)], float: [-w, H * (v.y || 0.4)], hop: [-w, H - 210], corner: [W - w * 0.7, H - 150 - w / 2], top: [W / 2, H * 0.22],
+      dangle: wr && [wr.left + wr.width * 0.55, wr.top + wr.height * 0.35 + w / 2] }[v.path];
+    const h = await FX.lottie(v.n, { x: v.path === 'top' || v.path === 'corner' || v.path === 'dangle' ? at[0] : 0, y: at[1], w, loop: v.path !== 'top', flip: v.flip, cls: 'sz-visit' + (v.path === 'dangle' ? ' sz-spider' : '') });
     if (!h) return null;
     if (v.sound) setTimeout(() => GM.sound.play(v.sound), 400);
     const el = h.el.closest ? h.el.closest('.fx-lottie') || h.el : h.el;
@@ -225,6 +248,8 @@
         : v.path === 'hop' ? [{ transform: 'translate(0,0)' }, { transform: `translate(${W + w * 2}px,0)` }]
         : [{ transform: 'translate(0,20px)' }, { transform: `translate(${(W + w) / 2}px,-25px)` }, { transform: `translate(${W + w * 2}px,10px)` }];
       el.animate(frames, { duration: v.ms || 7000, easing: 'linear', fill: 'forwards' }).onfinish = end;
+    } else if (v.path === 'dangle') {
+      el.animate([{ opacity: 0 }, { opacity: 1, offset: 0.08 }, { opacity: 1, offset: 0.9 }, { opacity: 0 }], { duration: 12000, fill: 'forwards' }).onfinish = end;
     } else if (v.path === 'corner') {
       el.animate([{ transform: 'translateY(60px) scale(.6)', opacity: 0 }, { transform: 'none', opacity: 1, offset: 0.12 }, { transform: 'none', opacity: 1, offset: 0.85 }, { transform: 'translateY(30px)', opacity: 0 }], { duration: 5000, fill: 'forwards' }).onfinish = end;
     }

@@ -23,6 +23,30 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### Seasons that change the games, not just the menus: a CHAOS for every season ✅ 5.28 *(owner, 11 Oct 2026)*
+> "I also think the banner looks quite cheap… I dont like the just emoji look and the repeated emoji look generally. It
+> makes it feel less like an actual functioning game. A cobweb in the corner, the spin having a particular theme, maybe a
+> spooky themed chaos mode with different wildcards with like a witch and stuff etc etc y'know"
+
+Done straight away (5.28): the strip is a slim band, a LottieFiles cobweb in the corner with a spider that drops from it,
+a witch visitor, drawn leaves instead of emoji, and a Halloween prize wheel with a pumpkin hub.
+
+Then: *"Can you create a themed chaos for every season please"* → built in 5.28 (`SZ_CHAOS` in draft.js): each season has two
+wildcards (themed free spins or modifiers the engine already plays, so balance stays close), three moments, its own
+colours behind the pitch and a kick-off line; a challenge keeps its season. Still open from the first sketch below:
+
+**The fuller spooky version (still to discuss):** for the season (or just the Spooky Season event, 24 Oct to 3 Nov):
+- **Look:** CHAOS by moonlight: a night pitch with fog (GM.FX smoke), a full moon, bats over the stands (Lottie), an organ
+  sting on big moments, the CHAOS meter as a cauldron filling up.
+- **Wildcards (a Halloween bag, mixed into the usual one):** 🧙 *The Witch's Curse* (an opponent's best player turns into
+  a frog: halved), 🧛 *Night Shift* (a player scores double after the 80th minute), 🎃 *Trick or Treat* (a coin flip:
+  double a player or lose him), 👻 *Ghost Goal* (a ghost signs for you: a random legend's goals, gone at full time),
+  🧟 *Back from the Dead* (bring back a player you passed on).
+- **Moments:** the floodlights fail (a player's card hides until full time), a black cat crosses the pitch, a
+  mummy-wrapped physio.
+- **Questions:** its own leaderboard for the fortnight, or the normal CHAOS one? A Halloween manager (a parody "Count"
+  in the dugout)? Only during the event, or all of October?
+
 ### Rewards: cosmetics, seasons, unlocks ✅ 5.26 (first part) *(owner, 11 Oct 2026)*
 - **Owner:** "build out these cosmetics and other rewards… maybe there could be more cosmetics for your own club too…
   maybe the level system is the season pass and that resets every season… unlock game modes, new managers, new owners in

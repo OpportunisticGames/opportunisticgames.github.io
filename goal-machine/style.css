@@ -3250,17 +3250,19 @@ body.cbk-tropical .pc-back, .lk-pre.cbk-tropical .lk-back { background: radial-g
 .st-next > div { display: grid; grid-template-columns: 34px 1fr; column-gap: 8px; padding: 10px 12px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); }
 .st-next > div > span { grid-row: span 3; font-size: 1.6rem; align-self: center; } .st-next small { color: var(--muted); font-size: .76rem; } .st-next .st-teas { color: var(--accent2, #f5c542); font-weight: 700; }
 /* the season's look (html.sz-<theme>): a strip of its emojis along the top, a tint on Home's hero and the season chip */
-html[class*="sz-"]:not(.intl-break) body::after { position: fixed; top: 0; left: 0; right: 0; height: 18px; z-index: 46; pointer-events: none; overflow: hidden; white-space: nowrap;
-  font-size: 12px; line-height: 18px; letter-spacing: 6px; text-align: center; background: var(--sz-strip, transparent); }
-html.sz-halloween:not(.intl-break) body::after { content: '🎃 🦇 👻 🕸️ 🎃 🦇 👻 🕸️ 🎃 🦇 👻 🕸️ 🎃 🦇 👻 🕸️ 🎃 🦇 👻'; --sz-strip: linear-gradient(90deg, #1e1b4b, #581c87, #c2410c); }
-html.sz-champions:not(.intl-break) body::after { content: '⭐ ✨ ⭐ ✨ ⭐ ✨ ⭐ ✨ ⭐ ✨ ⭐ ✨ ⭐ ✨ ⭐ ✨ ⭐ ✨ ⭐'; --sz-strip: linear-gradient(90deg, #0b2a5b, #1e3a8a, #0b2a5b); }
-html.sz-christmas:not(.intl-break) body::after { content: '🎄 ❄️ 🎁 ⭐ 🎄 ❄️ 🎁 ⭐ 🎄 ❄️ 🎁 ⭐ 🎄 ❄️ 🎁 ⭐ 🎄 ❄️ 🎁'; --sz-strip: linear-gradient(90deg, #991b1b, #166534, #991b1b); }
-html.sz-window:not(.intl-break) body::after { content: '💸 📝 ⏰ 💼 💸 📝 ⏰ 💼 💸 📝 ⏰ 💼 💸 📝 ⏰ 💼 💸 📝'; --sz-strip: linear-gradient(90deg, #14532d, #1f2937, #14532d); }
-html.sz-cup:not(.intl-break) body::after { content: '🏆 🎀 ⚽ 🏆 🎀 ⚽ 🏆 🎀 ⚽ 🏆 🎀 ⚽ 🏆 🎀 ⚽ 🏆 🎀 ⚽'; --sz-strip: linear-gradient(90deg, #b91c1c, #f8fafc, #1d4ed8); }
-html.sz-title:not(.intl-break) body::after { content: '🏁 🔥 😬 🏁 🔥 😬 🏁 🔥 😬 🏁 🔥 😬 🏁 🔥 😬 🏁 🔥 😬'; --sz-strip: linear-gradient(90deg, #111827, #f97316, #111827); }
-html.sz-easter:not(.intl-break) body::after { content: '🐣 🌷 🥚 🐰 🐣 🌷 🥚 🐰 🐣 🌷 🥚 🐰 🐣 🌷 🥚 🐰 🐣 🌷'; --sz-strip: linear-gradient(90deg, #f9a8d4, #a7f3d0, #c4b5fd); }
-html.sz-finalday:not(.intl-break) body::after { content: '🎉 🏆 🥇 🎊 🎉 🏆 🥇 🎊 🎉 🏆 🥇 🎊 🎉 🏆 🥇 🎊 🎉 🏆'; --sz-strip: linear-gradient(90deg, #b45309, #fde047, #b45309); }
-html.sz-summer:not(.intl-break) body::after { content: '☀️ 🌍 🏖️ ⚽ ☀️ 🌍 🏖️ ⚽ ☀️ 🌍 🏖️ ⚽ ☀️ 🌍 🏖️ ⚽ ☀️ 🌍'; --sz-strip: linear-gradient(90deg, #0ea5e9, #fde047, #0ea5e9); }
+/* the season's band along the top: its colours with a soft sheen, no emoji (the season's character comes from drawn art: the cobweb, the visitors) */
+html[class*="sz-"]:not(.intl-break) body::after { content: ''; position: fixed; top: 0; left: 0; right: 0; height: 7px; z-index: 46; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .28), rgba(255, 255, 255, 0) 55%, rgba(0, 0, 0, .25)), var(--sz-strip, transparent);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, .25); }
+html.sz-halloween:not(.intl-break) body::after { --sz-strip: linear-gradient(90deg, #1e1b4b, #581c87, #c2410c); }
+html.sz-champions:not(.intl-break) body::after { --sz-strip: linear-gradient(90deg, #0b2a5b, #1e3a8a, #0b2a5b); }
+html.sz-christmas:not(.intl-break) body::after { --sz-strip: linear-gradient(90deg, #991b1b, #166534, #991b1b); }
+html.sz-window:not(.intl-break) body::after { --sz-strip: linear-gradient(90deg, #14532d, #1f2937, #14532d); }
+html.sz-cup:not(.intl-break) body::after { --sz-strip: linear-gradient(90deg, #b91c1c, #f8fafc, #1d4ed8); }
+html.sz-title:not(.intl-break) body::after { --sz-strip: linear-gradient(90deg, #111827, #f97316, #111827); }
+html.sz-easter:not(.intl-break) body::after { --sz-strip: linear-gradient(90deg, #f9a8d4, #a7f3d0, #c4b5fd); }
+html.sz-finalday:not(.intl-break) body::after { --sz-strip: linear-gradient(90deg, #b45309, #fde047, #b45309); }
+html.sz-summer:not(.intl-break) body::after { --sz-strip: linear-gradient(90deg, #0ea5e9, #fde047, #0ea5e9); }
 html.sz-halloween .season-chip { background: linear-gradient(90deg, #581c87, #c2410c); color: #fff; }
 html.sz-champions .season-chip { background: linear-gradient(90deg, #0b2a5b, #1e40af); color: #fff; }
 html.sz-christmas .season-chip { background: linear-gradient(90deg, #b91c1c, #166534); color: #fff; }
@@ -3311,7 +3313,7 @@ html[data-theme="light"] .sz-fx i { text-shadow: 0 0 2px rgba(40, 70, 120, .9), 
 .gm-status { position: sticky; top: 0; z-index: 45; max-width: 560px; margin: 0 auto; display: flex; align-items: center; gap: 8px;
   padding: calc(8px + var(--strip, 0px) + env(safe-area-inset-top)) 16px 8px; background: var(--nav); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
 .gm-status[hidden] { display: none; }
-html[class*="sz-"]:not(.intl-break) .gm-status, html.intl-break .gm-status { --strip: 16px; }
+html[class*="sz-"]:not(.intl-break) .gm-status { --strip: 6px; } html.intl-break .gm-status { --strip: 16px; }
 body.has-status #app { padding-top: 8px; }
 .gm-status .gs-me { position: relative; flex: none; text-decoration: none; }
 .gm-status .gs-me .avatar { width: 38px; height: 38px; font-size: .85rem; }
@@ -3351,7 +3353,7 @@ body.calm .gm-status .gs-open.hot span { animation: none; }
 .tabbar .locker-dot[hidden] { display: none; }
 
 /* the seasonal strip along the top: keep pages' top bars (and their buttons) clear of it */
-html[class*="sz-"]:not(.intl-break) body:not(.has-status) #app, html.intl-break body:not(.has-status) #app { padding-top: 26px; }
+html[class*="sz-"]:not(.intl-break) body:not(.has-status) #app { padding-top: 16px; } html.intl-break body:not(.has-status) #app { padding-top: 26px; }
 /* the buttons on the right of a page's top bar (🏆, ?) are one size and line up with the back arrow */
 .top-btns { align-items: center; }
 .top-btns > .icon-btn, .top-btns > a.icon-btn, .top-btns > button.icon-btn { box-sizing: border-box; width: 40px; height: 40px; min-width: 40px; padding: 0; margin: 0;
@@ -3361,3 +3363,29 @@ html[class*="sz-"]:not(.intl-break) body:not(.has-status) #app, html.intl-break 
 .topbar:has(.top-btns) h2 { font-size: clamp(.95rem, 4.4vw, 1.3rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 .lk-stats { display: flex; flex-wrap: wrap; gap: 2px 10px; } .lk-stats span { white-space: nowrap; }
 .road { scroll-padding: 0 16px; padding-right: 16px; }
+.sz-fx i.art { background: center / contain no-repeat; opacity: .85; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .25)); }
+html[data-theme="light"] .sz-fx i.art { text-shadow: none !important; }
+/* Halloween: a cobweb in the top corner of the menus, tucked under the top bar; drawn dark, so lightened on the dark look */
+.sz-corner { position: fixed; right: -34px; top: calc(4px + env(safe-area-inset-top)); width: 128px; height: 128px; z-index: 44; pointer-events: none; display: none; opacity: .55; filter: invert(.92); }
+body.has-tabs .sz-corner { display: block; } body.has-status .sz-corner { top: calc(58px + env(safe-area-inset-top)); }
+html[data-theme="light"] .sz-corner { filter: none; opacity: .5; }
+body.calm .sz-corner { display: none !important; }
+.fx-lottie.sz-spider { filter: invert(.9) drop-shadow(0 1px 2px rgba(0, 0, 0, .5)); }
+html[data-theme="light"] .fx-lottie.sz-spider { filter: none; }
+/* the seasonal wheel: something drawn in the middle (it doesn't spin with the wheel) */
+.wh-hub { position: absolute; left: 50%; top: 50%; width: 34%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle, #1c1917 55%, #0c0a09);
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, .35), 0 4px 14px rgba(0, 0, 0, .5); z-index: 1; pointer-events: none; display: grid; place-items: center; overflow: hidden; }
+.wh-hub .fx-lot { width: 92%; height: 92%; }
+.wh-hub.plain::after { content: '🎁'; font-size: 2rem; }
+
+/* each season's CHAOS has its own colours behind the pitch (draft.js SZ_CHAOS sets body[data-cz]) */
+body.chaos-mode[data-cz="halloween"]::before { background: radial-gradient(40% 30% at 20% 20%, rgba(255,120,20,.38), transparent 70%), radial-gradient(35% 30% at 85% 30%, rgba(120,40,200,.32), transparent 70%), radial-gradient(45% 35% at 50% 90%, rgba(80,200,60,.18), transparent 70%), #0b0614; }
+body.chaos-mode[data-cz="champions"]::before { background: radial-gradient(40% 30% at 20% 20%, rgba(80,140,255,.38), transparent 70%), radial-gradient(35% 30% at 85% 30%, rgba(255,255,255,.16), transparent 70%), radial-gradient(45% 35% at 50% 90%, rgba(30,60,160,.34), transparent 70%), #040b24; }
+body.chaos-mode[data-cz="christmas"]::before { background: radial-gradient(40% 30% at 20% 20%, rgba(220,40,40,.34), transparent 70%), radial-gradient(35% 30% at 85% 30%, rgba(30,160,80,.32), transparent 70%), radial-gradient(45% 35% at 50% 90%, rgba(255,215,0,.18), transparent 70%), #0d0a12; }
+body.chaos-mode[data-cz="window"]::before { background: radial-gradient(40% 30% at 20% 20%, rgba(40,200,120,.32), transparent 70%), radial-gradient(35% 30% at 85% 30%, rgba(200,200,200,.14), transparent 70%), radial-gradient(45% 35% at 50% 90%, rgba(255,215,0,.18), transparent 70%), #071510; }
+body.chaos-mode[data-cz="cup"]::before { background: radial-gradient(40% 30% at 20% 20%, rgba(220,40,40,.32), transparent 70%), radial-gradient(35% 30% at 85% 30%, rgba(40,90,220,.32), transparent 70%), radial-gradient(45% 35% at 50% 90%, rgba(255,255,255,.14), transparent 70%), #0a0a18; }
+body.chaos-mode[data-cz="title"]::before { background: radial-gradient(40% 30% at 20% 20%, rgba(255,130,20,.34), transparent 70%), radial-gradient(35% 30% at 85% 30%, rgba(255,60,60,.22), transparent 70%), radial-gradient(45% 35% at 50% 90%, rgba(255,220,120,.14), transparent 70%), #0f0a06; }
+body.chaos-mode[data-cz="easter"]::before { background: radial-gradient(40% 30% at 20% 20%, rgba(249,168,212,.36), transparent 70%), radial-gradient(35% 30% at 85% 30%, rgba(167,243,208,.28), transparent 70%), radial-gradient(45% 35% at 50% 90%, rgba(196,181,253,.32), transparent 70%), #160f24; }
+body.chaos-mode[data-cz="finalday"]::before { background: radial-gradient(40% 30% at 20% 20%, rgba(255,210,60,.36), transparent 70%), radial-gradient(35% 30% at 85% 30%, rgba(255,120,40,.22), transparent 70%), radial-gradient(45% 35% at 50% 90%, rgba(255,255,255,.14), transparent 70%), #120c02; }
+body.chaos-mode[data-cz="summer"]::before { background: radial-gradient(40% 30% at 20% 20%, rgba(14,165,233,.36), transparent 70%), radial-gradient(35% 30% at 85% 30%, rgba(253,224,71,.32), transparent 70%), radial-gradient(45% 35% at 50% 90%, rgba(255,255,255,.12), transparent 70%), #031522; }
+.cm-icon .cm-lot { display: inline-block; width: 92px; height: 92px; } .cm-icon .cm-lot svg { width: 100% !important; height: 100% !important; }

@@ -228,6 +228,7 @@
     if (on) { document.documentElement.dataset.theme = 'dark'; GM.app('setBars', '#1a1622', false); } else if (!document.body.classList.contains('chaos-mode') && !document.body.classList.contains('money-mode')) GM.applyTheme();
   };
   GM.chaosLook = function (chaos) {
+    if (!chaos) delete document.body.dataset.cz;  // (the season's CHAOS look goes with it)
     if (chaos === document.body.classList.contains('chaos-mode')) return;
     document.body.classList.toggle('chaos-mode', chaos);
     if (chaos) { document.documentElement.dataset.theme = 'dark'; GM.app('setBars', '#12001f', false); } else GM.applyTheme();

@@ -125,7 +125,7 @@ async function phone(b, name, key, errs, store = {}) {
   await A.click('#s-szlook [data-v="true"]'); await A.waitForTimeout(200);
   await A.goto(U + '#/'); await A.waitForTimeout(500);
   const hv = await A.evaluate(async () => { const n = await GM.seasonVisit(true); await new Promise(r => setTimeout(r, 2500)); return { n, on: document.querySelectorAll('.fx-lottie svg').length }; });
-  ok(['ghost', 'bat', 'pumpkin', 'batmoon'].includes(hv.n) && hv.on >= 1, `Halloween's visitors (a ghost, bats, a pumpkin) cross Home (${JSON.stringify(hv)})`);
+  ok(['ghost', 'bat', 'pumpkin', 'batmoon', 'spider', 'witch'].includes(hv.n) && hv.on >= 1, `Halloween's visitors (a ghost, bats, a pumpkin) cross Home (${JSON.stringify(hv)})`);
   await A.screenshot({ path: 'lay/halloween_home.png' });
   // December: Christmas, its items on the track, October's in the vault
   const X = await b.newContext({ viewport: { width: 390, height: 844 } }); await server.attach(X);

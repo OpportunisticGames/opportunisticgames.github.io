@@ -63,15 +63,24 @@
     { r: { vault: 1 }, w: 5, c: '#9333ea' }, { r: { pack: 'legendary' }, w: 3, c: '#eab308' },
   ];
   GM.WHEEL = WHEEL;
+  // the wheel dresses for the season: its colours, and something in the middle (a pumpkin at Halloween)
+  const WHEEL_LOOK = {
+    halloween: { cols: ['#ea580c', '#3b0764', '#c2410c', '#1c1917', '#f97316', '#581c87', '#65a30d', '#7c2d12'], hub: 'pumpkin', rim: '#1c1917' },
+    christmas: { cols: ['#b91c1c', '#166534', '#dc2626', '#f8fafc', '#15803d', '#991b1b', '#ca8a04', '#14532d'], hub: 'gift', rim: '#ca8a04' },
+    easter: { cols: ['#f9a8d4', '#a7f3d0', '#c4b5fd', '#fde68a', '#fbcfe8', '#bbf7d0', '#ddd6fe', '#fef3c7'], hub: 'eggs', rim: '#fff' },
+  };
   GM.spinPage = function (root) {
     const n = +GM.store.get('spins', 0), seg = 360 / WHEEL.length;
+    const look = (GM.store.get('seasonLook', true) !== false && GM.gmSeason && WHEEL_LOOK[GM.gmSeason().theme]) || null, col = k => (look ? look.cols[k % look.cols.length] : WHEEL[k].c);
     root.innerHTML = `<div class="topbar"><a href="#/season" class="back">‹</a><h2>🎡 Prize wheel</h2><span></span></div>
-      <div class="wh-wrap"><div class="wh-pointer">▼</div><div class="wh" id="wh" style="background:conic-gradient(${WHEEL.map((s, k) => `${s.c} ${k * seg}deg ${(k + 1) * seg}deg`).join(',')})">
-        ${WHEEL.map((s, k) => `<span style="transform:rotate(${k * seg + seg / 2}deg)"><i>${label(s.r).split(' ')[0]}</i></span>`).join('')}</div></div>
+      <div class="wh-wrap"><div class="wh-pointer">▼</div><div class="wh" id="wh" style="background:conic-gradient(${WHEEL.map((s, k) => `${col(k)} ${k * seg}deg ${(k + 1) * seg}deg`).join(',')})${look ? `;border-color:${look.rim}` : ''}">
+        ${WHEEL.map((s, k) => `<span style="transform:rotate(${k * seg + seg / 2}deg)"><i>${label(s.r).split(' ')[0]}</i></span>`).join('')}</div>${look ? '<div class="wh-hub" id="wh-hub"></div>' : ''}</div>
       <p class="center"><b id="wh-n">${n}</b> spin${n === 1 ? '' : 's'} left</p>
       <div class="actions col"><button class="btn big" id="wh-go" ${n ? '' : 'disabled'}>🎡 Spin!</button></div>
       <p class="muted center small">Spins come from the level road, the season track, login rewards and missions.</p>
-      <div class="wh-key">${WHEEL.map(s => `<span><i style="background:${s.c}"></i>${GM.esc(label(s.r))}</span>`).join('')}</div>`;
+      <div class="wh-key">${WHEEL.map((s, k) => `<span><i style="background:${col(k)}"></i>${GM.esc(label(s.r))}</span>`).join('')}</div>`;
+    const hub = GM.$('#wh-hub', root);
+    if (hub && GM.FX && GM.FX.lottie) GM.FX.lottie(look.hub, { into: hub, loop: true }).then(h => { if (!h) hub.classList.add('plain'); });
     let turn = 0;
     GM.$('#wh-go', root).onclick = () => {
       const left = +GM.store.get('spins', 0); if (!left) return;

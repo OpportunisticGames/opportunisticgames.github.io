@@ -3,7 +3,7 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
-### Fixed in 5.27.1 *(owner, 12 Oct 2026)*
+### Fixed in 5.28 *(owner, 12 Oct 2026)*
 - Matchday XI: blank cards, then “id.split is not a function” and “Couldn’t load the player list”. 5.26’s seasons code
   took the name `GM.season`, which already meant “format a PL season” (`GM.era` uses it for one-season players), so every
   card for a player with a single PL season crashed (1,339 of them in the full list, so Matchday XI, Extreme and Purist
