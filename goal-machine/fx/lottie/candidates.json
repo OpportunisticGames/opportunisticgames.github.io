@@ -1,1 +1,50 @@
-{}
+{
+ "spider1": {
+  "url": "https://assets-v2.lottiefiles.com/a/c9326b38-1808-11ee-8b81-833f7662fb97/eSWBhIKGuD.json",
+  "page": "https://lottiefiles.com/animations/spider-SDvTdKZjbn"
+ },
+ "spider2": {
+  "url": "https://assets-v2.lottiefiles.com/a/2bdb85dc-5763-11ee-9cc5-0b6a0cc5ba79/pJgLxaIwYk.json",
+  "page": "https://lottiefiles.com/animations/cute-halloween-spider-7MUImDIWqi"
+ },
+ "spider3": {
+  "url": "https://assets-v2.lottiefiles.com/a/3b3c1c7a-71ef-11ee-b037-57d879a3597c/1zPOGu8S9T.json",
+  "page": "https://lottiefiles.com/animations/spider-halloween-sticker-1HNt2kGNt9"
+ },
+ "spider4": {
+  "url": "https://assets-v2.lottiefiles.com/a/5894e37a-1172-11ee-8390-d72be8235ac4/4SdkR5WtSp.json",
+  "page": "https://lottiefiles.com/animations/spider-hallowen-PU3LMIhGWF"
+ },
+ "spider5": {
+  "url": "https://assets-v2.lottiefiles.com/a/f63e2276-1172-11ee-aa95-c3ffddd65f65/kWhl0Ow09f.json",
+  "page": "https://lottiefiles.com/animations/spider-LiNoYXFrd9"
+ },
+ "web1": {
+  "url": "https://assets-v2.lottiefiles.com/a/85529f44-e1f4-11ee-8413-df1b976842d0/HNgykNBpfr.json",
+  "page": "https://lottiefiles.com/animations/spiderweb-UPjgHXmqLc"
+ },
+ "web2": {
+  "url": "https://assets-v2.lottiefiles.com/a/57ae86b0-1153-11ee-988a-db5c2807cd2c/dKBBsEsnZu.json",
+  "page": "https://lottiefiles.com/animations/spider-web-R22mjGbinb"
+ },
+ "web3": {
+  "url": "https://assets-v2.lottiefiles.com/a/4bc09f78-1176-11ee-adb6-1ffe0795d214/jNqcNzwZcU.json",
+  "page": "https://lottiefiles.com/animations/spider-web-JuxrTcUycc"
+ },
+ "web4": {
+  "url": "https://assets-v2.lottiefiles.com/a/e0f243be-1165-11ee-85b2-0f44afad4f6e/5gG3jFJij3.json",
+  "page": "https://lottiefiles.com/animations/spider-net-YbUVJDlrFE"
+ },
+ "web5": {
+  "url": "https://assets-v2.lottiefiles.com/a/e2a06d72-4547-11f0-9fbf-2b68844133e3/rmQ1eo4tVT.json",
+  "page": "https://lottiefiles.com/animations/webs-9XReaicYZF"
+ },
+ "witch1": {
+  "url": "https://assets-v2.lottiefiles.com/a/f771c5cb-7fa1-4124-9751-9f2b702df216/qvVAUX67XL.json",
+  "page": "https://lottiefiles.com/animations/witch-flying-qvVAUX67XL"
+ },
+ "witch2": {
+  "url": "https://assets-v2.lottiefiles.com/a/7e5b2940-1152-11ee-8783-0379c1c1ce9e/RFTFmDAQFB.json",
+  "page": "https://lottiefiles.com/animations/halloween-cute-witch-flying-WvLzQGE6If"
+ }
+}
