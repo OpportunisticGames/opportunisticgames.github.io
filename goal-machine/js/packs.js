@@ -73,13 +73,14 @@
     badge: { name: 'Badge Pack', badge: '🏅', sub: () => 'Five pieces and a wildcard', pool: () => null, wild: 'pick' },
     dailies: { name: 'Daily Hat-Trick Pack', badge: '🎩', sub: () => 'Three dailies in a day: one Gold or better', pool: () => null, min: 'g', up: 1 },
     royale: { name: 'Royale Pack', badge: '👑', sub: () => 'Gold or better, and a wildcard', pool: () => null, min: 'g', up: 1, wild: 'pick' },
+    legendary: { name: 'Legendary Pack', badge: '🌟', sub: () => 'Gold or better all through, a wildcard, and something from the vault', pool: () => null, min: 'g', up: 5, wild: 'pick' },
     season: { name: 'Season Pack', badge: '🏆', sub: () => 'A season reward: two Gold or better', pool: () => null, min: 'g', up: 2 },
     mission: { name: 'Mission Pack', badge: '🎯', sub: () => 'All three missions: Silver or better and a wildcard', pool: () => null, min: 's', up: 3, wild: 'pick' },
     chaos: { name: 'CHAOS Pack', badge: '🌪️', sub: () => 'Anything could be in here: 3 to 7 pieces', pool: () => null, chaos: true },
   };
   GM.PACKS = PACKS;
   // each pack's colour on the effects layer (the charge, the tear, the sparks)
-  const GLOW = { standard: 0xffe14a, legends: 0xe879f9, nations: 0x60a5fa, matchday: 0xfde047, daily: 0x6ee7b7, level: 0x93c5fd, badge: 0xfbbf24, dailies: 0xf472b6, royale: 0xfde047, chaos: 0xff5a2d };
+  const GLOW = { standard: 0xffe14a, legends: 0xe879f9, legendary: 0xfacc15, season: 0xf59e0b, mission: 0x34d399, nations: 0x60a5fa, matchday: 0xfde047, daily: 0x6ee7b7, level: 0x93c5fd, badge: 0xfbbf24, dailies: 0xf472b6, royale: 0xfde047, chaos: 0xff5a2d };
   // today's free pack is themed when something's on
   const dailyType = () => (GM.intlBreak && GM.intlBreak() ? 'nations' : GM.matchToday && GM.matchToday() ? 'matchday' : 'daily');
   const xType = x => (x && typeof x === 'object' ? x.t : x), xWhy = x => (x && typeof x === 'object' ? x.why : '');
@@ -218,11 +219,13 @@
     else if (c.extra.length) c.extra.shift();
     else c.packs--;
     const before = GM.packedXI().total;
-    const cards = draw(c, GM.rng(GM.newSeed()), type);
+    const rng = GM.rng(GM.newSeed()), cards = draw(c, rng, type);
     cards.forEach(x => { if (!x.wild) apply(c, x); });
+    const bonus = GM.packBonus ? GM.packBonus(type, rng) : null;  // now and then: a Locker item, a spin or season XP as well (prizes.js)
     c.opened = (c.opened || 0) + 1;
     save(c);
-    const res = { type, why, cards, before };
+    const res = { type, why, cards, before, bonus };
+    if (bonus && GM.grant) GM.grant(bonus, null, true);
     finishPack(res);
     return res;
   };
@@ -378,7 +381,8 @@
       el.classList.add('over');
       el.querySelectorAll('.po-cards .pcard').forEach((card, i) => { const x = res.cards[i]; if (x && x.p) card.dataset.psheet = x.p.pk; });  // tap a card to see the player
       if (res.better) GM.sound.play('sting'); else if (fin) GM.sound.play('good');
-      el.querySelector('.po-actions').innerHTML = `<p class="po-better">${fin ? `🧩 ${fin} card${fin > 1 ? 's' : ''} finished` : '🧩 Pieces added'}${res.better ? ` · 🃏 Packed XI up to <b>${res.better.toLocaleString()}</b> goals` : ''}</p>
+      if (res.bonus && GM.rewardLabel) { GM.sound.play('jackpot'); GM.buzz('win'); }
+      el.querySelector('.po-actions').innerHTML = `${res.bonus && GM.rewardLabel ? `<div class="po-bonus"><small>🎁 Bonus in this pack</small><b>${GM.esc(GM.rewardLabel(res.bonus))}</b></div>` : ''}<p class="po-better">${fin ? `🧩 ${fin} card${fin > 1 ? 's' : ''} finished` : '🧩 Pieces added'}${res.better ? ` · 🃏 Packed XI up to <b>${res.better.toLocaleString()}</b> goals` : ''}</p>
         ${left ? `<button class="btn big" data-again>🎁 Open another (${left} left)</button>` : ''}<button class="btn ${left ? 'ghost' : 'big'}" data-done>Done</button>`;
       el.querySelector('[data-done]').onclick = () => { el.remove(); if (onClose) onClose(); };
       const again = el.querySelector('[data-again]');

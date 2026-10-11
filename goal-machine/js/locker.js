@@ -92,6 +92,21 @@
     ['react-popcorn', 'react', '🍿 Grabbing popcorn', { season: 18 }],
     ['react-brain', 'react', '🧠 Galaxy brain', { lvl: 18 }],
     ['react-sweep', 'react', '🧹 Clean sweep', { badges: 15 }],
+    // 🏛️ vault-only: found in Legendary packs, a pack's bonus slot and on the prize wheel (prizes.js)
+    ['pitch-wembley', 'pitch', 'Cup final day', { vault: 1 }],
+    ['back-comic', 'back', 'Comic strip', { vault: 1 }],
+    ['celeb-flares', 'celeb', 'Flares in the away end', { vault: 1 }],
+    ['horn-bell', 'horn', 'The bell', { vault: 1 }],
+    ['frame-rainbow', 'frame', 'Rainbow laces', { vault: 1 }],
+    ['title-cult', 'title', 'Cult Hero', { vault: 1 }],
+    ['title-journeyman', 'title', 'Journeyman', { vault: 1 }],
+    ['react-gg', 'react', '🤝 Good game', { vault: 1 }],
+    // 🎃 the Spooky Season event (prizes.js EVENTS): its own track while it's on, then the vault
+    ['pitch-haunted', 'pitch', 'Haunted ground', { event: 'spooky26', tier: 3 }],
+    ['back-spooky', 'back', 'Cobwebs', { event: 'spooky26', tier: 5 }],
+    ['frame-pumpkin', 'frame', 'Pumpkin', { event: 'spooky26', tier: 7 }],
+    ['celeb-ghosts', 'celeb', 'Ghosts in the stands', { event: 'spooky26', tier: 9 }],
+    ['title-ghoul', 'title', 'Ghoul-keeper', { event: 'spooky26', tier: 10 }],
     // Dodgy Owner owners
     ['owner-celeb', 'owner', '🌟 The Celebrity', { lvl: 9 }, { text: 'A film star who bought the club for the documentary. Fans love the cameras (+10) and the sponsors pay double, but the heat is always on.' }],
     ['owner-trust', 'owner', '🤝 The Supporters’ Trust', { season: 24 }, { text: 'The fans own the club. No dodgy deals, ever: the fans start on 90 and won’t stand for heat. Not much money.' }],
@@ -113,7 +128,9 @@
     const s = it.src;
     if (s.def) return 'Everyone has this';
     if (s.lvl) return `Reach level ${s.lvl}`;
-    if (s.season) return `Season track, tier ${s.season}`;
+    if (s.vault) return 'In the vault: Legendary packs and the prize wheel';
+    if (s.event) { const e = (GM.EVENTS || []).find(x => x.id === s.event), on = GM.activeEvent && GM.activeEvent(); return on && on.id === s.event ? `${e.name} event, tier ${s.tier}` : `${e ? e.name + ' (event over)' : 'An event'}: in the vault now`; }
+    if (s.season) return (s.s || '2026-10') === (GM.season ? GM.season().id : '') ? `Season track, tier ${s.season}` : 'Last season’s: in the vault now';
     if (s.missions) return `Finish ${s.missions} weekly mission${s.missions > 1 ? 's' : ''}`;
     if (s.badges) return `Earn ${s.badges} badges`;
     if (s.club) return `Play ${s.club} daily game${s.club > 1 ? 's' : ''} for ${clubShort()}`;
@@ -160,7 +177,7 @@
   // your celebration and horn (a new best, beating a friend, winning online)
   GM.celebrate = function (big = true) {
     const c = worn('celeb'), h = worn('horn'), FX = GM.FX && GM.FX.on ? GM.FX : null, body = document.body;
-    const HORN = { 'horn-whistle': 'whistle', 'horn-air': 'horn', 'horn-vuvuzela': 'vuvuzela', 'horn-cheer': 'cheer', 'horn-fog': 'foghorn', 'horn-fanfare': 'fanfare' };
+    const HORN = { 'horn-bell': 'bell', 'horn-whistle': 'whistle', 'horn-air': 'horn', 'horn-vuvuzela': 'vuvuzela', 'horn-cheer': 'cheer', 'horn-fog': 'foghorn', 'horn-fanfare': 'fanfare' };
     GM.sound.play(HORN[h] || 'whistle');
     if (!FX || GM.store.get('calm', false)) return;
     const cc = club() && GM.CLUB && GM.CLUB[club()], hex = s => parseInt(String(s || '#ffffff').replace('#', ''), 16);
@@ -170,6 +187,8 @@
       else if (c === 'celeb-lightning') { FX.lightning(innerWidth * 0.3, innerHeight * 0.5); setTimeout(() => FX.lightning(innerWidth * 0.7, innerHeight * 0.45), 350); GM.sound.play('thunder'); }
       else if (c === 'celeb-pigeon') { if (FX.lottie) FX.lottie('pigeon', { x: innerWidth / 2, y: innerHeight * 0.4 }); FX.confetti(body, 40); }
       else if (c === 'celeb-trophy') { if (FX.lottie) FX.lottie('trophy', { x: innerWidth / 2, y: innerHeight * 0.42 }); FX.shimmer(body, 0xffe14a, 30); }
+      else if (c === 'celeb-flares') { [0.2, 0.5, 0.8].forEach((f, k) => setTimeout(() => FX.flare(innerWidth * f, innerHeight * 0.75, 2400, [0xff4a3d, 0x3b82f6, 0xfacc15][k]), k * 250)); }
+      else if (c === 'celeb-ghosts') { GM.sound.play('spooky'); FX.smoke(innerWidth * 0.3, innerHeight * 0.6, { tint: 0xe9d5ff, ms: 2200 }); FX.smoke(innerWidth * 0.7, innerHeight * 0.55, { tint: 0xe9d5ff, ms: 2200 }); setTimeout(() => GM.sound.play('boo'), 700); }
       else if (c === 'celeb-club' && cc) { FX.shimmer(body, hex(cc[1]), 40); FX.shimmer(body, hex(cc[2]), 30); FX.confetti(body, 60); }
       else FX.confetti(body, big ? 140 : 70);
     } catch (e) { /* the effects layer isn't ready */ }
@@ -247,7 +266,7 @@
     if (it.kind === 'back') return '<i class="lk-back"><b>GM</b></i>';
     if (it.kind === 'frame') return GM.userPic(me).replace('data-user=', 'data-nofl data-u=');
     if (it.kind === 'title') return `<i class="utitle">${GM.esc(it.id === 'title-none' ? '—' : it.id === 'title-club' ? `${clubShort()} Ultra` : it.name)}</i>`;
-    const ICON = { 'celeb-confetti': '🎊', 'celeb-fireworks': '🎆', 'celeb-money': '💸', 'celeb-lightning': '⚡', 'celeb-pigeon': '🐦', 'celeb-trophy': '🏆', 'celeb-club': '🎗️',
+    const ICON = { 'celeb-flares': '🧨', 'celeb-ghosts': '👻', 'horn-bell': '🛎️', 'celeb-confetti': '🎊', 'celeb-fireworks': '🎆', 'celeb-money': '💸', 'celeb-lightning': '⚡', 'celeb-pigeon': '🐦', 'celeb-trophy': '🏆', 'celeb-club': '🎗️',
       'horn-whistle': '🔔', 'horn-air': '📯', 'horn-vuvuzela': '🎺', 'horn-cheer': '🙌', 'horn-fog': '🚢', 'horn-fanfare': '🎉' };
     if (it.kind === 'react') return it.name.split(' ')[0];
     if (it.kind === 'owner') return it.name.split(' ')[0];

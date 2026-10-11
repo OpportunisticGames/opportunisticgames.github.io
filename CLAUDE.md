@@ -82,6 +82,11 @@ game mode for players; this file is about how to work on it.
   see (server `players.flair`: `set_flair`, `get_flair`, fetched with the pictures), challenge reactions, Dodgy Owner owners
   (`OWNERS.celeb/trust` have `locked`). Each item's `src` says how you get it (lvl, season tier, missions, badges, club
   dailies, login); `GM.lockerCheck()` hands out what you've earned. A new item = one line in `L` (+ CSS for its look).
+- `prizes.js` – 🎁 one way to give any reward (`GM.grant({pack|item|xp|spin|vault|choice})`), the level road
+  (`GM.levelReward(n)`), the prize wheel (`#/spin`, `WHEEL`), pick-one-of-three (`GM.pickReward`), a pack's bonus slot
+  (`GM.packBonus`, always in a 🌟 Legendary pack), the vault (`GM.vaultItems`: vault-only items, past seasons' (`src.s`
+  earlier than now) and finished events'), and events (`EVENTS`: dates, a 10-tier track; items have `src.event` + `tier`;
+  `gm:eventPeek` = an event id shows it early, for testing). New season items: add `src: { season: tier, s: 'YYYY-MM' }`.
 - `rewards.js` – 🏆 seasons (a calendar month; all XP also fills a 30-tier track, `GM.seasonXP`), weekly missions (three
   a week from `POOL`, counted by `GM.track(event)` calls in the games), login rewards (`GM.loginCheck`), `#/season`.
 - `promo.js` – the Home banner: matchday, the newest feature releases from the last 3 weeks (an entry's `promo` list, or a slide made from its title), a challenge waiting for you, a daily "Try today" game (`TRY`), news from `announcements`. Give a feature release a `promo` entry to choose its slide.

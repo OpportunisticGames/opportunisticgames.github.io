@@ -28,7 +28,7 @@ async function phone(b, name, key, errs, store = {}) {
   ok(await A.evaluate(() => !!document.querySelector('.season-chip')), 'Home shows the season chip');
   // the Locker page: wear things
   await A.goto(U + '#/locker?k=pitch'); await A.waitForTimeout(500);
-  ok((await A.$$('.lk-item')).length === 10 && (await A.$$('.lk-item.locked')).length > 0, 'the Locker lists pitch styles, some locked with how to get them');
+  ok((await A.$$('.lk-item')).length === 12 && (await A.$$('.lk-item.locked')).length > 0, 'the Locker lists pitch styles, some locked with how to get them');
   await A.screenshot({ path: 'lay/locker.png' });
   await A.click('.lk-item[data-id="pitch-night"]'); await A.waitForTimeout(200);
   ok(await A.evaluate(() => document.body.classList.contains('pk-night')), 'wearing Under the lights: the pitch changes');
@@ -78,6 +78,36 @@ async function phone(b, name, key, errs, store = {}) {
   // celebrations don't break anything
   await A.evaluate(() => { GM.LOCKER && ['celeb-fireworks', 'celeb-money', 'celeb-lightning', 'celeb-pigeon', 'celeb-trophy', 'celeb-club', 'celeb-confetti'].forEach(id => { GM.store.set('locker', { ...GM.store.get('locker'), own: { ...GM.store.get('locker').own, [id]: 1 }, eq: { ...GM.store.get('locker').eq, celeb: id } }); GM.celebrate(); }); });
   await A.waitForTimeout(1200);
+  // 🎁 prizes: the wheel, pick one, the level road, a Legendary pack's bonus, an event
+  await A.evaluate(() => GM.grant({ spin: 2 }, 'test', true));
+  await A.goto(U + '#/spin'); await A.waitForTimeout(500);
+  await A.screenshot({ path: 'lay/wheel.png' });
+  const spins0 = await A.evaluate(() => +GM.store.get('spins', 0));
+  await A.click('#wh-go'); await A.waitForTimeout(4200);
+  const sp = await A.evaluate(() => ({ n: +GM.store.get('spins', 0), shown: document.getElementById('wh-n').textContent }));
+  ok(sp.n === spins0 - 1, `the prize wheel spins and pays out (${spins0} → ${sp.n} spins left)`);
+  await A.evaluate(() => GM.grant({ choice: [{ pack: 'season' }, { spin: 2 }, { vault: 1 }] }, 'season tier 5'));
+  await A.waitForTimeout(1200);
+  ok((await A.$$('.rw-opt')).length === 3, 'pick one of three: a Season pack, 2 spins or a vault item');
+  const spinsB = await A.evaluate(() => +GM.store.get('spins', 0));
+  await A.click('.rw-opt[data-k="1"]'); await A.waitForTimeout(500);
+  ok(await A.evaluate(b => +GM.store.get('spins', 0) === b + 2 && !(GM.store.get('choices', []) || []).length, spinsB), 'picking the spins gives two');
+  const road = await A.evaluate(() => [25, 9, 70, 21].map(n => GM.levelReward(n).map(GM.rewardLabel).join('+')));
+  ok(/Pick one/.test(road[0]) && /Celebrity/.test(road[1]) && /Legendary/.test(road[2]) && /spin/.test(road[3]), `the level road: ${road.join(' | ')}`);
+  await A.goto(U + '#/level'); await A.waitForTimeout(400);
+  ok((await A.$$('.road-n')).length >= 10, 'the level page shows the road ahead');
+  const vault = await A.evaluate(() => GM.vaultItems().map(x => x.id));
+  ok(vault.includes('pitch-wembley') && !vault.includes('title-ghoul') && !vault.includes('title-tinkerman'), `the vault: vault-only items, not this season's or an event that hasn't finished (${vault.length} items)`);
+  await A.evaluate(() => GM.givePack(1, null, 'legendary'));
+  await A.goto(U + '#/packs'); await A.waitForTimeout(600);
+  const opened = await A.evaluate(() => { const own0 = Object.keys(GM.store.get('locker').own).length; let r = null; for (let i = 0; i < 6 && !(r && r.type === 'legendary'); i++) r = GM.openPack(); return { type: r && r.type, bonus: r && r.bonus, own: Object.keys(GM.store.get('locker').own).length - own0 }; });
+  ok(opened.type === 'legendary' && opened.bonus && opened.bonus.item && opened.own >= 1, `a 🌟 Legendary pack: player pieces and a vault item (${JSON.stringify(opened.bonus)})`);
+  await A.evaluate(() => { GM.store.set('eventPeek', 'spooky26'); });
+  await A.goto(U + '#/season'); await A.waitForTimeout(500);
+  ok(/Spooky Season/.test(await A.textContent('.ev-card')), 'an event on: its card and track on the Season page');
+  await A.evaluate(() => GM.addXP(150 * 3 + 10)); await A.waitForTimeout(2500);
+  ok(await A.evaluate(() => GM.lockerHas('pitch-haunted') && GM.eventInfo().tier >= 3), 'XP fills the event track too: tier 3 is the Haunted ground pitch');
+  await A.screenshot({ path: 'lay/season_event.png', fullPage: true });
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();
 })();

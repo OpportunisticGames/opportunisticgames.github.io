@@ -126,7 +126,8 @@
       case 'nations': return GM.nationsPage(app);
       case 'level': return GM.levelPage(app);
       case 'locker': return GM.lockerPage(app, q);  // cosmetics and unlocks (locker.js)
-      case 'season': return GM.seasonPage(app);  // the season track, weekly missions, login rewards (rewards.js)
+      case 'season': return GM.seasonPage(app);
+      case 'spin': return GM.spinPage(app);  // the prize wheel (prizes.js)  // the season track, weekly missions, login rewards (rewards.js)
       case 'clubs': return leaderboard('clubs' + (q.w === '1' ? ':1' : ''));
       case 'packs': return GM.album(app, 'goals', 'album', q.v === 'xi' ? 'xi' : 'cards', '', GM.TIERS[q.t] ? q.t : '', q.open === '1');
       case 'matchfootle': return GM.footle(app, false, q.fx);

@@ -32,6 +32,13 @@ formations, and badges round 2.
   seasons (30 tiers), weekly missions, login rewards, two unlockable Dodgy Owner owners, unlockable challenge reactions.
 - **Level v season:** we kept the level for life (it's your rank on the boards; wiping it monthly would feel bad) and
   made the season a separate monthly track fed by the same XP. Say if you'd rather the level itself reset.
+- **Owner (11 Oct), built into 5.26 too:** "packs and other rewards, spins, choices of what reward you like, maybe
+  occasionally a pack can have both players and another reward… a legendary pack… some form of clash royale looking
+  level/tier system… temporary promotional tiers… have both a season pass and levels. Once a season is over the rewards
+  go into packs and other ways to unlock them." → the level road, the prize wheel, pick-one-of-three, a pack's bonus
+  slot, 🌟 Legendary packs, the vault, and events (Spooky Season first).
+- **Each month from now:** new season items (`src.s`) and, now and then, an event (`EVENTS`) keep it fresh; the old
+  ones drop into the vault.
 - **Next, to talk through:**
   1. **New CHAOS managers as rewards:** each needs a balance run (~25 min) and a portrait, so one or two at a time:
      e.g. a level-25 manager and a season-tier one. Who?
