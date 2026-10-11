@@ -97,6 +97,7 @@
       b.textContent = n; b.hidden = !n;
       if (GM.online && GM.online.check) GM.online.check();
     }
+    if (GM.native) GM.native.start();  // the app's extras: Play updates, links check (once a session)
     GM.sound.scene(path === 'draft' && /^chaos/.test(q.m || '') ? 'chaos' : path === 'draft' && q.ch ? 'h2h' : path);  // (a friend's challenge: the tense one)  // each game area has its own music (CHAOS has Mayhem)
     GM.chaosLook(path === 'draft' && /^chaos/.test(q.m || ''));
     GM.moneyLook(path === 'moneyball');
@@ -383,6 +384,7 @@
         <a href="#/updates">📰 Updates & version history ${GM.hasUnseenUpdate() ? '<i class="new-dot inline"></i>' : ''}<span>›</span></a>
         <a href="#/about">ℹ️ About the data<span>›</span></a>
         ${build == null ? `<a href="${GM.APK_URL}">🤖 Android app (APK)<span>›</span></a>` : ''}
+        ${GM.appHas('links') ? `<a href="#" id="s-links">🔗 Open friends’ links in the app <small class="${GM.app('linksStatus') === 'off' ? 'warn' : ''}">${({ verified: '✅ On', off: '⚠️ Off – tap to fix', unknown: 'Check' })[GM.app('linksStatus')] || ''}</small><span>›</span></a>` : ''}
         <a href="privacy.html">🔐 Privacy policy<span>›</span></a>
       </section>
       ${sub ? '' : `<p class="muted center">Goal Machine v${GM.versionLabel}${build != null ? ` · App build ${build}` : ''}<br>Made by Opportunistic Games</p>`}`;
@@ -390,6 +392,7 @@
       fn(b.dataset.v); GM.buzz(); GM.$$('#' + id + ' button').forEach(x => x.classList.toggle('on', x === b));
     });
     const nb = GM.$('#s-notif'); if (nb) nb.onclick = () => GM.app('openNotificationSettings');
+    const lk = GM.$('#s-links'); if (lk) lk.onclick = e => { e.preventDefault(); GM.app('openLinkSettings'); };
     GM.$$('[data-nk]').forEach(c => c.onchange = () => { GM.notify.set(c.dataset.nk, c.checked); GM.buzz(); });
     const nd = GM.$('#s-ndaily'); if (nd) nd.onchange = () => { GM.notify.set('daily', nd.value || null); GM.toast(nd.value ? `📅 Daily reminder at ${nd.value}` : 'Daily reminder off'); };
     // notification health, from the app (build 16+): permission, the 15-minute check, and what it last found

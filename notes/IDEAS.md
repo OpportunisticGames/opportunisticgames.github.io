@@ -23,6 +23,32 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### What other mobile games have that we don't *(owner asked, 11 Oct 2026)*
+- **Owner:** "What other things do normal apps/mobile games have that we don't yet?" Then: "go ahead with that set, add
+  all ideas into the ideas collection!"
+- **In the 5.25 app build (✅ building now):** Play's review card at a happy moment, in-app updates, the links check and
+  "Open by default" button, native haptics, Play Games player id and server auth code (app side), long-press icon
+  shortcuts, buttons on notifications, and a quieter channel for reminders and news.
+- **Still to do:**
+  1. **Account follows you to a new phone (server side).** The app now hands over the Play Games player id and a
+     one-time server auth code. Next: a Play Games OAuth web client id (Play Console → Play Games Services →
+     Configuration → Credentials, add a "Game server" credential), an Edge Function that swaps the code with Google
+     for the verified player id, and `link_pgs` / `restore_pgs` RPCs so a fresh install says "Welcome back, Joel".
+     Question: restore automatically, or ask first?
+  2. **Home-screen widget:** today's dailies and your streak (and "your move" in online games). A bigger native job,
+     for a later app build.
+  3. **Weekly missions / a season pass:** "Win 3 CHAOS drafts", "Beat a friend's challenge", "Play Footle 5 days":
+     rewards are packs, card upgrades, a badge. A free track that resets each week or month. The thing most games use
+     to bring people back daily.
+  4. **Divisions:** a weekly league with promotion and relegation against players of your level (not just friends):
+     10 divisions, top 3 up, bottom 3 down, a trophy cabinet of the seasons you won.
+  5. **Player profiles:** tap any name for their best XIs, badges, favourite manager, CHAOS best, and their record
+     against you.
+  6. **Invite a friend:** a share link that rewards both of you (a pack each) when they claim a name.
+  7. **Login rewards:** a little something for opening on consecutive days (we have streaks, not rewards): a coin, a
+     pack on day 7, a Legend pack on day 30.
+  8. **Pictures on notifications:** your friend's photo on a challenge or a result notification.
+
 ### Nationalities and countries *(owner, 10 Oct 2026)*
 - **Owner's words:** "Something about player's nationality and teams. Like best player to play for every country etc etc
   idk something around all that"

@@ -1903,6 +1903,7 @@
       if (S.mode === 'daily' && sc.total > GM.best('daily')) GM.store.set('best:daily', sc.total);
       const { isBest } = await GM.recordScore(modeKey(), sc.total, S.target && !S.rules.max && !S.rules.treble ? { t: sc.t, g: S.target } : { t: sc.t });
       if (isBest && sc.total > 0 && S.mode !== 'daily') GM.toast('🏆 New personal best!');
+      if (GM.native) { GM.native.gameDone(); if (isBest && sc.total > 0) { GM.buzz('win'); GM.native.happy('pb'); } }  // the Play review card, at a happy moment
       if (isBest && sc.total > 0 && !bull) setTimeout(() => GM.sound.play('cheer'), 1700);
     }
   }
