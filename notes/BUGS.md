@@ -3,6 +3,10 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.29 *(owner, 12 Oct 2026)*
+- “The banner is a bit broken”: the club scarf was still 18px down (where the old emoji strip ended), so it floated across
+  page titles. It now sits right under the 7px season band, and pages leave room for both.
+
 ### Fixed in 5.28 *(owner, 12 Oct 2026)*
 - Matchday XI: blank cards, then “id.split is not a function” and “Couldn’t load the player list”. 5.26’s seasons code
   took the name `GM.season`, which already meant “format a PL season” (`GM.era` uses it for one-season players), so every

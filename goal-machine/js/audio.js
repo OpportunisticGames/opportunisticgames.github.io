@@ -414,6 +414,34 @@
       { bars: 8, chords: ['Dm', 'Bb', 'Gm', 'A'], pad: 1, kick: 1, clap: 1, hats: 8, bass: 'pulse', stab: 1, arp: 1, tune: 'creep', fill: 1 },
     ],
   };
+  // Seasonal CHAOS (in the game, not the menus): the season's tune at CHAOS speed, and it builds with the meter like CHAOS does
+  // Halloween: 'Monster Mash-Up', 138 bpm in D minor - the creepy organ and the creep, over a wobbling bass and a siren-like howl
+  TRACKS.spookychaos = {
+    bpm: 138, inst: { bassType: 'sawtooth', bassLp: 520, keys: 1, arpType: 'square', arpVol: 0.02, stabVol: 0.026, leadSaw: 1, hatVol: 0.03 },
+    tunes: {
+      creep: TRACKS.spooky.tunes.creep,
+      howl: [[74, _, 77, _, 81, _, 80, _], [81, _, 77, _, 74, _, _, _], [70, _, 74, _, 77, _, 76, _], [73, _, 76, _, 81, _, _, _],
+        [86, _, 85, _, 86, _, 81, _], [82, _, 81, _, 80, _, 81, _], [77, _, 76, _, 74, _, 73, _], [74, _, _, _, 62, _, _, _]],
+    },
+    song: [
+      { bars: 4, chords: ['Dm', 'Bb', 'Gm', 'A'], pad: 1, hats: 16, bass: 'wobble', intro: 1, siren: 1 },
+      { bars: 8, chords: ['Dm', 'Bb', 'Gm', 'A'], kick: 1, clap: 1, hats: 16, bass: 'wobble', stab: 1, arp: 1, tune: 'creep' },
+      { bars: 8, chords: ['Dm', 'Bb', 'Gm', 'A7'], kick: 1, clap: 1, hats: 16, open: 1, bass: 'drive', stab: 1, tune: 'howl', fill: 1 },
+      { bars: 4, chords: ['Gm', 'A7', 'Dm', 'A'], pad: 1, bass: 'long', siren: 1, roll: 1 },
+      { bars: 8, chords: ['Dm', 'Bb', 'Gm', 'A'], kick: 1, clap: 1, hats: 16, open: 1, bass: 'wobble', stab: 1, arp: 1, tune: 'creep', fill: 1 },
+    ],
+  };
+  // Christmas: 'Jingle Bells' at CHAOS speed, 152 bpm in C, with a driving bass under the bells
+  TRACKS.festivechaos = {
+    bpm: 152, inst: { bassType: 'sawtooth', bassLp: 600, stabVol: 0.026, arpType: 'sine', arpVol: 0.022, leadSaw: 1 },
+    tunes: { jingle: TRACKS.festive.tunes.jingle },
+    song: [
+      { bars: 4, chords: ['C', 'F', 'G', 'C'], hats: 16, bass: 'wobble', intro: 1 },
+      { bars: 16, chords: ['C', 'C', 'C', 'C', 'F', 'C', 'D7', 'G', 'C', 'C', 'C', 'C', 'F', 'C', 'G7', 'C'], kick: 1, clap: 1, hats: 16, bass: 'drive', stab: 1, tune: 'jingle' },
+      { bars: 4, chords: ['F', 'C', 'G', 'C'], pad: 1, bass: 'long', roll: 1 },
+      { bars: 16, chords: ['C', 'C', 'C', 'C', 'F', 'C', 'D7', 'G', 'C', 'C', 'C', 'C', 'F', 'C', 'G7', 'C'], kick: 1, clap: 1, hats: 16, open: 1, bass: 'wobble', stab: 1, arp: 1, tune: 'jingle', fill: 1 },
+    ],
+  };
   // Champions Nights and Final Day: 'Under the Lights', 104 bpm in D - a grand fanfare of our own for the big nights
   TRACKS.champions = {
     bpm: 104, inst: { bassType: 'triangle', bassLp: 700, stabVol: 0.03, leadSaw: 1, arpVol: 0.016 },
@@ -451,7 +479,9 @@
     derby: ['h2h', 'h2hplay', 'hilo', 'hopper', 'online', 'auction', 'royale'],
     chaos: ['chaos'],
   };
-  const trackFor = path => { const t = Object.keys(SCENES).find(k => SCENES[k].includes(path)) || 'anthem'; return t === 'anthem' && GM.seasonMusic && TRACKS[GM.seasonMusic] ? GM.seasonMusic : t; };  // the menus play the season's music
+  const SZ_TRACK = { halloween: 'spookychaos', christmas: 'festivechaos' };  // Seasonal CHAOS's music (else the CHAOS track)
+  const trackFor = path => { if (path === 'szchaos') { const th = GM.gmSeason ? GM.gmSeason().theme : ''; return TRACKS[SZ_TRACK[th]] ? SZ_TRACK[th] : 'chaos'; }
+    const t = Object.keys(SCENES).find(k => SCENES[k].includes(path)) || 'anthem'; return t === 'anthem' && GM.seasonMusic && TRACKS[GM.seasonMusic] ? GM.seasonMusic : t; };  // the menus play the season's music
   let scene = 'anthem';
 
   function startMusic(name, from, until) {
@@ -492,7 +522,7 @@
         for (const x of SONG) { if (barAll < start + x.bars) { sec = x; break; } start += x.bars; }
         const bar = barAll - start, [ch, root] = CH[sec.chords[bar % 4]], last = bar === sec.bars - 1;
         const r = GM.rng(name + pass + ':' + barAll + ':' + b);
-        const h = name === 'chaos' ? heat : 0;
+        const h = name === 'chaos' || name === 'spookychaos' || name === 'festivechaos' ? heat : 0;  // (builds with the CHAOS meter)
         const t = t0 + (I.swing && b % 2 ? step * I.swing : 0);  // swing pushes the off-beat 16ths late
         if (b === 0 && sec.pad) inst.pad(t, ch, 1);
         if (sec.kick && (I.soft ? b % 8 === 0 : b % 4 === 0) && !(last && sec.fill && b >= 8)) inst.kick(t);
@@ -636,6 +666,7 @@
     set(k, v) { store.set(k, v); applyVolumes(); syncBg(); },
     // the router calls this on every page change; the music follows the game area
     scene(path) { const t = trackFor(path); if (t !== scene) { scene = t; syncBg(); } },
+    track: () => scene,  // (which track this page plays: tests)
     TRACKS: Object.keys(TRACKS),
     // the Soundtrack song playing now (or next), and a skip button for Settings
     nowPlaying: () => (tunes.list && tunes.i >= 0 ? tunes.list[tunes.i] : null),

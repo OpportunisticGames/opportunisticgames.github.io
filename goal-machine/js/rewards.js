@@ -208,7 +208,7 @@
   const szChaosCard = z => {
     const szc = GM.SZ_CHAOS && GM.SZ_CHAOS[z.theme]; if (!szc) return '';
     const t = Object.values(GM.LOCKER || {}).find(x => x.src.szc && (x.src.s || '') === z.id), n = GM.szChaosCount(), need = t ? t.src.szc : 0, got = t && GM.lockerHas(t.id);
-    return `<a class="szc-card sz-${z.theme}" href="#/draft?m=chaos&s=goals"><span class="szc-k">This month only</span><b>${GM.esc(szc.name)}</b><small>${GM.esc(szc.kick)} Its own wildcards, moments and managers.</small>
+    return `<a class="szc-card sz-${z.theme}" href="#/draft?m=szchaos&s=goals"><span class="szc-k">This month only</span><b>${GM.esc(szc.name)}</b><small>${GM.esc(szc.kick)} Its own wildcards, moments and managers.</small>
       <span class="szc-row"><span>+${SZ_XP} season XP a game</span>${t ? `<span>${got ? '✅' : `${Math.min(n, need)}/${need}`} 🏷️ “${GM.esc(t.name)}” title</span>` : ''}</span><i>Play ›</i></a>`;
   };
   // the season pass: the Season view of the Locker tab (also #/season, from the top bar)

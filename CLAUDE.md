@@ -58,7 +58,9 @@ game mode for players; this file is about how to work on it.
 - `draft.js` – the draft engine for every XI mode (Ultimate, Classic, Extreme, Purist, Target, Treble, Mystery, Club,
   Daily, CHAOS). `RULES`, `WILDCARDS`, CHAOS `EVENTS`, seasonal CHAOS `SZ_CHAOS` (per season: 2 wildcards keyed `sz_*` that play as an
   existing kind (`as:` for modifiers), 3 moments, colours via `body[data-cz]`; `S.sz` fixed at kick-off and carried by challenges; `inSz` gates them; `SZ_MGRS`: 3 characters a season as
-  `MANAGERS['szm_*']` = a real manager's rules (`base`, `mgrIs` matches it) with their own name/look/text, offered instead of the real ones;
+  `MANAGERS['szm_*']` = a real manager's rules (`base`, `mgrIs` matches it) with their own name/look/text, offered instead of the real ones; all of it only in the Seasonal CHAOS mode (`m=szchaos`, `RULES.szchaos`, its own board `szchaos`), which is
+  deliberately OP (`S.sz` doubles `pts`, meter ×1.5, storms 20%, seasonal coin cards ×3, perks ×2) while normal CHAOS stays normal; the wild moments are factories in `WILD`
+  (steal, transfig, merge, ghost12, flip, werewolf, drain, potion, scared, rise, hidden, trick, bonus) dressed per season in `SZ_WILD`; `SZ_MGRS` has six a season;
   full time calls rewards.js `GM.szChaosDone` (season XP, the `szchaos` mission that's always one of the three, Locker titles `src.szc`)), reel generation (`makeReels`, seeded, so the same seed = the same
   game), scoring (`scoreFor`), rendering. The pitch is sized once by `fitPitch()`; everything under it sits in a
   fixed-height `.dock` so the layout never jumps. `render()` only draws while its own game is on screen.
@@ -73,6 +75,7 @@ game mode for players; this file is about how to work on it.
   Two jokers (`Jsub` wins the trick, `Jvar` gives it to the lowest of the suit led; playable any time, not as a lead); the lowest Defender and Midfielder make way. Cards: kit per suit, number/suit/name in the left strip (`.htc-edge`) so a fanned hand reads. Online (`GM.hattrickOnline`): a duel room with variant `hattrick`; only the humans' moves are stored ({t:'b',n} / {t:'p',c}, s = host/guest), and `replay` rebuilds the game from the room seed with the computers (seats 2, 3) on the never-random Hard play, so both phones agree. The final mover posts both team scores (p_all) and gm_finalise gives the higher 100–0.
 - `chaosart.js` – CHAOS artwork (`GM.CFX`): drawn scenes over the pitch for events (`play`), wildcard flourishes (`wild`),
   the weather (`WEATHER`, set per game at kick-off), extra sprites and drawn leftovers. Calm mode skips the scenes.
+- Seasonal CHAOS's in-game music: `audio.js` `SZ_TRACK` (halloween → `spookychaos`, christmas → `festivechaos`, else `chaos`), scene `szchaos`; they build with the meter like CHAOS.
 - `fx.js` – the effects layer for every game (`GM.FX`): a PixiJS canvas over the page for particles and light
   (`sparks`, `smoke`, `flare`, `burst`, `lightning`, `vortex`, `twister`, `rain`, `confetti`, `money`, `fireworks`…) and
   `GM.FX.lottie(name, …)` for LottieFiles animations in `fx/lottie/` (credits in `fx/lottie/credits.json`, shown on the
@@ -181,6 +184,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    - `chaospixi.js` – the effects layer in CHAOS: Lottie vehicles and characters, PixiJS particles, the parked ambulance, Calm off.
    - `challenges.js` – friend challenges on three phones: send, ghost bar, watch along, head-to-head, reactions, rematch (best of three), group table, tally, rivalry page, CHAOS.
    - `allbadges.js` – every one of the 100 badges is earned through the calls the games make (a new badge needs a trigger here).
+   - `szfull.js` – three whole Seasonal CHAOS games with the wild moments (steal, merge, hex…) forced in, each to full time.
    - `chaosseasons.js` – every season's CHAOS: kick-off line and colours, each seasonal moment and wildcard plays, no other season's leak in.
    - `layout527.js` – the 5.27 layout: the top bar and 🎁 sheet, the Locker tab's views and the old addresses that land in it, missions on Today, Online's Challenges sub-tab (390 and 360 px).
    - `rewards526.js` – the Locker and seasons: unlocks from what you've done, wearing styles, frames/titles seen by a friend, the season track, missions, login rewards, the locked owners.
