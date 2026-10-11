@@ -28,6 +28,14 @@ formations, and badges round 2.
 > makes it feel less like an actual functioning game. A cobweb in the corner, the spin having a particular theme, maybe a
 > spooky themed chaos mode with different wildcards with like a witch and stuff etc etc y'know"
 
+> 5.29 follow-up: "the halloween version should be at the top… it's very silly to just double things for no reason…
+> maybe somethings, e.g a triple or nothing… there really needs to be at least 10 managers… it doesnt scream halloween"
+
+Done in 5.30: Seasonal CHAOS on top of Home; flat doubling gone (triple-or-nothing cards, faster meter, more storms
+stay); ten characters a season; Halloween CHAOS gets a moonlit graveyard, fog, cobwebs, pumpkins and flying bats,
+ghost and witch on the pitch, and spooky weather. Other seasons only get still colours, a corner prop and (Christmas)
+a sleigh so far: worth a proper look each month before it starts.
+
 Done straight away (5.28): the strip is a slim band, a LottieFiles cobweb in the corner with a spider that drops from it,
 a witch visitor, drawn leaves instead of emoji, and a Halloween prize wheel with a pumpkin hub.
 

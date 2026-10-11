@@ -827,7 +827,7 @@ GM.MODES = {
 
 // Hard mode: games show names + positions only (no clubs, years, apps, nationality); Who Am I? saves the
 // clubs for the last clue. Scores go to "<mode>h".
-GM.HARD_MODES = ['ultimate', 'ultimateast', 'ultimateapps', 'chaos', 'chaosast', 'chaosapps', 'chaosx', 'chaosxast', 'chaosxapps', 'target', 'targetast', 'targetapps', 'classic', 'classicast', 'classicapps',
+GM.HARD_MODES = ['ultimate', 'ultimateast', 'ultimateapps', 'chaos', 'chaosast', 'chaosapps', 'szchaos', 'szchaosast', 'szchaosapps', 'chaosx', 'chaosxast', 'chaosxapps', 'target', 'targetast', 'targetapps', 'classic', 'classicast', 'classicapps',
   'classicwild', 'classicwildast', 'classicwildapps', 'ultimatepure', 'ultimatepureast', 'ultimatepureapps',
   'extreme', 'extremeast', 'extremeapps', 'purist', 'puristast', 'puristapps', 'treble', 'mystery', 'hopper', 'grid', 'hilo', 'whoami', 'tally', 'hattrick',
   'money', 'boss', 'owner'];

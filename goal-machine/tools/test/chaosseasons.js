@@ -30,7 +30,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const mus2 = await pg.evaluate(() => GM.sound.track());
   ok(mus1 === 'spookychaos' && mus2 === 'chaos', `the music: Halloween CHAOS plays “Monster Mash-Up” (${mus1}), normal CHAOS its own (${mus2})`);
   await pg.evaluate(() => { location.hash = '#/'; Object.keys(localStorage).filter(x => x.startsWith('gm:draftp')).forEach(x => localStorage.removeItem(x)); }); await pg.waitForTimeout(200);
-  ok(Object.keys(bases).length === 54, `54 seasonal characters, six a season (three offered each game)`);
+  ok(Object.keys(bases).length === 90, `90 seasonal characters, ten a season (three offered each game)`);
   ok(themes.length === 9, `nine seasons have their own CHAOS: ${themes.join(', ')}`);
   for (const th of themes) {
     await pg.evaluate(() => Object.keys(localStorage).filter(x => x.startsWith('gm:draftp')).forEach(x => localStorage.removeItem(x)));
@@ -106,7 +106,8 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.goto(U + '#/locker?v=kit&k=title'); await pg.waitForTimeout(500);
   ok(await pg.evaluate(() => { const t = [...document.querySelectorAll('.lk-item')].map(b => b.dataset.id); return t.includes('title-witch') && !t.includes('title-boxing'); }), 'the Locker shows this season’s CHAOS title, not next season’s');
   await pg.goto(U + '#/'); await pg.waitForTimeout(500);
-  ok(/Headline event/.test(await pg.textContent('.chaos-card .kicker')) && /Halloween CHAOS/.test(await pg.textContent('.sz-chaos-card')) && !!(await pg.$('.sz-chaos-card a[href*="m=szchaos"]')), 'Home keeps normal CHAOS and has Seasonal CHAOS as its own card');
+  ok(/Headline event/.test(await pg.textContent('.chaos-card:not(.sz-chaos-card) .kicker')) && /Halloween CHAOS/.test(await pg.textContent('.sz-chaos-card')) && !!(await pg.$('.sz-chaos-card a[href*="m=szchaos"]')), 'Home keeps normal CHAOS and has Seasonal CHAOS as its own card');
+  ok(await pg.evaluate(() => document.querySelector('.chaos-card').classList.contains('sz-chaos-card')), 'the season’s CHAOS is at the top of Home');
   await pg.evaluate(() => { location.hash = '#/'; }); await pg.waitForTimeout(400);
   ok(await pg.evaluate(() => !document.body.dataset.cz), 'leaving CHAOS takes the season’s colours with it');
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + [...new Set(errs)].slice(0, 3).join(' | ') : ''));

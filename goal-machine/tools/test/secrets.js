@@ -27,11 +27,11 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.goto(U + '#/'); await pg.waitForTimeout(900);
   const hero = await pg.textContent('.hero');
   ok(!/Premier League players/.test(hero) && (await pg.$eval('.hero .banter', e => e.textContent.length)) > 10, `with a club picked, the home line is banter: “${(await pg.textContent('.hero .banter')).trim()}”`);
-  ok(await pg.$eval('[data-hpanel="main"]', e => e.firstElementChild.classList.contains('chaos-card') && /Headline event|this month only/.test(e.firstElementChild.textContent)), 'CHAOS is the headline event (or this month’s seasonal CHAOS), first on the Main tab');
+  ok(await pg.$eval('[data-hpanel="main"]', e => e.firstElementChild.classList.contains('chaos-card') && /Headline event|this month only/i.test(e.firstElementChild.textContent)), 'CHAOS is the headline event (or this month’s seasonal CHAOS), first on the Main tab');
   // CHAOS Extreme: every player
   await pg.click('[data-level="extreme"]'); await pg.waitForTimeout(400);
   ok(await pg.$$eval('.chaos-card:not(.sz-chaos-card) .stat-btn', l => l.every(a => a.getAttribute('href').includes('m=chaosx'))), 'Extreme difficulty switches the CHAOS card to every player (5,000+)');
-  await pg.click('.chaos-card .stat-btn'); await pg.waitForTimeout(2500);
+  await pg.click('.chaos-card:not(.sz-chaos-card) .stat-btn'); await pg.waitForTimeout(2500);
   const cx = await pg.evaluate(() => { const S = GM.draft.state(); return { title: document.querySelector('.topbar h2').textContent, all: S.rules.all && S.rules.chaos, n: (GM.allPlayers || []).length, pick: !!document.querySelector('.cm [data-mgr]'), key: GM.draft.modeKey('chaosx', 'goals', false) }; });
   ok(/CHAOS Extreme/.test(cx.title) && cx.all && cx.n > 4000 && cx.pick && cx.key === 'chaosx', `CHAOS Extreme loads all ${cx.n.toLocaleString()} players, appoints a manager, own leaderboard (${cx.key})`);
   await pg.goto(U + '#/'); await pg.waitForTimeout(600);

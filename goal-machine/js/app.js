@@ -228,7 +228,7 @@
     if (on) { document.documentElement.dataset.theme = 'dark'; GM.app('setBars', '#1a1622', false); } else if (!document.body.classList.contains('chaos-mode') && !document.body.classList.contains('money-mode')) GM.applyTheme();
   };
   GM.chaosLook = function (chaos) {
-    if (!chaos) delete document.body.dataset.cz;  // (the season's CHAOS look goes with it)
+    if (!chaos) { delete document.body.dataset.cz; if (GM.czDeco) GM.czDeco(false); }  // (the season's CHAOS look goes with it)
     if (chaos === document.body.classList.contains('chaos-mode')) return;
     document.body.classList.toggle('chaos-mode', chaos);
     if (chaos) { document.documentElement.dataset.theme = 'dark'; GM.app('setBars', '#12001f', false); } else GM.applyTheme();
@@ -289,12 +289,12 @@
       <div class="hard-toggle three" role="group" aria-label="Difficulty">${Object.entries(GM.LEVELS).map(([k, [i, n, sub]]) => `<button class="${k === level ? 'on' : ''}" data-level="${k}">${i} ${n}<small>${sub}</small></button>`).join('')}</div>
       <div class="seg home-tabs" id="htabs">${HTABS.map(([k, l, modes]) => `<button data-t="${k}">${l}${modes.some(m => newTag(m)) ? '<i class="new-dot"></i>' : ''}</button>`).join('')}</div>
       <div data-hpanel="main">
+      ${szc ? `<div class="chaos-card sz-chaos-card" data-cz="${GM.gmSeason().theme}"><div class="chaos-head"><span>${GM.gmSeason().icon}</span><div><span class="kicker">This month only · its own leaderboard</span><b>${GM.esc(szc.name)}</b><small>${GM.esc(szc.kick)} Its own characters in the dugout, wildcards and moments: witches, hexes, triple-or-nothing and more madness than ever. +60 season XP a game.</small></div></div>
+        <div class="stat-row">${Object.keys(GM.STATS).map(s => statBtn('szchaos', s)).join('')}</div></div>` : ''}
       <div class="chaos-card">${newTag('chaos')}<div class="chaos-head"><span>🌪️</span><div><span class="kicker">Headline event</span><b>Ultimate Wildcard CHAOS</b><small>Appoint a manager, fill the CHAOS meter and survive tornadoes, VAR and last-minute madness. Your XI’s total plus bonus points.</small></div></div>
         ${extreme ? '<span class="cx-note">⚡ Extreme: all 5,000+ players</span>' : ''}
         <div class="stat-row">${Object.keys(GM.STATS).map(s => statBtn(cpool, s)).join('')}</div>
         <a class="chaos-daily" href="#/draft?m=chaos&daily=1">${GM.calIcon()} <b>Daily CHAOS</b><span>${GM.dailyStatus('chaos').text || 'Same chaos for everyone today · one go'}</span>${GM.streak('chaos') ? `<i>🔥 ${GM.streak('chaos')}</i>` : ''}</a></div>
-      ${szc ? `<div class="chaos-card sz-chaos-card" data-cz="${GM.gmSeason().theme}"><div class="chaos-head"><span>${GM.gmSeason().icon}</span><div><span class="kicker">This month only · its own leaderboard</span><b>${GM.esc(szc.name)}</b><small>${GM.esc(szc.kick)} Its own characters in the dugout, wildcards and moments, all turned up: double bonuses, ×3 cards, more madness. +60 season XP a game.</small></div></div>
-        <div class="stat-row">${Object.keys(GM.STATS).map(s => statBtn('szchaos', s)).join('')}</div></div>` : ''}
       <div class="mode-card featured ultimate big-card">
         <span class="mode-icon">${GM.MODES[ult].icon}</span>
         <span class="mode-text"><span class="kicker">Main event</span><b>${ultName}</b><small>${ultSub}</small>

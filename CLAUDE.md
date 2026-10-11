@@ -57,10 +57,10 @@ game mode for players; this file is about how to work on it.
   `#/album`, `#/packs`, `#/season` all draw the Locker tab (`TAB_OF`).
 - `draft.js` – the draft engine for every XI mode (Ultimate, Classic, Extreme, Purist, Target, Treble, Mystery, Club,
   Daily, CHAOS). `RULES`, `WILDCARDS`, CHAOS `EVENTS`, seasonal CHAOS `SZ_CHAOS` (per season: 2 wildcards keyed `sz_*` that play as an
-  existing kind (`as:` for modifiers), 3 moments, colours via `body[data-cz]`; `S.sz` fixed at kick-off and carried by challenges; `inSz` gates them; `SZ_MGRS`: 3 characters a season as
+  existing kind (`as:` for modifiers), 3 moments, colours via `body[data-cz]`; `S.sz` fixed at kick-off and carried by challenges; `inSz` gates them; `SZ_MGRS`: characters (3 offered a game) as
   `MANAGERS['szm_*']` = a real manager's rules (`base`, `mgrIs` matches it) with their own name/look/text, offered instead of the real ones; all of it only in the Seasonal CHAOS mode (`m=szchaos`, `RULES.szchaos`, its own board `szchaos`), which is
-  deliberately OP (`S.sz` doubles `pts`, meter ×1.5, storms 20%, seasonal coin cards ×3, perks ×2) while normal CHAOS stays normal; the wild moments are factories in `WILD`
-  (steal, transfig, merge, ghost12, flip, werewolf, drain, potion, scared, rise, hidden, trick, bonus) dressed per season in `SZ_WILD`; `SZ_MGRS` has six a season;
+  deliberately wilder through its cards, not flat doubling (seasonal coin cards `as:'coin'` ×3 or ×0, meter ×1.5, storms 20%, Hard works) while normal CHAOS stays normal; its look on the pitch is `czDeco` (`DECO`: cobweb/pumpkin stills, bats/ghost/witch flying over, `.cz-deco`) and the weather `SZ_WX` (never sunny at Halloween); the wild moments are factories in `WILD`
+  (steal, transfig, merge, ghost12, flip, werewolf, drain, potion, scared, rise, hidden, trick, bonus) dressed per season in `SZ_WILD`; `SZ_MGRS` has ten a season;
   full time calls rewards.js `GM.szChaosDone` (season XP, the `szchaos` mission that's always one of the three, Locker titles `src.szc`)), reel generation (`makeReels`, seeded, so the same seed = the same
   game), scoring (`scoreFor`), rendering. The pitch is sized once by `fitPitch()`; everything under it sits in a
   fixed-height `.dock` so the layout never jumps. `render()` only draws while its own game is on screen.
@@ -193,6 +193,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    - `fixes5231.js` – Make a Sub can be called off, the Joker becomes any wildcard, Benítez the Tinkerman halves a player.
    - `fixes5222.js` – the weather clears when it stops; the "Open in the app" bar on Android browsers and the ?go= hand-over.
    - `fixes5221.js` – Extreme hides clues, the full wildcard bag choice, the share picture, CHAOS resume order, weather at full time, bonus notes, badges on every level.
+   - `szlook.js` – Halloween CHAOS's look: cobwebs and pumpkins on the pitch, flyers, no sun, Calm and leaving clear it, Hard hides the clubs.
    - `layout.js` – plays whole drafts and checks the pitch never changes size (`node layout.js "chaos:1,ultimate:0" 360x740`).
    Screenshots land in `./lay/` (ignored by git). Block photo hosts with `ctx.route(...)` to keep runs fast.
 3. Tests set `gm:welcomed` and `gm:seenVersion` in localStorage so the welcome and What's New pop-ups stay out of the way.
