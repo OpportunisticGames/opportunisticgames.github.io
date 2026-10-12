@@ -62,14 +62,14 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.goto(U + '#/leaderboard?m=ultimate'); await pg.waitForTimeout(900);
   ok(calls.some(c => /^month_scores\?/.test(c)) && await pg.$eval('#lbp', e => e.value) === '1', 'boards open on This month');
   const lay = await pg.evaluate(() => { const g = document.querySelector('.lbx-games'), r = [...g.children].map(a => a.getBoundingClientRect().top);
-    return { oneRow: r.every(t => Math.abs(t - r[0]) < 2), games: g.children.length, selects: document.querySelectorAll('.lbx-filters select').length, you: document.querySelector('#lbbody').firstElementChild.id }; });
+    return { oneRow: r.every(t => Math.abs(t - r[0]) < 2), games: g.children.length, selects: document.querySelectorAll('.lbx-filters select').length, you: document.querySelector('#lbbody').lastElementChild.id }; });
   // (7 games without a favourite club; an international break adds one)
   ok(lay.oneRow && lay.games >= 7 && lay.selects === 4, `simple layout: ${lay.games} games in one row, then 4 drop-downs (version, stat, Normal/Hard, month)`);
-  ok(lay.you === 'lbyou', 'your own position comes first, above the board');
+  ok(lay.you === 'lbyou', 'your own position is pinned at the bottom of the board (5.33)');
   await pg.selectOption('#lbs', 'assists'); await pg.waitForTimeout(600);
   ok(/m=ultimateast/.test(await pg.evaluate(() => location.hash)), 'choosing Assists switches board');
-  await pg.selectOption('#lbv', 'classic'); await pg.waitForTimeout(600);
-  ok(/m=classicast/.test(await pg.evaluate(() => location.hash)), 'choosing Classic keeps the stat');
+  await pg.selectOption('#lbv', 'ultimatepure'); await pg.waitForTimeout(600);
+  ok(/m=ultimatepureast/.test(await pg.evaluate(() => location.hash)), 'choosing Pure keeps the stat');
   await pg.goto(U + '#/leaderboard?m=packedxi'); await pg.waitForTimeout(600);
   ok(await pg.$$eval('.lbx-filters select', l => l.length) === 1, 'a board with nothing to choose shows just the month');
   await pg.goto(U + '#/leaderboard?m=ultimate'); await pg.waitForTimeout(700);

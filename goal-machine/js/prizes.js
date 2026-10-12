@@ -143,9 +143,9 @@
     if (items.length) return items.map(it => ({ item: it.id }));
     if (n % 10 === 0) return [{ pack: 'legendary' }];
     if (n % 5 === 0) return [{ choice: [{ pack: 'season' }, { spin: 2 }, { vault: 1 }] }];
-    if (n % 7 === 0) return [{ freeze: 1 }, { pack: 'level' }];
-    if (n % 4 === 2) return [{ scout: 1 }, { pack: 'level' }];
     if (n % 3 === 0) return [{ spin: 1 }, { pack: 'level' }];
+    if (n % 7 === 0) return [{ freeze: 1 }, { pack: 'level' }];   // (the renewables only take levels that were a plain pack)
+    if (n % 4 === 2) return [{ scout: 1 }, { pack: 'level' }];
     return [{ pack: 'level' }];
   };
   GM.roadHtml = function (lvl) {

@@ -28,7 +28,7 @@ async function phone(b, name, key, errs, extra = '') {
   ok(await A.evaluate(() => GM.lb.rpc('online_friends', { p_user: 'Alice', p_key: 'a'.repeat(28) }).then(f => (f || []).some(x => x.name === 'Bob'))), 'Add friend from a profile');
   await A.evaluate(() => document.querySelectorAll('.modal-wrap').forEach(m => m.remove()));
   // 🏆 the podium
-  const pod = await A.evaluate(() => { const d = document.createElement('div'); d.innerHTML = GM.lbList([{ name: 'Bob', score: 9 }, { name: 'Alice', score: 8 }, { name: 'Cara', score: 7 }, { name: 'Dan', score: 6 }], { key: 'x' }); return { pods: d.querySelectorAll('.pod').length, rows: d.querySelectorAll('.lb-row').length, first: d.querySelector('.pod1 b').textContent }; });
+  const pod = await A.evaluate(() => { const d = document.createElement('div'); d.innerHTML = GM.lbList([{ name: 'Bob', score: 9 }, { name: 'Alice', score: 8 }, { name: 'Cara', score: 7 }, { name: 'Dan', score: 6 }], { key: 'x' }); return { pods: d.querySelectorAll('.pod').length, rows: d.querySelectorAll('.lb-row').length, first: d.querySelector('.pod1 > b').textContent }; });
   ok(pod.pods === 3 && pod.rows === 1 && pod.first === 'Bob', `a podium for the top three, rows after (${JSON.stringify(pod)})`);
   // 🤝 an invite: a new player from Alice's link
   const N = await phone(b, '', '', errs, '?ref=Alice');
@@ -61,7 +61,7 @@ async function phone(b, name, key, errs, extra = '') {
   const bon = await A.evaluate(() => { const c0 = GM.consum('freeze'); GM.seasonXP(7500 + 1000); return GM.seasonBonus().n; });
   ok(bon >= 1, 'after tier 30 the track keeps paying (bonus tiers)');
   // 🎩 the fused name
-  const fz = await A.evaluate(() => GM.fusedName(['Alan Shearer', 'Andy Cole', 'Robbie Fowler'].map(n => GM.players.findIndex(p => p.name === n))));
+  const fz = await A.evaluate(() => GM.fusedName(['Alan Shearer', 'Andrew Cole', 'Robbie Fowler'].map(n => GM.players.findIndex(p => p.name === n))));
   ok(fz === 'Sheaoller', `Hat-Trick names fuse: Shearer + Cole + Fowler = ${fz}`);
   // 🛂 Visa trouble! sends a spin of his country's players
   await A.evaluate(() => { location.hash = '#/draft?m=chaos&s=goals&seed=visa533'; }); await A.waitForTimeout(1200);

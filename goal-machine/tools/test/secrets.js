@@ -33,7 +33,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(await pg.$$eval('.chaos-card:not(.sz-chaos-card) .stat-btn', l => l.every(a => a.getAttribute('href').includes('m=chaosx'))), 'Extreme difficulty switches the CHAOS card to every player (5,000+)');
   await pg.click('.chaos-card:not(.sz-chaos-card) .stat-btn'); await pg.waitForTimeout(2500);
   const cx = await pg.evaluate(() => { const S = GM.draft.state(); return { title: document.querySelector('.topbar h2').textContent, all: S.rules.all && S.rules.chaos, n: (GM.allPlayers || []).length, pick: !!document.querySelector('.cm [data-mgr]'), key: GM.draft.modeKey('chaosx', 'goals', false) }; });
-  ok(/CHAOS Extreme/.test(cx.title) && cx.all && cx.n > 4000 && cx.pick && cx.key === 'chaosx', `CHAOS Extreme loads all ${cx.n.toLocaleString()} players, appoints a manager, own leaderboard (${cx.key})`);
+  ok(/CHAOS \(Extreme\)/.test(cx.title) && cx.all && cx.n > 4000 && cx.pick && cx.key === 'chaosx', `CHAOS Extreme loads all ${cx.n.toLocaleString()} players, appoints a manager, own leaderboard (${cx.key})`);
   await pg.goto(U + '#/'); await pg.waitForTimeout(600);
   const banter = await pg.evaluate(() => { const out = new Set(); const clubs = [...new Set(GM.players.flatMap(p => p.clubs))]; clubs.forEach(c => out.add(typeof GM.clubBanter(c))); return [...out].join(); });
   ok(banter === 'string', 'every club gets a line of banter');

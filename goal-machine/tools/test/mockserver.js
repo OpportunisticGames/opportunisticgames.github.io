@@ -149,7 +149,7 @@ module.exports = function makeServer() {
           activity.push({ id: ++actN, username: v, kind: 'beaten', mode: a.p_mode, title: `😬 ${u} beat your score`, body: `${a.p_score} v your ${top.score}: you've lost top spot. Tap to win it back`, link: 'https://x/goal-machine/#/leaderboard?m=' + a.p_mode, at: new Date(t).toISOString(), t });
         activity.push({ id: ++actN, username: u, kind: 'crown', mode: a.p_mode, title: '👑 You\'re top of a leaderboard', body: `You knocked ${v} off top spot`, link: 'https://x/goal-machine/#/leaderboard?m=' + a.p_mode, at: new Date(t).toISOString(), t });
       }
-      scores.push({ name: u, mode: a.p_mode, score: a.p_score, at: Date.now() });
+      scores.push({ name: u, mode: a.p_mode, score: a.p_score, meta: a.p_meta || null, at: Date.now() });
       return 'ok';
     },
     best_players(a) {

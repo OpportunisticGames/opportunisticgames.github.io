@@ -29,8 +29,8 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(await pg.$('#s-bg [data-v="tunes"], #s-bg button:has-text("Soundtrack")') !== null, 'web keeps the Soundtrack option');
   // report Bob from the board
   await pg.goto(U + '#/leaderboard?m=ultimate'); await pg.waitForTimeout(800);
-  ok((await pg.$$('.lb-row[data-name]')).length === 2, 'other names can be reported');
-  await pg.click('#global .lb-row[data-name="Bob"]'); await pg.click('[data-yes]'); await pg.waitForTimeout(300);
+  ok((await pg.$$('#global [data-profile]:not(.me), #global .lb-row[data-name]:not(.me)')).length >= 2, 'other names can be tapped (for their profile, where they can be reported)');
+  await pg.click('#global [data-profile="Bob"], #global .lb-row[data-name="Bob"]'); await pg.click('#prof-report'); await pg.click('[data-yes]'); await pg.waitForTimeout(300);
   ok(server.fns.report_name({ p_user: 'Alice', p_key: 'a'.repeat(28), p_target: 'Bob' }) === 'ok', 'Dani + Alice reported Bob');
   await pg.screenshot({ path: 'lay/names_board.png', fullPage: true });
   // Bob's name is hidden: he's asked to change it and keeps his account
