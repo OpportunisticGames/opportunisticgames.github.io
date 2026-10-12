@@ -23,7 +23,7 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
-### 5.33: the owner's go on six ideas 🚧 being built *(owner, 13 Oct 2026)*
+### 5.33: the owner's go on six ideas ✅ 5.33 *(owner, 13 Oct 2026)*
 > "19. oo maybe stuff like streak freeze is a good idea for a reward you can get that is like renewable instead of all the
 > one time rewards so far - some other rewards like that would be good. 25. Hattrick hero is its own spin right? but you're
 > right it could use a rework - like three players actually turned into one would be cool. Right now you just choose one
@@ -39,6 +39,15 @@ formations, and badges round 2.
 - **Nation cards:** flags on cards, a foil No. 1 card per country, country sets in the Album, Nation packs, a Packed XI
   bonus for same-country teammates, and Passport Office in CHAOS.
 - **Leaderboards:** a podium for the top 3, pictures, movement since you last looked, your row pinned, tap for a profile.
+- **Owner, mid-build:** "how about a moment, like the conscription moment but instead you get a spin of players from the
+  country that the removed player is from? visa issues, a passport office and a plane". Built as 🛂 Visa trouble! (a
+  LottieFiles plane takes him, a visa-stamp Lottie, then the Passport Office spin); Passport Office is no longer a
+  wildcard you can be dealt, only the moment's spin.
+- **Decisions we made:** profile photos only for friends (as Settings promises), initials for everyone else; scores now
+  carry the XI's names and the CHAOS manager (profiles show them for scores from 5.33 on); referrals capped at 20 per
+  inviter, new accounts only (3 days); the Packed XI's nation bonus is +3 goals per extra teammate from a country.
+- **Still open:** a longer season track (option a) wasn't picked: the bonus tiers and renewables are in; ask again if
+  the track still feels short.
 
 ### A nicer leaderboard layout 💬 *(owner, 13 Oct 2026)*
 > "I think there has to be a nicer leaderboard layout. No worries if there isn't."

@@ -3586,3 +3586,24 @@ body.calm .pc-foil { animation: none; }
 .nat-nm small { color: var(--muted); font-size: .7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nat-of { font-weight: 800; color: var(--hi); font-size: .85rem; }
 .nat-bonus { margin: 6px 0 0; font-size: .88rem; }
+
+/* 🎩 Hat-Trick: three faces sliced into one, flickering at the seams */
+.fuse { position: relative; display: inline-block; flex: none; line-height: 0; }
+.fuse .fz { display: block; }
+.fuse .fz + .fz { position: absolute; inset: 0; }
+.fuse .fz0 { clip-path: polygon(0 0, 40% 0, 30% 100%, 0 100%); }
+.fuse .fz1 { clip-path: polygon(40% 0, 68% 0, 62% 100%, 30% 100%); filter: saturate(1.3) hue-rotate(-12deg); animation: fz-glitch 3.4s infinite; }
+.fuse .fz2 { clip-path: polygon(68% 0, 100% 0, 100% 100%, 62% 100%); animation: fz-glitch 3.4s 1.1s infinite reverse; }
+.fuse::after { content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; box-shadow: 0 0 0 2px #ffd34d, 0 0 10px rgba(255,211,77,.8);
+  background: linear-gradient(100deg, transparent 37%, rgba(255,255,255,.9) 39%, transparent 41%, transparent 63%, rgba(255,255,255,.9) 65%, transparent 67%); }
+@keyframes fz-glitch { 0%, 88%, 100% { transform: none; } 90% { transform: translate(1.5px, -1px); } 93% { transform: translate(-2px, 1px); } 96% { transform: translate(1px, 0); } }
+body.calm .fuse .fz { animation: none; }
+.fuse-fly { position: fixed; z-index: 70; pointer-events: none; filter: drop-shadow(0 6px 14px rgba(0,0,0,.45)); }
+.slot.fusing .fuse { opacity: 0; }
+.slot.fused-pop .fuse { animation: fz-pop .6s cubic-bezier(.2,1.6,.4,1); }
+@keyframes fz-pop { from { transform: scale(1.9); } to { transform: scale(1); } }
+
+/* 🔭 Scout's Tip: pick a card */
+.scout-pick { display: flex; gap: 6px; justify-content: center; margin: 10px 0; }
+.scout-pick button { background: none; border: 0; padding: 0; cursor: pointer; flex: 1; max-width: 110px; }
+.st-bonus { display: block; margin-top: 4px; }

@@ -1,7 +1,7 @@
 // A stand-in for the Supabase online_* functions (same rules as the SQL), shared by every test phone
 module.exports = function makeServer() {
   const players = { alice: { username: 'Alice', key: 'a'.repeat(28) }, bob: { username: 'Bob', key: 'b'.repeat(28) }, cara: { username: 'Cara', key: 'c'.repeat(28) } };
-  const scores = [], activity = []; let actN = 0;
+  const scores = [], activity = [], referrals = []; let actN = 0;
   const rooms = {}, friends = new Set(), backups = {}, pics = {}, reports = [], nameReports = new Set(), hiddenNames = new Set(); let n = 0;
   const now = () => Date.now() / 1000;
   const auth = (u, k) => { const p = players[(u || '').toLowerCase()]; return p && p.key === k ? p.username : null; };
@@ -172,6 +172,27 @@ module.exports = function makeServer() {
     app_inbox(a) {
       const u = (players[(a.p_user || '').toLowerCase()] || {}).username;
       return activity.filter(x => x.username === u && x.kind === 'beaten' && (!a.p_prefs || a.p_prefs.beaten !== false)).map(x => ({ id: 'b:' + x.id, title: x.title, body: x.body, link: x.link }));
+    },
+    // 5.33: profiles and invites (simplified)
+    player_profile(a) {
+      const pl = players[(a.p_name || '').toLowerCase()]; if (!pl) return null;
+      const me = (players[(a.p_me || '').toLowerCase()] || {}).username;
+      const mine = scores.filter(x => x.name === pl.username), modes = [...new Set(mine.map(x => x.mode))];
+      const boards = modes.map(m => { const b = {}; scores.filter(x => x.mode === m).forEach(x => { if (!(x.name in b) || b[x.name] < x.score) b[x.name] = x.score; });
+        const order = Object.entries(b).sort((x, y) => y[1] - x[1]); return { mode: m, score: b[pl.username], rk: order.findIndex(x => x[0] === pl.username) + 1, n: order.length }; });
+      const xi = mine.filter(x => x.meta && x.meta.xi).sort((x, y) => y.score - x.score)[0];
+      return { name: pl.username, level: 7, club: null, flair: {}, since: new Date().toISOString(), games: mine.length, boards, crowns: boards.filter(b => b.rk === 1).length,
+        best: null, mbest: null, xi: xi ? { mode: xi.mode, score: xi.score, xi: xi.meta.xi } : null, mgr: (mine.find(x => x.meta && x.meta.mgr) || { meta: {} }).meta.mgr || null,
+        vs: me && me !== pl.username ? { w: 0, d: 0, l: 0 } : null, friend: !!me && friends.has(me + '|' + pl.username) };
+    },
+    claim_referral(a) {
+      const u = auth(a.p_user, a.p_key); if (!u) return 'auth';
+      const inv = (players[(a.p_ref || '').toLowerCase()] || {}).username; if (!inv) return 'no_user'; if (inv === u) return 'self';
+      if (referrals.some(r => r.invitee === u)) return 'done';
+      referrals.push({ inviter: inv, invitee: u }); befriend(u, inv);
+      const t = Date.now();
+      activity.push({ id: ++actN, username: inv, kind: 'referral', title: `🤝 ${u} joined from your invite`, body: 'A Referral pack for you both', link: '#/online', at: new Date(t).toISOString(), t });
+      return 'ok';
     },
     load_backup(a) { const u = auth(a.p_user, a.p_key); if (!u) return null; return backups[u] || { none: true }; },
     delete_account(a) { const u = auth(a.p_user, a.p_key); if (!u) return 'auth'; delete players[u.toLowerCase()]; return 'deleted'; },

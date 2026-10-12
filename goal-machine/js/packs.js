@@ -196,6 +196,7 @@
     legend: { icon: '🟣', name: 'Legend’s choice', text: 'Choose one of these three Legends', w: 10 },
   };
   GM.PACK_WILDS = WILDS;
+  GM.scoutOptions = () => wildOptions(load(), GM.rng('scout|' + Date.now()), 'scout', null, new Set()).options;  // (a 🔭 Scout's Tip, prizes.js)
   // the three options for a wildcard: { kind, options } (a Scout's tip with nothing started becomes a Pick one)
   function wildOptions(c, r, kind, theme, taken) {
     const out = [], seen = new Set(taken);

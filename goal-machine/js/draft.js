@@ -52,7 +52,7 @@
     magnet: { icon: '🧲', name: 'Old Teammates', w: 1.2, chaos: true, kind: 'special', desc: () => 'A free spin of players who played alongside your last signing (chemistry bonus!).',
       filter: p => { const lp = S.last != null ? byId(S.last) : null; return !!lp && p.first <= lp.last && p.last >= lp.first && p.clubs.some(c => lp.clubs.includes(c)); } },
     trophy: { icon: '🏆', name: 'Trophy Cabinet', w: 1.2, chaos: true, kind: 'special', desc: () => 'A free spin of PL title winners (title bonus!).', filter: p => (p.hon.P || 0) > 0 },
-    passport: { icon: '🛂', name: 'Passport Office', w: 1, chaos: true, kind: 'special', desc: () => 'A free spin of players from one country, picked at the border (a flag you might not expect).', filter: p => !!S.passNat && p.nat === S.passNat },
+    passport: { icon: '🛂', name: 'Passport Office', w: 1, chaos: true, deal: false, kind: 'special', desc: () => 'A free spin of players from one country, picked at the border (a flag you might not expect).', filter: p => !!S.passNat && p.nat === S.passNat },
     storm: { icon: '🌪️', name: 'Wildcard Storm', w: 1, chaos: true, kind: 'special', desc: () => 'A free spin of nothing but wildcards.', storm: true },
     physio: { icon: '🏥', name: 'Physio Room', w: 1, chaos: true, kind: 'heal', desc: st => `Your most-hurt player gets his full ${st.label} back.` },
     joker: { icon: '🃏', name: 'Joker', w: 1, chaos: true, kind: 'joker', desc: () => 'Turns into a random CHAOS wildcard.' },
@@ -84,6 +84,7 @@
       <path d="M30 14h36q14 0 16 14v4H30q-8 0-8-9t8-9z" fill="#1d4ed8" stroke="#163a9e"/><path d="M64 16h4q10 1 12 11H64z" fill="#9fd8ff"/><path d="M30 20h-28v4h28z" fill="#1d4ed8"/>
       <circle class="trot" cx="4" cy="20" r="6" fill="none" stroke="#2b2f36" stroke-width="2" stroke-dasharray="3 3"/><text x="42" y="28" font-size="8" font-weight="900" font-family="Arial" fill="#fff">££</text>
       <path d="M30 40h46M36 32v8M70 32v8" stroke="#2b2f36" stroke-width="2.5"/></svg>`,
+    plane: `<svg class="spr" viewBox="0 0 110 50" width="110" height="50"><path d="M8 26c0-4 4-7 10-7h70c8 0 14 3 18 7-4 4-10 7-18 7H18c-6 0-10-3-10-7z" fill="#f4f6fa" stroke="#9aa6b8"/><path d="M48 19l-14-16h8l22 16zM48 33l-14 16h8l22-16z" fill="#c9d3e2" stroke="#9aa6b8"/><path d="M14 19l-6-11h6l9 11z" fill="#e3262f"/><g fill="#5ec8ff">${[30, 40, 50, 60, 70, 80].map(x => `<circle cx="${x}" cy="24" r="2.3"/>`).join('')}</g><path d="M96 23c3 0 6 1 8 3h-8z" fill="#5ec8ff"/></svg>`,
     tank: `<svg class="spr" viewBox="0 0 104 50" width="104" height="50"><rect x="6" y="30" width="88" height="14" rx="7" fill="#2f3324"/>
       <path d="M10 22h80l6 9H4z" fill="#5d6b3a" stroke="#3f4a26"/><path d="M34 10h30l6 12H28z" fill="#6c7c45" stroke="#3f4a26"/><rect x="64" y="13" width="38" height="4" rx="2" fill="#4c5730"/>
       <path d="M46 14l1.6 3.4 3.7.4-2.8 2.5.8 3.7L46 22.2l-3.3 1.8.8-3.7-2.8-2.5 3.7-.4z" fill="#f2f2e6"/>
@@ -236,6 +237,15 @@
       S.bonus.push(['🎖️ A medal for service', p]);
       return { note: `${nm2(S.ghost.p)} is called up for national service and the tank comes to collect him. His place is empty, but there’s a medal: <b>+${p}</b>.`,
         run: c => c.drive('tank', i, { wait: 1200, sound: 'rumble', take: true }), done: () => { S.ghost = null; } }; } },
+    // 🛂 his visa's run out: a plane takes him home, and the Passport Office sends a spin of players from his country
+    visa: { rar: 'r', icon: '🛂', name: 'Visa trouble!', tone: 'weird', look: ['red', 'drumroll'], go: r => {
+      const f = filledIdx().filter(i => S.xi[i].pos !== 'GK' && byId(S.xi[i].p).nat); if (!f.length) return { note: 'The Passport Office checks everyone’s papers. All in order.' };
+      const i = f[Math.floor(r() * f.length)], x = S.xi[i], nat = byId(x.p).nat;
+      S.ghost = { i, p: x.p, g: x.g, mod: x.mod };
+      x.p = null; x.g = 0; x.v = null; x.mod = null; x.as = null; unpark(i); if (S.splat) S.splat = S.splat.filter(k => k !== i);
+      S.passNat = nat; S.forceSpecial = 'passport';
+      return { note: `${nm2(S.ghost.p)}’s visa has run out and he’s on the next plane home to ${GM.flag(nat)} <b>${GM.esc(nat)}</b>. His place is empty, but the Passport Office has sent over a spin of <b>${GM.esc(nat)}</b> players.`,
+        run: c => { c.drive('plane', i, { wait: 1200, sound: 'jet', take: true }); setTimeout(() => { if (GM.CFX && onThisGame()) GM.CFX.wild('passport', GM.$('.pitch', root)); }, 1900); }, done: () => { S.ghost = null; } }; } },
     quake: { rar: 'u', icon: '🌍', name: 'Earthquake!', tone: 'weird', look: ['dark', 'quake'], go: r => {
       const f = filledIdx(); if (!f.length) return { note: 'The ground shakes. Luckily nobody’s on the pitch yet.' };
       let up = 0; f.forEach(i => { const k = 0.75 + r() * 0.55; scale(S.xi[i], k, k >= 1 ? 'boosted' : 'halved'); up += k >= 1; });
@@ -1178,6 +1188,41 @@
   const fmt = n => n.toLocaleString();
   const signed = n => (n < 0 ? '−' : '+') + Math.abs(n).toLocaleString();
 
+  /* ---------------------------------------------------------------- 🎩 Hat-Trick: three players fused into one
+     On the pitch he's three faces sliced together (with a flicker now and then) and a mash-up of their surnames; when
+     you sign him the three faces fly off the reels, spin round each other and slam together in his slot. */
+  const lastName = id => { const n = byId(id).name; return n.includes(' ') ? n.split(' ').slice(-1)[0] : n; };
+  function fusedName(ids) {
+    const [a, b = '', c = ''] = ids.map(lastName);
+    return a.slice(0, Math.max(2, Math.ceil(a.length * 0.45))) + b.slice(Math.floor(b.length * 0.3), Math.ceil(b.length * 0.7)).toLowerCase() + c.slice(Math.floor(c.length * 0.55)).toLowerCase();
+  }
+  const fusedFace = ids => `<span class="fuse">${ids.slice(0, 3).map((id, k) => `<span class="fz fz${k}">${GM.avatar(byId(id))}</span>`).join('')}</span>`;
+  GM.fusedName = ids => fusedName(ids);  // (tests)
+  function fuseFx(i, trio, from) {
+    const slot = GM.$(`.slot[data-slot="${i}"]`, root), face = slot && slot.querySelector('.fuse');
+    if (!face || !face.animate) return;
+    const t = face.getBoundingClientRect(), cx = t.left + t.width / 2, cy = t.top + t.height / 2;
+    slot.classList.add('fusing');
+    GM.sound.play('shimmer', true);
+    trio.forEach((q, k) => {
+      const r = from[k]; if (!r) return;
+      const el = document.createElement('div'); el.className = 'fuse-fly'; el.innerHTML = GM.avatar(q, 'lg');
+      const x = r.left + r.width / 2, y = r.top + r.height / 2, dx = cx - x, dy = cy - y, spin = (k - 1) * 300 || 200;
+      Object.assign(el.style, { left: x + 'px', top: y + 'px' }); document.body.appendChild(el);
+      el.animate([
+        { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+        { transform: `translate(-50%, -50%) translate(${dx * 0.45 + (k - 1) * 46}px, ${dy * 0.45 - 70}px) rotate(${spin / 2}deg) scale(1.2)`, offset: 0.5 },
+        { transform: `translate(-50%, -50%) translate(${dx}px, ${dy}px) rotate(${spin}deg) scale(.4)`, opacity: 0.85 },
+      ], { duration: 950, easing: 'cubic-bezier(.55,0,.3,1)', fill: 'forwards' }).onfinish = () => el.remove();
+    });
+    setTimeout(() => {
+      const s2 = GM.$(`.slot[data-slot="${i}"]`, root);
+      if (s2) { s2.classList.remove('fusing'); s2.classList.add('fused-pop'); setTimeout(() => s2.classList.remove('fused-pop'), 700); }
+      if (GM.FX) { GM.FX.burst(cx, cy, 0xffd34d); GM.FX.shockwave(cx, cy, 0xffffff, 1.2); GM.FX.sparks(cx, cy, { n: 46, tint: 0xffd34d, speed: 380 }); }
+      GM.buzz('heavy');
+    }, 950);
+  }
+
   /* ---------------------------------------------------------------- reel generation */
   // Fair deals. Every spin has its own fixed running order of players, drawn from the whole field and seeded by the
   // game seed + spin number (+ which re-roll or special spin it is). The reels are the first players in that order who
@@ -1207,7 +1252,7 @@
     const used = new Set(S.used.concat(S.xi.filter(s => s.p != null).map(s => s.p)));
     const ok = p => fits(p, open) && !used.has(p.id);
     const n = (wc && wc.reels) || 3;
-    const wildTypes = () => Object.keys(WILDCARDS).filter(t => (!S.rules.noWild.includes(t) || (tw().allow || []).includes(t)) && (!WILDCARDS[t].chaos || S.rules.chaos) && t !== 'storm' && inSz(t));
+    const wildTypes = () => Object.keys(WILDCARDS).filter(t => (!S.rules.noWild.includes(t) || (tw().allow || []).includes(t)) && (!WILDCARDS[t].chaos || S.rules.chaos) && t !== 'storm' && WILDCARDS[t].deal !== false && inSz(t));
     // a wildcard storm: every reel is a wildcard (the Storm card, or 1 spin in 10 in CHAOS)
     if ((wc && wc.storm) || (S.rules.chaos && !special && S.spin >= 2 && S.momentSpin !== S.spin && !tw().noStorm && GM.rng(tag + '|storm')() < (S.sz ? 0.2 : 0.1))) {
       const rs = GM.rng(tag + '|stormcards'), types = wildTypes(), out = [];
@@ -1228,11 +1273,12 @@
       const mine = PL().filter(p => p.nat === S.nat);
       if (mine.some(ok)) { field = mine; fkey = 'nat:' + S.nat; }
     }
-    // Passport Office: one country (seeded), from those with at least three players who fit your open positions
+    // Passport Office (after 🛂 Visa trouble): the sent-home player's country, if three of its players fit your open
+    // positions; otherwise one picked at the border (seeded) from the countries that do
     if (special === 'passport') {
       const by = {}; field.filter(ok).forEach(p => { if (p.nat) by[p.nat] = (by[p.nat] || 0) + 1; });
       const nats = Object.keys(by).filter(k => by[k] >= 3).sort();
-      S.passNat = nats.length ? GM.rng(tag + '|passport').pick(nats) : null;
+      if (!(S.passNat && nats.includes(S.passNat))) S.passNat = nats.length ? GM.rng(tag + '|passport').pick(nats) : null;
     }
     if (wc && wc.filter) {
       const themed = field.filter(p => wc.filter(p, wst()));
@@ -2099,6 +2145,7 @@
     if (S.modifier === 'rotation') mult = 0.5;
     // a Hat-Trick: all three on the reels signed as one, their numbers added; under the bar he counts half
     const trio = S.special === 'hero' ? S.reels.filter(x => !x.wild).map(x => byId(x.id)) : null;
+    const trioFrom = trio && !GM.store.get('calm', false) ? [...document.querySelectorAll('.stage .reel[data-reel]')].filter(e => !e.classList.contains('is-wild')).map(e => (e.querySelector('.avatar') || e).getBoundingClientRect()) : null;
     const base = trio ? trio.reduce((a, q) => { const w = pv(q); STAT_KEYS.forEach(k => { a[k] += w[k]; }); return a; }, { goals: 0, assists: 0, apps: 0 }) : pv(p);
     const short = trio ? base[S.stat] < (HAT[S.stat] || 50) : false;
     if (short) mult *= 0.5;
@@ -2150,6 +2197,7 @@
     }
     if (before) mark(slotIdx, '#coin');
     if (trio) mark(slotIdx, '#ball');
+    if (trioFrom) requestAnimationFrame(() => requestAnimationFrame(() => fuseFx(slotIdx, trio, trioFrom)));
     if (before) {  // Double or Nothing: a real coin toss before he takes his place
       await moment({ icon: '🎲', name: 'Double or nothing', tone: 'weird', before, coin: heads, scene: 'casino', sound: 'drumroll', text: `${GM.esc(p.name)}: heads he counts double, tails he counts for nothing…`,
         after: heads ? `<b>Heads!</b> ${GM.esc(p.name)} counts double.` : `<b>Tails…</b> ${GM.esc(p.name)} counts for nothing.` });
@@ -2276,7 +2324,7 @@
       }
       case 'joker': {
         // any wildcard this game allows (the everyday ones too), as often as each turns up on the reels
-        const types = Object.keys(WILDCARDS).filter(t => t !== 'joker' && (!S.rules.noWild.includes(t) || (tw().allow || []).includes(t)) && (!WILDCARDS[t].chaos || S.rules.chaos) && inSz(t));
+        const types = Object.keys(WILDCARDS).filter(t => t !== 'joker' && WILDCARDS[t].deal !== false && (!S.rules.noWild.includes(t) || (tw().allow || []).includes(t)) && (!WILDCARDS[t].chaos || S.rules.chaos) && inSz(t));
         const t = GM.rng(`${S.seed}|joker|${S.spin}|${S.wildUsed}|${k}`).weighted(types, x => WILDCARDS[x].w);
         S.inv[k] = t; GM.sound.play('shimmer'); wildFx('joker');
         GM.toast(`🃏 The Joker turns into ${WILDCARDS[t].icon} <b>${WILDCARDS[t].name}</b>`, 2600);
@@ -2504,7 +2552,8 @@
       return `<div class="slot empty ${s.pos !== baseForm()[i] ? 'moved' : ''} ${tgt ? 'target' : ''}" data-slot="${i}" title="${GM.POS_NAME[s.pos]}"><span class="pos pos-${GM.GROUP[s.pos]}">${s.pos}</span>${marksHtml(i)}</div>`;
     }
     const p = byId(s.p);
-    const surname = (p.name.includes(' ') ? p.name.split(' ').slice(1).join(' ') : p.name) + (s.trio && s.trio.length > 1 ? ` +${s.trio.length - 1}` : '');
+    const fused = s.trio && s.trio.length > 1;
+    const surname = fused ? fusedName(s.trio) : (p.name.includes(' ') ? p.name.split(' ').slice(1).join(' ') : p.name);
     const pk = S.parked && S.parked[i] && SPRITE[S.parked[i]] ? `<i class="parked ${(SIDE[baseForm()[i]] ?? 1) === 2 ? 'r' : ''}" aria-hidden="true">${(GM.FX && GM.FX.on && GM.FX.still(S.parked[i])) || SPRITE[S.parked[i]]}</i>` : '';
     // CHAOS: the card's colour says how he's doing against his own numbers (blue up, red down, grey as he was)
     let tone = '', pct = '';
@@ -2515,8 +2564,8 @@
         if (S.phase === 'done') pct = `<span class="slot-pct">${r > 1 ? '+' : '−'}${base > 0 ? Math.round(Math.abs(r - 1) * 100) + '%' : fmt(s.g)}</span>`;
       }
     }
-    return `<div class="slot filled ${s.fresh ? 'fresh' : ''} ${away[i] ? 'away' : ''} ${tone}" data-slot="${i}" title="${GM.esc(p.name)}"${S.wonky && S.wonky[i] ? ` data-wonky style="--wk:${S.wonky[i]}deg"` : ''}>${pk}${pct}${marksHtml(i)}
-      ${GM.avatar(p)}<span class="slot-name">${GM.esc(surname)}</span>
+    return `<div class="slot filled ${s.fresh ? 'fresh' : ''} ${away[i] ? 'away' : ''} ${tone}" data-slot="${i}" title="${GM.esc(fused ? s.trio.map(id => byId(id).name).join(' + ') : p.name)}"${S.wonky && S.wonky[i] ? ` data-wonky style="--wk:${S.wonky[i]}deg"` : ''}>${pk}${pct}${marksHtml(i)}
+      ${fused ? fusedFace(s.trio) : GM.avatar(p)}<span class="slot-name">${GM.esc(surname)}</span>
       <span class="slot-goals ${splatted(i) ? 'splatted' : ''}"><span class="sg">${S.rules.treble && s.v ? `${s.v.goals}·${s.v.assists}·${s.v.apps}` : fmt(s.g)}</span>${MOD_TAG[s.mod] || ''}</span><span class="slot-pos" title="${GM.POS_NAME[s.pos]}">${s.pos}</span></div>`;
   }
 
@@ -2894,7 +2943,7 @@
       <p>Each spin shows three players who fit an open position. Their ${L} are hidden until you sign one. You keep spinning until the XI is full.</p>
       <p>Every player has real positions – <b>GK, LB, CB, RB, LM, CM, RM, ST</b>. Tap a player, then tap one of the highlighted slots he can play.</p>
       <p><b>Wildcards</b> appear on the reels from the 2nd spin – grab one instead of a player and use it when you like (hold up to 3):</p>
-      <ul class="wc-list">${Object.entries(WILDCARDS).filter(([k, w]) => !r.noWild.includes(k) && (!w.chaos || r.chaos)).map(([, w]) => `<li>${w.icon} <b>${w.name}</b> – ${w.desc(wst())}</li>`).join('')}</ul>
+      <ul class="wc-list">${Object.entries(WILDCARDS).filter(([k, w]) => !r.noWild.includes(k) && (!w.chaos || r.chaos) && w.deal !== false).map(([, w]) => `<li>${w.icon} <b>${w.name}</b> – ${w.desc(wst())}</li>`).join('')}</ul>
       <p><b>Scoring:</b> ${r.treble ? 'up to 333 points per stat (full marks when exact, nothing once you’re 25% out). All three within 3% wins the Treble: +500. Two = the Double: +150.'
         : r.mystery ? '1000 minus 5 points per 1% you miss by (roughly). Hit it exactly for a +500 bullseye.'
         : r.chaos ? `your XI’s PL ${L} plus every bonus, shown at full time.` : r.max ? `your score is your XI’s total PL ${L} (after any wildcard modifiers).` : `1000 minus 5 for every ${S.stat === 'goals' ? 'goal' : `${fmt(Math.round(S.target / 442 * 10) / 10)} ${L}`} off target. Exactly ${fmt(S.target)} = +500 bullseye bonus.`}</p>

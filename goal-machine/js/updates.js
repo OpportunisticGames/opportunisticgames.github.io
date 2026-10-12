@@ -9,6 +9,18 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 92, label: '5.33', date: '2026-10-13', title: '🏆 New leaderboards, player profiles and invites',
+      items: [
+        '🏆 The leaderboards have a new look: a podium for the top three, everyone’s picture (your friends’ photos), ▲▼ for who’s moved since you last looked, and your own place pinned at the bottom with how far it is to the next one',
+        '👤 Tap any name for their profile: their level and title, the boards they top, their Best Players place, their best XI, their favourite CHAOS manager and your record against them. Add them as a friend from there',
+        '🤝 Invite a friend: share your link, and when they claim a name you both get a Referral pack (and you’re friends straight away)',
+        '🌍 Nation cards: every country’s best-known player is a shiny foil No. 1 card, country sets in the Album pay a Nations pack, and your Packed XI gets a nation bonus for teammates from the same country',
+        '🛂 New CHAOS moment, Visa trouble!: a plane flies one of your players home, and the Passport Office sends over a spin of players from his country',
+        '🎩 Hat-Trick players really fuse now: three faces sliced into one on the pitch, a mash-up name, and the three flying together when you sign them',
+        '🧊 Rewards you can win again and again: Streak Freezes (cover a day you miss), Double XP and Scout’s Tips, on the wheel, the level road and the season track, and after tier 30 the track keeps paying a bonus every 1,000 XP',
+      ],
+    },
+    {
       v: 91, label: '5.32.2', date: '2026-10-13', title: '🎃 A tidier Halloween full time, and better rain',
       items: [
         '🧹 Full time clears the pitch: a witch, ghost or bat still flying (and any swirling leaves or papers) no longer carries on over your result',

@@ -123,7 +123,10 @@
       spins ? row('spin', '🎡', `${spins} spin${spins > 1 ? 's' : ''} of the prize wheel`, 'XP, packs, or something from the vault', 'Spin') : '',
       picks ? row('pick', '🤔', `${picks} pick${picks > 1 ? 's' : ''} of three`, 'Choose your reward', 'Pick') : '',
       fresh ? row('kit', '🎒', `${fresh} new thing${fresh > 1 ? 's' : ''} for your kit`, 'Pitch styles, card backs, frames…', 'Look') : '',
-    ].join('');
+      GM.consum && GM.consum('boost') ? row('boost', '⚡', `Double XP ×${GM.consum('boost')}`, GM.boostLeft() ? `On now: ${Math.ceil(GM.boostLeft() / 60e3)} min left (another adds 30)` : '30 minutes of double XP', 'Use') : '',
+      GM.consum && GM.consum('scout') ? row('scout', '🔭', `Scout’s Tip ×${GM.consum('scout')}`, 'A pack piece for a card that’s nearly there', 'Use') : '',
+    ].join('') + (GM.consum && GM.consum('freeze') ? `<p class="muted center small">🧊 ${GM.consum('freeze')} Streak Freeze${GM.consum('freeze') > 1 ? 's' : ''}: if you miss a day, one covers it by itself</p>` : '')
+      + (GM.boostLeft && GM.boostLeft() && !GM.consum('boost') ? `<p class="center small">⚡ Double XP on: ${Math.ceil(GM.boostLeft() / 60e3)} min left</p>` : '');
     const m = GM.modal(`<div class="to-open"><h3 class="center">🎁 To open</h3>
       ${rows || '<p class="muted center">Nothing waiting right now. A free pack comes every day, and levels, the season track and missions give you more.</p>'}
       <div class="to-links"><a href="#/season">${GM.seasonInfo ? GM.seasonInfo().icon : '🏆'} Season track</a><a href="#/level">🛤️ Level road</a><a href="#/today">🎯 Missions</a></div></div>`);
@@ -132,6 +135,8 @@
       if (t === 'packs') location.hash = '#/packs?open=1';
       else if (t === 'spin') location.hash = '#/spin';
       else if (t === 'pick') GM.pickReward();
+      else if (t === 'boost') GM.useBoost();
+      else if (t === 'scout') GM.useScout();
       else location.hash = '#/locker?v=kit';
     });
     GM.$$('.to-links a', m.el).forEach(a => a.addEventListener('click', () => m.close()));
@@ -207,6 +212,7 @@
     }
     if (GM.rewardsStart) GM.rewardsStart();
     if (GM.seasonVisitPlan) GM.seasonVisitPlan(path);  // a seasonal visitor on Home now and then (rewards.js)  // login reward, Locker unlocks, the look you wear (once a session)
+    if (menu && GM.freezeCheck) GM.freezeCheck();  // 🧊 a Streak Freeze covers a day you missed (daily.js)
     if (GM.native) GM.native.start();  // the app's extras: Play updates, links check (once a session)
     GM.sound.scene(path === 'draft' && q.m === 'szchaos' ? 'szchaos' : path === 'draft' && /^chaos/.test(q.m || '') ? 'chaos' : path === 'draft' && q.ch ? 'h2h' : path);  // (a friend's challenge: the tense one)  // each game area has its own music (CHAOS has Mayhem)
     GM.chaosLook(path === 'draft' && /^(sz)?chaos/.test(q.m || ''));

@@ -77,7 +77,8 @@
 
   // Wordle-style: consecutive days (up to today, or yesterday if today isn't done yet) that were completed/won
   GM.streak = function (game) {
-    const l = log(), ok = day => {
+    const l = log(), frozen = game ? [] : GM.store.get('frozen', []) || [], ok = day => {
+      if (frozen.includes(day)) return true;  // 🧊 a Streak Freeze covered it
       const e = l[day];
       if (!e) return false;
       return game ? GAMES[game].won(e[game]) : Object.keys(GAMES).some(g => GAMES[g].won(e[g]));
@@ -89,6 +90,19 @@
     }
     while (ok(day)) { n++; day = addDays(day, -1); }
     return n;
+  };
+  // 🧊 Streak Freeze: missed a day (or a few, one freeze each)? If you have enough, they cover the gap and your streak lives on
+  GM.freezeCheck = function () {
+    const have = GM.consum ? GM.consum('freeze') : 0;
+    if (!have || GM.store.get('freezeChecked', '') === GM.today()) return;
+    GM.store.set('freezeChecked', GM.today());
+    const l = log(), frozen = GM.store.get('frozen', []) || [], played = d => frozen.includes(d) || (!!l[d] && Object.keys(GAMES).some(g => GAMES[g].won(l[d][g])));  // (the same rule as the streak)
+    const gap = [];
+    let d = addDays(GM.today(), -1);
+    while (!played(d) && gap.length < 8) { gap.push(d); d = addDays(d, -1); }
+    if (!gap.length || gap.length > have || !played(d)) return;  // nothing missed, too many, or no streak to save
+    GM.store.set('frozen', frozen.concat(gap).slice(-60)); GM.addConsum('freeze', -gap.length);
+    setTimeout(() => GM.toast(`🧊 <b>Streak Freeze</b> used: your ${GM.streak()}-day streak is safe${gap.length > 1 ? ` (${gap.length} days covered)` : ''}`, 3600), 900);
   };
   GM.bestStreak = function (game) {
     const days = Object.keys(log()).sort(), l = log();
