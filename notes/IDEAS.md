@@ -23,6 +23,17 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### Clearer names for the main draft modes 💬 *(owner, 13 Oct 2026)*
+> "Can you also go over all the names of the main draft game modes - just looking at the leaderboard i see why it would
+> be easy for someone to be confused - do all the names actually make sense or could some be better"
+
+Today there are two real choices (who turns up, and wildcards or not) plus the difficulty, but the names mix them up:
+Classic Wildcard / Classic (stars more likely), Ultimate Wildcard / Ultimate (all equal), Extreme Wildcard / Extreme
+Purist (everyone ever), Ultimate Wildcard CHAOS. Problems: "Classic" v "Ultimate" doesn't say what's different;
+"Ultimate" without wildcards sounds bigger than "Ultimate Wildcard"; "Extreme" is both a difficulty and a mode name;
+"Purist" only exists on Extreme; the CHAOS name is long. Proposal in the chat (display names only: board keys, scores
+and badges stay as they are).
+
 ### 5.33: the owner's go on six ideas ✅ 5.33 *(owner, 13 Oct 2026)*
 > "19. oo maybe stuff like streak freeze is a good idea for a reward you can get that is like renewable instead of all the
 > one time rewards so far - some other rewards like that would be good. 25. Hattrick hero is its own spin right? but you're
