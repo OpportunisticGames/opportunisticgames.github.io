@@ -33,6 +33,12 @@ Purist (everyone ever), Ultimate Wildcard CHAOS. Problems: "Classic" v "Ultimate
 "Ultimate" without wildcards sounds bigger than "Ultimate Wildcard"; "Extreme" is both a difficulty and a mode name;
 "Purist" only exists on Extreme; the CHAOS name is long. Proposal in the chat (display names only: board keys, scores
 and badges stay as they are).
+- **Owner (13 Oct):** "Is there a real point in having big names hard and extreme? would it instead be better to just
+  have classic become the easy mode? like the easy mode always favours big names a little bit?" **Our view: yes.** One
+  main event (Ultimate, wildcards on or "Pure"); levels: 🙂 Easy (new: big names about ×4, clues shown), ⚽ Normal (all
+  50+ equal, clues), 🥵 Hard (equal, no clues), ☠️ Extreme (everyone ever, no clues). Easy across every draft mode.
+  Questions: fresh Easy boards (old Classic ones hidden)? Easy counts for Best Players at half points? New players start
+  on Easy for 3 games? Waiting for go.
 
 ### 5.33: the owner's go on six ideas ✅ 5.33 *(owner, 13 Oct 2026)*
 > "19. oo maybe stuff like streak freeze is a good idea for a reward you can get that is like renewable instead of all the
