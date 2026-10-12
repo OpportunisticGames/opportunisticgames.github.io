@@ -23,6 +23,17 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### Tell me at full time when I break a record ✅ 5.32.1 *(owner, 12 Oct 2026)*
+> "In the same way when you break a record should it not tell you when you finish the game?"
+
+> "Or like tell you top 3/top 10/top 20 but this should depend on how many people have played that mode. Just make sure it definitely says it on the screen after you finish the game, where it says your score"
+
+Built with the beaten alerts (same part of the game): after the score reaches the board, `GM.boardNews` asks for your place
+(all time and this month) and the full-time screen shows it in the result card under the score (`#board-news`): top spot =
+a gold 👑 "Record!" with confetti; otherwise "Top 3/10/20/50/100" (`GM.BOARD_TIERS`) only when the board has at least twice
+that many players; otherwise just your place. "Not your best" when an older, higher best is the one on the board. Games
+without the slot get a pop-up card for records and tiers. Daily boards count too.
+
 ### Beaten! alerts, an activity drawer, and a Best Players table ✅ 5.32 *(owner, 12 Oct 2026)*
 > "You should get a notification when someone beats your score. Maybe also the app should have a notification drawer so you can see what has been going on, like being able to see how many things you are top of. Maybe there should be a leaderboard with best players, some form of aggregated points system based on all the leaderboards or something idk!! Have fun with it but you get the idea"
 

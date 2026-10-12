@@ -996,6 +996,10 @@
     return extreme && RULES_X[mode] ? GM.extremeKey(k) : k + (hard ? 'h' : '');
   }
 
+  document.addEventListener('gm:board', e => {
+    if (!S || S.phase !== 'done' || !S.boardOn || e.detail.mode !== modeKey()) return;
+    S.board = e.detail; if (onThisGame()) render();
+  });
   function start(el, mode, opts = {}) {
     fitKey = '';  // a new page: size the pitch again
     asking = false;
@@ -2425,6 +2429,9 @@
     if (!S.readonly && !(S.online && S.mode === 'target')) {  // a Target Race's target is its own, so it stays off the Target board
       if (S.mode === 'daily' && sc.total > GM.best('daily')) GM.store.set('best:daily', sc.total);
       if (S.rules.chaos && S.sz && GM.szChaosDone) GM.szChaosDone(S.sz);  // this season's CHAOS feeds the season (rewards.js)
+      // the leaderboard line on this screen (filled in when the score reaches the board: GM.boardNews in core.js)
+      S.boardOn = !!(GM.lb.enabled && sc.total > 0); S.board = null;
+      if (S.boardOn) render();
       const { isBest } = await GM.recordScore(modeKey(), sc.total, S.target && !S.rules.max && !S.rules.treble ? { t: sc.t, g: S.target } : { t: sc.t });
       if (isBest && sc.total > 0 && S.mode !== 'daily') GM.toast('🏆 New personal best!');
       if (isBest && sc.total > 0 && S.mode !== 'daily' && GM.track) { GM.track('pb'); if (GM.celebrate) setTimeout(() => GM.celebrate(true), 1700); }  // your celebration (Locker)
@@ -2906,6 +2913,7 @@
         ${S.rules.chaos ? chartHtml() : ''}
         ${S.rules.chaos ? `<button class="btn ghost small" id="all-mgrs">👔 All managers (${mgrUnlocked().length}/${realMgrs().length})</button>` : ''}
         <table class="breakdown">${sc.parts.map(([k, v]) => `<tr><td>${k}</td><td class="${v < 0 ? 'neg' : ''}">${v < 0 ? '−' + fmt(-v) : '+' + fmt(v)}</td></tr>`).join('')}</table>`}
+        ${S.boardOn ? (S.board && S.board.none ? '' : GM.boardNewsHtml(S.board, modeKey())) : ''}
         ${S.vs && !S.ch ? `<div class="banner">${sc.total > S.vss ? '🎉 You beat' : sc.total == S.vss ? '🤝 You drew with' : '😬 You lost to'} <b>${GM.esc(S.vs)}</b> (${GM.esc(S.vss)})</div>` : ''}
         <div class="muted">Personal best: ${fmt(Math.max(best, sc.total))}</div>
       </div>

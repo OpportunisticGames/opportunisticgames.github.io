@@ -146,6 +146,9 @@ Everything goes through security-definer RPCs that check the account with `gm_au
   `activity_feed(p_user, p_key)` feeds the 🔔 drawer (`GM.feed`, `GM.feedSheet` in app.js: items, `crowns`/`mcrowns`,
   `best`/`mbest`). `best_players(p_month, p_limit)` = points 10/7/5/4/3/2/2/1/1/1 for top-ten places on the main draft
   boards (`gm_main_board`), best 8 count; Ranks tab `bestplayers`. Board names for alerts: `gm_board_name`.
+  At full time `GM.boardNews` (core.js, after the submit; `GM.lb.mine(mode, name, month)`) works out your place: a 👑 record, a
+  "Top N" (`GM.BOARD_TIERS`, only if the board has 2N+ players) or just the place; it fires `gm:board` and draft.js shows it in
+  the result card (`#board-news`, `GM.boardNewsHtml`); screens without that slot get a `GM.notice` card.
 - Also: `save_backup` / `load_backup`, `delete_account`, avatars
   (`set_avatar`, `get_avatars`, `report_avatar`).
 Change SQL with the Supabase MCP tools (`apply_migration`); read a function first with `pg_get_functiondef`.
@@ -175,6 +178,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    may be mid-action without a short `{ timeout }`: Playwright waits 30 s for it to become tappable (that made the CHAOS tests
    take minutes). Or run one script on its own with `node <script>.js`. Each uses `mockserver.js`, which fakes the
    Supabase RPCs in memory (test accounts Alice/Bob/Cara), so nothing touches the real database.
+   - `record5321.js` – where your score landed: record all time / this month, Top 3/10 by board size, just the place on a small board, an older best, a daily board, and the line on a real full-time screen.
    - `beaten532.js` – two phones: a beaten alert in the inbox (and off with the switch), the 🔔 count and drawer, Bob's crown, Best Players points.
    - `offline531.js` – a newer cloud backup is offered once and restores, backing up on leaving the app, the offline strip and cards, scores kept and sent later. `offline.js` – the service worker opens the game from cache offline and on a hanging network.
    - `odds.js` – who turns up on the reels in every draft mode and difficulty, measured with the real dealing code (stars v average, each tenth of the pool, wildcard and storm rates). Check the How to play / Settings wording against it after changing a weight.

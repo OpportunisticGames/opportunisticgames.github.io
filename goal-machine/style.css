@@ -3483,3 +3483,17 @@ body.calm .gm-status .gs-bell.hot span { animation: none; }
 .feed-item.wait { border-left-color: var(--hi); }
 .feed-item.new { box-shadow: 0 0 0 2px rgba(229,56,59,.35); }
 .bp-crowns { font-style: normal; font-size: .72rem; font-weight: 700; margin-left: 5px; color: var(--muted); }
+
+/* 🌍 where your score landed, on the full-time screen */
+.board-news { display: flex; align-items: center; gap: 10px; margin: 10px auto 4px; max-width: 420px; padding: 10px 12px; border-radius: 14px; background: var(--inset); border: 1px solid var(--line); color: inherit; text-decoration: none; text-align: left; }
+.board-news > span:first-child { font-size: 1.5rem; }
+.board-news > span:nth-child(2) { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.board-news b { font-size: .92rem; }
+.board-news small { color: var(--muted); font-size: .74rem; }
+.board-news > i { font-style: normal; color: var(--muted); font-size: 1.2rem; }
+.board-news.wait { opacity: .7; }
+.board-news.tier { background: linear-gradient(135deg, rgba(200,255,61,.18), var(--inset)); border-color: rgba(120,170,20,.5); }
+.board-news.rec { background: linear-gradient(135deg, #ffe27a, #f5a700); border-color: #c98a00; color: #3a2500; box-shadow: 0 4px 0 #b07a00; animation: bn-pop .5s ease-out; }
+.board-news.rec small, .board-news.rec > i { color: #5a3d00; }
+@keyframes bn-pop { 0% { transform: scale(.9); opacity: 0; } 70% { transform: scale(1.03); } 100% { transform: scale(1); opacity: 1; } }
+body.calm .board-news.rec { animation: none; }
