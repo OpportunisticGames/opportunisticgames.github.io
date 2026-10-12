@@ -9,6 +9,12 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 87, label: '5.30.3', date: '2026-10-12', title: '📶 Opens with no signal',
+      items: [
+        '📶 With a weak signal (4G showing but no data getting through) the app sat on a blank screen and then said "No signal in the stadium", even though the game was already saved on the phone. It now waits a few seconds for the internet and then opens the saved copy, and straight away if you are properly offline',
+      ],
+    },
+    {
       v: 86, label: '5.30.2', date: '2026-10-12', title: '📱 Play again keeps the full-size pitch',
       items: [
         '📱 After Play again, CHAOS could start with a shrunken pitch, a gap at the bottom and a bit of scroll. Every game now starts from the top at full size, the pumpkins and fog can never make the page longer, and if the pitch ever has to shrink for a moment it grows back once there’s room',
