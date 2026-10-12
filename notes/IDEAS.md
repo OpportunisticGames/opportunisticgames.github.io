@@ -23,6 +23,18 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### Card tiers that feel right 💬 *(owner, 13 Oct 2026)*
+> "might it be worth having more player tiers? I only say this because I look at some of the golds and silvers and they
+> don't feel quite right"
+
+Notes: tiers come from `fame` (apps × (1 + goals/30)) ranks: Hall of Famers + top 25 Legend, next 200 Gold, next 500
+Silver. It rewards long careers and goals, not quality: Barry, Milner, Crouch are Legends; Ronaldo, Haaland, De Bruyne,
+Silva Gold; Kanté, Suárez, Bale, Van der Sar, De Gea Silver; Rúben Dias Bronze. Dodgy Owner's OVR is no better (keepers low).
+Proposal: a card rating (per-game quality by position, keepers' clean sheets, titles/HoF/honours, longevity with
+diminishing returns), ranked within each position so every tier has keepers and defenders; maybe a 💎 Icon tier
+(~20 all-time greats, 7 pieces) above Legend. Show the owner the full new Legend/Gold list before building. Finished
+cards stay finished. Waiting for go.
+
 ### Duplicates in packs, and a duplicate pile ✅ 5.34 *(owner, 13 Oct 2026)*
 > "would it slow down pack progression so it's not too quick if we enabled duplicates? i was thinking maybe you could up it
 > to 10 for legends or something but now i'm thinking maybe we just enable duplicates? could potentially give a reward for
