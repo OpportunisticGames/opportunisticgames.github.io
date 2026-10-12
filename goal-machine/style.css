@@ -3502,3 +3502,87 @@ body.calm .gm-status .gs-bell.hot span { animation: none; }
 .board-news.rec small, .board-news.rec > i { color: #5a3d00; }
 @keyframes bn-pop { 0% { transform: scale(.9); opacity: 0; } 70% { transform: scale(1.03); } 100% { transform: scale(1); opacity: 1; } }
 body.calm .board-news.rec { animation: none; }
+
+/* 🏆 the leaderboards: a podium, pictures, movement, your row pinned (GM.lbList) */
+.podium { display: grid; grid-template-columns: 1fr 1.15fr 1fr; align-items: end; gap: 6px; margin: 4px 0 10px; }
+.pod { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; }
+.pod .avatar.upic.xl { width: 74px; height: 74px; font-size: 1.4rem; margin: 0; box-shadow: 0 0 0 3px #f5c400, 0 6px 18px rgba(0,0,0,.25); }
+.pod .avatar.upic.lg { width: 56px; height: 56px; font-size: 1.05rem; }
+.pod2 .avatar.upic.lg { box-shadow: 0 0 0 3px #c0c7d1; } .pod3 .avatar.upic.lg { box-shadow: 0 0 0 3px #c98a54; }
+.pod b { font-size: .84rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pod em { font-style: normal; font-weight: 800; color: var(--hi); font-size: .95rem; }
+.pod em small { font-size: .7rem; }
+.pod .lv-tag { font-size: .62rem; }
+.pod-medal { font-size: 1.25rem; line-height: 1; }
+.pod-step { align-self: stretch; margin-top: 2px; border-radius: 12px 12px 4px 4px; text-align: center; font: 900 1.3rem/1 Inter, sans-serif; padding-top: 8px; background: var(--panel); color: var(--muted); }
+.pod1 .pod-step { height: 62px; background: linear-gradient(180deg, #ffe27a, #f5a700); color: #5a3d00; }
+.pod2 .pod-step { height: 44px; background: linear-gradient(180deg, #eef1f5, #b7c0cc); color: #39424e; }
+.pod3 .pod-step { height: 32px; background: linear-gradient(180deg, #f1c9a3, #c98a54); color: #4a2b10; }
+.pod.me b { color: var(--accent); }
+.lb-row.lbx { grid-template-columns: 26px 30px minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 7px 10px; cursor: pointer; }
+.lb-row.lbx .avatar { width: 30px; height: 30px; font-size: .68rem; }
+.lb-nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.lb-rk { font-weight: 800; color: var(--muted); text-align: center; }
+.mv { font-style: normal; font-size: .66rem; font-weight: 800; min-width: 0; }
+.mv.up { color: #16a34a; } .mv.down { color: #dc2626; } .mv.new { color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+.lbx-you { position: sticky; bottom: calc(80px + env(safe-area-inset-bottom)); z-index: 5; margin-top: 10px; }
+.lbx-you .lb-row.me { box-shadow: 0 6px 18px rgba(0,0,0,.25); }
+.lbx-you { transition: opacity .2s, transform .2s; } .lbx-you.off { opacity: 0; transform: translateY(12px); pointer-events: none; }
+.lb-gap { font-size: .75rem; color: var(--muted); text-align: center; padding: 4px 8px 5px; background: var(--panel); border-radius: 0 0 10px 10px; margin-top: -4px; }
+
+/* 👤 player profiles */
+.prof-head { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+.prof-head .avatar.upic.xl { width: 76px; height: 76px; font-size: 1.5rem; margin: 0; flex: none; }
+.prof-head h3 { margin: 0 0 2px; overflow-wrap: anywhere; }
+.prof-head small { color: var(--muted); font-size: .78rem; }
+.prof-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.prof-tiles > * { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 9px 4px; border-radius: 12px; background: var(--inset); color: inherit; text-decoration: none; text-align: center; }
+.prof-tiles small { font-size: .68rem; color: var(--muted); line-height: 1.2; }
+.prof-vs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 8px; padding: 8px 10px; border-radius: 12px; background: var(--inset); font-size: .85rem; }
+.prof-vs a { margin-left: auto; font-weight: 700; }
+.prof h4 { margin: 14px 0 6px; }
+.prof h4 small { font-weight: 600; }
+.prof-xi { display: flex; flex-wrap: wrap; gap: 5px; }
+.prof-xi span { padding: 4px 8px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); font-size: .76rem; font-weight: 600; }
+.prof-line { margin: 10px 0 0; font-size: .85rem; }
+.prof-boards { display: grid; gap: 4px; }
+.prof-boards a { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 10px; background: var(--panel); color: inherit; text-decoration: none; font-size: .84rem; }
+.prof-boards a span:nth-child(2) { display: flex; flex-direction: column; min-width: 0; }
+.prof-boards a small { color: var(--muted); font-size: .7rem; }
+.prof-boards a b { color: var(--hi); }
+.prof-acts { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 14px; }
+
+/* 🤝 invite a friend */
+.invite-card { display: flex; align-items: center; gap: 10px; width: 100%; margin: 12px 0 4px; padding: 11px 12px; border-radius: 14px; border: 1px dashed var(--accent); background: var(--inset); color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.invite-card > span:first-child { font-size: 1.5rem; }
+.invite-card > span:nth-child(2) { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.invite-card small { color: var(--muted); font-size: .74rem; }
+.invite-card > i { font-style: normal; color: var(--muted); font-size: 1.2rem; }
+
+/* 🛂 Passport Office: the passport, then the stamp thumps down */
+.wc-passport { position: relative; display: flex; align-items: center; justify-content: center; }
+.pp-book { width: 92px; height: 124px; border-radius: 8px; background: linear-gradient(160deg, #23396b, #142347); color: #f2d27a; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 22px rgba(0,0,0,.45), inset 0 0 0 2px rgba(242,210,122,.35); animation: pp-in .45s ease-out; }
+.pp-book b { font: 900 .72rem Inter, sans-serif; letter-spacing: .12em; }
+.pp-book i { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #f2d27a; }
+.pp-book small { font: 700 .45rem Inter, sans-serif; letter-spacing: .08em; opacity: .85; }
+.pp-stamp { position: absolute; padding: 4px 10px; border: 3px solid #d62828; border-radius: 6px; color: #d62828; font: 900 1rem Inter, sans-serif; letter-spacing: .1em; transform: rotate(-14deg); background: rgba(255,255,255,.55); animation: pp-stamp .5s .55s cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes pp-in { from { transform: translateY(30px) scale(.8); opacity: 0; } }
+@keyframes pp-stamp { from { transform: rotate(-14deg) scale(2.6); opacity: 0; } to { transform: rotate(-14deg) scale(1); opacity: 1; } }
+body.calm .pp-book, body.calm .pp-stamp { animation: none; }
+
+/* 🌍 nation cards: the foil No. 1, country sets, the Packed XI's nation bonus */
+.pcard.no1 .pc-front { box-shadow: 0 0 0 2px #f6e27a, 0 0 16px rgba(246,226,122,.55); }
+.pc-no1 { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); z-index: 3; padding: 1px 7px; border-radius: 999px; background: linear-gradient(90deg, #f6e27a, #fff6c2, #f6e27a); color: #4a3800; font: 900 .55rem Inter, sans-serif; letter-spacing: .04em; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+.pc-foil { position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit; mix-blend-mode: color-dodge; opacity: .5;
+  background: linear-gradient(115deg, transparent 20%, rgba(255,0,170,.35) 32%, rgba(0,255,255,.35) 42%, rgba(255,255,0,.35) 52%, transparent 64%); background-size: 250% 250%; animation: foil 3.2s linear infinite; }
+@keyframes foil { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+body.calm .pc-foil { animation: none; }
+.nat-sets summary small { font-weight: 600; margin-left: 6px; }
+.nat-list { display: grid; gap: 4px; margin-top: 6px; max-height: 340px; overflow-y: auto; }
+.nat-row { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 10px; background: var(--panel); }
+.nat-row.done { outline: 2px solid var(--accent); }
+.nat-flag { font-size: 1.3rem; text-align: center; }
+.nat-nm { display: flex; flex-direction: column; min-width: 0; }
+.nat-nm small { color: var(--muted); font-size: .7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nat-of { font-weight: 800; color: var(--hi); font-size: .85rem; }
+.nat-bonus { margin: 6px 0 0; font-size: .88rem; }

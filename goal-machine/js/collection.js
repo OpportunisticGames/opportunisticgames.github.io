@@ -432,6 +432,7 @@
     root.innerHTML = `
       ${view === 'xi' ? `<div class="alb-xi-head"><p class="muted">Your team, built only from <b>finished cards</b>: the best player you’ve got in every position. Finish cards by opening packs and signing players.</p>${GM.lbButton('packedxi')}</div>
         ${GM.packedPitch(px)}
+        ${px.bonus ? `<p class="center nat-bonus">🌍 Nation bonus <b>+${px.bonus}</b> · ${px.nats.map(([n, k]) => `${GM.flag(n)} ×${k}`).join(' ')}</p>` : '<p class="muted center small">🌍 Teammates from the same country add a nation bonus (+3 each after the first)</p>'}
         ${px.n < 11 ? `<p class="muted center small">${11 - px.n} place${11 - px.n > 1 ? 's' : ''} still empty. Finish a card in that position to fill it: <a href="#/locker?v=cards">🧩 your cards ›</a></p>` : ''}
         <a class="btn ghost" href="#/leaderboard?m=packedxi">🏆 Packed XI leaderboard</a>` : ''}
 

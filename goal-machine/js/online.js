@@ -90,6 +90,7 @@
         <div id="league" class="league"><p class="muted center">Loading…</p></div></div>
       <div data-panel="friends">
         <div id="ofriends" class="friends"></div>
+        ${GM.inviteHtml ? GM.inviteHtml('New to Goal Machine? Send them your link: you both get a 🤝 Referral pack') : ''}
         <div class="join-row"><input class="input" id="ofriend" maxlength="20" placeholder="Add a friend by name" autocomplete="off"><button class="btn" id="oadd">➕ Add</button></div>
         <h3 class="section-title">Got a code?</h3>
         <div class="join-row"><input class="input" id="ocode" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn" id="ojoin">Join</button></div>
@@ -134,6 +135,7 @@
       }
       if (!GM.$('#olists')) return;
       friends = fr || [];
+      GM.store.set('friendNames', friends.map(f => f.name));  // (their pictures show on the leaderboards: GM.isFriend)
       const rows = (games || []).map(g => ({ g, seat: seatOf(g) })).filter(x => x.seat);
       const yours = rows.filter(x => myMove(x.g, x.seat)), theirs = rows.filter(x => x.g.status !== 'done' && !myMove(x.g, x.seat)), done = rows.filter(x => x.g.status === 'done');
       if (GM.checkOnline) done.forEach(x => GM.checkOnline(x.g, x.seat));  // online badges

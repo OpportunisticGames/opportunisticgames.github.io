@@ -63,11 +63,22 @@
       const a = GM.account();
       if (!a || !GM.lb.enabled || this._busy || (!force && Date.now() - this.at < 60e3)) return this.data;
       this._busy = true; this.at = Date.now();
-      try { const d = await GM.lb.rpc('activity_feed', { p_user: a.name, p_key: a.key }); if (d && !d.error) { this.data = d; GM.statusBar(); } }
+      try {
+        const d = await GM.lb.rpc('activity_feed', { p_user: a.name, p_key: a.key });
+        if (d && !d.error) {
+          this.data = d; GM.statusBar();
+          // 🤝 someone joined from your invite: your Referral pack (once each, remembered with your backup)
+          const got = GM.store.get('refGot', []) || [];
+          d.items.filter(x => x.kind === 'referral' && !got.includes(x.id)).forEach(x => {
+            got.push(x.id); GM.grant({ pack: 'referral' }, x.title.replace(/^🤝 /, '')); GM.toast(`${GM.esc(x.title)}: a Referral pack for you!`, 3500);
+          });
+          GM.store.set('refGot', got.slice(-60));
+        }
+      }
       catch (e) { /* offline: keep what we had */ } finally { this._busy = false; }
       return this.data;
     },
-    unseen() { const d = this.data, seen = GM.store.get('feedSeen', ''); return d && d.items ? d.items.filter(x => x.kind === 'beaten' && x.at > seen).length : 0; },
+    unseen() { const d = this.data, seen = GM.store.get('feedSeen', ''); return d && d.items ? d.items.filter(x => /^(beaten|referral)$/.test(x.kind) && x.at > seen).length : 0; },
   };
   // a board's name from its key (ultimateh → Ultimate Wildcard (Hard), targetxast → Target 325 – Assists (Extreme))
   GM.boardName = k => {
@@ -98,7 +109,8 @@
       ${waiting.length ? `<h4>⏳ Waiting for you</h4>${waiting.map(x => item('wait', x.title, GM.esc(x.body || ''), x.link)).join('')}` : ''}
       <h4>📰 Lately</h4>
       ${d.items.length ? d.items.map(x => item((x.at > seen ? 'new ' : '') + x.kind, x.title, `${GM.esc(x.body || '')} · ${ago(x.at)}`, x.link)).join('')
-        : '<p class="muted center small">Nothing yet. Get to the top of a leaderboard and we’ll tell you if anyone knocks you off it.</p>'}`;
+        : '<p class="muted center small">Nothing yet. Get to the top of a leaderboard and we’ll tell you if anyone knocks you off it.</p>'}
+      ${GM.inviteHtml()}`;
     GM.$$('a', el).forEach(l => l.addEventListener('click', () => m.close()));
     GM.store.set('feedSeen', d.now); GM.statusBar();
   };
@@ -452,6 +464,7 @@
               <div class="setting-btns"><label class="btn small">📷 Choose a photo<input type="file" id="s-pic" accept="image/*" hidden></label><button class="btn ghost small" id="s-picdel">Remove</button></div></div></div>
             <div id="s-hidden"></div>
             <div class="setting-btns"><button class="btn ghost small" id="s-move">📲 Move to another phone</button><button class="btn ghost small" id="s-name">✏️ New name</button></div>
+            ${GM.inviteHtml()}
             <div class="setting-btns"><button class="btn ghost small" id="s-backup">☁️ Back up now</button><button class="btn ghost small" id="s-restore">⤵️ Restore a backup</button></div>
             <small>${GM.store.get('backupAt', 0) ? `Last backup: ${new Date(GM.store.get('backupAt')).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}. ` : ''}Your album, stats, streaks and scores back up by themselves a few minutes after anything changes, and when you leave the app.</small>
             <button class="btn ghost small danger" id="s-delete">🗑️ Delete my account</button>`
@@ -632,7 +645,7 @@
     try {
       const rows = await GM.lb.rpc('best_players', { p_month: GM.lbMonth(), p_limit: 50 }), me = GM.getName(), el = GM.$('#global');
       if (!el) return;
-      el.innerHTML = rows.length ? rows.map(r => `<div ${GM.lbRow(r.name, me)}><span>${r.rank <= 3 ? ['🥇', '🥈', '🥉'][r.rank - 1] : r.rank}</span><span>${GM.esc(r.name)}${GM.lbLevel(r)}${r.crowns ? `<i class="bp-crowns">👑 ${r.crowns}</i>` : ''}</span><b>${r.points}<small> pts</small></b></div>`).join('') + GM.lbReportHint
+      el.innerHTML = rows.length ? GM.lbList(rows, { key: 'bestplayers' + (GM.lbMonth() ? ':m' : ''), unit: ' pts', score: r => String(r.points), extra: r => (r.crowns ? `<i class="bp-crowns">👑 ${r.crowns}</i>` : '') }) + GM.lbReportHint
         : `<div class="muted">Nobody on a main board yet${GM.lbMonth() ? ' this month' : ''} – be the first!</div>`;
       const mine = rows.find(r => r.name === me), d = GM.feed.data, b = d && (GM.lbMonth() ? d.mbest : d.best), you = GM.$('#lbyou');
       if (you && !mine && b) you.innerHTML = `<div class="lb-row me"><span>${b.rank}</span><span>${GM.esc(me)}</span><b>${b.points}<small> pts</small></b></div>`;
@@ -714,19 +727,21 @@
     if (base === 'bestplayers') return bestBody(body);
     GM.hiddenNameBanner(GM.$('#lbhidden'));
     const spread = /^(ultimate|club|classic|extreme|purist)/.test(m) || m.startsWith('daily:');  // (keyed by board, Extreme included)
-    body.innerHTML = `<div class="lb" id="lbyou"></div>
-      ${GM.lb.enabled ? `<h3 class="section-title">🌍 ${/:/.test(m) ? 'Everyone' : GM.lbMonth() ? new Date().toLocaleDateString(undefined, { month: 'long' }) : 'All time'}</h3><div id="global" class="lb"><div class="muted">Loading…</div></div>`
+    body.innerHTML = `${GM.lb.enabled ? `<h3 class="section-title">🌍 ${/:/.test(m) ? 'Everyone' : GM.lbMonth() ? new Date().toLocaleDateString(undefined, { month: 'long' }) : 'All time'}</h3><div id="global" class="lb"><div class="muted">Loading…</div></div>`
         : '<div class="banner">The global leaderboard isn’t switched on – use <b>⚔️ Challenge a friend</b> after a game to go head-to-head on the same spins.</div>'}
-      ${spread ? `<details class="set lbx-spread"><summary><span>📊 Your spread</span></summary>${m.startsWith('daily:') ? GM.distHtml('daily', 'goals') : GM.distHtml(m, stat)}</details>` : ''}`;
+      ${spread ? `<details class="set lbx-spread"><summary><span>📊 Your spread</span></summary>${m.startsWith('daily:') ? GM.distHtml('daily', 'goals') : GM.distHtml(m, stat)}</details>` : ''}
+      <div class="lb lbx-you" id="lbyou"></div>`;
     GM.lbYou(m, GM.$('#lbyou'));
     if (!GM.lb.enabled) return;
     try {
       const rows = await GM.lb.top(m), pts = /^d?chaos/.test(m), me = GM.getName(), el = GM.$('#global');
       if (!el) return;
-      el.innerHTML = rows.length ? rows.map((r, i) =>
-        `<div ${GM.lbRow(r.name, me)}><span>${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span><span>${GM.esc(r.name)}${GM.lbLevel(r)}${GM.pctTag(m, r.meta)}</span><b>${GM.scoreText(m, r.score)}${pts ? '<small> pts</small>' : ''}</b></div>`).join('')
+      el.innerHTML = rows.length ? GM.lbList(rows, { key: m, unit: pts ? ' pts' : '' })
         + (rows.some(r => r.name !== me) ? GM.lbReportHint : '')
         : '<div class="muted">No scores yet – be the first!</div>';
+      // your pinned row hides while your own row is on screen
+      const own = GM.$('.lb-row.lbx.me, .pod.me', el), pin = GM.$('#lbyou');
+      if (own && pin && window.IntersectionObserver) new IntersectionObserver(es => pin.classList.toggle('off', es[0].isIntersecting)).observe(own);
     } catch (e) { const el = GM.$('#global'); if (el) el.innerHTML = GM.net.msg('this leaderboard', '<div class="muted">Couldn’t load the board.</div>'); }
   }
 

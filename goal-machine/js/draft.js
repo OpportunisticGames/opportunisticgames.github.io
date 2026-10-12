@@ -52,6 +52,7 @@
     magnet: { icon: '🧲', name: 'Old Teammates', w: 1.2, chaos: true, kind: 'special', desc: () => 'A free spin of players who played alongside your last signing (chemistry bonus!).',
       filter: p => { const lp = S.last != null ? byId(S.last) : null; return !!lp && p.first <= lp.last && p.last >= lp.first && p.clubs.some(c => lp.clubs.includes(c)); } },
     trophy: { icon: '🏆', name: 'Trophy Cabinet', w: 1.2, chaos: true, kind: 'special', desc: () => 'A free spin of PL title winners (title bonus!).', filter: p => (p.hon.P || 0) > 0 },
+    passport: { icon: '🛂', name: 'Passport Office', w: 1, chaos: true, kind: 'special', desc: () => 'A free spin of players from one country, picked at the border (a flag you might not expect).', filter: p => !!S.passNat && p.nat === S.passNat },
     storm: { icon: '🌪️', name: 'Wildcard Storm', w: 1, chaos: true, kind: 'special', desc: () => 'A free spin of nothing but wildcards.', storm: true },
     physio: { icon: '🏥', name: 'Physio Room', w: 1, chaos: true, kind: 'heal', desc: st => `Your most-hurt player gets his full ${st.label} back.` },
     joker: { icon: '🃏', name: 'Joker', w: 1, chaos: true, kind: 'joker', desc: () => 'Turns into a random CHAOS wildcard.' },
@@ -1227,9 +1228,15 @@
       const mine = PL().filter(p => p.nat === S.nat);
       if (mine.some(ok)) { field = mine; fkey = 'nat:' + S.nat; }
     }
+    // Passport Office: one country (seeded), from those with at least three players who fit your open positions
+    if (special === 'passport') {
+      const by = {}; field.filter(ok).forEach(p => { if (p.nat) by[p.nat] = (by[p.nat] || 0) + 1; });
+      const nats = Object.keys(by).filter(k => by[k] >= 3).sort();
+      S.passNat = nats.length ? GM.rng(tag + '|passport').pick(nats) : null;
+    }
     if (wc && wc.filter) {
       const themed = field.filter(p => wc.filter(p, wst()));
-      if (themed.some(ok)) { field = themed; fkey += '|' + special + (special === 'magnet' ? ':' + S.last : ''); }
+      if (themed.some(ok)) { field = themed; fkey += '|' + special + (special === 'magnet' ? ':' + S.last : special === 'passport' ? ':' + S.passNat : ''); }
     }
     const draw = sampler(`${fkey}|${S.mode}|${S.hard ? 'h' : ''}`, field, reelWeight());
     // wildcard: reel 1 on 28% of spins, else reel 2 on 28% of the rest (so about half the spins have one), decided by the spin number only
@@ -1269,6 +1276,7 @@
     if (!special && S.forceSpecial) { special = S.forceSpecial; S.forceSpecial = null; }
     S.special = special || null;
     S.reels = makeReels(special);
+    if (special === 'passport' && S.passNat) GM.toast(`🛂 Passport Office: ${GM.flag(S.passNat)} <b>${GM.esc(S.passNat)}</b>`, 2800);
     S.selected = -1;
     S.revealed = S.revealNext; S.revealNext = false;
     S.phase = 'spinning';
@@ -2433,7 +2441,9 @@
       // the leaderboard line on this screen (filled in when the score reaches the board: GM.boardNews in core.js)
       S.boardOn = !!(GM.lb.enabled && sc.total > 0); S.board = null;
       if (S.boardOn) render();
-      const { isBest } = await GM.recordScore(modeKey(), sc.total, S.target && !S.rules.max && !S.rules.treble ? { t: sc.t, g: S.target } : { t: sc.t });
+      const meta = { ...(S.target && !S.rules.max && !S.rules.treble ? { t: sc.t, g: S.target } : { t: sc.t }),
+        xi: S.xi.filter(x => x.p != null).map(x => byId(x.p).name), ...(S.manager && MANAGERS[S.manager] ? { mgr: MANAGERS[S.manager].name } : {}) };  // (their profile shows their best XI and favourite manager)
+      const { isBest } = await GM.recordScore(modeKey(), sc.total, meta);
       if (isBest && sc.total > 0 && S.mode !== 'daily') GM.toast('🏆 New personal best!');
       if (isBest && sc.total > 0 && S.mode !== 'daily' && GM.track) { GM.track('pb'); if (GM.celebrate) setTimeout(() => GM.celebrate(true), 1700); }  // your celebration (Locker)
       if (GM.native) { GM.native.gameDone(); if (isBest && sc.total > 0) { GM.buzz('win'); GM.native.happy('pb'); } }  // the Play review card, at a happy moment

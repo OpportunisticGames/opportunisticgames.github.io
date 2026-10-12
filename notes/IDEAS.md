@@ -23,6 +23,23 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### 5.33: the owner's go on six ideas 🚧 being built *(owner, 13 Oct 2026)*
+> "19. oo maybe stuff like streak freeze is a good idea for a reward you can get that is like renewable instead of all the
+> one time rewards so far - some other rewards like that would be good. 25. Hattrick hero is its own spin right? but you're
+> right it could use a rework - like three players actually turned into one would be cool. Right now you just choose one
+> player and it adds their scores, something that looks cool and chaotic like three faces together or something could be
+> good. 4. player profiles needs doing. 6. let's do that and have a referral pack. 3. yes i like those ideas. 1. yes a
+> nicer leaderboard please!"
+- **Renewable rewards:** consumables you can win again and again: 🧊 Streak Freeze (covers one missed day), and more like
+  it. They fill the season track once its items are owned, and bonus tiers after the last one.
+- **Hat-Trick Hero:** the three players become one fused player, three faces merged on the pitch, with a chaotic fusion.
+- **Player profiles:** tap any name for their picture, level, title, best boards, crowns, Best Players place, favourite
+  manager, best XI and record against you.
+- **Invite a friend:** a share link; when a new player claims a name from it, both get a 🤝 Referral pack.
+- **Nation cards:** flags on cards, a foil No. 1 card per country, country sets in the Album, Nation packs, a Packed XI
+  bonus for same-country teammates, and Passport Office in CHAOS.
+- **Leaderboards:** a podium for the top 3, pictures, movement since you last looked, your row pinned, tap for a profile.
+
 ### A nicer leaderboard layout 💬 *(owner, 13 Oct 2026)*
 > "I think there has to be a nicer leaderboard layout. No worries if there isn't."
 
@@ -332,7 +349,7 @@ challenges / challenge_plays; inbox items cs/cf/cr/co/cm). Not counted in the we
   sit on a Centurion; the armband passes down in CHAOS (captain ×2, then vice-captain ×1.5, then ×1.25). Skip the bag-slot
   cost (more to explain). Re-run the manager simulation after.
 
-### CHAOS: the screen gets messier as the game goes on 🚧 being built in 5.17 *(owner, 2 Oct 2026)*
+### CHAOS: the screen gets messier as the game goes on ✅ 5.17 *(owner, 2 Oct 2026)*
 - **Owner's words:** "make the screen a little more chaotic as time goes on? E.g if you got the pigeon a little pigeon stays
   on somewhere around the pitch, an ambulance is there for an injured player, a tornado does wreck things a little etc. There
   could even be a thing that splatters on your screen or obscures some of your current players' numbers? Like you'd then
@@ -345,7 +362,7 @@ challenges / challenge_plays; inbox items cs/cf/cr/co/cm). Not counted in the we
 - **Questions:** how messy at the end of a wild game (cap at about 6 leftovers)? Can you wipe the splat off (tap 3 times)?
   Does Daily CHAOS / a race get the same leftovers (yes, it's seeded)?
 
-### CHAOS: keepers that matter, ways to win points back, more wildcards and managers 🚧 being built in 5.17 *(owner, 2 Oct 2026)*
+### CHAOS: keepers that matter, ways to win points back, more wildcards and managers ✅ 5.17 *(owner, 2 Oct 2026)*
 - **Owner's words:** "Who ate all the pies" is a dud in goals mode (keepers don't score). Either a flat bonus, or "rework it
   so keepers can actually contribute to the game". Also: "a way for a player to regain the points they have lost, like a
   wildcard to reset a player's points, or a super rare event that makes everyone who has lost points regain points". And
@@ -371,7 +388,7 @@ challenges / challenge_plays; inbox items cs/cf/cr/co/cm). Not counted in the we
   likelier).
 
 
-### Google Play Games: achievements and Sidekick 💬 *(owner, 2 Oct 2026)*
+### Google Play Games: achievements and Sidekick ✅ 5.12–5.13 *(owner, 2 Oct 2026)*
 - **Owner's words:** Sidekick is switched on in Play Console; wants our badges to count as Google Play achievements
   (Play Points, the Play Games profile, Sidekick).
 - **What it needs:** Play Games Services v2 (`play-services-games-v2`) in the Android app, one achievement per badge
@@ -382,7 +399,7 @@ challenges / challenge_plays; inbox items cs/cf/cr/co/cm). Not counted in the we
 - **Questions (old):** which badges become achievements (all, or about 30 of the best)? Icons (512x512) and descriptions
   for each. Sign-in: PGS v2 signs in automatically, so no extra button, but we should say what it shares.
 
-### Player sheet: tap any player for a profile 💬 *(owner, 2 Oct 2026)*
+### Player sheet: tap any player for a profile ✅ (player.js, GM.playerSheet) *(owner, 2 Oct 2026)*
 - **Owner's words:** "it would be nice if you could click a player, whether it be on a pack, in the player index or even in
   game, and see a little bio about the player maybe? Idk how big of a job this would be, but … it could even just be their
   apps, goals, assists, who they played for, when they played, how many times you have used them in games etc. … if on a game
@@ -406,7 +423,7 @@ challenges / challenge_plays; inbox items cs/cf/cr/co/cm). Not counted in the we
   on reel cards at all. Still open: Hard mode (probably the same sheet, since the player is already signed), bio now or later.
 - **Owner (2 Oct):** Hard mode is fine for the sheet. Waiting for the go to build it (after the photos land).
 
-### Cards are too easy from drafts: every Silver+ card needs one pack piece 💬 *(owner, 2 Oct 2026)*
+### Cards are too easy from drafts: every Silver+ card needs one pack piece ✅ *(owner, 2 Oct 2026)*
 - **Owner's words:** "it does feel too easy, maybe too easy for the legends? Like in CHAOS you can get multiple Centurion
   throws per game. I like that you can get players from game modes too. Maybe every card needs to be both packed as well as
   in game? A legend you could do in game 4 times but you would still need to pack them once to complete it? … You don't have
@@ -661,7 +678,7 @@ challenges / challenge_plays; inbox items cs/cf/cr/co/cm). Not counted in the we
   collect emails. Later, if lost accounts become a problem, an **optional** "link your email / Google account to
   recover your progress", never required.
 
-### Share your whole day *(Claude's idea)*
+### Share your whole day ✅ 5.5 *(Claude's idea)*
 - Footle and the drafts already have share buttons. This adds one "Share my day" on the Today page: every daily
   result plus your streak in one spoiler-free post, with the link. One post a day in a group chat is how Wordle
   spread.

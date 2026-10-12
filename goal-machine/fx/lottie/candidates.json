@@ -1,1 +1,32 @@
-{}
+{
+ "plane1": {
+  "url": "https://assets-v2.lottiefiles.com/a/5e1cb7ae-116e-11ee-b645-c362a10ea9a7/U4G2MKRNcK.json",
+  "source": "https://lottiefiles.com/animations/airplane-w2Pucnsemz",
+  "creator": "https://lottiefiles.com/gottostudio"
+ },
+ "plane2": {
+  "url": "https://assets-v2.lottiefiles.com/a/e57ad2be-1153-11ee-9995-afddf973249c/FP5VMCZZs0.json",
+  "source": "https://lottiefiles.com/animations/plane-qUCwWHia66",
+  "creator": "https://lottiefiles.com/3tnymdhkto6lf4nj"
+ },
+ "plane3": {
+  "url": "https://assets-v2.lottiefiles.com/a/129a094e-1187-11ee-964d-57134a58c1b5/WHaVswQHw0.json",
+  "source": "https://lottiefiles.com/animations/airplane-OxMhotHndx",
+  "creator": "https://lottiefiles.com/swzxthjjjv"
+ },
+ "plane4": {
+  "url": "https://assets-v2.lottiefiles.com/a/968207f4-fcfb-4124-ad91-501ea9ebbdc4/WmLrjBryGv.json",
+  "source": "https://lottiefiles.com/animations/plane-WmLrjBryGv",
+  "creator": "https://lottiefiles.com/1wb0fq07icha7bkn"
+ },
+ "visa1": {
+  "url": "https://assets-v2.lottiefiles.com/a/cdcbe52c-116c-11ee-95d5-b7d7068cd3ca/h3ZWQA4TRV.json",
+  "source": "https://lottiefiles.com/animations/visa-stamp-passport-ZfjFDlEKWQ",
+  "creator": ""
+ },
+ "stamp2": {
+  "url": "https://assets-v2.lottiefiles.com/a/63e62aec-117a-11ee-9af6-271934a82e77/qC8MJlN2zQ.json",
+  "source": "https://lottiefiles.com/animations/stamp-WtzPLVQAwR",
+  "creator": "https://lottiefiles.com/bz7jyo3g0o"
+ }
+}
