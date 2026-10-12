@@ -170,6 +170,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    take minutes). Or run one script on its own with `node <script>.js`. Each uses `mockserver.js`, which fakes the
    Supabase RPCs in memory (test accounts Alice/Bob/Cara), so nothing touches the real database.
    - `offline531.js` – a newer cloud backup is offered once and restores, backing up on leaving the app, the offline strip and cards, scores kept and sent later. `offline.js` – the service worker opens the game from cache offline and on a hanging network.
+   - `odds.js` – who turns up on the reels in every draft mode and difficulty, measured with the real dealing code (stars v average, each tenth of the pool, wildcard and storm rates). Check the How to play / Settings wording against it after changing a weight.
    - `sweep.js` – opens every page in light, dark and club themes: page errors and sideways overflow.
    - `races.js` – two phones play a Target Race and a CHAOS Race end to end.
    - `quickmatch.js` – pairing, no auto-friend, and the computer fallback after a minute.

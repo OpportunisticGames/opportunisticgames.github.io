@@ -280,7 +280,7 @@
   // your lowest scorer who's actually scored (a boost on 0 would do nothing); -1 if nobody has
   const underdog = f => { const s0 = f.filter(i => S.xi[i].g > 0).sort((a, b) => S.xi[a].g - S.xi[b].g); return s0.length ? s0[0] : -1; };
   // something that's already happened this game can happen again, just less likely each time (a sixth, then a 36th…)
-  // Postecoglou makes the rare and legendary ones three times as likely
+  // Postecoglou makes the rare and legendary ones six times as likely
   const rarW = r => RAR[r] * ((r === 'r' || r === 'l') && tw().rare ? tw().rare : 1);
   // the weather (CHAOS, set at kick-off): wx() is its entry in chaosart.js (ev / big = how much likelier things get)
   const wx = () => (S && S.rules && S.rules.chaos && S.weather && GM.CFX && GM.CFX.WEATHER[S.weather]) || {};
@@ -1228,7 +1228,7 @@
       if (themed.some(ok)) { field = themed; fkey += '|' + special + (special === 'magnet' ? ':' + S.last : ''); }
     }
     const draw = sampler(`${fkey}|${S.mode}|${S.hard ? 'h' : ''}`, field, reelWeight());
-    // wildcard: reel 1 or 2 on 28% of spins each, decided by the spin number only
+    // wildcard: reel 1 on 28% of spins, else reel 2 on 28% of the rest (so about half the spins have one), decided by the spin number only
     let wildAt = -1, wild = null;
     if (!special && S.spin >= 1 && S.rules.wild !== false) {
       const wp = tw().wildP || 0.28;
@@ -2852,6 +2852,14 @@
     const dg = GM.$('#dugout', root); if (dg) dg.onclick = () => { const m = MANAGERS[S.manager]; GM.modal(`<div class="center"><div class="mgr-big">${m.icon}</div><h3>${m.name}</h3></div><p>✅ ${m.perk}</p><p>⚠️ ${m.catch}</p><p class="muted small">👍 and 👎 on the reels show who he’d like or not. It all adds up in your bonus.</p><div class="actions"><button class="btn ghost" id="mgr-all-btn">👔 All managers</button><button class="btn" data-close>Got it</button></div>`); const b = document.getElementById('mgr-all-btn'); if (b) b.onclick = () => { document.querySelectorAll('.modal-wrap').forEach(x => x.remove()); managersModal(); }; };
   }
 
+  // who turns up on the reels, said the way they really deal (tools/test/odds.js measures it)
+  function poolText() {
+    const r = S.rules, w = r.wild !== false ? ' and use your wildcards well' : '';
+    if (S.fx || r.club || r.nation) return `Every player ${S.fx ? 'either club has had' : S.nat ? 'from that country' : 'the club has had'} in the Premier League is equally likely to turn up: spot the big numbers${w}.`;
+    if (r.fame) return `Every player with 50+ apps can turn up, and the better known they are, the more often${S.hard ? ' (on Hard, much less so: a star turns up about 4 times as often as an average player, not 16)' : ': a star turns up about 16 times as often as an average player'}.`;
+    if (r.all) return `Every one of the 5,000+ PL players is equally likely to turn up, so most are strangers: spot the big numbers${w}.`;
+    return `Every player with 50+ apps is equally likely to turn up, so you’ll mostly see journeymen: spot the big numbers${w}.`;
+  }
   function help() {
     const r = S.rules, L = S.st.label;
     GM.modal(`<h3>How to play</h3>
@@ -2862,8 +2870,8 @@
         ${S.stat !== 'apps' ? `<p>🧤 <b>Keepers count too:</b> ${S.stat === 'goals' ? 'a goal for every three' : 'an assist for about every four'} Premier League clean sheets.</p>` : ''}
         <p>⚡ <b>The CHAOS meter</b> fills every time you take or play a wildcard. When it’s full, the next spin opens with a big moment: a 🌪️ tornado through your XI, a ⚡ lightning strike, a 🚌 bus parade, ⏰ deadline day, 💥 CHAOS unleashed or a sacking.</p>
         <p>🐦 CHAOS leaves its mark: what happens stays on the pitch. If the pigeon gets its revenge, two of your numbers stay covered until full time, so keep track!</p>
-        <p>Now and then a <b>match-day event</b> strikes too (🟥 red cards, 🚑 injuries, 📺 VAR, 🧾 the taxman, 💰 TV money), one spin in ten is a <b>🌪️ wildcard storm</b>, and there are riskier wildcards like 🎰 All In (a coin toss: your whole XI ×2 or ×½).</p>`
-      : r.max ? `<p>👑 <b>${modeName()}:</b> no target – build the XI with the <b>most Premier League ${L}</b> you can. Every player with 50+ apps is equally likely to turn up, so you’ll mostly see journeymen: spot the big numbers and use your wildcards well.</p>`
+        <p>Now and then a <b>match-day event</b> strikes too (🟥 red cards, 🚑 injuries, 📺 VAR, 🧾 the taxman, 💰 TV money), ${S.sz ? 'one spin in five' : 'one spin in ten'} is a <b>🌪️ wildcard storm</b>, and there are riskier wildcards like 🎰 All In (a coin toss: your whole XI ×2 or ×½).</p>`
+      : r.max ? `<p>👑 <b>${modeName()}:</b> no target – build the XI with the <b>most Premier League ${L}</b> you can. ${poolText()}</p>`
       : `<p>🎯 <b>${modeName()}:</b> build an XI whose players have <b>${fmt(S.target)}</b> Premier League ${L} between them – as close as you can, exactly for a bullseye.</p>`}
       <p>Each spin shows three players who fit an open position. Their ${L} are hidden until you sign one. You keep spinning until the XI is full.</p>
       <p>Every player has real positions – <b>GK, LB, CB, RB, LM, CM, RM, ST</b>. Tap a player, then tap one of the highlighted slots he can play.</p>
@@ -2874,7 +2882,7 @@
         : r.chaos ? `your XI’s PL ${L} plus every bonus, shown at full time.` : r.max ? `your score is your XI’s total PL ${L} (after any wildcard modifiers).` : `1000 minus 5 for every ${S.stat === 'goals' ? 'goal' : `${fmt(Math.round(S.target / 442 * 10) / 10)} ${L}`} off target. Exactly ${fmt(S.target)} = +500 bullseye bonus.`}</p>
       <p>🤝 A player who shares a club with your last signing may turn up to tempt you.</p>
       ${!S.hard && blind() ? '<p>⚡ <b>Extreme:</b> every one of the 5,000+ PL players, and just names and positions on the reels – no clubs, years, apps or nationality. Separate leaderboard.</p>' : ''}
-      ${S.hard ? `<p>🥵 <b>Hard mode:</b> just names and positions – no clubs, years, apps or nationality${r.max ? '' : ', and far fewer star players on the reels (same targets)'}. Separate leaderboard.</p>` : ''}
+      ${S.hard ? `<p>🥵 <b>Hard mode:</b> just names and positions – no clubs, years, apps or nationality${r.fame || !r.max ? `, and far fewer star players on the reels${r.max ? '' : ' (same targets)'}` : ''}. Separate leaderboard.</p>` : ''}
       <div class="row"><button class="btn" data-close>Got it</button></div>`);
   }
 

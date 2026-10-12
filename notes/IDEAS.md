@@ -38,7 +38,11 @@ Notes (three linked pieces, one data source: a server-side "who's top of what" c
    summed over this month's boards (and all-time), with 👑 crowns count. Needs a weighting so playing every mode isn't
    the only way up (best 8 boards count?), and a monthly reset like the other boards.
 
-Questions: (a) should "beaten" tell you who did it (names are public on boards, but they can hide)? (b) points by rank
+Owner's answers (12 Oct): (a) yes, say who beat you; (b) "whatever you think is best, maybe all the normal draft modes":
+our call is the main draft boards only (Ultimate, Classic, Extreme, CHAOS, Target, Treble, Mystery, each difficulty and
+stat), not the dailies, matchday or secret games, and only your best 8 boards count; (d) beaten alerts on by default, at
+most one per board per hour.
+Questions (answered above): (a) should "beaten" tell you who did it (names are public on boards, but they can hide)? (b) points by rank
 or by percentile once there are lots of players? (c) include Daily boards in Best Players or only the main modes?
 (d) a muted-by-default switch for beaten alerts, or on? Backend work: tables `activity` + a `best_players` view/RPC,
 changes to `submit_score` and `app_inbox`, the `push` function's kind filter; app: bell + sheet in `statusBar`, a Ranks tab.

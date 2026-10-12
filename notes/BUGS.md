@@ -3,6 +3,13 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.31 *(owner asked us to triple-check the odds, 12 Oct 2026)*
+- Measured every draft mode and difficulty with the real dealing code (`tools/test/odds.js`). The odds are right; some
+  words weren't: How to play told every no-target mode "every player with 50+ apps is equally likely", which was wrong
+  for Classic (fame-weighted: a star ×16, ×4 on Hard), Extreme/Purist (all 5,157 players) and Club/Matchday/Nation XIs
+  (that club or country). Hard's "fewer stars" line was missing in Classic, Settings said Hard only changes the Target
+  games, and Seasonal CHAOS said storms come "one spin in ten" when it's one in five. Two code comments were off too.
+
 ### Fixed in 5.30.3 *(owner, 12 Oct 2026)*
 - “Goal Machine doesn't work offline, I thought it used to”: on a weak signal (4G showing, no data) the app showed a blank
   green screen for two minutes, then "No signal in the stadium". The service worker was network-first with no timeout, so

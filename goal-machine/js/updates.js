@@ -14,6 +14,7 @@
         '📶 No signal? A small note says so on the menu pages, and anything that needs the internet (leaderboards, your league, online games, challenges) now says “go online to see this” with a Try again button, instead of just not loading. Your game and everything you earn stay saved on the phone',
         '🏆 A score from a game played offline is kept and sent to the leaderboard by itself when the signal comes back',
         '☁️ Backups are much fresher: your game now backs up a few minutes after anything changes (a pack, a mission, your Locker, a game) and the moment you leave the app, not just after a game every six hours',
+        '🎰 We measured who turns up on the reels in every draft mode, and the How to play text now says exactly that: Classic’s stars turn up about 16 times as often as an average player (about 4 times on Hard), Extreme and Club XIs are all equally likely, and Seasonal CHAOS has a wildcard storm on one spin in five, not ten',
         '⤵️ On a new phone or after reinstalling, the game now spots a newer backup on your account and offers to restore it (once), instead of you having to find Restore in Settings. Android sometimes puts back an old copy of the game on a reinstall, which is why it was days behind',
       ],
     },
