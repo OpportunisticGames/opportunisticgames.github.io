@@ -3453,3 +3453,33 @@ html[class*="sz-"]:not(.intl-break).has-club body:not(.has-status) #app { paddin
 /* a reel card's club badges stay on one line (a player with lots of clubs pushed a second row out of the card) */
 .stage .reel .chips { flex-wrap: nowrap; overflow: hidden; max-width: 100%; }
 .stage .reel .chips > * { flex: none; }
+
+/* 📶 offline note and go-online card */
+#net-bar { position: fixed; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom)); transform: translate(-50%, 20px); z-index: 45; display: none; background: var(--toast-bg); color: var(--toast-text); font: 700 .78rem Inter, sans-serif; padding: 7px 14px; border-radius: 999px; opacity: 0; pointer-events: none; transition: .25s; white-space: nowrap; max-width: 94vw; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 6px 20px rgba(0,0,0,.3); }
+body.has-tabs #net-bar.on { display: block; opacity: 1; transform: translate(-50%, 0); }
+.offline-card { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding: 18px 16px; margin: 10px 0; border-radius: 16px; background: var(--inset); border: 1px dashed var(--line); }
+.offline-card > span { font-size: 1.8rem; }
+.offline-card small { color: var(--muted); }
+
+/* 🔔 what's been happening */
+.gm-status .gs-bell { margin-left: auto; position: relative; display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 36px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); font-size: 1.1rem; padding: 0; }
+.gm-status .gs-bell + .gs-open { margin-left: 6px; }
+.gm-status .gs-bell i { position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: #e5383b; color: #fff; font: 800 .68rem/18px Inter, sans-serif; font-style: normal; text-align: center; }
+.gm-status .gs-bell.hot span { animation: gs-wiggle 2.4s ease-in-out infinite; display: inline-block; }
+body.calm .gm-status .gs-bell.hot span { animation: none; }
+.feed h4 { margin: 14px 0 6px; }
+.feed-tops { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.feed-stat { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px; padding: 10px 6px; border-radius: 14px; background: var(--inset); color: inherit; text-decoration: none; }
+.feed-stat b { font-size: 1.05rem; }
+.feed-stat small { color: var(--muted); font-size: .68rem; line-height: 1.2; }
+.feed-crowns { margin-top: 8px; }
+.feed-crowns a { display: flex; justify-content: space-between; gap: 8px; padding: 7px 4px; border-top: 1px solid var(--line); color: inherit; text-decoration: none; font-weight: 700; font-size: .85rem; }
+.feed-crowns a small { color: var(--muted); font-weight: 600; }
+.feed-item { display: block; padding: 9px 10px; margin: 6px 0; border-radius: 12px; background: var(--inset); color: inherit; text-decoration: none; border-left: 4px solid transparent; }
+.feed-item b { display: block; font-size: .88rem; }
+.feed-item small { color: var(--muted); font-size: .75rem; }
+.feed-item.beaten { border-left-color: #e5383b; }
+.feed-item.crown { border-left-color: #f5a700; }
+.feed-item.wait { border-left-color: var(--hi); }
+.feed-item.new { box-shadow: 0 0 0 2px rgba(229,56,59,.35); }
+.bp-crowns { font-style: normal; font-size: .72rem; font-weight: 700; margin-left: 5px; color: var(--muted); }

@@ -23,6 +23,52 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### Beaten! alerts, an activity drawer, and a Best Players table ✅ 5.32 *(owner, 12 Oct 2026)*
+> "You should get a notification when someone beats your score. Maybe also the app should have a notification drawer so you can see what has been going on, like being able to see how many things you are top of. Maybe there should be a leaderboard with best players, some form of aggregated points system based on all the leaderboards or something idk!! Have fun with it but you get the idea"
+
+Notes (three linked pieces, one data source: a server-side "who's top of what" check when a score is submitted):
+1. **Beaten alerts.** In `submit_score`, if the new score takes a rank off someone who held it, write an `activity` row
+   for them ("Sam beat your Ultimate Wildcard score: 1,234 v your 1,180"). Push it through the existing `app_inbox`/`push`
+   path (a new kind, once per event, with a "Notifications → Beaten" switch in Settings). Only top-spot losses by default
+   (not every rank), batched so a busy board can't spam: at most one push per board per hour.
+2. **Activity drawer.** A bell in the top bar with a badge, opening a sheet: beaten alerts, challenge results, friend
+   requests, awards (what the 🎁 sheet and inbox show today, in one list), and a "You're top of N boards 👑" header with the
+   list (this month and all time). Items open the board or game they're about; keep 30 days.
+3. **Best Players table.** A new board on Ranks: points per board by rank (1st 10, 2nd 7, 3rd 5, top 10 get 1+),
+   summed over this month's boards (and all-time), with 👑 crowns count. Needs a weighting so playing every mode isn't
+   the only way up (best 8 boards count?), and a monthly reset like the other boards.
+
+Owner's answers (12 Oct): (a) yes, say who beat you; (b) "whatever you think is best, maybe all the normal draft modes":
+our call is the main draft boards only (Ultimate, Classic, Extreme, CHAOS, Target, Treble, Mystery, each difficulty and
+stat), not the dailies, matchday or secret games, and only your best 8 boards count; (d) beaten alerts on by default, at
+most one per board per hour.
+Questions (answered above): (a) should "beaten" tell you who did it (names are public on boards, but they can hide)? (b) points by rank
+or by percentile once there are lots of players? (c) include Daily boards in Best Players or only the main modes?
+(d) a muted-by-default switch for beaten alerts, or on? Backend work: tables `activity` + a `best_players` view/RPC,
+changes to `submit_score` and `app_inbox`, the `push` function's kind filter; app: bell + sheet in `statusBar`, a Ranks tab.
+Size: about a day. Suggested order: drawer + crowns first (no push needed), then beaten alerts, then Best Players.
+
+### Say clearly when you're offline, and keep progress safe ✅ 5.31 *(owner, 12 Oct 2026)*
+> "Should there be an offline mode? Right now when you're offline some things are saved and some aren't… maybe it should make clear you are offline and say go online, e.g. on the leaderboards"
+
+Notes: the game itself opens offline (5.30.3) and local progress (album, badges, stats) saves on the phone. What needs
+the server is leaderboards, online games, challenges, friends, packs' leaderboard submits and backups. Today each shows its
+own "couldn't reach…" toast, or just loads forever. Proposal: one `GM.online()` check (navigator.onLine plus the last RPC
+result), a slim "📶 Offline: your game is saved on this phone" strip, online-only pages and tabs showing a friendly "go
+online" card instead of spinners, and scores from an offline game queued and sent when the signal returns (check that
+`GM.lb.submit` retries). Questions: queue offline scores for the leaderboards (daily boards are date-bound), and should
+Online games be greyed out in the tab bar?
+
+### Backups: keep them fresh, and restore by itself on a new phone ✅ 5.31 *(owner, 12 Oct 2026)*
+> "I had to manually press restore backup once I re-downloaded the app as it put me back on a backup from a couple of days ago. Should it not automatically put you at the latest backup?"
+
+Notes: the restore *did* load the newest backup the server had, but backups were old: `GM.backup.save(true)` runs only
+when a game finishes (core.js) and at most once every 6 hours, so packs opened, missions, Locker, settings and badges
+earned since then, or games inside the 6 hours, were never saved. Proposal: also back up when the app goes to the
+background (throttled to once an hour, and straight after a pack, level-up or Locker change), and when a name is
+signed in on a phone with an empty album, restore automatically (still confirming once with the backup's date). Never
+restore over a phone whose data is newer than the backup (compare `backupAt`).
+
 ### Seasons that change the games, not just the menus: a CHAOS for every season ✅ 5.28 *(owner, 11 Oct 2026)*
 > "I also think the banner looks quite cheap… I dont like the just emoji look and the repeated emoji look generally. It
 > makes it feel less like an actual functioning game. A cobweb in the corner, the spin having a particular theme, maybe a

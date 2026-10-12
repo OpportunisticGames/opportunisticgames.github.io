@@ -9,6 +9,24 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 89, label: '5.32', date: '2026-10-12', title: '😬 Beaten! alerts, the 🔔 and Best Players',
+      items: [
+        '😬 Someone takes your top spot on a leaderboard? You get a notification saying who, by how much, and a tap straight to the board to win it back (at most one an hour per board; switch it off in Settings → Notifications)',
+        '🔔 A new bell on the top bar: what’s been happening. Who beat you, whose top spot you took, games and challenges waiting for you, how many boards you top (all time and this month) and where you are in Best Players',
+        '🏅 Best Players, a new table on Ranks: points for every top-ten place on the main draft boards (Ultimate, Classic, Extreme, CHAOS and the Targets, every difficulty and stat), 10 for 1st down to 1 for 10th, your best 8 boards count. A fresh race every month, or all time',
+      ],
+    },
+    {
+      v: 88, label: '5.31', date: '2026-10-12', title: '📶 Offline notices and fresher backups',
+      items: [
+        '📶 No signal? A small note says so on the menu pages, and anything that needs the internet (leaderboards, your league, online games, challenges) now says “go online to see this” with a Try again button, instead of just not loading. Your game and everything you earn stay saved on the phone',
+        '🏆 A score from a game played offline is kept and sent to the leaderboard by itself when the signal comes back',
+        '☁️ Backups are much fresher: your game now backs up a few minutes after anything changes (a pack, a mission, your Locker, a game) and the moment you leave the app, not just after a game every six hours',
+        '🎰 We measured who turns up on the reels in every draft mode, and the How to play text now says exactly that: Classic’s stars turn up about 16 times as often as an average player (about 4 times on Hard), Extreme and Club XIs are all equally likely, and Seasonal CHAOS has a wildcard storm on one spin in five, not ten',
+        '⤵️ On a new phone or after reinstalling, the game now spots a newer backup on your account and offers to restore it (once), instead of you having to find Restore in Settings. Android sometimes puts back an old copy of the game on a reinstall, which is why it was days behind',
+      ],
+    },
+    {
       v: 87, label: '5.30.3', date: '2026-10-12', title: '📶 Opens with no signal',
       items: [
         '📶 With a weak signal (4G showing but no data getting through) the app sat on a blank screen and then said "No signal in the stadium", even though the game was already saved on the phone. It now waits a few seconds for the internet and then opens the saved copy, and straight away if you are properly offline',

@@ -336,7 +336,7 @@ GM.newSeed = () => Math.random().toString(36).slice(2, 10);
 /* ------------------------------------------------------------------ storage */
 GM.store = {
   get(k, d) { try { const v = localStorage.getItem('gm:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem('gm:' + k, JSON.stringify(v)); } catch (e) { /* private mode */ } },
+  set(k, v) { try { localStorage.setItem('gm:' + k, JSON.stringify(v)); } catch (e) { /* private mode */ } if (GM.backup) GM.backup.changed(k); },
 };
 
 // Moving house: the old address (joelthornton.github.io/goal-machine/) forwards players here with their saved scores,
@@ -505,18 +505,29 @@ GM.setMyPic = async function (dataUrl) {
 // Everything the game keeps on this phone (album, pick stats, streaks, scores, settings…) can be backed up under your
 // account and restored on another phone. The account key itself is never included.
 GM.backup = {
-  keys: () => Object.keys(localStorage).filter(k => k.startsWith('gm:') && !/^gm:(account|backupAt|racep:|auction:local)/.test(k)),
+  keys: () => Object.keys(localStorage).filter(k => k.startsWith('gm:') && !/^gm:(account|backupAt|backupAsked|backupDirty|lbQueue|racep:|auction:local)/.test(k)),
+  // anything saved since the last backup marks the phone as changed; a few minutes later (or when the app goes to the
+  // background) it's backed up, so a new phone or a reinstall finds your latest game, not last week's
+  changed(k) {
+    if (/^(account|backupAt|backupAsked|backupDirty|lbQueue|updChecked|linksNag)$/.test(k)) return;
+    if (!this._dirty) { this._dirty = true; try { localStorage.setItem('gm:backupDirty', '1'); } catch (e) { /* private mode */ } }
+    clearTimeout(this._t); this._t = setTimeout(() => GM.backup.save(true), 120e3);
+  },
+  dirty: () => { try { return !!localStorage.getItem('gm:backupDirty'); } catch (e) { return false; } },
+  // auto: true = at most every 10 minutes; a number = at most every that many ms; false (Back up now) = always
   async save(auto) {
     const a = GM.account();
     if (!a || !GM.lb.enabled) return 'no_account';
-    if (auto && Date.now() - GM.store.get('backupAt', 0) < 6 * 3600e3) return 'recent';  // auto backups: at most every 6 hours
+    if (auto && Date.now() - GM.store.get('backupAt', 0) < (auto === true ? 10 * 60e3 : auto)) return 'recent';
+    if (this._busy || !GM.net.online) return 'offline';
+    this._busy = true;
     const data = {};
     GM.backup.keys().forEach(k => { data[k] = localStorage.getItem(k); });
     try {
       const r = await GM.lb.rpc('save_backup', { p_user: a.name, p_key: a.key, p_data: data });
-      if (r === 'ok') GM.store.set('backupAt', Date.now());
+      if (r === 'ok') { GM.store.set('backupAt', Date.now()); this._dirty = false; try { localStorage.removeItem('gm:backupDirty'); } catch (e) { /* private mode */ } }
       return r;
-    } catch (e) { return 'offline'; }
+    } catch (e) { return 'offline'; } finally { this._busy = false; }
   },
   async fetch() {
     const a = GM.account();
@@ -526,10 +537,73 @@ GM.backup = {
   restore(data) {
     GM.backup.keys().forEach(k => localStorage.removeItem(k));
     Object.entries(data || {}).forEach(([k, v]) => { if (k.startsWith('gm:') && k !== 'gm:account') localStorage.setItem(k, v); });
-    GM.store.set('backupAt', Date.now());
+    GM.store.set('backupAt', Date.now()); try { localStorage.removeItem('gm:backupDirty'); } catch (e) { /* private mode */ }
     location.reload();
   },
+  // Once an app launch: if the account holds a newer backup than this phone's (a reinstall that Android filled with an
+  // old copy, a new phone, a second device), offer it. Asks once per backup, and never in the middle of a game.
+  async check() {
+    if (this._checked || !GM.account() || !GM.lb.enabled || !GM.net.online || document.querySelector('.modal-wrap')) return;
+    this._checked = true;
+    const b = await GM.backup.fetch();
+    if (!b || b.none || !b.updated) return;
+    const at = new Date(b.updated).getTime(), mine = GM.store.get('backupAt', 0);
+    if (!(at > mine + 10 * 60e3) || at <= GM.store.get('backupAsked', 0)) return;
+    const when = new Date(at).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const ok = await GM.confirm(`☁️ There’s a newer backup of your game from ${when}. Restore it? It replaces the album, stats and scores on this phone${GM.backup.dirty() ? ', including what you’ve done since this phone was last backed up' : ''}.`, 'Restore', 'Not now');
+    if (ok) GM.backup.restore(b.data); else GM.store.set('backupAsked', at);
+  },
 };
+// leaving the app for the home screen: save anything new while the phone is still awake
+document.addEventListener('visibilitychange', () => { if (document.hidden && GM.backup.dirty()) GM.backup.save(60e3); });
+// ...and anything that was waiting when the app was last closed
+setTimeout(() => { if (GM.backup.dirty()) GM.backup.save(true); GM.lb.flush(); }, 20e3);
+
+/* ------------------------------------------------------------------ 📶 offline */
+// The game opens and plays with no signal; what needs the internet (boards, online games, challenges, backups) says so.
+// GM.net.online is false when the phone says it's offline, or when the last request to the server failed (4G with no data).
+GM.net = {
+  ok: true,
+  get online() { return navigator.onLine !== false && this.ok; },
+  set(v) {
+    if (v === this.ok) return;
+    this.ok = v; this.bar();
+    if (v) { GM.lb.flush(); document.dispatchEvent(new Event('gm:online')); } else this.watch();
+  },
+  // a slim note on the menu pages while offline; the strip hides in games, where nothing is in the way
+  bar() {
+    let el = document.getElementById('net-bar');
+    if (!el) { el = document.createElement('div'); el.id = 'net-bar'; el.setAttribute('role', 'status'); document.body.appendChild(el); }
+    el.innerHTML = '📶 Offline · your game is saved on this phone';
+    el.classList.toggle('on', !this.online);
+  },
+  // is the server reachable? (a no-cors request: it only has to arrive)
+  async ping() {
+    if (!GM.lb.enabled) return navigator.onLine !== false;
+    const ac = new AbortController(), t = setTimeout(() => ac.abort(), 6000);
+    try { await fetch(GM.lb.cfg.supabaseUrl, { mode: 'no-cors', cache: 'no-store', signal: ac.signal }); this.set(true); return navigator.onLine !== false; }
+    catch (e) { this.set(false); return false; } finally { clearTimeout(t); }
+  },
+  // while offline, look again every 20 seconds so the strip clears itself
+  watch() {
+    clearTimeout(this._w);
+    this._w = setTimeout(async () => { if (!this.ok || navigator.onLine === false) { await this.ping(); if (!this.online) this.watch(); } }, 20e3);
+  },
+  // for a page's "couldn't load" spot: the go-online card if we're offline, otherwise the page's own message
+  msg(what, fallback) {
+    if (this.online) return fallback;
+    return `<div class="offline-card"><span>📶</span><b>You’re offline</b><small>Go online to see ${what}. Everything you’ve done is saved on this phone.</small><button class="btn ghost small" data-net-retry>Try again</button></div>`;
+  },
+};
+GM.net.bar();
+window.addEventListener('offline', () => { GM.net.bar(); GM.net.watch(); });
+window.addEventListener('online', () => { GM.net.ping().then(() => GM.net.bar()); });
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-net-retry]');
+  if (!b) return;
+  b.disabled = true; b.textContent = 'Checking…';
+  GM.net.ping().then(ok => { if (ok) location.reload(); else { b.disabled = false; b.textContent = 'Still offline – try again'; } });
+});
 
 /* ------------------------------------------------------------------ modal / toast */
 GM.toast = function (msg, ms = 2200) {
@@ -564,7 +638,7 @@ GM.lbModal = async function (key) {
       : '<div class="muted">No scores yet – be the first!</div>';
     if (rows.some(r => r.name !== me)) el.insertAdjacentHTML('beforeend', GM.lbReportHint);
     const mine = GM.$('.lb-row.me', el); if (mine) mine.scrollIntoView({ block: 'nearest' });
-  } catch (e) { const el = GM.$('#lbpop', m.el); if (el) el.innerHTML = '<div class="muted">Couldn’t load the leaderboard.</div>'; }
+  } catch (e) { const el = GM.$('#lbpop', m.el); if (el) el.innerHTML = GM.net.msg('this leaderboard', '<div class="muted">Couldn’t load the leaderboard.</div>'); }
 };
 // How close a Target score came, as a share of the target ("97.6%"): meta.t is your total, meta.g the target.
 // Scores from before the target was saved use the target of the time.
@@ -968,7 +1042,7 @@ GM.recordScore = async function (mode, score, meta = {}, opts = {}) {
   GM.backup.save(true);
   if (GM.lb.enabled && score > 0 && !(opts.quiet && !GM.account())) {  // quiet: only if you've a name already (no box)
     const name = await GM.askName();
-    if (name) GM.lb.submit(mode, score, name, meta).catch(() => GM.toast('Could not reach the global leaderboard'));
+    if (name) GM.lb.submit(mode, score, name, meta).catch(e => GM.toast(e && e.queued ? '📶 Offline: your score will be sent when you’re back online' : 'Could not reach the global leaderboard'));
   }
   return { isBest };
 };
@@ -982,8 +1056,13 @@ GM.lb = {
     if (k.startsWith('eyJ')) h.Authorization = 'Bearer ' + k; // legacy JWT anon keys
     return h;
   },
+  // every request to the server goes through here, so GM.net knows whether it's reachable
+  async _f(url, opts) {
+    try { const r = await fetch(url, opts); GM.net.set(true); return r; }
+    catch (e) { e.net = true; GM.net.set(false); throw e; }
+  },
   async rpc(fn, args) {
-    const r = await fetch(`${this.cfg.supabaseUrl}/rest/v1/rpc/${fn}`, { method: 'POST', headers: this.headers(), body: JSON.stringify(args) });
+    const r = await this._f(`${this.cfg.supabaseUrl}/rest/v1/rpc/${fn}`, { method: 'POST', headers: this.headers(), body: JSON.stringify(args) });
     if (!r.ok) throw new Error(await r.text());
     return r.json();
   },
@@ -991,13 +1070,37 @@ GM.lb = {
   async submit(mode, score, name, meta) {
     const acc = GM.account();
     if (!acc) throw new Error('no account');
-    const res = await this.rpc('submit_score', { p_username: acc.name, p_key: acc.key, p_mode: mode, p_score: score, p_meta: meta || null });
+    let res;
+    try { res = await this.rpc('submit_score', { p_username: acc.name, p_key: acc.key, p_mode: mode, p_score: score, p_meta: meta || null }); }
+    catch (e) {
+      if (e.net) {  // no signal: keep the score and send it when we're back online
+        const q = (GM.store.get('lbQueue', []) || []).filter(x => x.mode !== mode || x.score > score);
+        if (!q.some(x => x.mode === mode)) q.push({ mode, score, meta: meta || null });
+        GM.store.set('lbQueue', q.slice(-40));
+        const err = new Error('queued'); err.queued = true; throw err;
+      }
+      throw e;
+    }
     if (res !== 'ok') throw new Error(res);
+    if (GM.feed) setTimeout(() => GM.feed.load(true), 400);  // a new 👑 for you?
+  },
+  // send the scores that were waiting for a signal (when the phone is back online, and on launch)
+  async flush() {
+    const acc = GM.account();
+    if (this._flushing || !acc || !GM.net.online) return;
+    this._flushing = true;
+    try {
+      for (const x of (GM.store.get('lbQueue', []) || []).slice()) {
+        try { await this.rpc('submit_score', { p_username: acc.name, p_key: acc.key, p_mode: x.mode, p_score: x.score, p_meta: x.meta }); }
+        catch (e) { if (e.net) break; }   // a server refusal drops it; no signal keeps the rest
+        GM.store.set('lbQueue', (GM.store.get('lbQueue', []) || []).filter(y => !(y.mode === x.mode && y.score === x.score)));
+      }
+    } finally { this._flushing = false; }
   },
   // boards are This month (the default: a fresh race every month) or All time; dated boards (a day, a match) are all time
   view: mode => (GM.lbMonth() && !/:/.test(mode) ? 'month_scores' : 'best_scores'),
   async top(mode, limit = 25) {
-    const r = await fetch(`${this.cfg.supabaseUrl}/rest/v1/${this.view(mode)}?select=name,score,created_at,meta,level&mode=eq.${encodeURIComponent(mode)}&order=score.desc,created_at.asc&limit=${limit}`,
+    const r = await this._f(`${this.cfg.supabaseUrl}/rest/v1/${this.view(mode)}?select=name,score,created_at,meta,level&mode=eq.${encodeURIComponent(mode)}&order=score.desc,created_at.asc&limit=${limit}`,
       { headers: this.headers() });
     if (!r.ok) throw new Error(await r.text());
     return r.json();
@@ -1007,11 +1110,11 @@ GM.lb = {
     if (!name) return null;
     const base = `${this.cfg.supabaseUrl}/rest/v1/${this.view(mode)}?mode=eq.${encodeURIComponent(mode)}`;
     const count = async q => {
-      const r = await fetch(`${base}${q}&select=name`, { headers: { ...this.headers(), Prefer: 'count=exact', Range: '0-0' } });
+      const r = await this._f(`${base}${q}&select=name`, { headers: { ...this.headers(), Prefer: 'count=exact', Range: '0-0' } });
       if (!r.ok && r.status !== 206) throw new Error(await r.text());
       return +((r.headers.get('content-range') || '').split('/')[1] || 0);
     };
-    const r = await fetch(`${base}&name=eq.${encodeURIComponent(name)}&select=score,created_at,meta&limit=1`, { headers: this.headers() });
+    const r = await this._f(`${base}&name=eq.${encodeURIComponent(name)}&select=score,created_at,meta&limit=1`, { headers: this.headers() });
     if (!r.ok) throw new Error(await r.text());
     const [row] = await r.json();
     if (!row) return null;

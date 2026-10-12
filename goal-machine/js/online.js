@@ -108,7 +108,7 @@
       const mon = new Date(); mon.setUTCHours(0, 0, 0, 0); mon.setUTCDate(mon.getUTCDate() - ((mon.getUTCDay() + 6) % 7) + 7);
       const days = Math.ceil((mon - Date.now()) / 864e5), rs = GM.$('#lgreset'); if (rs) rs.textContent = `resets in ${days} day${days === 1 ? '' : 's'}`;
       let rows;
-      try { rows = await rpc('friends_week', { ...auth(), p_mode: mode }); } catch (e) { if (el) el.innerHTML = '<p class="muted center">Couldn’t load the league</p>'; return; }
+      try { rows = await rpc('friends_week', { ...auth(), p_mode: mode }); } catch (e) { if (el) el.innerHTML = GM.net.msg('your league', '<p class="muted center">Couldn’t load the league</p>'); return; }
       if (!el) return;
       const daily = ['daily', 'dchaos', 'dmoney'].includes(mode);
       el.innerHTML = (rows || []).length > 1 ? `<ol>${rows.map((r, i) => `<li class="${r.me ? 'me' : ''} ${r.score ? '' : 'none'}"><span class="lg-pos">${r.score ? ['🥇', '🥈', '🥉'][i] || i + 1 : '–'}</span>
@@ -130,7 +130,7 @@
     const load = async () => {
       let games, fr;
       try { [games, fr] = await Promise.all([rpc('online_games', auth()), rpc('online_friends', auth())]); } catch (e) {
-        const el = GM.$('#olists'); if (el) el.innerHTML = '<p class="muted center">Couldn’t reach the server. Check your connection.</p>'; return;
+        const el = GM.$('#olists'); if (el) el.innerHTML = GM.net.msg('your online games', '<p class="muted center">Couldn’t reach the server. Check your connection.</p>'); return;
       }
       if (!GM.$('#olists')) return;
       friends = fr || [];
@@ -769,12 +769,13 @@
       ['move', '⚔️ Your move', 'It’s your turn in an online game'],
       ['friends', '👋 Challenges and friends', 'A friend challenges you or adds you'],
       ['results', '🏁 Results', 'An online game finishes'],
+      ['beaten', '😬 Beaten', 'Someone knocks you off top spot on a leaderboard (once an hour per board at most)'],
       ['modes', '🆕 New game modes', 'When something new comes out'],
       ['streak', '🔥 Streak reminder', 'At 8pm, if your daily streak is about to end'],
       ['comeback', '💤 Come back', 'If you haven’t played for a few days'],
       ['matchday', '🏟️ Matchday', 'At 9am when your club plays that day'],
     ],
-    prefs() { return { move: true, friends: true, results: true, modes: true, streak: true, comeback: true, matchday: true, daily: null, ...GM.store.get('notif', {}) }; },
+    prefs() { return { move: true, friends: true, results: true, beaten: true, modes: true, streak: true, comeback: true, matchday: true, daily: null, ...GM.store.get('notif', {}) }; },
     set(k, v) { GM.store.set('notif', { ...GM.store.get('notif', {}), [k]: v }); GM.notify.sync(); },
     sync() {
       const a = GM.account();

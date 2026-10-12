@@ -482,7 +482,7 @@
   // every challenge you've sent or taken on, with your record against each friend (the ⚔️ Challenges sub-tab of Online)
   function listHtml(rows) {
     if (!GM.account()) return '<p class="center muted">Claim a name on the Online tab to keep your challenges.</p>';
-    if (!rows) return '<p class="center muted">Couldn’t load your challenges – are you online?</p>';
+    if (!rows) return GM.net.msg('your challenges', '<p class="center muted">Couldn’t load your challenges – are you online?</p>');
     if (!rows.length) return '<p class="center muted">No challenges yet. Finish a draft and tap ⚔️ Challenge a friend: they play the same spins and try to beat you.</p>';
     const by = tally(rows.filter(r => r.status === 'done' && r.pid).map(r => ({ opp: r.opp, mine: r.mine, theirs: r.theirs })));
     const recs = Object.values(by).sort((a, b) => (b.w + b.l + b.d) - (a.w + a.l + a.d));
@@ -495,7 +495,7 @@
     app.innerHTML = top('📜 ' + esc(name), '#/online?tab=challenges') + '<p class="center muted">Loading…</p>';
     if (!GM.account()) { app.innerHTML = top('📜 ' + esc(name), '#/online?tab=challenges') + '<p class="center muted">Claim a name on the Online tab to keep a record of your challenges.</p>'; return; }
     let h = []; try { h = await rpc('challenge_history', auth()); } catch (e) { h = null; }
-    if (!h) { app.innerHTML = top('📜 ' + esc(name), '#/online?tab=challenges') + '<p class="center muted">Couldn’t load your record – are you online?</p>'; return; }
+    if (!h) { app.innerHTML = top('📜 ' + esc(name), '#/online?tab=challenges') + GM.net.msg('your record', '<p class="center muted">Couldn’t load your record – are you online?</p>'); return; }
     const t = tally(h)[name.toLowerCase()];
     if (!t) { app.innerHTML = top('📜 ' + esc(name), '#/online?tab=challenges') + `<p class="center muted">No challenges with ${esc(name)} yet. Finish a draft and tap ⚔️ Challenge a friend.</p>`; return; }
     const games = t.games;  // newest first

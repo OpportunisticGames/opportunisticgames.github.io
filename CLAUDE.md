@@ -51,6 +51,7 @@ game mode for players; this file is about how to work on it.
 - `core.js` – shared helpers: storage (`GM.store`, keys prefixed `gm:`), seeded RNG (`GM.rng`), avatars and photo
   caching (`GM.avatar`, `GM._ph`), modals and notices, the leaderboard client (`GM.lb`: `top`, `mine`, `submit`),
   the in-game 🏆 pop-up (`GM.lbButton`, `GM.lbModal`, `GM.lbYou`), `GM.APP_MIN_BUILD`, accounts, backups.
+- Offline and backups (core.js): `GM.net` (`online`, `ping`, `msg(what, fallback)` = the go-online card for a page's "couldn't load" spot, the 📶 strip `#net-bar`); every server call goes through `GM.lb._f` so a failure marks the phone offline; scores made offline wait in `gm:lbQueue` (`GM.lb.flush`). `GM.backup`: `GM.store.set` marks data changed, backs up 2 min later and when the app is hidden; `GM.backup.check()` (once a launch, on the tabs) offers a newer cloud backup (Android's own auto-backup can restore an old copy of the WebView data on a reinstall).
 - `app.js` – the router (`#/path?query`), the tab bar (Play · Today · Online · Ranks · 🎒 Locker), the top bar on the tabs'
   pages (`GM.statusBar`: picture, level, season tier, 🎁 `GM.toOpen()` sheet of packs/spins/picks/new kit), Home (with
   sub-tabs), Settings, Ranks (`leaderboard()`), About, the CHAOS look (`GM.chaosLook`). Old addresses map into tabs:
@@ -139,6 +140,12 @@ Everything goes through security-definer RPCs that check the account with `gm_au
   sends the player's choices from Settings (`GM.notify`: move, friends, results, modes, streak, comeback, daily time),
   their daily streak and time zone. **To announce a new game mode**, insert a row into `announcements` (title, body,
   link): every app with "New game modes" on shows it once, for 3 days.
+- **Beaten alerts, the 🔔 and Best Players (5.32):** `submit_score` checks, before saving, whether the score takes someone's
+  top spot (all time, else this month; boards without a `:`); if so it writes an `activity` row for them (`beaten`, at most
+  one an hour per board, pushed via `gm_push`, shown by `app_inbox` as `b:<id>`, pref `beaten`) and a `crown` row for you.
+  `activity_feed(p_user, p_key)` feeds the 🔔 drawer (`GM.feed`, `GM.feedSheet` in app.js: items, `crowns`/`mcrowns`,
+  `best`/`mbest`). `best_players(p_month, p_limit)` = points 10/7/5/4/3/2/2/1/1/1 for top-ten places on the main draft
+  boards (`gm_main_board`), best 8 count; Ranks tab `bestplayers`. Board names for alerts: `gm_board_name`.
 - Also: `save_backup` / `load_backup`, `delete_account`, avatars
   (`set_avatar`, `get_avatars`, `report_avatar`).
 Change SQL with the Supabase MCP tools (`apply_migration`); read a function first with `pg_get_functiondef`.
@@ -168,6 +175,9 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    may be mid-action without a short `{ timeout }`: Playwright waits 30 s for it to become tappable (that made the CHAOS tests
    take minutes). Or run one script on its own with `node <script>.js`. Each uses `mockserver.js`, which fakes the
    Supabase RPCs in memory (test accounts Alice/Bob/Cara), so nothing touches the real database.
+   - `beaten532.js` – two phones: a beaten alert in the inbox (and off with the switch), the 🔔 count and drawer, Bob's crown, Best Players points.
+   - `offline531.js` – a newer cloud backup is offered once and restores, backing up on leaving the app, the offline strip and cards, scores kept and sent later. `offline.js` – the service worker opens the game from cache offline and on a hanging network.
+   - `odds.js` – who turns up on the reels in every draft mode and difficulty, measured with the real dealing code (stars v average, each tenth of the pool, wildcard and storm rates). Check the How to play / Settings wording against it after changing a weight.
    - `sweep.js` – opens every page in light, dark and club themes: page errors and sideways overflow.
    - `races.js` – two phones play a Target Race and a CHAOS Race end to end.
    - `quickmatch.js` – pairing, no auto-friend, and the computer fallback after a minute.
