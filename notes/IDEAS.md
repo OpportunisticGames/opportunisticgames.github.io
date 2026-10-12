@@ -23,7 +23,7 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
-### Say clearly when you're offline, and keep progress safe *(owner, 12 Oct 2026)*
+### Say clearly when you're offline, and keep progress safe ✅ 5.31 *(owner, 12 Oct 2026)*
 > "Should there be an offline mode? Right now when you're offline some things are saved and some aren't… maybe it should make clear you are offline and say go online, e.g. on the leaderboards"
 
 Notes: the game itself opens offline (5.30.3) and local progress (album, badges, stats) saves on the phone. What needs
@@ -34,7 +34,7 @@ online" card instead of spinners, and scores from an offline game queued and sen
 `GM.lb.submit` retries). Questions: queue offline scores for the leaderboards (daily boards are date-bound), and should
 Online games be greyed out in the tab bar?
 
-### Backups: keep them fresh, and restore by itself on a new phone *(owner, 12 Oct 2026)*
+### Backups: keep them fresh, and restore by itself on a new phone ✅ 5.31 *(owner, 12 Oct 2026)*
 > "I had to manually press restore backup once I re-downloaded the app as it put me back on a backup from a couple of days ago. Should it not automatically put you at the latest backup?"
 
 Notes: the restore *did* load the newest backup the server had, but backups were old: `GM.backup.save(true)` runs only

@@ -9,6 +9,15 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 88, label: '5.31', date: '2026-10-12', title: '📶 Offline notices and fresher backups',
+      items: [
+        '📶 No signal? A small note says so on the menu pages, and anything that needs the internet (leaderboards, your league, online games, challenges) now says “go online to see this” with a Try again button, instead of just not loading. Your game and everything you earn stay saved on the phone',
+        '🏆 A score from a game played offline is kept and sent to the leaderboard by itself when the signal comes back',
+        '☁️ Backups are much fresher: your game now backs up a few minutes after anything changes (a pack, a mission, your Locker, a game) and the moment you leave the app, not just after a game every six hours',
+        '⤵️ On a new phone or after reinstalling, the game now spots a newer backup on your account and offers to restore it (once), instead of you having to find Restore in Settings. Android sometimes puts back an old copy of the game on a reinstall, which is why it was days behind',
+      ],
+    },
+    {
       v: 87, label: '5.30.3', date: '2026-10-12', title: '📶 Opens with no signal',
       items: [
         '📶 With a weak signal (4G showing but no data getting through) the app sat on a blank screen and then said "No signal in the stadium", even though the game was already saved on the phone. It now waits a few seconds for the internet and then opens the saved copy, and straight away if you are properly offline',

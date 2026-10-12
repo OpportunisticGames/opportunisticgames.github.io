@@ -138,6 +138,7 @@
     status.hidden = !(menu && TOP_PAGES.includes(path)); document.body.classList.toggle('has-status', !status.hidden);
     GM.statusBar();
     if (menu && GM.account()) {  // the Online tab's badge: games waiting on you (checked at most every 30 s)
+      setTimeout(() => GM.backup.check(), 3000);  // a newer backup on the account? (once an app launch)
       const n = GM.store.get('onlineWaiting', 0), b = GM.$('.online-badge', tabbar);
       b.textContent = n; b.hidden = !n;
       if (GM.online && GM.online.check) GM.online.check();
@@ -402,7 +403,7 @@
             <div id="s-hidden"></div>
             <div class="setting-btns"><button class="btn ghost small" id="s-move">📲 Move to another phone</button><button class="btn ghost small" id="s-name">✏️ New name</button></div>
             <div class="setting-btns"><button class="btn ghost small" id="s-backup">☁️ Back up now</button><button class="btn ghost small" id="s-restore">⤵️ Restore a backup</button></div>
-            <small>${GM.store.get('backupAt', 0) ? `Last backup: ${new Date(GM.store.get('backupAt')).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}. ` : ''}Your album, stats, streaks and scores back up automatically after games.</small>
+            <small>${GM.store.get('backupAt', 0) ? `Last backup: ${new Date(GM.store.get('backupAt')).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}. ` : ''}Your album, stats, streaks and scores back up by themselves a few minutes after anything changes, and when you leave the app.</small>
             <button class="btn ghost small danger" id="s-delete">🗑️ Delete my account</button>`
           : `<small>${GM.getName() ? `You play as “${GM.esc(GM.getName())}”, but it isn't claimed yet.` : 'No leaderboard name yet.'} Claim a unique name so nobody else can post scores as you.</small>
             <div class="setting-btns"><button class="btn small" id="s-name">🔒 Claim a name</button><button class="btn ghost small" id="s-code">🔑 I have a transfer code</button></div>`}</div>`)}
@@ -558,6 +559,7 @@
       if (!b || b.none) { if (!afterMove) GM.toast('No backup found for this name yet'); return; }
       const when = new Date(b.updated).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
       if (await GM.confirm(`⤵️ Restore your backup from ${when}? It replaces the album, stats and scores on this phone.`, 'Restore', 'Not now')) GM.backup.restore(b.data);
+      else GM.store.set('backupAsked', new Date(b.updated).getTime());
     }
     const cd = GM.$('#s-code');
     if (cd) cd.onclick = async () => {
@@ -659,7 +661,7 @@
         `<div ${GM.lbRow(r.name, me)}><span>${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span><span>${GM.esc(r.name)}${GM.lbLevel(r)}${GM.pctTag(m, r.meta)}</span><b>${GM.scoreText(m, r.score)}${pts ? '<small> pts</small>' : ''}</b></div>`).join('')
         + (rows.some(r => r.name !== me) ? GM.lbReportHint : '')
         : '<div class="muted">No scores yet – be the first!</div>';
-    } catch (e) { const el = GM.$('#global'); if (el) el.innerHTML = '<div class="muted">Couldn’t load the board.</div>'; }
+    } catch (e) { const el = GM.$('#global'); if (el) el.innerHTML = GM.net.msg('this leaderboard', '<div class="muted">Couldn’t load the board.</div>'); }
   }
 
   // the Daily stars: who's played the dailies best, by a few measures
@@ -679,7 +681,7 @@
         <span>${GM.esc(r.name)}<small class="muted"> · ${r.days_played} day${r.days_played === 1 ? '' : 's'}${r.current_streak > 1 ? ` · 🔥${r.current_streak}` : ''}</small></span><b>${r[sort]}</b></div>`).join('')
         + (rows.some(r => r.name !== me) ? GM.lbReportHint : '')
         : '<div class="muted">No daily results yet. Be the first!</div>';
-    } catch (e) { const box = GM.$('#dboard'); if (box) box.innerHTML = '<div class="muted">Couldn’t load the daily board.</div>'; }
+    } catch (e) { const box = GM.$('#dboard'); if (box) box.innerHTML = GM.net.msg('the daily board', '<div class="muted">Couldn’t load the daily board.</div>'); }
   }
 
   /* ---------------------------------------------------------------- player index */
