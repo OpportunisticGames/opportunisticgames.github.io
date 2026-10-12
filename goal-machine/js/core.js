@@ -1027,6 +1027,47 @@ Object.keys(GM.MODES).filter(k => GM.extremeKey(k)).forEach(k => {
 
 GM.best = mode => GM.store.get('best:' + mode, 0);
 
+// Straight after a score reaches the board: where it landed, all time and this month. Top spot is a 👑 record; otherwise a
+// "Top 3 / 10 / 20 / 50 / 100" headline, but only if the board has at least twice that many players (top 10 of 12 isn't
+// news). The full-time screen shows it in its own slot (#board-news, see GM.boardNewsHtml); games without one get a card.
+GM.BOARD_TIERS = [3, 10, 20, 50, 100];
+GM.boardNews = async function (mode, score) {
+  const me = GM.getName(), dated = /:/.test(mode);
+  if (!me || !GM.lb.enabled) return null;
+  const get = month => GM.lb.mine(mode, me, month).catch(() => null);
+  const [all, mon] = await Promise.all([get(false), dated ? null : get(true)]);
+  const DATED = { daily: 'today’s Daily Ultimate', footle: 'today’s Footle', grid: 'today’s Club Grid', dchaos: 'today’s Daily CHAOS', dmoney: 'today’s Daily Moneyball', mbdaily: 'today’s Daily Moneyball', match: 'this Matchday XI' };
+  const nm = dated ? DATED[mode.split(':')[0]] || 'today’s board' : GM.boardName ? GM.boardName(mode) : mode;
+  const month = new Date().toLocaleDateString(undefined, { month: 'long' }), n = x => x.toLocaleString();
+  const tier = r => (r.rank === 1 ? 1 : GM.BOARD_TIERS.find(t => r.rank <= t && r.of >= t * 2) || 0);
+  const news = { mode, name: nm, all, mon, here: !!((all && all.score === score) || (mon && mon.score === score)) };
+  const places = [all && `#${n(all.rank)} of ${n(all.of)}${dated ? '' : ' all time'}`, mon && `#${n(mon.rank)} of ${n(mon.of)} in ${month}`].filter(Boolean).join(' · ');
+  const ta = all && all.score === score ? tier(all) : 0, tm = mon && mon.score === score ? tier(mon) : 0;
+  if (ta === 1) Object.assign(news, { rec: true, title: `Record! You’re top of ${nm}`, sub: all.of > 1 ? `Ahead of all ${n(all.of)} players${dated ? '' : ', all time'}` : 'First on the board: now hold on to it' });
+  else if (tm === 1) Object.assign(news, { rec: true, title: `You’re top of ${nm} in ${month}`, sub: `Ahead of all ${n(mon.of)} players this month${all ? ` · #${n(all.rank)} all time` : ''}` });
+  else if (ta || tm) {
+    const useAll = ta && (!tm || ta <= tm), r = useAll ? all : mon, t = useAll ? ta : tm;
+    Object.assign(news, { tier: t, title: `Top ${t}${useAll ? (dated ? '' : ' all time') : ` in ${month}`} on ${nm}`, sub: `${places} · ${n(r.rank - 1)} to beat for top spot` });
+  } else if (news.here) Object.assign(news, { title: `On the ${nm} board`, sub: places });
+  else if (all || mon) Object.assign(news, { title: `Not your best on ${nm}`, sub: `Your best is already on the board: ${places}` });
+  else return null;
+  document.dispatchEvent(new CustomEvent('gm:board', { detail: news }));
+  setTimeout(() => {   // after the full-time screen and any personal-best cheer have landed
+    if (news.rec) { GM.buzz('win'); if (GM.FX) GM.FX.confetti(null, 160); } else if (news.tier) GM.buzz('confirm');
+    if (!document.getElementById('board-news') && (news.rec || news.tier))   // no slot on this screen: a card instead
+      GM.notice({ pic: `<span class="notice-icon">${news.rec ? '👑' : '🏆'}</span>`, title: news.title, sub: news.sub, href: '#/leaderboard?m=' + encodeURIComponent(mode), ms: news.rec ? 9000 : 6000 });
+  }, 1200);
+  return news;
+};
+// the full-time screen's leaderboard line: waiting, offline, or where you landed
+GM.boardNewsHtml = function (news, mode) {
+  if (!GM.lb.enabled) return '';
+  if (!news) return GM.getName() ? '<div class="board-news wait" id="board-news"><span>🌍</span><span><b>Checking the leaderboard…</b></span></div>'
+    : '<a class="board-news" id="board-news" href="#/settings?s=account"><span>🌍</span><span><b>Claim a name to go on the leaderboard</b><small>And find out if you’ve set a record</small></span><i>›</i></a>';
+  if (news.offline) return '<div class="board-news" id="board-news"><span>📶</span><span><b>Saved: it goes on the leaderboard when you’re back online</b></span></div>';
+  if (news.failed) return '<div class="board-news" id="board-news"><span>🌍</span><span><b>Couldn’t reach the leaderboard</b><small>Your score is saved on this phone</small></span></div>';
+  return `<a class="board-news ${news.rec ? 'rec' : news.tier ? 'tier' : ''}" id="board-news" href="#/leaderboard?m=${encodeURIComponent(news.mode || mode)}"><span>${news.rec ? '👑' : news.tier ? '🏆' : '🌍'}</span><span><b>${GM.esc(news.title)}</b><small>${GM.esc(news.sub || '')}</small></span><i>›</i></a>`;
+};
 /** Records a finished game locally and (if configured) on the global board. Returns {isBest}. */
 GM.recordScore = async function (mode, score, meta = {}, opts = {}) {
   const hist = GM.store.get('hist:' + mode, []);
@@ -1042,7 +1083,10 @@ GM.recordScore = async function (mode, score, meta = {}, opts = {}) {
   GM.backup.save(true);
   if (GM.lb.enabled && score > 0 && !(opts.quiet && !GM.account())) {  // quiet: only if you've a name already (no box)
     const name = await GM.askName();
-    if (name) GM.lb.submit(mode, score, name, meta).catch(e => GM.toast(e && e.queued ? '📶 Offline: your score will be sent when you’re back online' : 'Could not reach the global leaderboard'));
+    const told = d => document.dispatchEvent(new CustomEvent('gm:board', { detail: { mode, ...d } }));
+    if (name) GM.lb.submit(mode, score, name, meta).then(() => GM.boardNews(mode, score)).then(nw => { if (!nw) told({ failed: true }); })
+      .catch(e => { told(e && e.queued ? { offline: true } : { failed: true }); if (!document.getElementById('board-news')) GM.toast(e && e.queued ? '📶 Offline: your score will be sent when you’re back online' : 'Could not reach the global leaderboard'); });
+    else told({ none: true });
   }
   return { isBest };
 };
@@ -1106,9 +1150,11 @@ GM.lb = {
     return r.json();
   },
   // your account's best on a board, with your rank and how many are on it (null if you haven't a score there)
-  async mine(mode, name = GM.getName()) {
+  // (month: true / false for that board, or leave it out for the one the player is looking at)
+  async mine(mode, name = GM.getName(), month) {
     if (!name) return null;
-    const base = `${this.cfg.supabaseUrl}/rest/v1/${this.view(mode)}?mode=eq.${encodeURIComponent(mode)}`;
+    const view = month == null ? this.view(mode) : month && !/:/.test(mode) ? 'month_scores' : 'best_scores';
+    const base = `${this.cfg.supabaseUrl}/rest/v1/${view}?mode=eq.${encodeURIComponent(mode)}`;
     const count = async q => {
       const r = await this._f(`${base}${q}&select=name`, { headers: { ...this.headers(), Prefer: 'count=exact', Range: '0-0' } });
       if (!r.ok && r.status !== 206) throw new Error(await r.text());

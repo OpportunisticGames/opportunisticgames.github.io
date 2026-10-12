@@ -9,6 +9,12 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 90, label: '5.32.1', date: '2026-10-12', title: '👑 Records at full time',
+      items: [
+        '👑 The full-time screen now tells you where your score landed on the leaderboard, right under your score: a gold “Record!” with confetti when you’re top of the board (all time or this month), “Top 3”, “Top 10”, “Top 20”… when you’re near the top (only claimed when the board has at least twice that many players), otherwise your place, all time and this month. Tap it to see the board',
+      ],
+    },
+    {
       v: 89, label: '5.32', date: '2026-10-12', title: '😬 Beaten! alerts, the 🔔 and Best Players',
       items: [
         '😬 Someone takes your top spot on a leaderboard? You get a notification saying who, by how much, and a tap straight to the board to win it back (at most one an hour per board; switch it off in Settings → Notifications)',

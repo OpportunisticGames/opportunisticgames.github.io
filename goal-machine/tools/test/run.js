@@ -10,7 +10,7 @@ const DIR = __dirname, ROOT = path.resolve(DIR, '../../..');
 const NOT = ['mockserver', 'helpers', 'run', 'managers'];  // helpers, this runner, and the long balance simulation
 const ALL = fs.readdirSync(DIR).filter(f => f.endsWith('.js')).map(f => f.slice(0, -3)).filter(n => !NOT.includes(n)).sort();
 // the quick set: every page in every look, the layout, the season CHAOS, the rewards and the cards
-const QUICK = ['sweep', 'layout527', 'chaosseasons', 'szlook', 'rewards526', 'cards', 'features', 'offline531', 'beaten532'];
+const QUICK = ['sweep', 'layout527', 'chaosseasons', 'szlook', 'rewards526', 'cards', 'features', 'offline531', 'beaten532', 'record5321'];
 const arg = process.argv[2] || 'quick';
 const list = arg === 'full' ? ALL : arg === 'quick' ? QUICK : arg.split(',').map(s => s.trim().replace(/\.js$/, '')).filter(Boolean);
 const PAR = Math.max(1, +(process.env.PAR || 3));
