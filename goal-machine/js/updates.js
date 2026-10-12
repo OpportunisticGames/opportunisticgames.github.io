@@ -9,6 +9,12 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 86, label: '5.30.2', date: '2026-10-12', title: '📱 Play again keeps the full-size pitch',
+      items: [
+        '📱 After Play again, CHAOS could start with a shrunken pitch, a gap at the bottom and a bit of scroll. Every game now starts from the top at full size, the pumpkins and fog can never make the page longer, and if the pitch ever has to shrink for a moment it grows back once there’s room',
+      ],
+    },
+    {
       v: 85, label: '5.30.1', date: '2026-10-12', title: '📱 CHAOS fits on one screen again',
       items: [
         '📱 CHAOS drafts (Halloween CHAOS especially) could scroll on some phones, and the fog and pumpkins slid off the pitch when they did. The game now always fits on one screen: if anything grows after kick-off (bigger text, a longer line in the counter), the pitch tightens to fit, and on a small phone with big text the whole game scales down a touch',

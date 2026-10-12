@@ -117,6 +117,7 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 2026-10-12 | After Play again, Halloween CHAOS started with a small pitch, empty space below and a little scroll | 5.30.2: the decorations are clipped to the screen (they had been placed from the scrolled full-time page and stretched it), a new game resets the slots and scroll, and the pitch grows back into empty space |
 | 2026-10-12 | CHAOS drafts (Halloween CHAOS especially) scroll on the phone, and the fog and pumpkins move with it | 5.30.1: `fitPitch` shrinks the slots whenever the page overflows (not just at kick-off), scales the game down as a last resort, and the decorations sit in page coordinates |
 | 2026-10-12 | Seasonal CHAOS on Hard played like Normal: clubs and numbers showed | 5.30: Hard works in Seasonal CHAOS, with its own Hard board |
 | 2026-10-02 | CHAOS: van Gaal + a Centurion Throw + Hat-Trick Hero = a guaranteed ×3 on a 100-goal striker in any slot | 5.18: van Gaal's any-position rule is off on themed spins; the Hat-Trick is its own spin now; the armband passes down in CHAOS |

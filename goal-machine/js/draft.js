@@ -954,10 +954,10 @@
     clearTimeout(decoT);
     if (d.fly) decoT = setTimeout(function fly() { czFly(box, d.fly[decoK++ % d.fly.length]); if (box.isConnected) decoT = setTimeout(fly, 11000 + Math.random() * 9000); }, 3500);
   }
-  // pinned to the pitch's corners (in page coordinates, so they scroll with it)
+  // pinned to the pitch's corners (screen coordinates: the game never scrolls, and a scroll re-places them anyway)
   function czPlace(box) {
     const p = GM.$('.pitch', root); if (!p || !box.isConnected) return;
-    const r = p.getBoundingClientRect(), y0 = r.top + scrollY, x0 = r.left + scrollX, web = Math.min(96, r.width * 0.26), pk = Math.min(54, r.width * 0.15);
+    const r = p.getBoundingClientRect(), y0 = r.top, x0 = r.left, web = Math.min(96, r.width * 0.26), pk = Math.min(54, r.width * 0.15);
     const at = (el, x, y, s) => { if (el) Object.assign(el.style, { left: x + 'px', top: y + 'px', width: s + 'px', height: s + 'px' }); };
     at(box.querySelector('.web.l'), x0 - 2, y0 - 2, web); at(box.querySelector('.web.r'), x0 + r.width - web + 2, y0 - 2, web);
     const fog = box.querySelector('.fog'); if (fog) Object.assign(fog.style, { left: x0 + 'px', top: (y0 + r.height * 0.55) + 'px', width: r.width + 'px', height: (r.height * 0.45) + 'px' });
@@ -2751,10 +2751,13 @@
     // (the game is one screen, never a scroll: if something grew since kick-off (bigger text, a longer line in the
     // counter), the slots shrink to fit, even though the key hasn't changed; they never grow mid-game)
     const over = () => document.scrollingElement.scrollHeight - innerHeight;
-    if (key === fitKey && over() <= 0) return;
-    const fresh = key !== fitKey;
+    const room = () => window.innerHeight - (root.getBoundingClientRect().bottom + window.scrollY);
+    // (and if it shrank for something that has gone again, it grows back into the empty space)
+    const slack = over() <= 0 && room() >= rows * 6 && (parseFloat(root.style.getPropertyValue('--slot-h')) || 86) < 86;
+    if (key === fitKey && over() <= 0 && !slack) return;
+    const fresh = key !== fitKey || slack, newKey = key !== fitKey;
     fitKey = key;
-    if (fresh) root.style.zoom = '';
+    if (newKey) { root.style.zoom = ''; root.style.removeProperty('--slot-h'); scrollTo(0, 0); }  // (a new game starts from the top, full size)
     for (let k = 0; k < 4; k++) {
       const cur = parseFloat(getComputedStyle(root).getPropertyValue('--slot-h')) || 52;
       // the game's own content (the page itself always stretches to the screen, so measure #app, padding included)
@@ -2771,6 +2774,7 @@
     const deco = document.querySelector('.cz-deco'); if (deco) czPlace(deco);
   }
   window.addEventListener('resize', () => { if (S && root) { fitPitch(); fitReels(); } });
+  addEventListener('scroll', () => { const d = document.querySelector('.cz-deco'); if (d) czPlace(d); }, { passive: true });
   if (document.fonts) document.fonts.ready.then(() => { fitKey = ''; if (S && root) { fitPitch(); fitReels(); } });
   // Each card measures itself: if its contents don't fit (bigger fonts on some phones, a two-line name), the less
   // important bits give way one step at a time (fit1: club badges, fit2: a smaller photo and no link line,

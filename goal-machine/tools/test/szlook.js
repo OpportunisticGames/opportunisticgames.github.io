@@ -59,6 +59,27 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     ok(f.over <= 0 && f.y === 0 && (m === 'chaos' || Math.abs(f.web) < 6), `${m} at ${W}×${H} with ${fs} text: one screen, no scroll (over ${f.over}px, scrolled ${f.y}px${m === 'chaos' ? '' : ', the cobweb stays on the pitch'})`);
     await c2.close();
   }
+  // something makes the page too tall for a moment: the pitch shrinks, then grows back once it's gone
+  {
+    const c3 = await b.newContext({ viewport: { width: 390, height: 876 } }); await fast(c3, { calm: false, speed: 3 });
+    await c3.route(/wikimedia|premierleague|transfermarkt|supabase/, r => r.abort());
+    const p3 = await c3.newPage(); p3.on('pageerror', e => errs.push(e.message));
+    await p3.goto(U); await p3.evaluate(() => { localStorage.setItem('gm:seenVersion', '999'); localStorage.setItem('gm:welcomed', '1'); });
+    await p3.goto(U); await p3.waitForTimeout(400);
+    await p3.evaluate(() => { GM._forceSz = 'halloween'; location.hash = '#/draft?m=szchaos&seed=grow1'; });
+    await p3.waitForSelector('.cm-pick [data-mgr]'); await p3.click('.cm-pick [data-mgr]'); await idle(p3);
+    const slot = () => p3.evaluate(() => parseFloat(getComputedStyle(document.getElementById('app')).getPropertyValue('--slot-h')));
+    const s0 = await slot();
+    await p3.evaluate(() => { const x = document.createElement('div'); x.id = 'tall'; x.style.cssText = 'position:absolute;left:0;top:0;width:10px;height:' + (innerHeight + 300) + 'px'; document.body.appendChild(x); });
+    await p3.click('#spin', { timeout: 3000 }).catch(() => {}); await idle(p3);
+    const s1 = await slot();
+    await p3.evaluate(() => document.getElementById('tall').remove());
+    await p3.evaluate(() => { const r = document.querySelector('.stage .reel[data-reel]:not(.is-wild)'); r && r.click(); }); await p3.waitForTimeout(200);
+    await p3.evaluate(() => { const t = document.querySelector('.slot.target'); t && t.click(); }); await idle(p3); await p3.waitForTimeout(300);
+    const s2 = await slot(), over = await p3.evaluate(() => document.scrollingElement.scrollHeight - innerHeight);
+    ok(s1 < s0 && s2 >= s0 - 2 && over <= 0, `the pitch shrinks for something too tall (${s0} → ${s1}px) and grows back when it’s gone (${s2}px), never scrolling`);
+    await c3.close();
+  }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await b.close();
 })();
