@@ -1,0 +1,13 @@
+GOOGLE PLAY PROMOTIONAL CONTENT – HALLOWEEN CHAOS
+
+TAGLINE (max 80, this is 75)
+Witches, werewolves and a full moon over the pitch: Halloween CHAOS is here
+
+DESCRIPTION (100–500, this is 416)
+Build your XI from 5,000+ real footballers in Halloween CHAOS, here for October only. A witch snatches players off the pitch, hexes turn goals into assists, a ghost plays as your 12th man and Trick or Treat cards pay triple or nothing. Pick from ten spooky managers, like Count Dracoola and Frankie Stein. Climb its own leaderboard, earn season XP, and play 5 games to unlock the Witch Hunter title. Ends 31 October.
+
+PRIMARY IMAGE: primary-1920x1080.jpg (or the .png; 1920x1080, 16:9, no text or logos)
+ANIMATION: halloween.json (Lottie, 1920x1080, 60 fps, 6 s seamless loop, 126 KB, no text or logos)
+EVENT ENDS: 31 October (the Halloween season and its CHAOS run to the end of the month)
+
+Remake: python3 make_promo.py && node render.js 236 (with the repo served on :8765), then save still.png as RGB.
