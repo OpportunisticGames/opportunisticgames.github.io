@@ -23,6 +23,26 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### A nicer leaderboard layout 💬 *(owner, 13 Oct 2026)*
+> "I think there has to be a nicer leaderboard layout. No worries if there isn't."
+
+Notes: today a board is a plain list of rows (rank, name, level, score). Ideas: a podium for the top 3 (pictures, frames,
+titles, the score big), everyone's profile picture on their row, your own row pinned at the bottom when you're off screen
+("#57 · 120 to beat #56"), small ▲▼ movement since yesterday, the gap to the next place, and tapping a row to see that
+XI (the meta already has it). Questions: podium on every board or only Best Players and the main event? Pictures on the
+public boards (today they're only shown to friends and opponents)?
+
+### Rewards fill up too fast 💬 *(owner, 13 Oct 2026)*
+> "We're going to need far more rewards or make changes to how you get them because I think you fill them up very fast"
+
+Notes (from the owner's own backup, 13 Oct): season tier 16 of 30 two days into October (4,240 of 7,500 XP), level 24.
+The season track is 30 tiers × 250 XP and every XP counts on it; a draft gives ~40 XP (+50 per badge, +300 per mission).
+Options: (a) a longer track: 50 tiers with rising costs (250 → 600), about 4× the XP; (b) "bonus tiers" after the last one
+(a pack or spin every 1,000 XP) so it never runs dry; (c) count less on the season track (season XP only from missions,
+dailies and wins, not every draft); (d) more things to win: more Locker items each season (pitch styles, card backs,
+frames, celebrations), duplicate items turn into "kit tokens" to buy a chosen one. Our suggestion: (a) + (b), plus (d)
+over time. Question: should the level road slow down too (level 24 already), e.g. steeper XP per level after 20?
+
 ### Tell me at full time when I break a record ✅ 5.32.1 *(owner, 12 Oct 2026)*
 > "In the same way when you break a record should it not tell you when you finish the game?"
 

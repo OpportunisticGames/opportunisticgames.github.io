@@ -9,6 +9,14 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 91, label: '5.32.2', date: '2026-10-13', title: '🎃 A tidier Halloween full time, and better rain',
+      items: [
+        '🧹 Full time clears the pitch: a witch, ghost or bat still flying (and any swirling leaves or papers) no longer carries on over your result',
+        '📜 “What happened” in CHAOS is a tidy list: each moment on its own card with its icon, and the kick-off in one short line (the season, formation and weather) instead of a paragraph',
+        '🌧️ The rain at kick-off no longer starts with a burst of TV static: it waits for the real rain recording (and the stand-in, if it ever plays, sounds like rain)',
+      ],
+    },
+    {
       v: 90, label: '5.32.1', date: '2026-10-12', title: '👑 Records at full time',
       items: [
         '👑 The full-time screen now tells you where your score landed on the leaderboard, right under your score: a gold “Record!” with confetti when you’re top of the board (all time or this month), “Top 3”, “Top 10”, “Top 20”… when you’re near the top (only claimed when the board has at least twice that many players), otherwise your place, all time and this month. Tap it to see the board',

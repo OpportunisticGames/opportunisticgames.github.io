@@ -1549,7 +1549,7 @@
     if (szc && GM.FX && GM.FX.makeStill) [...new Set(Object.values(szc.xev).map(x => x.lot).filter(Boolean))].forEach(l => GM.FX.makeStill(l));  // ready for the moments' cards
     const w = wx();
     if (w.sound) setTimeout(() => GM.sound.play(w.sound), 900);
-    return moment({ icon: '👔', name: 'Kick-off', tone: 'good', before: snap(), text: `${szc ? `<b>${szc.name}</b>: ${szc.kick} Anything can happen: triple-or-nothing cards, witches, hexes and more moments than ever. ` : ''}Formation <b>${shape}</b>.${w.name ? ` ${w.icon} <b>${w.name}</b>: ${w.note.replace(/^[^:]*: /, '')}` : ''} Appoint your manager: each has a perk and a catch.`, pick: kickoffMgrs(), onPick: k => { appoint(k); hired(); }, scene: 'kickoff', sound: 'whistle' });
+    return moment({ icon: '👔', name: 'Kick-off', tone: 'good', before: snap(), story: `${szc ? szc.name.replace(/^\S+ /, '') + ' · ' : ''}Formation ${shape}${w.name ? ` · ${w.icon} ${w.name}` : ''}`, text: `${szc ? `<b>${szc.name}</b>: ${szc.kick} Anything can happen: triple-or-nothing cards, witches, hexes and more moments than ever. ` : ''}Formation <b>${shape}</b>.${w.name ? ` ${w.icon} <b>${w.name}</b>: ${w.note.replace(/^[^:]*: /, '')}` : ''} Appoint your manager: each has a perk and a catch.`, pick: kickoffMgrs(), onPick: k => { appoint(k); hired(); }, scene: 'kickoff', sound: 'whistle' });
   }
 
   /* ---------------------------------------------------------------- CHAOS moments: one at a time, on the pitch
@@ -1878,7 +1878,7 @@
       const release = () => {
         if (released) return; released = true; busy = false;
         if (!o.pick) track(o.icon, o.name);
-        if (S.rules.chaos && (o.text || o.reveal)) S.moments = (S.moments || []).concat([{ icon: o.icon, name: o.name, text: (o.after || (o.reveal && o.reveal.text) || o.text).replace(/<[^>]+>/g, ''), rar: o.rarity || '' }]);
+        if (S.rules.chaos && (o.text || o.reveal) && !(o.name === 'Kick-off' && (S.moments || []).some(m => m.name === 'Kick-off'))) S.moments = (S.moments || []).concat([{ icon: o.icon, name: o.name, text: (o.story || o.after || (o.reveal && o.reveal.text) || o.text).replace(/<[^>]+>/g, ''), rar: o.rarity || '' }]);
         if (S.rules.chaos && S.online && GM.online) GM.online.pushRace(S);
         done();
       };
@@ -2391,6 +2391,7 @@
       setTimeout(() => { GM.toast(`✂️ <b>Bomb defused!</b> With seconds to spare: +${p} bonus`, 3000); GM.sound.play('cheer'); }, 200);
     }
     S.phase = 'done';
+    if (GM.FX && GM.FX.clear && !S.readonly) GM.FX.clear();  // nothing from the game (a witch mid-flight, swirling papers) carries on over the result
     const sc = scoreFor(S);
     S.final = sc;
     chProgress(true);
@@ -2907,7 +2908,7 @@
         : S.rules.chaos ? `<div class="result-total">${fmt(sc.total)}<small>CHAOS points · ${fmt(sc.t)} ${S.st.label} + ${fmt(sc.bonus)} bonus</small></div>`
         : `<div class="result-total ${sc.diff === 0 ? 'bull' : ''}">${fmt(sc.t)}<small>PL ${S.st.label}${S.rules.max ? '' : ` · target ${fmt(S.target)} · <b>${Math.round(sc.t / S.target * 1000) / 10}%</b>`}</small></div>`}
         ${S.rules.chaos ? `<div class="chaos-level">${chaosLevel()}</div>${S.manager ? `<div class="muted small">👔 Manager: ${MANAGERS[S.manager].icon} ${MANAGERS[S.manager].name}</div>` : ''}
-          ${(S.moments || []).length ? `<details class="chaos-story"><summary>📜 What happened</summary><ol>${S.moments.map(m => `<li>${m.icon} <b>${GM.esc(m.name)}</b> ${GM.esc(m.text)}</li>`).join('')}</ol></details>` : ''}` : ''}
+          ${(S.moments || []).length ? `<details class="chaos-story"><summary>📜 What happened (${S.moments.length})</summary><ol>${S.moments.map(m => `<li><span class="cs-i">${m.icon}</span><span class="cs-t"><b>${GM.esc(m.name)}</b><small>${GM.esc(m.name === 'Kick-off' && m.text.length > 90 ? m.text.replace(/^.*?(Formation [^.]+)\..*$/, '$1') : m.text)}</small></span></li>`).join('')}</ol></details>` : ''}` : ''}
         ${S.rules.max && !S.rules.chaos ? '' : `${S.rules.chaos ? '' : `<div class="result-score">${fmt(sc.total)}<small>points</small></div>`}
         ${S.rules.chaos && (S.newMgrs || []).length ? `<div class="mgr-new">🔓 New manager${S.newMgrs.length > 1 ? 's' : ''} unlocked: ${S.newMgrs.map(k => `${MANAGERS[k].icon} <b>${MANAGERS[k].name}</b>`).join(', ')}</div>` : ''}
         ${S.rules.chaos ? chartHtml() : ''}

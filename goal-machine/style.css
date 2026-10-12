@@ -1422,7 +1422,12 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
 .reel .gaffer.down { box-shadow: 0 0 0 2px #ff5470; }
 .chaos-story { margin: 8px auto; max-width: 420px; text-align: left; font-size: .85rem; }
 .chaos-story summary { cursor: pointer; font-weight: 700; text-align: center; }
-.chaos-story ol { margin: 6px 0 0; padding-left: 22px; display: grid; gap: 4px; }
+.chaos-story ol { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.chaos-story li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border-radius: 12px; background: rgba(255,255,255,.06); border: 1px solid var(--line); overflow-wrap: anywhere; }
+.chaos-story .cs-i { font-size: 1.25rem; line-height: 1.2; flex: none; }
+.chaos-story .cs-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.chaos-story .cs-t b { font-size: .86rem; }
+.chaos-story .cs-t small { font-size: .76rem; line-height: 1.35; opacity: .85; }
 .breakdown td.neg { color: var(--bad); }
 .btn.spin[disabled] { opacity: .5; }
 /* calm animations (Settings → Look: Calm) */ body.calm .cm-card, body.calm .cm-icon, body.calm .coin, body.calm .cm-fx, body.calm .slot.hit-up .slot-goals, body.calm .slot.hit-down .slot-goals, body.calm .slot.hit-down { animation-duration: .01s !important; }

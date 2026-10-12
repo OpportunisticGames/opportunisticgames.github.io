@@ -174,7 +174,9 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
 1. Serve the repo root: `python3 -m http.server 8765` from the repo root (it sometimes dies; just restart it).
 2. **Run them with `node run.js`** from `goal-machine/tools/test/` (it starts the server if needed, runs 3 at a time, prints one
    summary with times and any failures; the full output of each goes to `lay/<name>.log`): `node run.js` = the quick set (a few
-   minutes, after every change), `node run.js full` = everything (before a merge), `node run.js chaos,cards` = just those.
+   minutes), `node run.js full` = everything, `node run.js chaos,cards` = just those. **The owner's rule: don't run the tests
+   after every change.** Keep building; run them once, before merging (the full set, or the quick set plus the tests for
+   what changed), and fix anything they find then. A quick look in the browser while building is fine.
    New tests: use `helpers.js` where the look doesn't matter: `fast(ctx)` (Calm on, the game's timers 10× faster) and
    `idle(pg)` (taps through CHAOS cards and waits for the spin, instead of fixed sleeps). Never `pg.click` a CHAOS card that
    may be mid-action without a short `{ timeout }`: Playwright waits 30 s for it to become tappable (that made the CHAOS tests

@@ -3,6 +3,17 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.32.2 *(owner, 13 Oct 2026)*
+- "A big witch in the middle of the Seasonal CHAOS end board": the Halloween flyers (bats, ghost, witch) and a moment's
+  witch could still be crossing the screen when full time arrived; the deco was switched off but anything mid-flight carried
+  on over the result. Full time now calls `GM.FX.clear()` (every Lottie and particle stops; celebrations start after).
+- "Pressing What happened went all over the place, long lines of text": the kick-off entry was a whole paragraph and the
+  list was plain lines. Now each moment is a small card (icon, name, short text), the kick-off is one line (season ·
+  formation · weather, `story` on the moment), and the kick-off can't be listed twice.
+- "The rain sound for the first couple of seconds sounds like TV static": the synthesised stand-in (white noise above
+  3.5 kHz) played while the real recording loaded. Weather sounds (`WAIT_REC` in audio.js) now wait up to 4 s for the
+  recording, and the stand-in is a soft, low rain.
+
 ### Fixed in 5.31 *(owner asked us to triple-check the odds, 12 Oct 2026)*
 - Measured every draft mode and difficulty with the real dealing code (`tools/test/odds.js`). The odds are right; some
   words weren't: How to play told every no-target mode "every player with 50+ apps is equally likely", which was wrong

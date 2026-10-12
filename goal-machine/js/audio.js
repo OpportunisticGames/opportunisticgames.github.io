@@ -143,7 +143,8 @@
     meterfull: t => { for (let i = 0; i < 6; i++) tone(midi(64 + i * 3), { t: t + i * 0.07, dur: 0.14, type: 'square', lp: 3000, vol: 0.06 }); tone(300, { t: t + 0.4, to: 1500, glide: 0.6, dur: 0.65, type: 'sawtooth', lp: 3200, vol: 0.06 }); },
     // weather: wind that howls up and away, rain, a thunder rumble, and the crack of a strike
     wind: t => { noise({ t, dur: 2.6, freq: 280, to: 1100, q: 3, vol: 0.26, attack: 0.6 }); noise({ t: t + 0.3, dur: 2.2, freq: 600, to: 250, q: 5, vol: 0.14, attack: 0.5 }); },
-    rain: t => noise({ t, dur: 3.2, type: 'highpass', freq: 3500, vol: 0.07, attack: 0.4 }),
+    // (only if the recording never arrives: soft and low like real rain, not the old high hiss that sounded like TV static)
+    rain: t => { noise({ t, dur: 3.2, type: 'lowpass', freq: 1600, vol: 0.05, attack: 0.8 }); noise({ t, dur: 3, freq: 700, q: 0.7, vol: 0.035, attack: 0.8 }); },
     thunder: t => { noise({ t, dur: 2.4, type: 'lowpass', freq: 380, to: 90, vol: 0.5, attack: 0.03 }); tone(55, { t, to: 30, dur: 1.4, vol: 0.2, attack: 0.02 }); },
     crack: t => { noise({ t, dur: 0.12, type: 'highpass', freq: 2500, vol: 0.45, attack: 0.001 }); noise({ t: t + 0.05, dur: 1.6, type: 'lowpass', freq: 500, to: 80, vol: 0.4 }); },
     // match day: the ambulance, VAR's beeps, TV money, the taxman, the mystery box, the masks, a boo, a drum roll
@@ -237,6 +238,7 @@
      Real recordings for the big moments, loaded when a game asks (CHAOS does at kick-off). A sound with a recording
      plays that instead of its synthesised version (which stays as the fallback until it's loaded, or if it won't load).
      from/dur pick a bit of the recording, vol its level, rate its pitch/speed. */
+  const WAIT_REC = ['rain', 'wind'];  // weather sounds: never the synthesised stand-in while the recording is still on its way
   const REC = {
     whistle: { f: 'whistle', dur: 0.9 }, redwhistle: { f: 'whistle' }, fulltime: { f: 'whistle', rate: 0.97 },
     cheer: { f: 'cheer', vol: 0.8 }, boo: { f: 'boo', vol: 0.8 }, applause: { f: 'applause', vol: 0.7 },
@@ -674,6 +676,7 @@
     // CHAOS: how full the meter is, 0-1 (Mayhem builds with it)
     heat(v) { heat = Math.max(0, Math.min(1, +v || 0)); },
     tuneList: () => loadTunes().then(() => tunes.list),
+    // sounds that wait for their recording rather than play the synthesised stand-in first (it can't pass for rain)
     play(name, arg) {
       if (!live || !store.get('sfx', true) || document.hidden) return;
       if (live.ctx.state !== 'running') return;
@@ -681,7 +684,10 @@
       try {
         const rec = recOn && REC[name];
         if (rec && BUF[rec.f]) playRec(now(), rec);
-        else name === 'rise' ? rise(now(), arg) : SOUNDS[name] && SOUNDS[name](now(), arg);
+        else if (rec && WAIT_REC.includes(name) && !(arg && arg.waited)) {  // the weather: wait (up to 4 s) for the real recording
+          const t0 = Date.now(), again = () => { if (BUF[rec.f] || Date.now() - t0 > 4000) GM.sound.play(name, { waited: true }); else setTimeout(again, 150); };
+          setTimeout(again, 150);
+        } else name === 'rise' ? rise(now(), arg) : SOUNDS[name] && SOUNDS[name](now(), arg);
       } catch (e) { }
     },
     // load the recordings (a game calls this when it opens); off switches back to the synthesised sounds
