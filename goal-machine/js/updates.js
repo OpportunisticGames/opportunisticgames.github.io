@@ -9,11 +9,12 @@
 (function () {
   GM.UPDATES = [
     {
-      v: 93, label: '5.34', date: '2026-10-13', title: '🙂 An Easy level, and clearer names',
+      v: 93, label: '5.34', date: '2026-10-13', title: '🙂 An Easy level, clearer names, and duplicates',
       items: [
         '🙂 New Easy level (next to Normal, Hard and Extreme): the big names turn up more often, about four times as often as an average player, with all the clues on the reels. Every draft game has it, with its own leaderboards (Easy ones don’t count for Best Players or badges)',
         '👑 The main event is simply Ultimate now: wildcards on, or ✨ Pure (no wildcards). The level says who turns up. Classic, which favoured the big names, has become the Easy level',
         '🏷️ Clearer names everywhere: Ultimate, Ultimate · Pure, CHAOS, with (Easy), (Hard) or (Extreme) after them',
+        '♻️ Duplicates: packs now deal at random, so cards you’ve already finished come round again. They go on your duplicate pile (1 point for Bronze, 2 Silver, 3 Gold, 5 Legend), and 100 points trade in for a 🆕 Fresh pack of cards you haven’t finished (Locker → Cards). The album fills more slowly, so it means more when it’s done',
       ],
     },
     {

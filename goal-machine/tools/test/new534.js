@@ -47,6 +47,15 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.evaluate(() => { location.hash = '#/leaderboard?m=ultimatee'; }); await pg.waitForTimeout(900);
   const lb = await pg.evaluate(() => ({ lv: (document.querySelector('#lbh') || {}).value, opts: [...document.querySelectorAll('#lbh option')].map(o => o.value), classic: [...document.querySelectorAll('#lbv option')].some(o => /Classic/.test(o.textContent)) }));
   ok(lb.lv === 'easy' && lb.opts.join() === 'easy,normal,hard,extreme' && !lb.classic, `the board filter has Easy, and no Classic (${JSON.stringify(lb)})`);
+  // ♻️ duplicates: a finished card dealt again goes on the pile; 100 points trade in for a Fresh pack
+  const dup = await pg.evaluate(() => {
+    const p = GM.players.find(q => GM.cardTier(q) === 'g'); for (let k = 0; k < 4; k++) GM.cardPackPiece(p);
+    const before = GM.dupePile(); GM.cardPackPiece(p); const after = GM.dupePile();
+    const c = GM.store.get('cards'); c.dupes = 100; GM.store.set('cards', c);
+    const packs = GM.packsWaiting(); const traded = GM.tradeDupes();
+    return { gold: after - before, traded, left: GM.dupePile(), packs: GM.packsWaiting() - packs };
+  });
+  ok(dup.gold === 3 && dup.traded && dup.left === 0 && dup.packs === 1, `a Gold duplicate is 3 points; 100 trade in for a Fresh pack (${JSON.stringify(dup)})`);
   ok(!errs.length, 'no page errors ' + errs.slice(0, 2).join(' | '));
   await b.close(); process.exit(process.exitCode || 0);
 })();

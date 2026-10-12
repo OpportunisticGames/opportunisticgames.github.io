@@ -3611,3 +3611,10 @@ body.calm .fuse .fz { animation: none; }
 .scout-pick { display: flex; gap: 6px; justify-content: center; margin: 10px 0; }
 .scout-pick button { background: none; border: 0; padding: 0; cursor: pointer; flex: 1; max-width: 110px; }
 .st-bonus { display: block; margin-top: 4px; }
+
+/* ♻️ the duplicate pile */
+.dupe-box { display: flex; align-items: center; gap: 10px; margin: 10px 0; padding: 10px 12px; border-radius: 14px; background: var(--inset); }
+.dupe-box > span:first-child { font-size: 1.5rem; }
+.dupe-box > span:nth-child(2) { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.dupe-box small { color: var(--muted); font-size: .72rem; }
+.dupe-box.full { outline: 2px solid var(--accent); }

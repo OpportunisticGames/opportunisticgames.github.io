@@ -23,7 +23,7 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
-### Duplicates in packs, and a duplicate pile 💬 *(owner, 13 Oct 2026)*
+### Duplicates in packs, and a duplicate pile ✅ 5.34 *(owner, 13 Oct 2026)*
 > "would it slow down pack progression so it's not too quick if we enabled duplicates? i was thinking maybe you could up it
 > to 10 for legends or something but now i'm thinking maybe we just enable duplicates? could potentially give a reward for
 > duplicates, maybe they go in like a duplicate pile and you get 1 point for bronze, two for silver, three for gold and 5
@@ -32,6 +32,9 @@ formations, and badges round 2.
 Notes: today packs try hard (40 goes) to avoid cards you've finished, so duplicates ("spare") are rare. Dealing honestly
 at random lets them happen more as your album fills: progress slows by itself, most at the end. The pile turns them back
 into something: 1/2/3/5 points by tier, a pack at 50. Ideas and questions in the chat.
+**Owner:** "I don't think it should be super generous, are you thinking 100 is better? (finished cards making
+duplicates straight away:) yes". Built: honest random dealing, the pile at 100 points for a 🆕 Fresh pack (only cards
+you haven't finished), pack pieces only (signings never make duplicates), the pile in Locker → Cards.
 
 ### Clearer names for the main draft modes ✅ 5.34 *(owner, 13 Oct 2026)*
 > "Can you also go over all the names of the main draft game modes - just looking at the leaderboard i see why it would
