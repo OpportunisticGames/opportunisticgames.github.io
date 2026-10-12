@@ -3,6 +3,12 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.30.3 *(owner, 12 Oct 2026)*
+- “Goal Machine doesn't work offline, I thought it used to”: on a weak signal (4G showing, no data) the app showed a blank
+  green screen for two minutes, then "No signal in the stadium". The service worker was network-first with no timeout, so
+  a hanging request never fell back to the saved copy. It now gives the network 4 s (then 0.2 s for the rest of a minute)
+  and opens the cached game. `tools/test/offline.js` covers offline and a hanging network.
+
 ### Fixed in 5.29 *(owner, 12 Oct 2026)*
 - “The banner is a bit broken”: the club scarf was still 18px down (where the old emoji strip ended), so it floated across
   page titles. It now sits right under the 7px season band, and pages leave room for both.
