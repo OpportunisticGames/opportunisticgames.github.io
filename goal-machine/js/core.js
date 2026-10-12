@@ -1082,6 +1082,7 @@ GM.lb = {
       throw e;
     }
     if (res !== 'ok') throw new Error(res);
+    if (GM.feed) setTimeout(() => GM.feed.load(true), 400);  // a new 👑 for you?
   },
   // send the scores that were waiting for a signal (when the phone is back online, and on launch)
   async flush() {

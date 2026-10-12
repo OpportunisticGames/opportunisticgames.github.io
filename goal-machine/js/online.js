@@ -769,12 +769,13 @@
       ['move', '⚔️ Your move', 'It’s your turn in an online game'],
       ['friends', '👋 Challenges and friends', 'A friend challenges you or adds you'],
       ['results', '🏁 Results', 'An online game finishes'],
+      ['beaten', '😬 Beaten', 'Someone knocks you off top spot on a leaderboard (once an hour per board at most)'],
       ['modes', '🆕 New game modes', 'When something new comes out'],
       ['streak', '🔥 Streak reminder', 'At 8pm, if your daily streak is about to end'],
       ['comeback', '💤 Come back', 'If you haven’t played for a few days'],
       ['matchday', '🏟️ Matchday', 'At 9am when your club plays that day'],
     ],
-    prefs() { return { move: true, friends: true, results: true, modes: true, streak: true, comeback: true, matchday: true, daily: null, ...GM.store.get('notif', {}) }; },
+    prefs() { return { move: true, friends: true, results: true, beaten: true, modes: true, streak: true, comeback: true, matchday: true, daily: null, ...GM.store.get('notif', {}) }; },
     set(k, v) { GM.store.set('notif', { ...GM.store.get('notif', {}), [k]: v }); GM.notify.sync(); },
     sync() {
       const a = GM.account();

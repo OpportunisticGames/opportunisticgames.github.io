@@ -23,7 +23,7 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
-### Beaten! alerts, an activity drawer, and a Best Players table *(owner, 12 Oct 2026)*
+### Beaten! alerts, an activity drawer, and a Best Players table ✅ 5.32 *(owner, 12 Oct 2026)*
 > "You should get a notification when someone beats your score. Maybe also the app should have a notification drawer so you can see what has been going on, like being able to see how many things you are top of. Maybe there should be a leaderboard with best players, some form of aggregated points system based on all the leaderboards or something idk!! Have fun with it but you get the idea"
 
 Notes (three linked pieces, one data source: a server-side "who's top of what" check when a score is submitted):

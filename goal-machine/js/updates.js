@@ -9,6 +9,14 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 89, label: '5.32', date: '2026-10-12', title: '😬 Beaten! alerts, the 🔔 and Best Players',
+      items: [
+        '😬 Someone takes your top spot on a leaderboard? You get a notification saying who, by how much, and a tap straight to the board to win it back (at most one an hour per board; switch it off in Settings → Notifications)',
+        '🔔 A new bell on the top bar: what’s been happening. Who beat you, whose top spot you took, games and challenges waiting for you, how many boards you top (all time and this month) and where you are in Best Players',
+        '🏅 Best Players, a new table on Ranks: points for every top-ten place on the main draft boards (Ultimate, Classic, Extreme, CHAOS and the Targets, every difficulty and stat), 10 for 1st down to 1 for 10th, your best 8 boards count. A fresh race every month, or all time',
+      ],
+    },
+    {
       v: 88, label: '5.31', date: '2026-10-12', title: '📶 Offline notices and fresher backups',
       items: [
         '📶 No signal? A small note says so on the menu pages, and anything that needs the internet (leaderboards, your league, online games, challenges) now says “go online to see this” with a Try again button, instead of just not loading. Your game and everything you earn stay saved on the phone',

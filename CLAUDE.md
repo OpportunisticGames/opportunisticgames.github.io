@@ -140,6 +140,12 @@ Everything goes through security-definer RPCs that check the account with `gm_au
   sends the player's choices from Settings (`GM.notify`: move, friends, results, modes, streak, comeback, daily time),
   their daily streak and time zone. **To announce a new game mode**, insert a row into `announcements` (title, body,
   link): every app with "New game modes" on shows it once, for 3 days.
+- **Beaten alerts, the 🔔 and Best Players (5.32):** `submit_score` checks, before saving, whether the score takes someone's
+  top spot (all time, else this month; boards without a `:`); if so it writes an `activity` row for them (`beaten`, at most
+  one an hour per board, pushed via `gm_push`, shown by `app_inbox` as `b:<id>`, pref `beaten`) and a `crown` row for you.
+  `activity_feed(p_user, p_key)` feeds the 🔔 drawer (`GM.feed`, `GM.feedSheet` in app.js: items, `crowns`/`mcrowns`,
+  `best`/`mbest`). `best_players(p_month, p_limit)` = points 10/7/5/4/3/2/2/1/1/1 for top-ten places on the main draft
+  boards (`gm_main_board`), best 8 count; Ranks tab `bestplayers`. Board names for alerts: `gm_board_name`.
 - Also: `save_backup` / `load_backup`, `delete_account`, avatars
   (`set_avatar`, `get_avatars`, `report_avatar`).
 Change SQL with the Supabase MCP tools (`apply_migration`); read a function first with `pg_get_functiondef`.
@@ -169,6 +175,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    may be mid-action without a short `{ timeout }`: Playwright waits 30 s for it to become tappable (that made the CHAOS tests
    take minutes). Or run one script on its own with `node <script>.js`. Each uses `mockserver.js`, which fakes the
    Supabase RPCs in memory (test accounts Alice/Bob/Cara), so nothing touches the real database.
+   - `beaten532.js` – two phones: a beaten alert in the inbox (and off with the switch), the 🔔 count and drawer, Bob's crown, Best Players points.
    - `offline531.js` – a newer cloud backup is offered once and restores, backing up on leaving the app, the offline strip and cards, scores kept and sent later. `offline.js` – the service worker opens the game from cache offline and on a hanging network.
    - `odds.js` – who turns up on the reels in every draft mode and difficulty, measured with the real dealing code (stars v average, each tenth of the pool, wildcard and storm rates). Check the How to play / Settings wording against it after changing a weight.
    - `sweep.js` – opens every page in light, dark and club themes: page errors and sideways overflow.

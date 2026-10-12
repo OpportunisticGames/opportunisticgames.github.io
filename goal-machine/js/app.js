@@ -47,12 +47,61 @@
     if (status.hidden || !GM.levelChip) return;
     const me = (GM.account() || {}).name || GM.getName() || 'You', n = GM.toOpenCount();
     const html = `<a class="gs-me" href="#/locker?v=kit" aria-label="Your kit">${GM.userPic(me)}${fresh ? '<i class="new-dot"></i>' : ''}</a>${GM.levelChip()}${GM.seasonChip ? GM.seasonChip() : ''}
+      ${GM.account() ? `<button class="gs-bell ${GM.feed.unseen() ? 'hot' : ''}" aria-label="What’s been happening"><span>🔔</span>${GM.feed.unseen() ? `<i>${GM.feed.unseen()}</i>` : ''}</button>` : ''}
       <button class="gs-open ${n ? 'hot' : ''}" aria-label="To open"><span>🎁</span><b>${n}</b></button>`;
     if (html === status._h) return;
     status._h = html; status.innerHTML = html;
     GM.$('.gs-open', status).onclick = () => { GM.buzz('click'); GM.toOpen(); };
+    const bell = GM.$('.gs-bell', status); if (bell) bell.onclick = () => { GM.buzz('click'); GM.feedSheet(); };
   };
   setInterval(() => GM.statusBar(), 1500);  // packs, spins and XP arrive from all over: keep the bar honest
+  // 🔔 what's been happening: someone took your top spot (or you took theirs), the boards you top, where you are in
+  // 🏅 Best Players, and online games and challenges waiting for you (activity_feed + app_inbox on the server)
+  GM.feed = {
+    data: null, at: 0,
+    async load(force) {
+      const a = GM.account();
+      if (!a || !GM.lb.enabled || this._busy || (!force && Date.now() - this.at < 60e3)) return this.data;
+      this._busy = true; this.at = Date.now();
+      try { const d = await GM.lb.rpc('activity_feed', { p_user: a.name, p_key: a.key }); if (d && !d.error) { this.data = d; GM.statusBar(); } }
+      catch (e) { /* offline: keep what we had */ } finally { this._busy = false; }
+      return this.data;
+    },
+    unseen() { const d = this.data, seen = GM.store.get('feedSeen', ''); return d && d.items ? d.items.filter(x => x.kind === 'beaten' && x.at > seen).length : 0; },
+  };
+  // a board's name from its key (ultimateh → Ultimate Wildcard (Hard), targetxast → Target 325 – Assists (Extreme))
+  GM.boardName = k => {
+    if (GM.MODES[k]) return GM.MODES[k].name;
+    const x = k.match(/^(.*)x(ast|apps)?$/);
+    if (x && GM.MODES[x[1] + (x[2] || '')]) return GM.MODES[x[1] + (x[2] || '')].name + ' (Extreme)';
+    return /^club/.test(k) ? 'Club XI' : /^nation/.test(k) ? 'International XI' : k;
+  };
+  GM.feedSheet = async function () {
+    const a = GM.account();
+    if (!a) return GM.toast('Claim a name in Settings to see what’s been happening');
+    const m = GM.modal(`<div class="feed"><h3 class="center">🔔 What’s been happening</h3><div id="feedbody"><p class="muted center">Loading…</p></div></div>`);
+    const prefs = { move: true, friends: true, results: true, modes: false, streak: false, comeback: false, matchday: false, beaten: false };
+    const [d, inbox] = await Promise.all([GM.feed.load(true), GM.lb.rpc('app_inbox', { p_user: a.name, p_prefs: prefs }).catch(() => [])]);
+    const el = GM.$('#feedbody', m.el);
+    if (!el) return;
+    if (!d) { el.innerHTML = GM.net.msg('what’s been happening', '<p class="muted center">Couldn’t load it – try again in a bit.</p>'); return; }
+    const seen = GM.store.get('feedSeen', ''), here = l => (l || '').replace(/^[^#]*#/, '#');
+    const ago = t => { const s = Math.max(0, (new Date(d.now) - new Date(t)) / 1000); return s < 3600 ? Math.max(1, Math.round(s / 60)) + ' min ago' : s < 86400 ? Math.round(s / 3600) + ' h ago' : Math.round(s / 86400) + ' d ago'; };
+    const all = d.crowns || [], month = d.mcrowns || [], tops = [...new Set(month.concat(all))];
+    const waiting = (inbox || []).filter(x => /^(g|r|f|cs|cf|cr|co|cm):/.test(x.id));
+    const item = (cls, title, sub, href) => `<a class="feed-item ${cls}" href="${GM.esc(here(href))}"><b>${GM.esc(title)}</b><small>${sub}</small></a>`;
+    el.innerHTML = `<div class="feed-tops">
+        <a class="feed-stat" href="#/leaderboard?m=bestplayers"><b>🏅 ${d.mbest ? '#' + d.mbest.rank : '–'}</b><small>Best Players this month${d.mbest ? ` · ${d.mbest.points} pts` : ''}</small></a>
+        <a class="feed-stat" href="#/leaderboard?m=bestplayers"><b>👑 ${all.length}</b><small>boards you top, all time</small></a>
+        <a class="feed-stat" href="#/leaderboard"><b>📅 ${month.length}</b><small>you top this month</small></a></div>
+      ${tops.length ? `<details class="set feed-crowns"><summary><span>👑 Where you’re top</span></summary>${tops.map(k => `<a href="#/leaderboard?m=${encodeURIComponent(k)}">${GM.esc(GM.boardName(k))}<small>${all.includes(k) ? (month.includes(k) ? 'all time and this month' : 'all time') : 'this month'}</small></a>`).join('')}</details>` : ''}
+      ${waiting.length ? `<h4>⏳ Waiting for you</h4>${waiting.map(x => item('wait', x.title, GM.esc(x.body || ''), x.link)).join('')}` : ''}
+      <h4>📰 Lately</h4>
+      ${d.items.length ? d.items.map(x => item((x.at > seen ? 'new ' : '') + x.kind, x.title, `${GM.esc(x.body || '')} · ${ago(x.at)}`, x.link)).join('')
+        : '<p class="muted center small">Nothing yet. Get to the top of a leaderboard and we’ll tell you if anyone knocks you off it.</p>'}`;
+    GM.$$('a', el).forEach(l => l.addEventListener('click', () => m.close()));
+    GM.store.set('feedSeen', d.now); GM.statusBar();
+  };
   // the 🎁 sheet: one place for everything waiting, with a way to each
   GM.toOpen = function () {
     const packs = GM.packsWaiting ? GM.packsWaiting() : 0, spins = +GM.store.get('spins', 0), picks = (GM.store.get('choices', []) || []).length, fresh = GM.lockerNew ? GM.lockerNew() : 0;
@@ -142,6 +191,7 @@
       const n = GM.store.get('onlineWaiting', 0), b = GM.$('.online-badge', tabbar);
       b.textContent = n; b.hidden = !n;
       if (GM.online && GM.online.check) GM.online.check();
+      GM.feed.load();  // the 🔔 (at most every minute)
     }
     if (GM.rewardsStart) GM.rewardsStart();
     if (GM.seasonVisitPlan) GM.seasonVisitPlan(path);  // a seasonal visitor on Home now and then (rewards.js)  // login reward, Locker unlocks, the look you wear (once a session)
@@ -575,11 +625,25 @@
   /* ---------------------------------------------------------------- leaderboard */
   // Leaderboards, simply: one row of games, one line of drop-downs for what applies (version, stat, Normal/Hard, this
   // month or all time), then you and the board. Club v club and the Daily stars live here too.
+  // 🏅 Best Players: the server adds up everyone's places on the main boards (best_players)
+  async function bestBody(body) {
+    body.innerHTML = `<div id="lbyou" class="lb"></div><h3 class="section-title">🌍 ${GM.lbMonth() ? new Date().toLocaleDateString(undefined, { month: 'long' }) : 'All time'}</h3><div id="global" class="lb"><div class="muted">Loading…</div></div>`;
+    if (!GM.lb.enabled) return;
+    try {
+      const rows = await GM.lb.rpc('best_players', { p_month: GM.lbMonth(), p_limit: 50 }), me = GM.getName(), el = GM.$('#global');
+      if (!el) return;
+      el.innerHTML = rows.length ? rows.map(r => `<div ${GM.lbRow(r.name, me)}><span>${r.rank <= 3 ? ['🥇', '🥈', '🥉'][r.rank - 1] : r.rank}</span><span>${GM.esc(r.name)}${GM.lbLevel(r)}${r.crowns ? `<i class="bp-crowns">👑 ${r.crowns}</i>` : ''}</span><b>${r.points}<small> pts</small></b></div>`).join('') + GM.lbReportHint
+        : `<div class="muted">Nobody on a main board yet${GM.lbMonth() ? ' this month' : ''} – be the first!</div>`;
+      const mine = rows.find(r => r.name === me), d = GM.feed.data, b = d && (GM.lbMonth() ? d.mbest : d.best), you = GM.$('#lbyou');
+      if (you && !mine && b) you.innerHTML = `<div class="lb-row me"><span>${b.rank}</span><span>${GM.esc(me)}</span><b>${b.points}<small> pts</small></b></div>`;
+    } catch (e) { const el = GM.$('#global'); if (el) el.innerHTML = GM.net.msg('Best Players', '<div class="muted">Couldn’t load Best Players.</div>'); }
+  }
   async function leaderboard(m) {
     const club = GM.favClub(), today = GM.today();
     const nations = [...new Set([GM.store.get('nation', 'England')].concat(GM.store.get('nationsPlayed', [])))].slice(0, 8).map(n => 'nation' + GM.slug(n));
     const GAMES = [
       ['⚽ Main event', ['ultimate', 'ultimatepure', 'classicwild', 'classic']],
+      ['🏅 Best Players', ['bestplayers']],
       ['🌪️ CHAOS', ['chaos', 'dchaos:' + today].concat(GM.SZ_CHAOS && GM.gmSeason && GM.SZ_CHAOS[GM.gmSeason().theme] ? ['szchaos'] : [])],
       [GM.calIcon() + ' Daily', ['daily:' + today, 'footle:' + today, 'grid:' + today, 'dmoney:' + today, 'dailies']],
     ].concat(club ? [['🏟️ Your club', ['clubs', 'club' + GM.slug(club)].concat(GM.nextMatch(club) ? ['match:' + GM.nextMatch(club).id] : [])]] : [])
@@ -601,7 +665,7 @@
     else if (/x$/.test(base) && GM.EXTREME_GAMES.includes(base.slice(0, -1))) { lv = 'extreme'; base = base.slice(0, -1); }
     const hard = lv === 'hard';
     let g = GAMES.findIndex(x => x[1].includes(base));
-    const special = base === 'clubs' || base === 'dailies';
+    const special = base === 'clubs' || base === 'dailies' || base === 'bestplayers';
     if (g < 0) { g = 0; base = 'ultimate'; }
     const keyFor = (b, st = stat, l = lv) => {
       const k = b + (hasStats(b) ? SUFFIX[st] : '');
@@ -620,13 +684,14 @@
       variants.length > 1 ? sel('lbv', variants.map(k => [k, name(k)]), base) : '',
       !special && hasStats(base) ? sel('lbs', Object.entries(GM.STATS).map(([k, st]) => [k, `${st.icon} ${st.name}`]), stat) : '',
       levels.length > 1 ? sel('lbh', levels.map(l => [l, GM.LEVELS[l][0] + ' ' + GM.LEVELS[l][1]]), lv) : '',
-      !special && !/:/.test(m) ? sel('lbp', [['1', '📅 This month'], ['0', '🏆 All time']], GM.lbMonth() ? '1' : '0') : '',
+      (!special || base === 'bestplayers') && !/:/.test(m) ? sel('lbp', [['1', '📅 This month'], ['0', '🏆 All time']], GM.lbMonth() ? '1' : '0') : '',
       base === 'clubs' ? sel('lbw', [['0', '📅 This week'], ['1', '⏪ Last week']], opt === '1' ? '1' : '0') : '',
       base === 'dailies' ? sel('lbd', Object.entries(DSORT), DSORT[opt] ? opt : 'big_days') : '',
     ].join('');
     const NOTES = { chaos: '🌪️ Total points: your XI’s tally plus every bonus.', footle: '🟩 8 points for a first-guess win, down to 1 on the last guess.',
       clubs: 'Every fan’s Daily Ultimate this week counts for their club. Same spins for everyone, so the table is the average; a club needs 3 games to be ranked.',
-      dailies: 'Everyone’s daily results count, and you don’t need a streak.', packedxi: 'Your best XI from finished cards (📒 Album).' };
+      dailies: 'Everyone’s daily results count, and you don’t need a streak.',
+      bestplayers: '🏅 Points from every main draft board (Ultimate, Classic, Extreme, CHAOS and the Targets, every difficulty and stat): 10 for 1st, then 7, 5, 4, 3, 2, 2, 1, 1, 1 down to 10th. Your best 8 boards count. 👑 = boards you top.', packedxi: 'Your best XI from finished cards (📒 Album).' };
     const note = NOTES[/^d?chaos/.test(m) ? 'chaos' : m.split(':')[0]] || '';
     app.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>🏆 Leaderboards</h2><span></span></div>
       <div class="lbx-games">${GAMES.map(([l, v], i) => `<a class="${i === g ? 'on' : ''}" href="${link(v[0] === 'clubs' || v[0] === 'dailies' ? v[0] : keyFor(v[0]))}">${l}</a>`).join('')}</div>
@@ -646,6 +711,7 @@
     const body = GM.$('#lbbody');
     if (base === 'clubs') return GM.clubsBody(body, opt === '1' ? 1 : 0);
     if (base === 'dailies') return dailyBody(body, DSORT[opt] ? opt : 'big_days');
+    if (base === 'bestplayers') return bestBody(body);
     GM.hiddenNameBanner(GM.$('#lbhidden'));
     const spread = /^(ultimate|club|classic|extreme|purist)/.test(m) || m.startsWith('daily:');  // (keyed by board, Extreme included)
     body.innerHTML = `<div class="lb" id="lbyou"></div>

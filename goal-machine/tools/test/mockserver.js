@@ -1,6 +1,7 @@
 // A stand-in for the Supabase online_* functions (same rules as the SQL), shared by every test phone
 module.exports = function makeServer() {
   const players = { alice: { username: 'Alice', key: 'a'.repeat(28) }, bob: { username: 'Bob', key: 'b'.repeat(28) }, cara: { username: 'Cara', key: 'c'.repeat(28) } };
+  const scores = [], activity = []; let actN = 0;
   const rooms = {}, friends = new Set(), backups = {}, pics = {}, reports = [], nameReports = new Set(), hiddenNames = new Set(); let n = 0;
   const now = () => Date.now() / 1000;
   const auth = (u, k) => { const p = players[(u || '').toLowerCase()]; return p && p.key === k ? p.username : null; };
@@ -137,6 +138,41 @@ module.exports = function makeServer() {
       return names.map(n => ({ name: n, score: n === 'Bob' ? 420 : n === u ? 380 : 0, games: n === u ? 2 : 1, me: n === u })).sort((x, y) => y.score - x.score);
     },
     save_backup(a) { const u = auth(a.p_user, a.p_key); if (!u) return 'auth'; backups[u] = { data: a.p_data, updated: new Date().toISOString() }; return 'ok'; },
+    // 5.32: scores, "someone beat your score", the 🔔 feed and Best Players (same rules as the SQL, simplified)
+    submit_score(a) {
+      const u = auth(a.p_username, a.p_key); if (!u) return 'not_yours';
+      const best = n => Math.max(-1e9, ...scores.filter(x => x.mode === a.p_mode && x.name === n).map(x => x.score));
+      const top = scores.filter(x => x.mode === a.p_mode).sort((x, y) => y.score - x.score || x.at - y.at)[0];
+      if (!/:/.test(a.p_mode) && top && top.name !== u && a.p_score > top.score && best(u) < top.score) {
+        const v = top.name, t = Date.now();
+        if (!activity.some(x => x.username === v && x.kind === 'beaten' && x.mode === a.p_mode && t - x.t < 3600e3))
+          activity.push({ id: ++actN, username: v, kind: 'beaten', mode: a.p_mode, title: `😬 ${u} beat your score`, body: `${a.p_score} v your ${top.score}: you've lost top spot. Tap to win it back`, link: 'https://x/goal-machine/#/leaderboard?m=' + a.p_mode, at: new Date(t).toISOString(), t });
+        activity.push({ id: ++actN, username: u, kind: 'crown', mode: a.p_mode, title: '👑 You\'re top of a leaderboard', body: `You knocked ${v} off top spot`, link: 'https://x/goal-machine/#/leaderboard?m=' + a.p_mode, at: new Date(t).toISOString(), t });
+      }
+      scores.push({ name: u, mode: a.p_mode, score: a.p_score, at: Date.now() });
+      return 'ok';
+    },
+    best_players(a) {
+      const boards = {}, pts = [10, 7, 5, 4, 3, 2, 2, 1, 1, 1];
+      scores.filter(x => /^(ultimatepure|ultimate|classicwild|classic|extreme|purist|chaosx|chaos|szchaos|target|treble|mystery)x?(ast|apps)?h?$/.test(x.mode)).forEach(x => {
+        const b = boards[x.mode] = boards[x.mode] || {}; if (!b[x.name] || b[x.name] < x.score) b[x.name] = x.score; });
+      const per = {};
+      Object.values(boards).forEach(b => Object.entries(b).sort((x, y) => y[1] - x[1]).slice(0, 10).forEach(([n], i) => { (per[n] = per[n] || []).push(i); }));
+      const rows = Object.entries(per).map(([name, rk]) => ({ name, points: rk.map(i => pts[i]).sort((x, y) => y - x).slice(0, 8).reduce((t, x) => t + x, 0), crowns: rk.filter(i => i === 0).length, boards: rk.length, level: null }))
+        .sort((x, y) => y.points - x.points || y.crowns - x.crowns);
+      rows.forEach((r, i) => { r.rank = i && rows[i - 1].points === r.points && rows[i - 1].crowns === r.crowns ? rows[i - 1].rank : i + 1; });
+      return rows.slice(0, a.p_limit || 50);
+    },
+    activity_feed(a) {
+      const u = auth(a.p_user, a.p_key); if (!u) return { error: 'auth' };
+      const tops = () => { const out = []; [...new Set(scores.map(x => x.mode))].filter(m => !/:/.test(m)).forEach(m => { const t = scores.filter(x => x.mode === m).sort((x, y) => y.score - x.score || x.at - y.at)[0]; if (t && t.name === u) out.push(m); }); return out; };
+      const bp = fns.best_players({ p_limit: 1e5 }).find(r => r.name === u) || null;
+      return { items: activity.filter(x => x.username === u).slice().reverse(), crowns: tops(), mcrowns: tops(), best: bp, mbest: bp, now: new Date().toISOString() };
+    },
+    app_inbox(a) {
+      const u = (players[(a.p_user || '').toLowerCase()] || {}).username;
+      return activity.filter(x => x.username === u && x.kind === 'beaten' && (!a.p_prefs || a.p_prefs.beaten !== false)).map(x => ({ id: 'b:' + x.id, title: x.title, body: x.body, link: x.link }));
+    },
     load_backup(a) { const u = auth(a.p_user, a.p_key); if (!u) return null; return backups[u] || { none: true }; },
     delete_account(a) { const u = auth(a.p_user, a.p_key); if (!u) return 'auth'; delete players[u.toLowerCase()]; return 'deleted'; },
     set_avatar(a) { const u = auth(a.p_user, a.p_key); if (!u) return 'auth'; if (a.p_image && !/^data:image\/(jpeg|webp|png);base64,/.test(a.p_image)) return 'bad_image'; pics[u] = a.p_image; return 'ok'; },
