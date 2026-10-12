@@ -23,6 +23,27 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### Beaten! alerts, an activity drawer, and a Best Players table *(owner, 12 Oct 2026)*
+> "You should get a notification when someone beats your score. Maybe also the app should have a notification drawer so you can see what has been going on, like being able to see how many things you are top of. Maybe there should be a leaderboard with best players, some form of aggregated points system based on all the leaderboards or something idk!! Have fun with it but you get the idea"
+
+Notes (three linked pieces, one data source: a server-side "who's top of what" check when a score is submitted):
+1. **Beaten alerts.** In `submit_score`, if the new score takes a rank off someone who held it, write an `activity` row
+   for them ("Sam beat your Ultimate Wildcard score: 1,234 v your 1,180"). Push it through the existing `app_inbox`/`push`
+   path (a new kind, once per event, with a "Notifications → Beaten" switch in Settings). Only top-spot losses by default
+   (not every rank), batched so a busy board can't spam: at most one push per board per hour.
+2. **Activity drawer.** A bell in the top bar with a badge, opening a sheet: beaten alerts, challenge results, friend
+   requests, awards (what the 🎁 sheet and inbox show today, in one list), and a "You're top of N boards 👑" header with the
+   list (this month and all time). Items open the board or game they're about; keep 30 days.
+3. **Best Players table.** A new board on Ranks: points per board by rank (1st 10, 2nd 7, 3rd 5, top 10 get 1+),
+   summed over this month's boards (and all-time), with 👑 crowns count. Needs a weighting so playing every mode isn't
+   the only way up (best 8 boards count?), and a monthly reset like the other boards.
+
+Questions: (a) should "beaten" tell you who did it (names are public on boards, but they can hide)? (b) points by rank
+or by percentile once there are lots of players? (c) include Daily boards in Best Players or only the main modes?
+(d) a muted-by-default switch for beaten alerts, or on? Backend work: tables `activity` + a `best_players` view/RPC,
+changes to `submit_score` and `app_inbox`, the `push` function's kind filter; app: bell + sheet in `statusBar`, a Ranks tab.
+Size: about a day. Suggested order: drawer + crowns first (no push needed), then beaten alerts, then Best Players.
+
 ### Say clearly when you're offline, and keep progress safe ✅ 5.31 *(owner, 12 Oct 2026)*
 > "Should there be an offline mode? Right now when you're offline some things are saved and some aren't… maybe it should make clear you are offline and say go online, e.g. on the leaderboards"
 
