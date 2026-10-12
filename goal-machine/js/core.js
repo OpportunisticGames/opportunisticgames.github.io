@@ -913,37 +913,37 @@ GM.autocomplete = function (input, box, onPick, { exclude, plain, pool } = {}) {
 
 /* ------------------------------------------------------------------ scores + leaderboard */
 GM.MODES = {
-  ultimate: { name: 'Ultimate Wildcard', icon: '👑' },
-  ultimateast: { name: 'Ultimate Wildcard – Assists', icon: '👑' },
-  ultimateapps: { name: 'Ultimate Wildcard – Apps', icon: '👑' },
+  ultimate: { name: 'Ultimate', icon: '👑' },
+  ultimateast: { name: 'Ultimate – Assists', icon: '👑' },
+  ultimateapps: { name: 'Ultimate – Apps', icon: '👑' },
   target: { name: 'Target 500 – Goals', icon: '🎯' },
   targetast: { name: 'Target 325 – Assists', icon: '🎯' },
   targetapps: { name: 'Target 3,400 – Apps', icon: '🎯' },
   treble: { name: 'The Treble', icon: '🏆' },
   mystery: { name: 'Mystery Target', icon: '🎲' },
   daily: { name: 'Daily Ultimate', get icon() { return GM.calIcon(); } },
-  classicwild: { name: 'Classic Wildcard', icon: '⭐' },
+  classicwild: { name: 'Classic Wildcard (old)', icon: '⭐' },
   classicwildast: { name: 'Classic Wildcard – Assists', icon: '⭐' },
   classicwildapps: { name: 'Classic Wildcard – Apps', icon: '⭐' },
-  classic: { name: 'Classic', icon: '⭐' },
+  classic: { name: 'Classic (old)', icon: '⭐' },
   classicast: { name: 'Classic – Assists', icon: '⭐' },
   classicapps: { name: 'Classic – Apps', icon: '⭐' },
-  ultimatepure: { name: 'Ultimate', icon: '👑' },
-  ultimatepureast: { name: 'Ultimate – Assists', icon: '👑' },
-  ultimatepureapps: { name: 'Ultimate – Apps', icon: '👑' },
-  extreme: { name: 'Extreme Wildcard', icon: '⚡' },
-  extremeast: { name: 'Extreme Wildcard – Assists', icon: '⚡' },
-  extremeapps: { name: 'Extreme Wildcard – Apps', icon: '⚡' },
-  purist: { name: 'Extreme Purist', icon: '💎' },
-  puristast: { name: 'Extreme Purist – Assists', icon: '💎' },
-  puristapps: { name: 'Extreme Purist – Apps', icon: '💎' },
+  ultimatepure: { name: 'Ultimate · Pure', icon: '👑' },
+  ultimatepureast: { name: 'Ultimate · Pure – Assists', icon: '👑' },
+  ultimatepureapps: { name: 'Ultimate · Pure – Apps', icon: '👑' },
+  extreme: { name: 'Ultimate (Extreme)', icon: '⚡' },
+  extremeast: { name: 'Ultimate – Assists (Extreme)', icon: '⚡' },
+  extremeapps: { name: 'Ultimate – Apps (Extreme)', icon: '⚡' },
+  purist: { name: 'Ultimate · Pure (Extreme)', icon: '💎' },
+  puristast: { name: 'Ultimate · Pure – Assists (Extreme)', icon: '💎' },
+  puristapps: { name: 'Ultimate · Pure – Apps (Extreme)', icon: '💎' },
   hopper: { name: 'Club Hopper', icon: '🦘' },
   hilo: { name: 'Higher or Lower', icon: '↕️' },
   whoami: { name: 'Who Am I?', icon: '🕵️' },
   grid: { name: 'Club Grid', icon: '#️⃣' },
   tally: { name: 'Guess the Tally', icon: '🔢' },
   hattrick: { name: 'Hat-Trick', icon: '🃏' },
-  chaos: { name: 'Ultimate Wildcard CHAOS', icon: '🌪️' }, chaosast: { name: 'CHAOS – Assists', icon: '🌪️' }, chaosapps: { name: 'CHAOS – Apps', icon: '🌪️' },
+  chaos: { name: 'CHAOS', icon: '🌪️' }, chaosast: { name: 'CHAOS – Assists', icon: '🌪️' }, chaosapps: { name: 'CHAOS – Apps', icon: '🌪️' },
   match: { name: 'Matchday XI', icon: '🏟️' },
   nation: { name: 'International XI', icon: '🌍' },
   packedxi: { name: 'Packed XI', icon: '🃏' },
@@ -953,7 +953,7 @@ GM.MODES = {
   reign: { name: 'Reign Check', icon: '👑' },
   royale: { name: 'Goal Royale', icon: '⚔️' },
   szchaos: { name: 'Seasonal CHAOS', icon: '✨' }, szchaosast: { name: 'Seasonal CHAOS – Assists', icon: '✨' }, szchaosapps: { name: 'Seasonal CHAOS – Apps', icon: '✨' },
-  chaosx: { name: 'CHAOS Extreme', icon: '🌪️' }, chaosxast: { name: 'CHAOS Extreme – Assists', icon: '🌪️' }, chaosxapps: { name: 'CHAOS Extreme – Apps', icon: '🌪️' },
+  chaosx: { name: 'CHAOS (Extreme)', icon: '🌪️' }, chaosxast: { name: 'CHAOS – Assists (Extreme)', icon: '🌪️' }, chaosxapps: { name: 'CHAOS – Apps (Extreme)', icon: '🌪️' },
   moneyball: { name: 'Moneyball', icon: '💰' }, moneyballast: { name: 'Moneyball – Assists', icon: '💰' }, moneyballapps: { name: 'Moneyball – Apps', icon: '💰' },
   window: { name: 'Transfer Window', icon: '🔄' }, windowast: { name: 'Transfer Window – Assists', icon: '🔄' }, windowapps: { name: 'Transfer Window – Apps', icon: '🔄' },
 };
@@ -966,14 +966,22 @@ GM.HARD_MODES = ['ultimate', 'ultimateast', 'ultimateapps', 'chaos', 'chaosast',
   'money', 'boss', 'owner'];
 // Difficulty, one switch: Normal, Hard (names and positions only) or Extreme (see GM.EXTREME_GAMES; the Main event and CHAOS use every one
 // of the 5,000+ PL players instead of the 50+ app ones). Before 5.5 Hard was on its own and Extreme was a pool switch.
-GM.LEVELS = { normal: ['🙂', 'Normal', '50+ apps · clues shown'], hard: ['🥵', 'Hard', 'names & positions only'], extreme: ['⚡', 'Extreme', 'every player, names & positions only'] };
+// 5.34: 🙂 Easy (big names turn up more, about ×4; the draft games only, with their own boards "<key>e"; it replaced
+// the old Classic pool, whose boards are kept but no longer shown) before Normal.
+GM.LEVELS = { easy: ['🙂', 'Easy', 'big names more often · clues shown'], normal: ['⚽', 'Normal', '50+ apps, all equal · clues shown'], hard: ['🥵', 'Hard', 'names & positions only'], extreme: ['⚡', 'Extreme', 'every player, names & positions only'] };
+GM.EASY_MODES = ['ultimate', 'ultimateast', 'ultimateapps', 'ultimatepure', 'ultimatepureast', 'ultimatepureapps', 'chaos', 'chaosast', 'chaosapps',
+  'szchaos', 'szchaosast', 'szchaosapps', 'target', 'targetast', 'targetapps', 'treble', 'mystery'];
+GM.seedEasy = seed => /^e~/.test(String(seed || ''));  // an Easy game's seed says so, so a challenge or a race deals the same reels
+// the board for a game at the level you're on (Easy and Hard boards end in e / h; Extreme has its own keys)
+GM.levelKey = (k, lv = GM.level()) => (lv === 'hard' && GM.HARD_MODES.includes(k) ? k + 'h' : lv === 'easy' && GM.EASY_MODES.includes(k) ? k + 'e' : lv === 'extreme' && GM.extremeKey(k) || k);
 GM.level = () => {
   const l = GM.store.get('level', null);
-  return GM.LEVELS[l] ? l : GM.store.get('hard', false) ? 'hard' : GM.store.get('ultPool', '') === 'extreme' ? 'extreme' : 'normal';
+  return GM.LEVELS[l] ? l : GM.store.get('hard', false) ? 'hard' : GM.store.get('ultPool', '') === 'extreme' ? 'extreme' : GM.store.get('ultPool', '') === 'classic' ? 'easy' : 'normal';
 };
 GM.setLevel = l => GM.store.set('level', GM.LEVELS[l] ? l : 'normal');
 GM.isHard = () => GM.level() === 'hard';
 GM.isExtreme = () => GM.level() === 'extreme';
+GM.isEasy = () => GM.level() === 'easy';
 GM.setHard = v => GM.setLevel(v ? 'hard' : 'normal');
 
 // Look: 'light' (default), 'dark', 'auto' to follow the phone, or 'club' (dark, in your favourite club's colours).
@@ -1066,6 +1074,9 @@ GM.onAppEvent('update', v => {
 GM.onAppEvent('pgsPlayer', id => { if (id) GM.store.set('pgsPlayer', id); });
 Object.keys(GM.MODES).filter(k => GM.HARD_MODES.includes(k)).forEach(k => {
   GM.MODES[k + 'h'] = { name: GM.MODES[k].name + ' (Hard)', icon: GM.MODES[k].icon };
+});
+Object.keys(GM.MODES).filter(k => GM.EASY_MODES.includes(k)).forEach(k => {
+  GM.MODES[k + 'e'] = { name: GM.MODES[k].name + ' (Easy)', icon: GM.MODES[k].icon };
 });
 // Extreme in the other games. Where the game shows you players (the Target games, Higher or Lower, Guess the Tally, the
 // money games) it deals from every PL player. Where you type names (Who Am I?, the Club Grid, Club Hopper) every PL

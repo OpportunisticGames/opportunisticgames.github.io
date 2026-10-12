@@ -9,6 +9,14 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 93, label: '5.34', date: '2026-10-13', title: '🙂 An Easy level, and clearer names',
+      items: [
+        '🙂 New Easy level (next to Normal, Hard and Extreme): the big names turn up more often, about four times as often as an average player, with all the clues on the reels. Every draft game has it, with its own leaderboards (Easy ones don’t count for Best Players or badges)',
+        '👑 The main event is simply Ultimate now: wildcards on, or ✨ Pure (no wildcards). The level says who turns up. Classic, which favoured the big names, has become the Easy level',
+        '🏷️ Clearer names everywhere: Ultimate, Ultimate · Pure, CHAOS, with (Easy), (Hard) or (Extreme) after them',
+      ],
+    },
+    {
       v: 92, label: '5.33', date: '2026-10-13', title: '🏆 New leaderboards, player profiles and invites',
       items: [
         '🏆 The leaderboards have a new look: a podium for the top three, everyone’s picture (your friends’ photos), ▲▼ for who’s moved since you last looked, and your own place pinned at the bottom with how far it is to the next one',

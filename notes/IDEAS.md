@@ -23,7 +23,17 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
-### Clearer names for the main draft modes 💬 *(owner, 13 Oct 2026)*
+### Duplicates in packs, and a duplicate pile 💬 *(owner, 13 Oct 2026)*
+> "would it slow down pack progression so it's not too quick if we enabled duplicates? i was thinking maybe you could up it
+> to 10 for legends or something but now i'm thinking maybe we just enable duplicates? could potentially give a reward for
+> duplicates, maybe they go in like a duplicate pile and you get 1 point for bronze, two for silver, three for gold and 5
+> for legendary and then once you got like 50 points you got a pack or something like that?"
+
+Notes: today packs try hard (40 goes) to avoid cards you've finished, so duplicates ("spare") are rare. Dealing honestly
+at random lets them happen more as your album fills: progress slows by itself, most at the end. The pile turns them back
+into something: 1/2/3/5 points by tier, a pack at 50. Ideas and questions in the chat.
+
+### Clearer names for the main draft modes ✅ 5.34 *(owner, 13 Oct 2026)*
 > "Can you also go over all the names of the main draft game modes - just looking at the leaderboard i see why it would
 > be easy for someone to be confused - do all the names actually make sense or could some be better"
 
@@ -38,7 +48,10 @@ and badges stay as they are).
   main event (Ultimate, wildcards on or "Pure"); levels: 🙂 Easy (new: big names about ×4, clues shown), ⚽ Normal (all
   50+ equal, clues), 🥵 Hard (equal, no clues), ☠️ Extreme (everyone ever, no clues). Easy across every draft mode.
   Questions: fresh Easy boards (old Classic ones hidden)? Easy counts for Best Players at half points? New players start
-  on Easy for 3 games? Waiting for go.
+  on Easy for 3 games? **Owner (go):** "1. yes 2. no easy shouldn't count, or count all positions: you decide 3. new
+  players shouldn't have to start on easy. let's do it!" We decided: Easy doesn't count for Best Players (or the Ultimate/
+  CHAOS badges); fresh Easy boards (keys end in e; old Classic boards hidden); new players start on Normal. Easy travels
+  in the seed ("e~") so challenges and races match.
 
 ### 5.33: the owner's go on six ideas ✅ 5.33 *(owner, 13 Oct 2026)*
 > "19. oo maybe stuff like streak freeze is a good idea for a reward you can get that is like renewable instead of all the

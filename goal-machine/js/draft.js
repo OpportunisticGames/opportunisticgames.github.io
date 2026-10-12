@@ -995,16 +995,16 @@
   GM.SZ_CHAOS = SZ_CHAOS;
   GM.szInSeason = k => inSz(k);  // (tests)
 
-  GM.draft = { game: st => chGame(st || S), modeName: () => modeName(), METER, MANAGERS: () => MANAGERS, events: () => Object.keys(EVENTS).concat(Object.keys(XEV), Object.keys(MOMENTS)).filter(k => inSz(k)) /* (only this season's seasonal ones) */, start, RULES, WILDCARDS, TARGETS, state: () => S, total: st => scoreFor(st).t, score: st => scoreFor(st), render: () => render(), modeKey: (m, s, h, c, x) => keyFor(m, s, h, c, x) };
+  GM.draft = { game: st => chGame(st || S), modeName: () => modeName(), METER, MANAGERS: () => MANAGERS, events: () => Object.keys(EVENTS).concat(Object.keys(XEV), Object.keys(MOMENTS)).filter(k => inSz(k)) /* (only this season's seasonal ones) */, start, RULES, WILDCARDS, TARGETS, state: () => S, total: st => scoreFor(st).t, score: st => scoreFor(st), render: () => render(), modeKey: (m, s, h, c, x, e) => keyFor(m, s, h, c, x, e) };
 
   const statSuffix = s => ({ goals: '', assists: 'ast', apps: 'apps' }[s] || '');
-  function keyFor(mode, stat, hard, club, extreme) {
+  function keyFor(mode, stat, hard, club, extreme, easy) {
     if (mode === 'daily') return 'daily:' + GM.today();
     if (mode === 'club') return 'club' + GM.slug(club || '') + statSuffix(stat);
     if (mode === 'match') return 'match:' + club;  // club is the fixture id here
     if (mode === 'nation') return 'nation' + GM.slug(club || '') + statSuffix(stat);  // and the country here
     const k = mode === 'treble' || mode === 'mystery' ? mode : mode + statSuffix(stat);
-    return extreme && RULES_X[mode] ? GM.extremeKey(k) : k + (hard ? 'h' : '');
+    return extreme && RULES_X[mode] ? GM.extremeKey(k) : k + (hard ? 'h' : easy && GM.EASY_MODES.includes(k) ? 'e' : '');
   }
 
   document.addEventListener('gm:board', e => {
@@ -1044,7 +1044,9 @@
     }
     // Daily CHAOS: the same chaos for everyone today, goals, one go
     const dailyChaos = mode === 'chaos' && !!opts.daily && !opts.seed;
-    const seed = mode === 'daily' ? 'daily:' + GM.today() : dailyChaos ? 'dchaos:' + GM.today() : fx ? 'match:' + fx.id : (opts.seed || GM.newSeed());
+    // 🙂 Easy: the draft games only, never with Hard or Extreme; it travels in the seed ("e~…") so a friend gets the same reels
+    const easy = !!(GM.EASY_MODES && GM.EASY_MODES.includes(mode) && mode !== 'daily' && !dailyChaos && !fx && !opts.hard && !(opts.extreme && RULES_X[mode]) && (opts.seed ? GM.seedEasy(opts.seed) : opts.easy));
+    const seed = mode === 'daily' ? 'daily:' + GM.today() : dailyChaos ? 'dchaos:' + GM.today() : fx ? 'match:' + fx.id : (opts.seed || (easy ? 'e~' : '') + GM.newSeed());
     let stat = mode === 'daily' || dailyChaos || fx ? 'goals' : (GM.STATS[opts.stat] ? opts.stat : 'goals');
     let target = RULES[mode] && !RULES[mode].max ? TARGETS[stat] : null;
     if (mode === 'treble') { stat = 'goals'; target = null; }
@@ -1075,7 +1077,7 @@
     }
     // any other draft left half-way: the Daily CHAOS carries straight on, the rest ask
     if (!opts.online && mode !== 'daily') {
-      const key = 'draftp:' + (dailyChaos ? 'dchaos:' + GM.today() : keyFor(mode, stat, !!opts.hard && !extreme, mode === 'club' ? (opts.club || GM.favClub()) : fx ? fx.id : nat, extreme));
+      const key = 'draftp:' + (dailyChaos ? 'dchaos:' + GM.today() : keyFor(mode, stat, !!opts.hard && !extreme, mode === 'club' ? (opts.club || GM.favClub()) : fx ? fx.id : nat, extreme, easy));
       const saved = GM.store.get(key);
       if (saved && saved.xi && saved.phase !== 'done' && (!opts.seed || saved.seed === opts.seed) && saved.xi.some(x => x.p != null)) {
         const resume = () => {
@@ -1119,7 +1121,7 @@
       reels: [], selected: -1, revealed: false, revealNext: false, special: null,
       inv: [], modifier: null, subbing: false, used: [], last: null,
       phase: 'spin', vs: opts.vs, vss: opts.vss, log: [], pending: null, wildUsed: 0, coinWin: false, bonus: [], hot: 0, event: null, meter: 0, unleash: 0, golden: false, masked: false, chaosCount: 0, manager: null, moments: [], chaosDue: false, momentSpin: -1, forceSpecial: null,
-      hard: mode !== 'daily' && !dailyChaos && !fx && !extreme && !!opts.hard, club, club2: fx ? fx.away : null, fx: fx ? fx.id : null, nat, dailyChaos, day: GM.today(),
+      hard: mode !== 'daily' && !dailyChaos && !fx && !extreme && !!opts.hard, easy, club, club2: fx ? fx.away : null, fx: fx ? fx.id : null, nat, dailyChaos, day: GM.today(),
       online: opts.online ? { ...opts.online, ms: 0, lastT: Date.now() } : null,  // Live Race: { code, seat, opp } + time taken
       ch: opts.ch && GM.challenge ? GM.challenge.ctx(opts.ch) : null,  // a friend's challenge you're taking on (see challenge.js)
       rematch: opts.rematch || null,  // a rematch you're playing first, to send back
@@ -1152,7 +1154,7 @@
     const bon = (st.bonus || []).slice().sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 3);
     return { raw: Math.round(raw), on: Math.round(sc.t - raw), team: sc.grp.team, ev: sc.grp.ev, mgr: sc.grp.mgr, hits: hits.slice(0, 3), bon };
   }
-  const modeKey = () => (S.dailyChaos ? 'dchaos:' + S.day : keyFor(S.mode, S.stat, S.hard, S.fx || S.nat || S.club, S.extreme));
+  const modeKey = () => (S.dailyChaos ? 'dchaos:' + S.day : keyFor(S.mode, S.stat, S.hard, S.fx || S.nat || S.club, S.extreme, S.easy));
   // where a half-finished draft is kept (the Daily Ultimate has its own; online races save with the race)
   const saveKey = () => (S.mode === 'daily' ? progressKey() : S.online ? null : 'draftp:' + modeKey());
   const progressKey = () => 'dailyp:' + GM.today();
@@ -1161,7 +1163,8 @@
   // same targets - big numbers are rarer, so one wrong pick can put the target out of reach.
   // Hard and Extreme hide the clues on the reels: names and positions only (Extreme is every PL player on top)
   const blind = () => !!(S.hard || S.extreme || ['extreme', 'purist', 'chaosx'].includes(S.mode));
-  const reelWeight = () => (S.hard && (!S.rules.max || S.rules.fame) ? p => Math.sqrt(S.rules.weight(p)) : S.rules.weight);
+  const reelWeight = () => (S.easy ? (S.rules.max && !S.rules.fame ? p => Math.sqrt(p.fame) : p => Math.pow(S.rules.weight(p), 1.2))
+    : S.hard && (!S.rules.max || S.rules.fame) ? p => Math.sqrt(S.rules.weight(p)) : S.rules.weight);
   // what wildcard descriptions talk about: in the Treble a wildcard affects all three numbers
   const wst = () => S.rules.treble ? { ...S.st, label: 'numbers', bigLabel: 'goals' } : S.st;
   const modeName = () => S.rules && S.rules.sz && SZ_CHAOS[S.sz] ? SZ_CHAOS[S.sz].name.replace(/^\S+ /, '') : S.dailyChaos ? 'Daily CHAOS' : S.fx ? `Matchday XI · ${GM.clubShort(S.club)} v ${GM.clubShort(S.club2)}` : S.online && S.mode === 'target' ? `Target Race · ${fmt(S.target)}` : S.mode === 'club' || S.nat || S.extreme ? GM.MODES[modeKey()].name : GM.MODES[S.mode === 'daily' ? 'daily' : (S.rules.treble || S.rules.mystery) ? S.mode : S.mode + statSuffix(S.stat)].name;
@@ -1284,7 +1287,7 @@
       const themed = field.filter(p => wc.filter(p, wst()));
       if (themed.some(ok)) { field = themed; fkey += '|' + special + (special === 'magnet' ? ':' + S.last : special === 'passport' ? ':' + S.passNat : ''); }
     }
-    const draw = sampler(`${fkey}|${S.mode}|${S.hard ? 'h' : ''}`, field, reelWeight());
+    const draw = sampler(`${fkey}|${S.mode}|${S.hard ? 'h' : S.easy ? 'e' : ''}`, field, reelWeight());
     // wildcard: reel 1 on 28% of spins, else reel 2 on 28% of the rest (so about half the spins have one), decided by the spin number only
     let wildAt = -1, wild = null;
     if (!special && S.spin >= 1 && S.rules.wild !== false) {
@@ -2456,7 +2459,7 @@
     if (GM.collectDraft && !S.readonly) {
       const rating = GM.teamRating(xiSlots);
       S.collected = GM.collectDraft({
-        mode: S.mode, stat: S.stat, total: sc.t, points: sc.total, hard: S.hard, xi: xiSlots.map(s => s.player),
+        mode: S.mode, stat: S.stat, total: sc.t, points: sc.total, hard: S.hard, easy: !!S.easy, xi: xiSlots.map(s => s.player),
         rating: rating.score, pairs: rating.pairs.length, wildUsed: S.wildUsed, coinWin: S.coinWin,
         bull: sc.diff === 0, closeness: sc.closeness != null ? sc.closeness : null, treble: !!(sc.hits && sc.hits.length === 3),
         slots: xiSlots.map(x => ({ name: x.player.name, g: x.g })), manager: S.manager || null, extreme: !!S.extreme || ['extreme', 'purist', 'chaosx'].includes(S.mode),  // (the main event and CHAOS on Extreme are modes of their own)
@@ -2724,7 +2727,7 @@
     const bus = S.bus ? await img(SPRITE.bus) : null, w = wx();
     const ring = { up: '#3987e5', down: '#e66767' };
     return GM.teamPicture(S.xi.map((s, i) => ({ pos: s.pos, p: s.p != null ? PL()[s.p] : null, v: s.p != null ? s.g : null, ring: ring[toneOf(i)] })), {
-      title: `CHAOS${S.hard ? ' · Hard' : ''}`, sub: [S.manager && MANAGERS[S.manager] ? `${MANAGERS[S.manager].name}` : '', w.name ? `${w.name}` : '', `${fmt(sc.bonus)} bonus`].filter(Boolean).join(' · '),
+      title: `CHAOS${S.hard ? ' · Hard' : S.easy ? ' · Easy' : ''}`, sub: [S.manager && MANAGERS[S.manager] ? `${MANAGERS[S.manager].name}` : '', w.name ? `${w.name}` : '', `${fmt(sc.bonus)} bonus`].filter(Boolean).join(' · '),
       total: sc.total, totalLabel: 'CHAOS pts',
       draw(c, px, py, pw, ph) {
         if (S.weather === 'snow') { c.fillStyle = 'rgba(255,255,255,.28)'; c.fillRect(px, py, pw, ph); }
@@ -2889,7 +2892,7 @@
     const nReels = Math.max(3, S.reels.length);
     const sp = S.special && WILDCARDS[S.special];
     root.innerHTML = `
-      <div class="topbar"><a href="#/" class="back">‹</a><h2><span class="t-name">${icon} ${modeName().replace(/^Ultimate Wildcard CHAOS/, 'CHAOS').replace(/^Matchday XI · /, '')}</span>${S.hard ? '<small class="hard-pill">Hard</small>' : ''}${S.ch ? '<small class="hard-pill ch-pill">⚔️ Challenge</small>' : ''}</h2><span class="top-btns">${S.online ? '' : GM.lbButton(modeKey())}<button class="icon-btn" id="help">?</button></span></div>
+      <div class="topbar"><a href="#/" class="back">‹</a><h2><span class="t-name">${icon} ${modeName().replace(/^Ultimate Wildcard CHAOS/, 'CHAOS').replace(/^Matchday XI · /, '')}</span>${S.hard ? '<small class="hard-pill">Hard</small>' : S.easy ? '<small class="hard-pill easy-pill">Easy</small>' : ''}${S.ch ? '<small class="hard-pill ch-pill">⚔️ Challenge</small>' : ''}</h2><span class="top-btns">${S.online ? '' : GM.lbButton(modeKey())}<button class="icon-btn" id="help">?</button></span></div>
       ${S.ch && GM.challenge ? GM.challenge.ghostHtml(S) : S.vs ? `<div class="banner">⚔️ Beat <b>${GM.esc(S.vs)}</b>’s score of <b>${GM.esc(S.vss)}</b></div>` : ''}
       ${S.online ? `<div class="opp-bar" id="oppbar">${(GM.online && GM.online.oppBar && GM.online.oppBar(S.online.code)) || `🌐 Racing <b>${GM.esc(S.online.opp)}</b>…`}</div>` : ''}
       ${counterHtml()}
@@ -2923,6 +2926,7 @@
   function poolText() {
     const r = S.rules, w = r.wild !== false ? ' and use your wildcards well' : '';
     if (S.fx || r.club || r.nation) return `Every player ${S.fx ? 'either club has had' : S.nat ? 'from that country' : 'the club has had'} in the Premier League is equally likely to turn up: spot the big numbers${w}.`;
+    if (S.easy && !r.all) return `Every player with 50+ apps can turn up, and on Easy the big names more often: a star about 4 times as often as an average player. Spot the big numbers${w}.`;
     if (r.fame) return `Every player with 50+ apps can turn up, and the better known they are, the more often${S.hard ? ' (on Hard, much less so: a star turns up about 4 times as often as an average player, not 16)' : ': a star turns up about 16 times as often as an average player'}.`;
     if (r.all) return `Every one of the 5,000+ PL players is equally likely to turn up, so most are strangers: spot the big numbers${w}.`;
     return `Every player with 50+ apps is equally likely to turn up, so you’ll mostly see journeymen: spot the big numbers${w}.`;
@@ -2932,7 +2936,7 @@
     GM.modal(`<h3>How to play</h3>
       ${r.treble ? `<p>🏆 <b>The Treble:</b> one XI, three targets – <b>${fmt(TREBLE.goals)} goals</b>, <b>${fmt(TREBLE.assists)} assists</b> and <b>${fmt(TREBLE.apps)} appearances</b>. Strikers bring goals, creators bring assists, old warhorses bring apps: balance them.</p>`
       : r.mystery ? `<p>🎲 <b>Mystery Target:</b> you’re counting <b>${S.st.label}</b>, but the target is secret – somewhere between ${fmt(MYSTERY[S.stat][0])} and ${fmt(MYSTERY[S.stat][1])}. The thermometer tells you how close you are. It’s revealed at full time.</p>`
-      : r.chaos ? `<p>🌪️ <b>Ultimate Wildcard CHAOS:</b> build the XI with the most PL ${L}, and then some. Your score is your ${L} <b>plus bonus points</b> for the kind of team you build: teammates who played together (chemistry), your squad rating, PL title medals, Hall of Famers, one-club men, journeymen (5+ clubs) and ten-season veterans.</p>
+      : r.chaos ? `<p>🌪️ <b>CHAOS:</b> build the XI with the most PL ${L}, and then some. Your score is your ${L} <b>plus bonus points</b> for the kind of team you build: teammates who played together (chemistry), your squad rating, PL title medals, Hall of Famers, one-club men, journeymen (5+ clubs) and ten-season veterans.</p>
         <p>👔 <b>Your manager</b> brings a perk and a catch (👍 and 👎 on the reels show who he’d like). He can get the sack.</p>
         ${S.stat !== 'apps' ? `<p>🧤 <b>Keepers count too:</b> ${S.stat === 'goals' ? 'a goal for every three' : 'an assist for about every four'} Premier League clean sheets.</p>` : ''}
         <p>⚡ <b>The CHAOS meter</b> fills every time you take or play a wildcard. When it’s full, the next spin opens with a big moment: a 🌪️ tornado through your XI, a ⚡ lightning strike, a 🚌 bus parade, ⏰ deadline day, 💥 CHAOS unleashed or a sacking.</p>
@@ -2949,6 +2953,7 @@
         : r.chaos ? `your XI’s PL ${L} plus every bonus, shown at full time.` : r.max ? `your score is your XI’s total PL ${L} (after any wildcard modifiers).` : `1000 minus 5 for every ${S.stat === 'goals' ? 'goal' : `${fmt(Math.round(S.target / 442 * 10) / 10)} ${L}`} off target. Exactly ${fmt(S.target)} = +500 bullseye bonus.`}</p>
       <p>🤝 A player who shares a club with your last signing may turn up to tempt you.</p>
       ${!S.hard && blind() ? '<p>⚡ <b>Extreme:</b> every one of the 5,000+ PL players, and just names and positions on the reels – no clubs, years, apps or nationality. Separate leaderboard.</p>' : ''}
+      ${S.easy ? '<p>🙂 <b>Easy:</b> big names turn up more often (a star about 4 times as often as an average player), and all the clues are on the reels. Separate leaderboard.</p>' : ''}
       ${S.hard ? `<p>🥵 <b>Hard mode:</b> just names and positions – no clubs, years, apps or nationality${r.fame || !r.max ? `, and far fewer star players on the reels${r.max ? '' : ' (same targets)'}` : ''}. Separate leaderboard.</p>` : ''}
       <div class="row"><button class="btn" data-close>Got it</button></div>`);
   }
@@ -2994,27 +2999,27 @@
     const chEl = GM.$('#ch-h2h', root);
     if (chEl && GM.challenge) { if (S.rematch) GM.challenge.sendRematch(S, sc, chEl); else if (S.ch) GM.challenge.fill(chEl, S.ch.code, S.ch.play); }
     const am = GM.$('#all-mgrs', root); if (am) am.onclick = managersModal;
-    const again = GM.$('#again', root); if (again) again.onclick = () => start(root, S.mode, { hard: S.hard, extreme: S.extreme, stat: S.rules.mystery ? undefined : S.stat, club: S.club, nat: S.nat });
+    const again = GM.$('#again', root); if (again) again.onclick = () => start(root, S.mode, { hard: S.hard, easy: S.easy, extreme: S.extreme, stat: S.rules.mystery ? undefined : S.stat, club: S.club, nat: S.nat });
     GM.$('#share', root).onclick = () => GM.share(resultText(sc));
     GM.$('#sharepic', root).onclick = async () => {
       // the pitch just as it is on screen; the drawn picture if that can't be done
       const btn = GM.$('#sharepic', root); if (btn) btn.disabled = true;
       const shot = GM.screenPicture && await GM.screenPicture(GM.$('.pitch', root), {
-        title: `${modeName()}${S.hard ? ' · Hard' : ''}`, sub: S.rules.chaos ? [S.manager && MANAGERS[S.manager] ? MANAGERS[S.manager].name : '', `${fmt(sc.bonus || 0)} bonus`].filter(Boolean).join(' · ') : S.rules.max ? `My XI's Premier League ${S.st.label}` : `${sc.total} points · ${fmt(sc.t)} / ${fmt(S.target || 0)} ${S.st.label}`,
+        title: `${modeName()}${S.hard ? ' · Hard' : S.easy ? ' · Easy' : ''}`, sub: S.rules.chaos ? [S.manager && MANAGERS[S.manager] ? MANAGERS[S.manager].name : '', `${fmt(sc.bonus || 0)} bonus`].filter(Boolean).join(' · ') : S.rules.max ? `My XI's Premier League ${S.st.label}` : `${sc.total} points · ${fmt(sc.t)} / ${fmt(S.target || 0)} ${S.st.label}`,
         total: S.rules.chaos ? sc.total : sc.t, totalLabel: S.rules.chaos ? 'pts' : S.st.label });
       if (btn) btn.disabled = false;
       if (shot) { GM.shareImage(shot, resultText(sc)); return; }
       if (S.rules.chaos) { GM.shareImage(await chaosPicture(sc), resultText(sc)); return; }
       const png = GM.teamPicture(S.xi.map(s => ({ pos: s.pos, p: s.p != null ? PL()[s.p] : null, v: s.p != null ? s.g : null })), {
-        title: `${modeName()}${S.hard ? ' · Hard' : ''}`, sub: S.rules.max ? `My XI's Premier League ${S.st.label}` : `${sc.total} points · ${fmt(sc.t)} / ${fmt(S.target || 0)} ${S.st.label}`,
+        title: `${modeName()}${S.hard ? ' · Hard' : S.easy ? ' · Easy' : ''}`, sub: S.rules.max ? `My XI's Premier League ${S.st.label}` : `${sc.total} points · ${fmt(sc.t)} / ${fmt(S.target || 0)} ${S.st.label}`,
         total: sc.t, totalLabel: S.st.label });
       GM.shareImage(png, resultText(sc));
     };
     if (GM.$('#challenge', root)) GM.$('#challenge', root).onclick = async () => {
       // a proper challenge (their XI, their line, the head-to-head, the tally); the plain link if the server can't be reached
       const btn = GM.$('#challenge', root); btn.disabled = true;
-      const txt = S.rules.max ? `⚽ Goal Machine – my ${modeName()}${S.hard ? ' (Hard)' : ''} XI has ${fmt(S.rules.chaos ? sc.total : sc.t)} ${S.rules.chaos ? 'pts' : 'PL ' + S.st.label}. Same spins, can you beat it?`
-        : `⚽ Goal Machine – I scored ${sc.total} in ${modeName()}${S.hard ? ' (Hard)' : ''}. Same spins, can you beat me?`;
+      const txt = S.rules.max ? `⚽ Goal Machine – my ${modeName()}${S.hard ? ' (Hard)' : S.easy ? ' (Easy)' : ''} XI has ${fmt(S.rules.chaos ? sc.total : sc.t)} ${S.rules.chaos ? 'pts' : 'PL ' + S.st.label}. Same spins, can you beat it?`
+        : `⚽ Goal Machine – I scored ${sc.total} in ${modeName()}${S.hard ? ' (Hard)' : S.easy ? ' (Easy)' : ''}. Same spins, can you beat me?`;
       const sent = GM.challenge && await GM.challenge.send(S, sc, txt);  // friends in the app and/or a link
       btn.disabled = false;
       if (sent) return;
@@ -3022,15 +3027,15 @@
       const m = S.mode === 'daily' ? 'ultimate' : S.mode;
       const url = `${GM.baseUrl()}#/draft?m=${m}&s=${S.stat}${S.club ? '&c=' + encodeURIComponent(S.club) : ''}${S.nat ? '&n=' + encodeURIComponent(S.nat) : ''}${S.extreme ? '&x=1' : ''}&seed=${encodeURIComponent(S.seed)}${S.hard ? '&h=1' : ''}&vs=${encodeURIComponent(name)}&vss=${sc.total}`;
       GM.share(S.rules.max
-        ? `⚽ Goal Machine – my ${modeName()}${S.hard ? ' (Hard)' : ''} XI has ${fmt(sc.t)} PL ${S.st.label}. Same spins, can you beat it?`
-        : S.rules.treble || S.rules.mystery ? `⚽ Goal Machine – I scored ${sc.total} in ${modeName()}${S.hard ? ' (Hard)' : ''}. Same spins, can you beat me?`
-        : `⚽ Goal Machine – I scored ${sc.total} in ${modeName()}${S.hard ? ' (Hard)' : ''} (${fmt(sc.t)}/${fmt(S.target)}). Same spins, can you beat me?`, url);
+        ? `⚽ Goal Machine – my ${modeName()}${S.hard ? ' (Hard)' : S.easy ? ' (Easy)' : ''} XI has ${fmt(sc.t)} PL ${S.st.label}. Same spins, can you beat it?`
+        : S.rules.treble || S.rules.mystery ? `⚽ Goal Machine – I scored ${sc.total} in ${modeName()}${S.hard ? ' (Hard)' : S.easy ? ' (Easy)' : ''}. Same spins, can you beat me?`
+        : `⚽ Goal Machine – I scored ${sc.total} in ${modeName()}${S.hard ? ' (Hard)' : S.easy ? ' (Easy)' : ''} (${fmt(sc.t)}/${fmt(S.target)}). Same spins, can you beat me?`, url);
     };
   }
 
   function resultText(sc) {
     const icons = S.log.map(l => ({ G: '🧤', D: '🛡️', M: '⚙️', F: '⚽' }[GM.GROUP[l]] || l)).join('');
-    const head = S.mode === 'daily' ? `Daily Ultimate · ${GM.today()}` : modeName() + (S.hard ? ' (Hard)' : '');
+    const head = S.mode === 'daily' ? `Daily Ultimate · ${GM.today()}` : modeName() + (S.hard ? ' (Hard)' : S.easy ? ' (Easy)' : '');
     const rating = GM.teamRating ? GM.teamRating(S.xi.filter(s => s.p != null).map(s => ({ ...s, player: byId(s.p) }))) : null;
     const tier = rating ? `\n${rating.tier.icon} ${rating.tier.name}` : '';
     if (S.rules.chaos) return `⚽ Goal Machine – ${head}\n🌪️ ${fmt(sc.total)} CHAOS points (${fmt(sc.t)} ${S.st.label} + ${fmt(sc.bonus)} bonus)${tier}\n${icons}`;

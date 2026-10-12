@@ -315,6 +315,7 @@ footer { margin-top: 24px; }
 .club-set { display: grid; grid-template-columns: 44px 1fr auto; gap: 4px 8px; align-items: center; background: var(--panel); border-radius: 10px; padding: 6px 10px; font-size: .85rem; }
 .club-set .bar { grid-column: 1 / -1; margin: 0; }
 .hard-toggle.three { grid-template-columns: repeat(3, 1fr); }
+.hard-toggle.four { grid-template-columns: repeat(4, 1fr); }
 .clubs-block { margin-top: 10px; }
 .clubs-block .sets { margin-top: 8px; }
 
@@ -1074,10 +1075,11 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
 /* the three stats always look the same: icon on top, name underneath, all three on one row */
 .hard-toggle .sb-ico, .stat-seg .sb-ico { font-style: normal; font-size: 1.1rem; line-height: 1.2; display: block; }
 .stat-seg button { display: flex; flex-direction: column; align-items: center; }
-.hard-toggle.three > *, .stat-seg button, .stat-pick .stat-btn, .stat-row .stat-btn { white-space: nowrap; min-width: 0; }
+.hard-toggle.three > *, .hard-toggle.four > *, .stat-seg button, .stat-pick .stat-btn, .stat-row .stat-btn { white-space: nowrap; min-width: 0; }
 .stat-pick .stat-btn { flex: 1 1 0; font-size: clamp(.72rem, 3.2vw, .88rem); padding-left: 3px; padding-right: 3px; }
 .stat-row .stat-btn { flex: 1 1 0; font-size: clamp(.72rem, 3.2vw, .88rem); }
 .hard-toggle.three > *, .stat-seg button { font-size: clamp(.72rem, 3.2vw, .85rem); }
+.hard-toggle.four > * { font-size: clamp(.68rem, 3vw, .82rem); padding-left: 2px; padding-right: 2px; }
 /* wildcards you hold share the bar equally, so the third is never pushed off the edge */
 .page-draft .inv.has { gap: 5px; }
 .page-draft .inv.has .inv-label { margin-right: 0; }
@@ -1539,7 +1541,9 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
 .stage .reel.fit2 .mate.both { display: block; }
 
 /* Difficulty: Normal / Hard / Extreme on one switch */
-.hard-toggle.three > * small { white-space: normal; line-height: 1.2; }
+.hard-toggle.three > * small, .hard-toggle.four > * small { white-space: normal; line-height: 1.2; }
+.hard-toggle.four > * small { font-size: .58rem; }
+.easy-pill { background: #16a34a !important; color: #fff !important; }
 .cx-note { display: inline-block; margin: 2px 0 8px; padding: 4px 10px; border-radius: 999px; background: rgba(0, 0, 0, .25); font-size: .78rem; font-weight: 700; }
 
 /* International break: flag bunting across the top, a banner and the International XI page */

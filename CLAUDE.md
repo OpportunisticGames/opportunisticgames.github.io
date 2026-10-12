@@ -94,6 +94,10 @@ game mode for players; this file is about how to work on it.
   add the credit, delete `cand/`.
 - Manager portraits: `fx/mgr/<key>.jpg` (free-licence Wikipedia photos, 320px) with face positions in `fx/mgr/credits.json`, fetched by
   `managers.yml` / `tools/fetch_managers.py` (add the article to `ARTICLES` for a new manager); shown by `GM.CFX.faceImg`.
+- **Levels (5.34):** `GM.LEVELS` easy/normal/hard/extreme. Easy (draft games in `GM.EASY_MODES` only): reels weighted by
+  √fame (big names about ×4; Target games fame^1.2), clues shown, boards `<key>e`, not in Best Players (`gm_main_board`)
+  or the Ultimate/CHAOS badges; it travels in the seed (`e~…`, `GM.seedEasy`), so challenges/races/share links match.
+  `GM.levelKey(k)` = the board at your level. Classic (`classic`, `classicwild`) is retired from the menus (old links work).
 - 5.33 bits: `GM.lbList(rows, o)` (core.js) draws every board (podium, pictures via `GM.isFriend`, ▲▼ from `gm:lbSeen`);
   nation cards in packs.js (`GM.isNo1`, `GM.NATION_SETS`, `checkSets` pays a Nations pack, Packed XI `bonus`); CHAOS
   moment `visa` sets `S.passNat` + `S.forceSpecial = 'passport'` (a `deal: false` wildcard); Hat-Trick fusion
@@ -191,6 +195,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    may be mid-action without a short `{ timeout }`: Playwright waits 30 s for it to become tappable (that made the CHAOS tests
    take minutes). Or run one script on its own with `node <script>.js`. Each uses `mockserver.js`, which fakes the
    Supabase RPCs in memory (test accounts Alice/Bob/Cara), so nothing touches the real database.
+   - `new534.js` – 5.34: Easy deals more big names, its own board key, travels in the seed, the four-level switch, Classic gone from the menus.
    - `new533.js` – 5.33: profiles, invites, the podium, nation sets and No. 1s, Visa trouble!, the Hat-Trick fusion, Streak Freeze, Double XP and the bonus tiers.
    - `record5321.js` – where your score landed: record all time / this month, Top 3/10 by board size, just the place on a small board, an older best, a daily board, and the line on a real full-time screen.
    - `beaten532.js` – two phones: a beaten alert in the inbox (and off with the switch), the 🔔 count and drawer, Bob's crown, Best Players points.
