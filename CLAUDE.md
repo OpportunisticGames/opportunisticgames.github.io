@@ -14,6 +14,8 @@ game mode for players; this file is about how to work on it.
 - **Player feedback:** Settings → Report a bug or suggest something saves to the `feedback` table (kind, body, name,
   meta with version/build/phone/page, done). At the start of a session, read the rows where `done` is false, file
   them into the banks and set `done = true`.
+- **Read every message from the owner before building.** They often send a follow-up straight after (more detail, a change
+  of mind): re-read the latest messages before starting work and before calling something done, and fold them in first.
 - **Bug and idea banks:** `notes/BUGS.md` and `notes/IDEAS.md`. When the owner reports a bug, log it and fix it
   straight away, then move it to *Fixed* with the version. When they share an idea, log it (with their words and
   our notes and questions) and **discuss it, don't build it** until they say go. Read both at the start of a session.
