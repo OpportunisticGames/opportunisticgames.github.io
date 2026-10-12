@@ -23,6 +23,27 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### Say clearly when you're offline, and keep progress safe *(owner, 12 Oct 2026)*
+> "Should there be an offline mode? Right now when you're offline some things are saved and some aren't… maybe it should make clear you are offline and say go online, e.g. on the leaderboards"
+
+Notes: the game itself opens offline (5.30.3) and local progress (album, badges, stats) saves on the phone. What needs
+the server is leaderboards, online games, challenges, friends, packs' leaderboard submits and backups. Today each shows its
+own "couldn't reach…" toast, or just loads forever. Proposal: one `GM.online()` check (navigator.onLine plus the last RPC
+result), a slim "📶 Offline: your game is saved on this phone" strip, online-only pages and tabs showing a friendly "go
+online" card instead of spinners, and scores from an offline game queued and sent when the signal returns (check that
+`GM.lb.submit` retries). Questions: queue offline scores for the leaderboards (daily boards are date-bound), and should
+Online games be greyed out in the tab bar?
+
+### Backups: keep them fresh, and restore by itself on a new phone *(owner, 12 Oct 2026)*
+> "I had to manually press restore backup once I re-downloaded the app as it put me back on a backup from a couple of days ago. Should it not automatically put you at the latest backup?"
+
+Notes: the restore *did* load the newest backup the server had, but backups were old: `GM.backup.save(true)` runs only
+when a game finishes (core.js) and at most once every 6 hours, so packs opened, missions, Locker, settings and badges
+earned since then, or games inside the 6 hours, were never saved. Proposal: also back up when the app goes to the
+background (throttled to once an hour, and straight after a pack, level-up or Locker change), and when a name is
+signed in on a phone with an empty album, restore automatically (still confirming once with the backup's date). Never
+restore over a phone whose data is newer than the backup (compare `backupAt`).
+
 ### Seasons that change the games, not just the menus: a CHAOS for every season ✅ 5.28 *(owner, 11 Oct 2026)*
 > "I also think the banner looks quite cheap… I dont like the just emoji look and the repeated emoji look generally. It
 > makes it feel less like an actual functioning game. A cobweb in the corner, the spin having a particular theme, maybe a
