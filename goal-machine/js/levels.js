@@ -31,6 +31,7 @@
   GM.myLevel = () => GM.levelOf(xp());
   GM.addXP = function (n, why) {
     if (!n) return;
+    if (GM.boostLeft && GM.boostLeft() > 0) n *= 2;  // ⚡ Double XP (prizes.js)
     const before = GM.levelOf(xp()), after = GM.levelOf(xp() + n);
     GM.store.set('xp', xp() + n);
     if (GM.seasonXP) GM.seasonXP(n);  // the season track counts the same XP (rewards.js)

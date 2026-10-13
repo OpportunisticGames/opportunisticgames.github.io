@@ -15,9 +15,9 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   // leaderboards
   await pg.goto(U + '#/leaderboard'); await pg.waitForTimeout(700);
   const opts = await pg.$$eval('#lbh option', l => l.map(o => o.textContent));
-  ok(opts.length === 3 && /Extreme/.test(opts[2]) && await pg.$eval('#lbh', e => e.value) === 'extreme', 'the board’s difficulty is Normal / Hard / Extreme, and opens on yours (Extreme)');
+  ok(opts.length === 4 && /Extreme/.test(opts[3]) && await pg.$eval('#lbh', e => e.value) === 'extreme', 'the board’s difficulty is Easy / Normal / Hard / Extreme, and opens on yours (Extreme)');
   ok(!(await pg.$$eval('#lbv option', l => l.map(o => o.value))).some(v => ['extreme', 'purist'].includes(v)), 'Extreme isn’t hiding in the version list any more');
-  ok(await pg.evaluate(() => GM.lb.view('extreme')) && /Ultimate Wildcard/.test(await pg.$eval('#lbv', e => e.selectedOptions[0].textContent)), 'Main event on Extreme shows the Extreme Wildcard board');
+  ok(await pg.evaluate(() => GM.lb.view('extreme')) && /^Ultimate$/.test(await pg.$eval('#lbv', e => e.selectedOptions[0].textContent)), 'Main event on Extreme shows the Ultimate (Extreme) board');
   await pg.selectOption('#lbh', 'hard'); await pg.waitForTimeout(500);
   ok(/m=ultimateh$/.test(await hash()), 'Hard → Ultimate (Hard)');
   await pg.selectOption('#lbh', 'extreme'); await pg.waitForTimeout(500);

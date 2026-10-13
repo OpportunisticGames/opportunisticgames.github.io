@@ -63,13 +63,24 @@
       const a = GM.account();
       if (!a || !GM.lb.enabled || this._busy || (!force && Date.now() - this.at < 60e3)) return this.data;
       this._busy = true; this.at = Date.now();
-      try { const d = await GM.lb.rpc('activity_feed', { p_user: a.name, p_key: a.key }); if (d && !d.error) { this.data = d; GM.statusBar(); } }
+      try {
+        const d = await GM.lb.rpc('activity_feed', { p_user: a.name, p_key: a.key });
+        if (d && !d.error) {
+          this.data = d; GM.statusBar();
+          // 🤝 someone joined from your invite: your Referral pack (once each, remembered with your backup)
+          const got = GM.store.get('refGot', []) || [];
+          d.items.filter(x => x.kind === 'referral' && !got.includes(x.id)).forEach(x => {
+            got.push(x.id); GM.grant({ pack: 'referral' }, x.title.replace(/^🤝 /, '')); GM.toast(`${GM.esc(x.title)}: a Referral pack for you!`, 3500);
+          });
+          GM.store.set('refGot', got.slice(-60));
+        }
+      }
       catch (e) { /* offline: keep what we had */ } finally { this._busy = false; }
       return this.data;
     },
-    unseen() { const d = this.data, seen = GM.store.get('feedSeen', ''); return d && d.items ? d.items.filter(x => x.kind === 'beaten' && x.at > seen).length : 0; },
+    unseen() { const d = this.data, seen = GM.store.get('feedSeen', ''); return d && d.items ? d.items.filter(x => /^(beaten|referral)$/.test(x.kind) && x.at > seen).length : 0; },
   };
-  // a board's name from its key (ultimateh → Ultimate Wildcard (Hard), targetxast → Target 325 – Assists (Extreme))
+  // a board's name from its key (ultimateh → Ultimate (Hard), targetxast → Target 325 – Assists (Extreme))
   GM.boardName = k => {
     if (GM.MODES[k]) return GM.MODES[k].name;
     const x = k.match(/^(.*)x(ast|apps)?$/);
@@ -98,7 +109,8 @@
       ${waiting.length ? `<h4>⏳ Waiting for you</h4>${waiting.map(x => item('wait', x.title, GM.esc(x.body || ''), x.link)).join('')}` : ''}
       <h4>📰 Lately</h4>
       ${d.items.length ? d.items.map(x => item((x.at > seen ? 'new ' : '') + x.kind, x.title, `${GM.esc(x.body || '')} · ${ago(x.at)}`, x.link)).join('')
-        : '<p class="muted center small">Nothing yet. Get to the top of a leaderboard and we’ll tell you if anyone knocks you off it.</p>'}`;
+        : '<p class="muted center small">Nothing yet. Get to the top of a leaderboard and we’ll tell you if anyone knocks you off it.</p>'}
+      ${GM.inviteHtml()}`;
     GM.$$('a', el).forEach(l => l.addEventListener('click', () => m.close()));
     GM.store.set('feedSeen', d.now); GM.statusBar();
   };
@@ -111,7 +123,10 @@
       spins ? row('spin', '🎡', `${spins} spin${spins > 1 ? 's' : ''} of the prize wheel`, 'XP, packs, or something from the vault', 'Spin') : '',
       picks ? row('pick', '🤔', `${picks} pick${picks > 1 ? 's' : ''} of three`, 'Choose your reward', 'Pick') : '',
       fresh ? row('kit', '🎒', `${fresh} new thing${fresh > 1 ? 's' : ''} for your kit`, 'Pitch styles, card backs, frames…', 'Look') : '',
-    ].join('');
+      GM.consum && GM.consum('boost') ? row('boost', '⚡', `Double XP ×${GM.consum('boost')}`, GM.boostLeft() ? `On now: ${Math.ceil(GM.boostLeft() / 60e3)} min left (another adds 30)` : '30 minutes of double XP', 'Use') : '',
+      GM.consum && GM.consum('scout') ? row('scout', '🔭', `Scout’s Tip ×${GM.consum('scout')}`, 'A pack piece for a card that’s nearly there', 'Use') : '',
+    ].join('') + (GM.consum && GM.consum('freeze') ? `<p class="muted center small">🧊 ${GM.consum('freeze')} Streak Freeze${GM.consum('freeze') > 1 ? 's' : ''}: if you miss a day, one covers it by itself</p>` : '')
+      + (GM.boostLeft && GM.boostLeft() && !GM.consum('boost') ? `<p class="center small">⚡ Double XP on: ${Math.ceil(GM.boostLeft() / 60e3)} min left</p>` : '');
     const m = GM.modal(`<div class="to-open"><h3 class="center">🎁 To open</h3>
       ${rows || '<p class="muted center">Nothing waiting right now. A free pack comes every day, and levels, the season track and missions give you more.</p>'}
       <div class="to-links"><a href="#/season">${GM.seasonInfo ? GM.seasonInfo().icon : '🏆'} Season track</a><a href="#/level">🛤️ Level road</a><a href="#/today">🎯 Missions</a></div></div>`);
@@ -120,6 +135,8 @@
       if (t === 'packs') location.hash = '#/packs?open=1';
       else if (t === 'spin') location.hash = '#/spin';
       else if (t === 'pick') GM.pickReward();
+      else if (t === 'boost') GM.useBoost();
+      else if (t === 'scout') GM.useScout();
       else location.hash = '#/locker?v=kit';
     });
     GM.$$('.to-links a', m.el).forEach(a => a.addEventListener('click', () => m.close()));
@@ -195,6 +212,7 @@
     }
     if (GM.rewardsStart) GM.rewardsStart();
     if (GM.seasonVisitPlan) GM.seasonVisitPlan(path);  // a seasonal visitor on Home now and then (rewards.js)  // login reward, Locker unlocks, the look you wear (once a session)
+    if (menu && GM.freezeCheck) GM.freezeCheck();  // 🧊 a Streak Freeze covers a day you missed (daily.js)
     if (GM.native) GM.native.start();  // the app's extras: Play updates, links check (once a session)
     GM.sound.scene(path === 'draft' && q.m === 'szchaos' ? 'szchaos' : path === 'draft' && /^chaos/.test(q.m || '') ? 'chaos' : path === 'draft' && q.ch ? 'h2h' : path);  // (a friend's challenge: the tense one)  // each game area has its own music (CHAOS has Mayhem)
     GM.chaosLook(path === 'draft' && /^(sz)?chaos/.test(q.m || ''));
@@ -217,7 +235,7 @@
   function page(path, q) {
     switch (path) {
       case 'draft': return GM.draft.start(app, ['target', 'treble', 'mystery', 'club', 'classic', 'classicwild', 'ultimatepure', 'extreme', 'purist', 'chaos', 'chaosx', 'szchaos', 'match', 'nation'].includes(q.m) ? q.m : 'ultimate',
-        { fx: q.fx, nat: q.n, stat: q.s, seed: q.seed, vs: q.vs, vss: q.vss ? +q.vss : undefined, ch: q.ch, rematch: q.rm, hard: q.seed ? q.h === '1' : GM.isHard(), extreme: q.seed ? q.x === '1' : GM.isExtreme(), club: q.c, daily: q.daily === '1' });
+        { fx: q.fx, nat: q.n, stat: q.s, seed: q.seed, vs: q.vs, vss: q.vss ? +q.vss : undefined, ch: q.ch, rematch: q.rm, hard: q.seed ? q.h === '1' : GM.isHard(), easy: q.seed ? GM.seedEasy(q.seed) : GM.isEasy(), extreme: q.seed ? q.x === '1' : GM.isExtreme(), club: q.c, daily: q.daily === '1' });
       case 'today': return GM.todayPage(app);
       case 'matchday': return GM.matchday(app);
       case 'nations': return GM.nationsPage(app);
@@ -289,11 +307,11 @@
     // Home always has the normal look and music, whatever drew it (a game's dark look must never be left behind)
     GM.chaosLook(false); GM.moneyLook(false); GM.ownerLook(false); GM.sound.scene('');
     const hard = GM.isHard(), level = GM.level(), extreme = level === 'extreme';
-    const pb = k => GM.best(hard && GM.HARD_MODES.includes(k) ? k + 'h' : extreme && GM.extremeKey(k) || k);
+    const pb = k => GM.best(GM.levelKey(k, level));
     const club = GM.favClub(), waiting = GM.account() ? GM.store.get('onlineWaiting', 0) : 0;
     const statBtn = (m, s, label) => {
       const st = GM.STATS[s], key = m === 'club' ? GM.draft.modeKey(m, s, false, club) : GM.draft.modeKey(m, s, false), best = m === 'club' ? GM.best(key) : pb(key);
-      const pct = best && GM.pctOf(key, (GM.store.get('hist:' + (hard && GM.HARD_MODES.includes(key) ? key + 'h' : extreme && GM.extremeKey(key) || key), [])[0] || {}).m);
+      const pct = best && GM.pctOf(key, (GM.store.get('hist:' + (m === 'club' ? key : GM.levelKey(key, level)), [])[0] || {}).m);
       return `<a class="stat-btn" href="#/draft?m=${m}&s=${s}${m === 'club' ? '&c=' + encodeURIComponent(club) : ''}"><i class="sb-ico">${st.icon}</i>${label || st.short || st.name}${best ? `<small>PB ${pct || best.toLocaleString()}</small>` : ''}</a>`;
     };
     // NEW on the newest modes until you've opened them
@@ -302,18 +320,15 @@
       const k = href.replace(/^#\/(draft\?m=)?/, '').replace(/[?&].*$/, '');
       return `<a class="tile ${cls}" href="${href}"><span class="tile-icon">${icon}</span>${best ? `<span class="tile-pb">PB ${best.toLocaleString()}</span>` : ''}${newTag(k)}<b>${title}</b><small>${sub}</small>${extra}</a>`;
     };
-    // The main event: pick the player pool and whether wildcards are on - six modes in two small switches (remembered)
-    const POOLS = {
-      classic: { icon: '⭐', short: 'Classic', on: 'classicwild', off: 'classic', about: 'Every player with 50+ PL apps, and the better known they are, the more often they turn up' },
-      ultimate: { icon: '👑', short: 'Ultimate', on: 'ultimate', off: 'ultimatepure', about: 'Every player with 50+ PL apps, all equally likely, so find the stars among the journeymen' },
-    };
-    const EXTREME = { icon: '⚡', short: 'Extreme', on: 'extreme', off: 'purist', about: 'Every one of the 5,000+ players ever to play in the PL, all equally likely. Mostly strangers' };
-    const pool = POOLS[GM.store.get('ultPool', 'ultimate')] ? GM.store.get('ultPool', 'ultimate') : 'ultimate';
+    // The main event: Ultimate, with wildcards or Pure (no wildcards); the level says who turns up (5.34: the old Classic
+    // pool became the Easy level)
+    const POOL_ABOUT = { easy: 'Every player with 50+ PL apps, and the big names turn up more often', normal: 'Every player with 50+ PL apps, all equally likely, so find the stars among the journeymen',
+      hard: 'Every player with 50+ PL apps, all equally likely, and just names and positions on the reels', extreme: 'Every one of the 5,000+ players ever to play in the PL, all equally likely. Mostly strangers' };
     const wild = GM.store.get('ultWild', true) !== false;
-    const ult = (extreme ? EXTREME : POOLS[pool])[wild ? 'on' : 'off'];
+    const ult = extreme ? (wild ? 'extreme' : 'purist') : wild ? 'ultimate' : 'ultimatepure';
     const cpool = extreme ? 'chaosx' : 'chaos';  // CHAOS: 50+ apps, or everyone on Extreme
     const ultName = GM.MODES[ult].name;
-    const ultSub = `${(extreme ? EXTREME : POOLS[pool]).about}. ${wild ? 'Wildcards on.' : 'No wildcards: just the reels and your knowledge.'}${ult === 'purist' ? ' Fills your 💎 Purist collection.' : ''}`;
+    const ultSub = `${POOL_ABOUT[level] || POOL_ABOUT.normal}. ${wild ? 'Wildcards on.' : 'Pure: no wildcards, just the reels and your knowledge.'}${ult === 'purist' ? ' Fills your 💎 Purist collection.' : ''}`;
     const streak = GM.streak();
     const dtile = (g, cls, sub) => {
       const G = GM.DAILY_GAMES[g], st = GM.dailyStatus(g), gs = GM.streak(g);
@@ -337,24 +352,23 @@
         ${GM.appOutdated() ? `<div class="install-bar"><a class="btn small" href="${GM.APK_URL}">📲 New version of the app – tap to update</a></div>` : ''}
       </header>
       ${GM.firstXICard()}${GM.promoHtml()}
-      <div class="hard-toggle three" role="group" aria-label="Difficulty">${Object.entries(GM.LEVELS).map(([k, [i, n, sub]]) => `<button class="${k === level ? 'on' : ''}" data-level="${k}">${i} ${n}<small>${sub}</small></button>`).join('')}</div>
+      <div class="hard-toggle four" role="group" aria-label="Difficulty">${Object.entries(GM.LEVELS).map(([k, [i, n, sub]]) => `<button class="${k === level ? 'on' : ''}" data-level="${k}">${i} ${n}<small>${sub}</small></button>`).join('')}</div>
       <div class="seg home-tabs" id="htabs">${HTABS.map(([k, l, modes]) => `<button data-t="${k}">${l}${modes.some(m => newTag(m)) ? '<i class="new-dot"></i>' : ''}</button>`).join('')}</div>
       <div data-hpanel="main">
       ${szc ? `<div class="chaos-card sz-chaos-card" data-cz="${GM.gmSeason().theme}"><div class="chaos-head"><span>${GM.gmSeason().icon}</span><div><span class="kicker">This month only · its own leaderboard</span><b>${GM.esc(szc.name)}</b><small>${GM.esc(szc.kick)} Its own characters in the dugout, wildcards and moments: witches, hexes, triple-or-nothing and more madness than ever. +60 season XP a game.</small></div></div>
         <div class="stat-row">${Object.keys(GM.STATS).map(s => statBtn('szchaos', s)).join('')}</div></div>` : ''}
-      <div class="chaos-card">${newTag('chaos')}<div class="chaos-head"><span>🌪️</span><div><span class="kicker">Headline event</span><b>Ultimate Wildcard CHAOS</b><small>Appoint a manager, fill the CHAOS meter and survive tornadoes, VAR and last-minute madness. Your XI’s total plus bonus points.</small></div></div>
+      <div class="chaos-card">${newTag('chaos')}<div class="chaos-head"><span>🌪️</span><div><span class="kicker">Headline event</span><b>CHAOS</b><small>Appoint a manager, fill the CHAOS meter and survive tornadoes, VAR and last-minute madness. Your XI’s total plus bonus points.</small></div></div>
         ${extreme ? '<span class="cx-note">⚡ Extreme: all 5,000+ players</span>' : ''}
         <div class="stat-row">${Object.keys(GM.STATS).map(s => statBtn(cpool, s)).join('')}</div>
         <a class="chaos-daily" href="#/draft?m=chaos&daily=1">${GM.calIcon()} <b>Daily CHAOS</b><span>${GM.dailyStatus('chaos').text || 'Same chaos for everyone today · one go'}</span>${GM.streak('chaos') ? `<i>🔥 ${GM.streak('chaos')}</i>` : ''}</a></div>
       <div class="mode-card featured ultimate big-card">
         <span class="mode-icon">${GM.MODES[ult].icon}</span>
         <span class="mode-text"><span class="kicker">Main event</span><b>${ultName}</b><small>${ultSub}</small>
-          ${extreme ? '' : `<span class="variant" role="group" aria-label="Players">${Object.entries(POOLS).map(([k, v]) => `<button data-pool="${k}" class="${k === pool ? 'on' : ''}"><span>${v.icon}</span>${v.short}</button>`).join('')}</span>`}
-          <span class="variant wild-switch" role="group" aria-label="Wildcards"><button data-wild="1" class="${wild ? 'on' : ''}">🃏 Wildcards on</button><button data-wild="0" class="${wild ? '' : 'on'}">🚫 No wildcards</button></span>
+          <span class="variant wild-switch" role="group" aria-label="Wildcards"><button data-wild="1" class="${wild ? 'on' : ''}">🃏 Wildcards on</button><button data-wild="0" class="${wild ? '' : 'on'}">✨ Pure</button></span>
           <span class="stat-pick">${statBtn(ult, 'goals')}${statBtn(ult, 'assists')}${statBtn(ult, 'apps')}</span></span>
       </div>
       <a class="h2h-banner" href="${waiting ? '#/online' : '#/h2h'}"><span>⚔️</span><span><b>Head to Head</b><small>${waiting ? `🌐 ${waiting} online game${waiting > 1 ? 's' : ''} waiting for your move` : h2h ? `${GM.esc(h2h.names[0])} v ${GM.esc(h2h.names[1])}: tap to carry on` : 'Pass the phone, or play your mates online'}</small></span><span>🏆</span><i class="online-badge" ${waiting ? '' : 'hidden'}>${waiting}</i></a>
-      ${club ? `<div class="tile club-tile wide target-tile"><span class="tile-icon">🏟️</span><b>${GM.esc(club)} XI</b><small>Ultimate Wildcard with only ${GM.esc(club)} players. Their whole PL careers count.</small>${GM.nextMatchLine()}<a class="next-match" href="#/clubs">🏆 Club v club: this week’s table ›</a>
+      ${club ? `<div class="tile club-tile wide target-tile"><span class="tile-icon">🏟️</span><b>${GM.esc(club)} XI</b><small>Ultimate with only ${GM.esc(club)} players. Their whole PL careers count.</small>${GM.nextMatchLine()}<a class="next-match" href="#/clubs">🏆 Club v club: this week’s table ›</a>
         <span class="stat-pick">${statBtn('club', 'goals')}${statBtn('club', 'assists')}${statBtn('club', 'apps')}</span></div>` : ''}
       </div>
       <div data-hpanel="targets">
@@ -405,7 +419,6 @@
       const n = GM.store.get('onlineWaiting', 0), sm = GM.$('.h2h-banner small');
       if (sm && n !== waiting && location.hash.replace(/^#\/?/, '') === '') home();
     });
-    GM.$$('[data-pool]').forEach(b => b.onclick = () => { GM.store.set('ultPool', b.dataset.pool); home(); });
     GM.$$('[data-wild]').forEach(b => b.onclick = () => { GM.store.set('ultWild', b.dataset.wild === '1'); home(); });
     const ib = GM.$('#install');
     if (ib) {
@@ -452,6 +465,7 @@
               <div class="setting-btns"><label class="btn small">📷 Choose a photo<input type="file" id="s-pic" accept="image/*" hidden></label><button class="btn ghost small" id="s-picdel">Remove</button></div></div></div>
             <div id="s-hidden"></div>
             <div class="setting-btns"><button class="btn ghost small" id="s-move">📲 Move to another phone</button><button class="btn ghost small" id="s-name">✏️ New name</button></div>
+            ${GM.inviteHtml()}
             <div class="setting-btns"><button class="btn ghost small" id="s-backup">☁️ Back up now</button><button class="btn ghost small" id="s-restore">⤵️ Restore a backup</button></div>
             <small>${GM.store.get('backupAt', 0) ? `Last backup: ${new Date(GM.store.get('backupAt')).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}. ` : ''}Your album, stats, streaks and scores back up by themselves a few minutes after anything changes, and when you leave the app.</small>
             <button class="btn ghost small danger" id="s-delete">🗑️ Delete my account</button>`
@@ -476,7 +490,7 @@
         ${inApp && GM.app('pgsAvailable') ? grp('pgs', `<div class="setting"><b>🏆 Google Play Games</b><small>Your badges, scores and stats go to your Play Games profile when you’re signed in.</small>
           <div id="s-pgs" class="nstatus"><span>Checking…</span></div>
           <div class="setting-btns"><button class="btn ghost small" id="s-pgsin">🔑 Sign in</button><button class="btn ghost small" id="s-pgsbadges">🏅 My achievements</button><button class="btn ghost small" id="s-pgsboards">🏆 Leaderboards</button></div></div>`) : ''}
-        ${grp('play', `<div class="setting"><b>Difficulty</b><small>Hard hides clubs, years and appearances: names and positions only, and in Classic and the Target games big-name players turn up less often (a star about 4 times as often as an average player instead of 16). Extreme brings in every one of the 5,000+ PL players, not just the 50+ app ones (in the Target games the well-known still turn up most, so the targets stay reachable), and hides the clues like Hard, in the Main event, CHAOS, the Target and money games, Higher or Lower and Guess the Tally. Where you type names (Who Am I?, the Club Grid, Club Hopper) every PL player always counts, and Extreme turns the suggestions off: type the whole name. The daily games stay the same for everyone. Each level has its own leaderboards</small>${seg('s-level', Object.fromEntries(Object.entries(GM.LEVELS).map(([k, [i, n]]) => [k, i + ' ' + n])), GM.level())}</div>`)}
+        ${grp('play', `<div class="setting"><b>Difficulty</b><small>🙂 Easy: the big names turn up more often (a star about 4 times as often), with all the clues on the reels: the draft games only. ⚽ Normal: every player with 50+ apps, all equally likely. 🥵 Hard hides clubs, years and appearances (names and positions only), and in the Target games big-name players turn up less often. ⚡ Extreme brings in every one of the 5,000+ PL players, not just the 50+ app ones (in the Target games the well-known still turn up most, so the targets stay reachable), and hides the clues like Hard, in the Main event, CHAOS, the Target and money games, Higher or Lower and Guess the Tally. Where you type names (Who Am I?, the Club Grid, Club Hopper) every PL player always counts, and Extreme turns the suggestions off: type the whole name. The daily games stay the same for everyone. Each level has its own leaderboards; Easy ones don’t count for Best Players</small>${seg('s-level', Object.fromEntries(Object.entries(GM.LEVELS).map(([k, [i, n]]) => [k, i + ' ' + n])), GM.level())}</div>`)}
       </section>
       <section class="settings links" ${sub ? 'hidden' : ''}>
         <a href="#" id="s-share">📣 Share Goal Machine with a friend<span>›</span></a>
@@ -632,7 +646,7 @@
     try {
       const rows = await GM.lb.rpc('best_players', { p_month: GM.lbMonth(), p_limit: 50 }), me = GM.getName(), el = GM.$('#global');
       if (!el) return;
-      el.innerHTML = rows.length ? rows.map(r => `<div ${GM.lbRow(r.name, me)}><span>${r.rank <= 3 ? ['🥇', '🥈', '🥉'][r.rank - 1] : r.rank}</span><span>${GM.esc(r.name)}${GM.lbLevel(r)}${r.crowns ? `<i class="bp-crowns">👑 ${r.crowns}</i>` : ''}</span><b>${r.points}<small> pts</small></b></div>`).join('') + GM.lbReportHint
+      el.innerHTML = rows.length ? GM.lbList(rows, { key: 'bestplayers' + (GM.lbMonth() ? ':m' : ''), unit: ' pts', score: r => String(r.points), extra: r => (r.crowns ? `<i class="bp-crowns">👑 ${r.crowns}</i>` : '') }) + GM.lbReportHint
         : `<div class="muted">Nobody on a main board yet${GM.lbMonth() ? ' this month' : ''} – be the first!</div>`;
       const mine = rows.find(r => r.name === me), d = GM.feed.data, b = d && (GM.lbMonth() ? d.mbest : d.best), you = GM.$('#lbyou');
       if (you && !mine && b) you.innerHTML = `<div class="lb-row me"><span>${b.rank}</span><span>${GM.esc(me)}</span><b>${b.points}<small> pts</small></b></div>`;
@@ -642,14 +656,14 @@
     const club = GM.favClub(), today = GM.today();
     const nations = [...new Set([GM.store.get('nation', 'England')].concat(GM.store.get('nationsPlayed', [])))].slice(0, 8).map(n => 'nation' + GM.slug(n));
     const GAMES = [
-      ['⚽ Main event', ['ultimate', 'ultimatepure', 'classicwild', 'classic']],
+      ['⚽ Main event', ['ultimate', 'ultimatepure']],
       ['🏅 Best Players', ['bestplayers']],
       ['🌪️ CHAOS', ['chaos', 'dchaos:' + today].concat(GM.SZ_CHAOS && GM.gmSeason && GM.SZ_CHAOS[GM.gmSeason().theme] ? ['szchaos'] : [])],
       [GM.calIcon() + ' Daily', ['daily:' + today, 'footle:' + today, 'grid:' + today, 'dmoney:' + today, 'dailies']],
     ].concat(club ? [['🏟️ Your club', ['clubs', 'club' + GM.slug(club)].concat(GM.nextMatch(club) ? ['match:' + GM.nextMatch(club).id] : [])]] : [])
       .concat(GM.intlBreak() || GM.store.get('nationsPlayed', []).length ? [['🌍 International', nations]] : [])
       .concat([['🃏 Packed XI', ['packedxi']], ['🎯 Targets', ['target', 'treble', 'mystery']], ['💰 Market', ['owner', 'money']], ['⚡ Quick', ['hopper', 'hilo', 'whoami', 'grid', 'tally']]]);
-    const NAMES = { classicwild: 'Classic Wildcard', classic: 'Classic', ultimate: 'Ultimate Wildcard', ultimatepure: 'Ultimate', extreme: 'Extreme Wildcard', purist: 'Extreme Purist',
+    const NAMES = { classicwild: 'Classic (old)', classic: 'Classic (old)', ultimate: 'Ultimate', ultimatepure: 'Ultimate · Pure', extreme: 'Ultimate', purist: 'Ultimate · Pure',
       chaos: 'CHAOS', chaosx: 'CHAOS Extreme', szchaos: 'Seasonal CHAOS', target: 'Target', treble: 'The Treble', mystery: 'Mystery Target', money: 'Moneyball', owner: 'Dodgy Owner', dailies: 'Daily stars', clubs: 'Club v club', packedxi: 'Packed XI' };
     const SUFFIX = { goals: '', assists: 'ast', apps: 'apps' };
     const hasStats = b => !!GM.MODES[b + 'ast'];
@@ -657,6 +671,7 @@
     let base = m || '', stat = 'goals', lv = m ? 'normal' : GM.level(), opt = '';
     if (/^(dailies|clubs):/.test(base)) { [base, opt] = base.split(':'); }
     if (base && /h$/.test(base) && GM.MODES[base] && GM.HARD_MODES.includes(base.slice(0, -1))) { lv = 'hard'; base = base.slice(0, -1); }
+    else if (base && /e$/.test(base) && GM.MODES[base] && GM.EASY_MODES.includes(base.slice(0, -1))) { lv = 'easy'; base = base.slice(0, -1); }
     for (const [st, suf] of [['assists', 'ast'], ['apps', 'apps']]) if (base.endsWith(suf) && GM.MODES[base] && GM.MODES[base.slice(0, -suf.length) + 'ast']) { stat = st; base = base.slice(0, -suf.length); break; }
     // Extreme boards: the Main event's and CHAOS's have their own names, the rest end in x (targetx, hilox…)
     const XOF = { ultimate: 'extreme', classicwild: 'extreme', ultimatepure: 'purist', classic: 'purist', chaos: 'chaosx' };
@@ -670,9 +685,9 @@
     const keyFor = (b, st = stat, l = lv) => {
       const k = b + (hasStats(b) ? SUFFIX[st] : '');
       if (l === 'extreme') { if (XOF[b]) return XOF[b] + (hasStats(XOF[b]) ? SUFFIX[st] : ''); if (GM.extremeKey(k)) return GM.extremeKey(k); }
-      return l === 'hard' && GM.HARD_MODES.includes(k) ? k + 'h' : k;
+      return l === 'hard' && GM.HARD_MODES.includes(k) ? k + 'h' : l === 'easy' && GM.EASY_MODES.includes(k) ? k + 'e' : k;
     };
-    const levels = special ? [] : ['normal'].concat(GM.HARD_MODES.includes(keyFor(base, stat, 'normal')) ? ['hard'] : [], keyFor(base, stat, 'extreme') !== keyFor(base, stat, 'normal') ? ['extreme'] : []);
+    const levels = special ? [] : (GM.EASY_MODES.includes(keyFor(base, stat, 'normal')) ? ['easy'] : []).concat(['normal'], GM.HARD_MODES.includes(keyFor(base, stat, 'normal')) ? ['hard'] : [], keyFor(base, stat, 'extreme') !== keyFor(base, stat, 'normal') ? ['extreme'] : []);
     m = special ? base : keyFor(base);
     const name = k => k.startsWith('daily:') ? 'Daily Ultimate' : k.startsWith('grid:') ? 'Club Grid' : k.startsWith('footle:') ? 'Footle' : /^(mbdaily|dmoney):/.test(k) ? 'Daily Moneyball'
       : k.startsWith('dchaos:') ? 'Daily CHAOS' : k.startsWith('match:') ? GM.matchTitle(k) : NAMES[k] || ((GM.MODES[k] || {}).name || k).replace(/ \(Hard\)| – .*$/g, '');
@@ -714,19 +729,21 @@
     if (base === 'bestplayers') return bestBody(body);
     GM.hiddenNameBanner(GM.$('#lbhidden'));
     const spread = /^(ultimate|club|classic|extreme|purist)/.test(m) || m.startsWith('daily:');  // (keyed by board, Extreme included)
-    body.innerHTML = `<div class="lb" id="lbyou"></div>
-      ${GM.lb.enabled ? `<h3 class="section-title">🌍 ${/:/.test(m) ? 'Everyone' : GM.lbMonth() ? new Date().toLocaleDateString(undefined, { month: 'long' }) : 'All time'}</h3><div id="global" class="lb"><div class="muted">Loading…</div></div>`
+    body.innerHTML = `${GM.lb.enabled ? `<h3 class="section-title">🌍 ${/:/.test(m) ? 'Everyone' : GM.lbMonth() ? new Date().toLocaleDateString(undefined, { month: 'long' }) : 'All time'}</h3><div id="global" class="lb"><div class="muted">Loading…</div></div>`
         : '<div class="banner">The global leaderboard isn’t switched on – use <b>⚔️ Challenge a friend</b> after a game to go head-to-head on the same spins.</div>'}
-      ${spread ? `<details class="set lbx-spread"><summary><span>📊 Your spread</span></summary>${m.startsWith('daily:') ? GM.distHtml('daily', 'goals') : GM.distHtml(m, stat)}</details>` : ''}`;
+      ${spread ? `<details class="set lbx-spread"><summary><span>📊 Your spread</span></summary>${m.startsWith('daily:') ? GM.distHtml('daily', 'goals') : GM.distHtml(m, stat)}</details>` : ''}
+      <div class="lb lbx-you" id="lbyou"></div>`;
     GM.lbYou(m, GM.$('#lbyou'));
     if (!GM.lb.enabled) return;
     try {
       const rows = await GM.lb.top(m), pts = /^d?chaos/.test(m), me = GM.getName(), el = GM.$('#global');
       if (!el) return;
-      el.innerHTML = rows.length ? rows.map((r, i) =>
-        `<div ${GM.lbRow(r.name, me)}><span>${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span><span>${GM.esc(r.name)}${GM.lbLevel(r)}${GM.pctTag(m, r.meta)}</span><b>${GM.scoreText(m, r.score)}${pts ? '<small> pts</small>' : ''}</b></div>`).join('')
+      el.innerHTML = rows.length ? GM.lbList(rows, { key: m, unit: pts ? ' pts' : '' })
         + (rows.some(r => r.name !== me) ? GM.lbReportHint : '')
         : '<div class="muted">No scores yet – be the first!</div>';
+      // your pinned row hides while your own row is on screen
+      const own = GM.$('.lb-row.lbx.me, .pod.me', el), pin = GM.$('#lbyou');
+      if (own && pin && window.IntersectionObserver) new IntersectionObserver(es => pin.classList.toggle('off', es[0].isIntersecting)).observe(own);
     } catch (e) { const el = GM.$('#global'); if (el) el.innerHTML = GM.net.msg('this leaderboard', '<div class="muted">Couldn’t load the board.</div>'); }
   }
 

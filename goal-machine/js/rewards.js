@@ -83,14 +83,20 @@
   const tierReward = t => {
     const it = Object.values(GM.LOCKER || {}).find(x => x.src.season === t && (x.src.s || '2026-10') === seasonId());
     if (it && !GM.lockerHas(it.id)) return { item: it.id };
-    return t % 10 === 0 ? { pack: 'legendary' } : t % 5 === 0 ? { choice: [{ pack: 'season' }, { spin: 2 }, { vault: 1 }] } : t % 3 === 0 ? { spin: 1 } : { pack: t % 2 ? 'standard' : 'season' };
+    return t % 10 === 0 ? { pack: 'legendary' } : t % 5 === 0 ? { choice: [{ pack: 'season' }, { freeze: 1 }, { vault: 1 }] } : t % 3 === 0 ? { spin: 1 }
+      : [{ pack: 'standard' }, { boost: 1 }, { pack: 'season' }, { scout: 1 }][t % 4];
   };
+  // 🔁 after the last tier the track keeps paying: a bonus every 1,000 XP, round and round (renewables and packs)
+  const BONUS_XP = 1000, BONUS = [{ freeze: 1 }, { pack: 'season' }, { boost: 1 }, { spin: 1 }, { scout: 1 }, { pack: 'standard' }];
+  const bonusOf = xp => Math.max(0, Math.floor((xp - TIERS * TIER) / BONUS_XP));
+  GM.seasonBonus = () => { const s = loadS(); return { n: bonusOf(s.xp), into: s.xp >= TIERS * TIER ? (s.xp - TIERS * TIER) % BONUS_XP : 0, of: BONUS_XP, next: BONUS[(bonusOf(s.xp) + 1) % BONUS.length] }; };
   GM.seasonInfo = () => { const s = loadS(), t = tierOf(s.xp); return { ...GM.gmSeason(), xp: s.xp, tier: t, into: t >= TIERS ? TIER : s.xp - t * TIER, got: s.got }; };
   // season XP (called with every XP, and for missions and login rewards); new tiers hand out their rewards
   GM.seasonXP = function (n) {
     if (!n) return;
-    const s = loadS(), before = tierOf(s.xp);
-    s.xp += n; const after = tierOf(s.xp);
+    const s = loadS(), before = tierOf(s.xp), b0 = bonusOf(s.xp);
+    s.xp += n; const after = tierOf(s.xp), b1 = bonusOf(s.xp);
+    for (let b = b0 + 1; b <= b1; b++) GM.grant(BONUS[b % BONUS.length], `season bonus ${b}`);
     for (let t = before + 1; t <= after; t++) {
       if (s.got.includes(t)) continue;
       s.got.push(t);
@@ -221,6 +227,7 @@
     root.innerHTML = `<div class="st-hero"><small>Season ${i.n} · ${days} day${days > 1 ? 's' : ''} left</small><b>${i.icon} ${GM.esc(i.name)}</b>${i.sub ? `<small>${GM.esc(i.sub)}</small>` : ''}
         <div class="st-lvl"><span>Tier <b>${i.tier}</b>/${TIERS}</span><div class="bar"><i style="width:${Math.round(100 * i.into / TIER)}%"></i></div><span>${i.tier >= TIERS ? '🏁 Done!' : `${i.into}/${TIER} XP`}</span></div>
         <small>All your XP counts here too. Your level (${lv.icon} ${lv.n}) is for life; the track starts again each month.</small>
+        ${(() => { const b = GM.seasonBonus(); return `<small class="st-bonus">🔁 After tier ${TIERS}: a bonus every ${b.of.toLocaleString()} XP, for as long as you play${i.tier >= TIERS ? ` · next: <b>${GM.esc(GM.rewardLabel(b.next))}</b> (${b.into.toLocaleString()}/${b.of.toLocaleString()})` : ''}</small>`; })()}
         <span class="st-go"><a class="btn small" href="#/today">🎯 Missions</a><a class="btn small" href="#/level">🛤️ Level road</a></span></div>
       ${szChaosCard(i)}
       ${GM.eventHtml ? GM.eventHtml() : ''}

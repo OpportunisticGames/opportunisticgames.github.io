@@ -6,10 +6,10 @@ const { chromium } = require(require('child_process').execSync('npm root -g').to
 const N = +process.argv[2] || 4000, ONLY = process.argv[3];
 const U = 'http://localhost:8765/goal-machine/';
 const CONFIGS = [
-  // [label, mode, hard, extreme]
+  // [label, mode, hard, extreme, easy]
   ['Ultimate · Normal', 'ultimate', false, false], ['Ultimate · Hard', 'ultimate', true, false],
   ['Ultimate (no wildcards)', 'ultimatepure', false, false],
-  ['Classic · Normal', 'classicwild', false, false], ['Classic · Hard', 'classicwild', true, false],
+  ['Ultimate · Easy', 'ultimate', false, false, true], ['CHAOS · Easy', 'chaos', false, false, true], ['Target · Easy', 'target', false, false, true],
   ['Extreme', 'extreme', false, true], ['Purist', 'purist', false, true],
   ['CHAOS · Normal', 'chaos', false, false], ['CHAOS · Hard', 'chaos', true, false], ['CHAOS · Extreme', 'chaosx', false, true],
   ['Seasonal CHAOS', 'szchaos', false, false],
@@ -30,10 +30,10 @@ const CONFIGS = [
     await GM.loadAll();
   });
   const rows = [];
-  for (const [label, mode, hard, extreme] of CONFIGS.filter(c => !ONLY || ONLY.split(',').includes(c[1]))) {
-    const r = await pg.evaluate(async ([mode, hard, extreme, N]) => {
+  for (const [label, mode, hard, extreme, easy] of CONFIGS.filter(c => !ONLY || ONLY.split(',').includes(c[1]))) {
+    const r = await pg.evaluate(async ([mode, hard, extreme, N, easy]) => {
       const root = document.getElementById('app');
-      GM.draft.start(root, mode, { seed: 'odds', stat: mode === 'target' ? 'goals' : undefined, hard, extreme });
+      GM.draft.start(root, mode, { seed: easy ? 'e~odds' : 'odds', stat: mode === 'target' ? 'goals' : undefined, hard, extreme });
       await new Promise(f => setTimeout(f, 300));
       const S = GM.draft.state(), pool = S.rules.all ? GM.allPlayers : GM.players;
       const seen = new Map(); let reels = 0, wildSpins = 0, wildReels = 0, storms = 0, stormTries = 0, fifty = 0;
@@ -59,7 +59,7 @@ const CONFIGS = [
       const shearer = pool.find(p => p.name === 'Alan Shearer');
       return { pool: pool.length, poolMin: Math.min(...pool.map(p => p.apps)), distinct: seen.size, topRate, bottomShare, dec, fifty: fifty / reels,
         shearer: shearer ? (seen.get(shearer.id) || 0) / perPlayer : null, wildSpins: wildSpins / (N - storms), wildReels: wildReels / (N - storms), storms: storms / stormTries, wildOn: S.rules.wild !== false, chaos: !!S.rules.chaos };
-    }, [mode, hard, extreme, N]);
+    }, [mode, hard, extreme, N, !!easy]);
     rows.push([label, r]);
     console.log(`${label.padEnd(24)} pool ${String(r.pool).padStart(5)} (min ${r.poolMin} apps)  top-20 stars ×${r.topRate.toFixed(1)}  Shearer ×${r.shearer == null ? '–' : r.shearer.toFixed(1)}  lesser-known half ${(r.bottomShare * 100).toFixed(0)}%  50+ apps ${(r.fifty * 100).toFixed(0)}%  ` +
       `tenths ${r.dec.map(x => x.toFixed(1)).join(' ')}` + (r.wildOn ? `  wildcard on ${(r.wildSpins * 100).toFixed(0)}% of spins` : '  no wildcards') + (r.chaos ? `  storms ${(r.storms * 100).toFixed(1)}%` : ''));

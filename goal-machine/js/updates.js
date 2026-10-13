@@ -9,6 +9,35 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 93, label: '5.34', date: '2026-10-13', title: '🙂 An Easy level, clearer names, and duplicates',
+      items: [
+        '🙂 New Easy level (next to Normal, Hard and Extreme): the big names turn up more often, about four times as often as an average player, with all the clues on the reels. Every draft game has it, with its own leaderboards (Easy ones don’t count for Best Players or badges)',
+        '👑 The main event is simply Ultimate now: wildcards on, or ✨ Pure (no wildcards). The level says who turns up. Classic, which favoured the big names, has become the Easy level',
+        '🏷️ Clearer names everywhere: Ultimate, Ultimate · Pure, CHAOS, with (Easy), (Hard) or (Extreme) after them',
+        '♻️ Duplicates: packs now deal at random, so cards you’ve already finished come round again. They go on your duplicate pile (1 point for Bronze, 2 Silver, 3 Gold, 5 Legend), and 100 points trade in for a 🆕 Fresh pack of cards you haven’t finished (Locker → Cards). The album fills more slowly, so it means more when it’s done',
+      ],
+    },
+    {
+      v: 92, label: '5.33', date: '2026-10-13', title: '🏆 New leaderboards, player profiles and invites',
+      items: [
+        '🏆 The leaderboards have a new look: a podium for the top three, everyone’s picture (your friends’ photos), ▲▼ for who’s moved since you last looked, and your own place pinned at the bottom with how far it is to the next one',
+        '👤 Tap any name for their profile: their level and title, the boards they top, their Best Players place, their best XI, their favourite CHAOS manager and your record against them. Add them as a friend from there',
+        '🤝 Invite a friend: share your link, and when they claim a name you both get a Referral pack (and you’re friends straight away)',
+        '🌍 Nation cards: every country’s best-known player is a shiny foil No. 1 card, country sets in the Album pay a Nations pack, and your Packed XI gets a nation bonus for teammates from the same country',
+        '🛂 New CHAOS moment, Visa trouble!: a plane flies one of your players home, and the Passport Office sends over a spin of players from his country',
+        '🎩 Hat-Trick players really fuse now: three faces sliced into one on the pitch, a mash-up name, and the three flying together when you sign them',
+        '🧊 Rewards you can win again and again: Streak Freezes (cover a day you miss), Double XP and Scout’s Tips, on the wheel, the level road and the season track, and after tier 30 the track keeps paying a bonus every 1,000 XP',
+      ],
+    },
+    {
+      v: 91, label: '5.32.2', date: '2026-10-13', title: '🎃 A tidier Halloween full time, and better rain',
+      items: [
+        '🧹 Full time clears the pitch: a witch, ghost or bat still flying (and any swirling leaves or papers) no longer carries on over your result',
+        '📜 “What happened” in CHAOS is a tidy list: each moment on its own card with its icon, and the kick-off in one short line (the season, formation and weather) instead of a paragraph',
+        '🌧️ The rain at kick-off no longer starts with a burst of TV static: it waits for the real rain recording (and the stand-in, if it ever plays, sounds like rain)',
+      ],
+    },
+    {
       v: 90, label: '5.32.1', date: '2026-10-12', title: '👑 Records at full time',
       items: [
         '👑 The full-time screen now tells you where your score landed on the leaderboard, right under your score: a gold “Record!” with confetti when you’re top of the board (all time or this month), “Top 3”, “Top 10”, “Top 20”… when you’re near the top (only claimed when the board has at least twice that many players), otherwise your place, all time and this month. Tap it to see the board',

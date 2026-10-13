@@ -52,6 +52,7 @@
     magnet: { icon: '🧲', name: 'Old Teammates', w: 1.2, chaos: true, kind: 'special', desc: () => 'A free spin of players who played alongside your last signing (chemistry bonus!).',
       filter: p => { const lp = S.last != null ? byId(S.last) : null; return !!lp && p.first <= lp.last && p.last >= lp.first && p.clubs.some(c => lp.clubs.includes(c)); } },
     trophy: { icon: '🏆', name: 'Trophy Cabinet', w: 1.2, chaos: true, kind: 'special', desc: () => 'A free spin of PL title winners (title bonus!).', filter: p => (p.hon.P || 0) > 0 },
+    passport: { icon: '🛂', name: 'Passport Office', w: 1, chaos: true, deal: false, kind: 'special', desc: () => 'A free spin of players from one country, picked at the border (a flag you might not expect).', filter: p => !!S.passNat && p.nat === S.passNat },
     storm: { icon: '🌪️', name: 'Wildcard Storm', w: 1, chaos: true, kind: 'special', desc: () => 'A free spin of nothing but wildcards.', storm: true },
     physio: { icon: '🏥', name: 'Physio Room', w: 1, chaos: true, kind: 'heal', desc: st => `Your most-hurt player gets his full ${st.label} back.` },
     joker: { icon: '🃏', name: 'Joker', w: 1, chaos: true, kind: 'joker', desc: () => 'Turns into a random CHAOS wildcard.' },
@@ -83,6 +84,7 @@
       <path d="M30 14h36q14 0 16 14v4H30q-8 0-8-9t8-9z" fill="#1d4ed8" stroke="#163a9e"/><path d="M64 16h4q10 1 12 11H64z" fill="#9fd8ff"/><path d="M30 20h-28v4h28z" fill="#1d4ed8"/>
       <circle class="trot" cx="4" cy="20" r="6" fill="none" stroke="#2b2f36" stroke-width="2" stroke-dasharray="3 3"/><text x="42" y="28" font-size="8" font-weight="900" font-family="Arial" fill="#fff">££</text>
       <path d="M30 40h46M36 32v8M70 32v8" stroke="#2b2f36" stroke-width="2.5"/></svg>`,
+    plane: `<svg class="spr" viewBox="0 0 110 50" width="110" height="50"><path d="M8 26c0-4 4-7 10-7h70c8 0 14 3 18 7-4 4-10 7-18 7H18c-6 0-10-3-10-7z" fill="#f4f6fa" stroke="#9aa6b8"/><path d="M48 19l-14-16h8l22 16zM48 33l-14 16h8l22-16z" fill="#c9d3e2" stroke="#9aa6b8"/><path d="M14 19l-6-11h6l9 11z" fill="#e3262f"/><g fill="#5ec8ff">${[30, 40, 50, 60, 70, 80].map(x => `<circle cx="${x}" cy="24" r="2.3"/>`).join('')}</g><path d="M96 23c3 0 6 1 8 3h-8z" fill="#5ec8ff"/></svg>`,
     tank: `<svg class="spr" viewBox="0 0 104 50" width="104" height="50"><rect x="6" y="30" width="88" height="14" rx="7" fill="#2f3324"/>
       <path d="M10 22h80l6 9H4z" fill="#5d6b3a" stroke="#3f4a26"/><path d="M34 10h30l6 12H28z" fill="#6c7c45" stroke="#3f4a26"/><rect x="64" y="13" width="38" height="4" rx="2" fill="#4c5730"/>
       <path d="M46 14l1.6 3.4 3.7.4-2.8 2.5.8 3.7L46 22.2l-3.3 1.8.8-3.7-2.8-2.5 3.7-.4z" fill="#f2f2e6"/>
@@ -235,6 +237,15 @@
       S.bonus.push(['🎖️ A medal for service', p]);
       return { note: `${nm2(S.ghost.p)} is called up for national service and the tank comes to collect him. His place is empty, but there’s a medal: <b>+${p}</b>.`,
         run: c => c.drive('tank', i, { wait: 1200, sound: 'rumble', take: true }), done: () => { S.ghost = null; } }; } },
+    // 🛂 his visa's run out: a plane takes him home, and the Passport Office sends a spin of players from his country
+    visa: { rar: 'r', icon: '🛂', name: 'Visa trouble!', tone: 'weird', look: ['red', 'drumroll'], go: r => {
+      const f = filledIdx().filter(i => S.xi[i].pos !== 'GK' && byId(S.xi[i].p).nat); if (!f.length) return { note: 'The Passport Office checks everyone’s papers. All in order.' };
+      const i = f[Math.floor(r() * f.length)], x = S.xi[i], nat = byId(x.p).nat;
+      S.ghost = { i, p: x.p, g: x.g, mod: x.mod };
+      x.p = null; x.g = 0; x.v = null; x.mod = null; x.as = null; unpark(i); if (S.splat) S.splat = S.splat.filter(k => k !== i);
+      S.passNat = nat; S.forceSpecial = 'passport';
+      return { note: `${nm2(S.ghost.p)}’s visa has run out and he’s on the next plane home to ${GM.flag(nat)} <b>${GM.esc(nat)}</b>. His place is empty, but the Passport Office has sent over a spin of <b>${GM.esc(nat)}</b> players.`,
+        run: c => { c.drive('plane', i, { wait: 1200, sound: 'jet', take: true }); setTimeout(() => { if (GM.CFX && onThisGame()) GM.CFX.wild('passport', GM.$('.pitch', root)); }, 1900); }, done: () => { S.ghost = null; } }; } },
     quake: { rar: 'u', icon: '🌍', name: 'Earthquake!', tone: 'weird', look: ['dark', 'quake'], go: r => {
       const f = filledIdx(); if (!f.length) return { note: 'The ground shakes. Luckily nobody’s on the pitch yet.' };
       let up = 0; f.forEach(i => { const k = 0.75 + r() * 0.55; scale(S.xi[i], k, k >= 1 ? 'boosted' : 'halved'); up += k >= 1; });
@@ -984,16 +995,16 @@
   GM.SZ_CHAOS = SZ_CHAOS;
   GM.szInSeason = k => inSz(k);  // (tests)
 
-  GM.draft = { game: st => chGame(st || S), modeName: () => modeName(), METER, MANAGERS: () => MANAGERS, events: () => Object.keys(EVENTS).concat(Object.keys(XEV), Object.keys(MOMENTS)).filter(k => inSz(k)) /* (only this season's seasonal ones) */, start, RULES, WILDCARDS, TARGETS, state: () => S, total: st => scoreFor(st).t, score: st => scoreFor(st), render: () => render(), modeKey: (m, s, h, c, x) => keyFor(m, s, h, c, x) };
+  GM.draft = { game: st => chGame(st || S), modeName: () => modeName(), METER, MANAGERS: () => MANAGERS, events: () => Object.keys(EVENTS).concat(Object.keys(XEV), Object.keys(MOMENTS)).filter(k => inSz(k)) /* (only this season's seasonal ones) */, start, RULES, WILDCARDS, TARGETS, state: () => S, total: st => scoreFor(st).t, score: st => scoreFor(st), render: () => render(), modeKey: (m, s, h, c, x, e) => keyFor(m, s, h, c, x, e) };
 
   const statSuffix = s => ({ goals: '', assists: 'ast', apps: 'apps' }[s] || '');
-  function keyFor(mode, stat, hard, club, extreme) {
+  function keyFor(mode, stat, hard, club, extreme, easy) {
     if (mode === 'daily') return 'daily:' + GM.today();
     if (mode === 'club') return 'club' + GM.slug(club || '') + statSuffix(stat);
     if (mode === 'match') return 'match:' + club;  // club is the fixture id here
     if (mode === 'nation') return 'nation' + GM.slug(club || '') + statSuffix(stat);  // and the country here
     const k = mode === 'treble' || mode === 'mystery' ? mode : mode + statSuffix(stat);
-    return extreme && RULES_X[mode] ? GM.extremeKey(k) : k + (hard ? 'h' : '');
+    return extreme && RULES_X[mode] ? GM.extremeKey(k) : k + (hard ? 'h' : easy && GM.EASY_MODES.includes(k) ? 'e' : '');
   }
 
   document.addEventListener('gm:board', e => {
@@ -1033,7 +1044,9 @@
     }
     // Daily CHAOS: the same chaos for everyone today, goals, one go
     const dailyChaos = mode === 'chaos' && !!opts.daily && !opts.seed;
-    const seed = mode === 'daily' ? 'daily:' + GM.today() : dailyChaos ? 'dchaos:' + GM.today() : fx ? 'match:' + fx.id : (opts.seed || GM.newSeed());
+    // 🙂 Easy: the draft games only, never with Hard or Extreme; it travels in the seed ("e~…") so a friend gets the same reels
+    const easy = !!(GM.EASY_MODES && GM.EASY_MODES.includes(mode) && mode !== 'daily' && !dailyChaos && !fx && !opts.hard && !(opts.extreme && RULES_X[mode]) && (opts.seed ? GM.seedEasy(opts.seed) : opts.easy));
+    const seed = mode === 'daily' ? 'daily:' + GM.today() : dailyChaos ? 'dchaos:' + GM.today() : fx ? 'match:' + fx.id : (opts.seed || (easy ? 'e~' : '') + GM.newSeed());
     let stat = mode === 'daily' || dailyChaos || fx ? 'goals' : (GM.STATS[opts.stat] ? opts.stat : 'goals');
     let target = RULES[mode] && !RULES[mode].max ? TARGETS[stat] : null;
     if (mode === 'treble') { stat = 'goals'; target = null; }
@@ -1064,7 +1077,7 @@
     }
     // any other draft left half-way: the Daily CHAOS carries straight on, the rest ask
     if (!opts.online && mode !== 'daily') {
-      const key = 'draftp:' + (dailyChaos ? 'dchaos:' + GM.today() : keyFor(mode, stat, !!opts.hard && !extreme, mode === 'club' ? (opts.club || GM.favClub()) : fx ? fx.id : nat, extreme));
+      const key = 'draftp:' + (dailyChaos ? 'dchaos:' + GM.today() : keyFor(mode, stat, !!opts.hard && !extreme, mode === 'club' ? (opts.club || GM.favClub()) : fx ? fx.id : nat, extreme, easy));
       const saved = GM.store.get(key);
       if (saved && saved.xi && saved.phase !== 'done' && (!opts.seed || saved.seed === opts.seed) && saved.xi.some(x => x.p != null)) {
         const resume = () => {
@@ -1108,7 +1121,7 @@
       reels: [], selected: -1, revealed: false, revealNext: false, special: null,
       inv: [], modifier: null, subbing: false, used: [], last: null,
       phase: 'spin', vs: opts.vs, vss: opts.vss, log: [], pending: null, wildUsed: 0, coinWin: false, bonus: [], hot: 0, event: null, meter: 0, unleash: 0, golden: false, masked: false, chaosCount: 0, manager: null, moments: [], chaosDue: false, momentSpin: -1, forceSpecial: null,
-      hard: mode !== 'daily' && !dailyChaos && !fx && !extreme && !!opts.hard, club, club2: fx ? fx.away : null, fx: fx ? fx.id : null, nat, dailyChaos, day: GM.today(),
+      hard: mode !== 'daily' && !dailyChaos && !fx && !extreme && !!opts.hard, easy, club, club2: fx ? fx.away : null, fx: fx ? fx.id : null, nat, dailyChaos, day: GM.today(),
       online: opts.online ? { ...opts.online, ms: 0, lastT: Date.now() } : null,  // Live Race: { code, seat, opp } + time taken
       ch: opts.ch && GM.challenge ? GM.challenge.ctx(opts.ch) : null,  // a friend's challenge you're taking on (see challenge.js)
       rematch: opts.rematch || null,  // a rematch you're playing first, to send back
@@ -1141,7 +1154,7 @@
     const bon = (st.bonus || []).slice().sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 3);
     return { raw: Math.round(raw), on: Math.round(sc.t - raw), team: sc.grp.team, ev: sc.grp.ev, mgr: sc.grp.mgr, hits: hits.slice(0, 3), bon };
   }
-  const modeKey = () => (S.dailyChaos ? 'dchaos:' + S.day : keyFor(S.mode, S.stat, S.hard, S.fx || S.nat || S.club, S.extreme));
+  const modeKey = () => (S.dailyChaos ? 'dchaos:' + S.day : keyFor(S.mode, S.stat, S.hard, S.fx || S.nat || S.club, S.extreme, S.easy));
   // where a half-finished draft is kept (the Daily Ultimate has its own; online races save with the race)
   const saveKey = () => (S.mode === 'daily' ? progressKey() : S.online ? null : 'draftp:' + modeKey());
   const progressKey = () => 'dailyp:' + GM.today();
@@ -1150,7 +1163,8 @@
   // same targets - big numbers are rarer, so one wrong pick can put the target out of reach.
   // Hard and Extreme hide the clues on the reels: names and positions only (Extreme is every PL player on top)
   const blind = () => !!(S.hard || S.extreme || ['extreme', 'purist', 'chaosx'].includes(S.mode));
-  const reelWeight = () => (S.hard && (!S.rules.max || S.rules.fame) ? p => Math.sqrt(S.rules.weight(p)) : S.rules.weight);
+  const reelWeight = () => (S.easy ? (S.rules.max && !S.rules.fame ? p => Math.sqrt(p.fame) : p => Math.pow(S.rules.weight(p), 1.2))
+    : S.hard && (!S.rules.max || S.rules.fame) ? p => Math.sqrt(S.rules.weight(p)) : S.rules.weight);
   // what wildcard descriptions talk about: in the Treble a wildcard affects all three numbers
   const wst = () => S.rules.treble ? { ...S.st, label: 'numbers', bigLabel: 'goals' } : S.st;
   const modeName = () => S.rules && S.rules.sz && SZ_CHAOS[S.sz] ? SZ_CHAOS[S.sz].name.replace(/^\S+ /, '') : S.dailyChaos ? 'Daily CHAOS' : S.fx ? `Matchday XI · ${GM.clubShort(S.club)} v ${GM.clubShort(S.club2)}` : S.online && S.mode === 'target' ? `Target Race · ${fmt(S.target)}` : S.mode === 'club' || S.nat || S.extreme ? GM.MODES[modeKey()].name : GM.MODES[S.mode === 'daily' ? 'daily' : (S.rules.treble || S.rules.mystery) ? S.mode : S.mode + statSuffix(S.stat)].name;
@@ -1176,6 +1190,41 @@
   const emptySlots = () => S.xi.filter(s => s.p == null).length;
   const fmt = n => n.toLocaleString();
   const signed = n => (n < 0 ? '−' : '+') + Math.abs(n).toLocaleString();
+
+  /* ---------------------------------------------------------------- 🎩 Hat-Trick: three players fused into one
+     On the pitch he's three faces sliced together (with a flicker now and then) and a mash-up of their surnames; when
+     you sign him the three faces fly off the reels, spin round each other and slam together in his slot. */
+  const lastName = id => { const n = byId(id).name; return n.includes(' ') ? n.split(' ').slice(-1)[0] : n; };
+  function fusedName(ids) {
+    const [a, b = '', c = ''] = ids.map(lastName);
+    return a.slice(0, Math.max(2, Math.ceil(a.length * 0.45))) + b.slice(Math.floor(b.length * 0.3), Math.ceil(b.length * 0.7)).toLowerCase() + c.slice(Math.floor(c.length * 0.55)).toLowerCase();
+  }
+  const fusedFace = ids => `<span class="fuse">${ids.slice(0, 3).map((id, k) => `<span class="fz fz${k}">${GM.avatar(byId(id))}</span>`).join('')}</span>`;
+  GM.fusedName = ids => fusedName(ids);  // (tests)
+  function fuseFx(i, trio, from) {
+    const slot = GM.$(`.slot[data-slot="${i}"]`, root), face = slot && slot.querySelector('.fuse');
+    if (!face || !face.animate) return;
+    const t = face.getBoundingClientRect(), cx = t.left + t.width / 2, cy = t.top + t.height / 2;
+    slot.classList.add('fusing');
+    GM.sound.play('shimmer', true);
+    trio.forEach((q, k) => {
+      const r = from[k]; if (!r) return;
+      const el = document.createElement('div'); el.className = 'fuse-fly'; el.innerHTML = GM.avatar(q, 'lg');
+      const x = r.left + r.width / 2, y = r.top + r.height / 2, dx = cx - x, dy = cy - y, spin = (k - 1) * 300 || 200;
+      Object.assign(el.style, { left: x + 'px', top: y + 'px' }); document.body.appendChild(el);
+      el.animate([
+        { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+        { transform: `translate(-50%, -50%) translate(${dx * 0.45 + (k - 1) * 46}px, ${dy * 0.45 - 70}px) rotate(${spin / 2}deg) scale(1.2)`, offset: 0.5 },
+        { transform: `translate(-50%, -50%) translate(${dx}px, ${dy}px) rotate(${spin}deg) scale(.4)`, opacity: 0.85 },
+      ], { duration: 950, easing: 'cubic-bezier(.55,0,.3,1)', fill: 'forwards' }).onfinish = () => el.remove();
+    });
+    setTimeout(() => {
+      const s2 = GM.$(`.slot[data-slot="${i}"]`, root);
+      if (s2) { s2.classList.remove('fusing'); s2.classList.add('fused-pop'); setTimeout(() => s2.classList.remove('fused-pop'), 700); }
+      if (GM.FX) { GM.FX.burst(cx, cy, 0xffd34d); GM.FX.shockwave(cx, cy, 0xffffff, 1.2); GM.FX.sparks(cx, cy, { n: 46, tint: 0xffd34d, speed: 380 }); }
+      GM.buzz('heavy');
+    }, 950);
+  }
 
   /* ---------------------------------------------------------------- reel generation */
   // Fair deals. Every spin has its own fixed running order of players, drawn from the whole field and seeded by the
@@ -1206,7 +1255,7 @@
     const used = new Set(S.used.concat(S.xi.filter(s => s.p != null).map(s => s.p)));
     const ok = p => fits(p, open) && !used.has(p.id);
     const n = (wc && wc.reels) || 3;
-    const wildTypes = () => Object.keys(WILDCARDS).filter(t => (!S.rules.noWild.includes(t) || (tw().allow || []).includes(t)) && (!WILDCARDS[t].chaos || S.rules.chaos) && t !== 'storm' && inSz(t));
+    const wildTypes = () => Object.keys(WILDCARDS).filter(t => (!S.rules.noWild.includes(t) || (tw().allow || []).includes(t)) && (!WILDCARDS[t].chaos || S.rules.chaos) && t !== 'storm' && WILDCARDS[t].deal !== false && inSz(t));
     // a wildcard storm: every reel is a wildcard (the Storm card, or 1 spin in 10 in CHAOS)
     if ((wc && wc.storm) || (S.rules.chaos && !special && S.spin >= 2 && S.momentSpin !== S.spin && !tw().noStorm && GM.rng(tag + '|storm')() < (S.sz ? 0.2 : 0.1))) {
       const rs = GM.rng(tag + '|stormcards'), types = wildTypes(), out = [];
@@ -1227,11 +1276,18 @@
       const mine = PL().filter(p => p.nat === S.nat);
       if (mine.some(ok)) { field = mine; fkey = 'nat:' + S.nat; }
     }
+    // Passport Office (after 🛂 Visa trouble): the sent-home player's country, if three of its players fit your open
+    // positions; otherwise one picked at the border (seeded) from the countries that do
+    if (special === 'passport') {
+      const by = {}; field.filter(ok).forEach(p => { if (p.nat) by[p.nat] = (by[p.nat] || 0) + 1; });
+      const nats = Object.keys(by).filter(k => by[k] >= 3).sort();
+      if (!(S.passNat && nats.includes(S.passNat))) S.passNat = nats.length ? GM.rng(tag + '|passport').pick(nats) : null;
+    }
     if (wc && wc.filter) {
       const themed = field.filter(p => wc.filter(p, wst()));
-      if (themed.some(ok)) { field = themed; fkey += '|' + special + (special === 'magnet' ? ':' + S.last : ''); }
+      if (themed.some(ok)) { field = themed; fkey += '|' + special + (special === 'magnet' ? ':' + S.last : special === 'passport' ? ':' + S.passNat : ''); }
     }
-    const draw = sampler(`${fkey}|${S.mode}|${S.hard ? 'h' : ''}`, field, reelWeight());
+    const draw = sampler(`${fkey}|${S.mode}|${S.hard ? 'h' : S.easy ? 'e' : ''}`, field, reelWeight());
     // wildcard: reel 1 on 28% of spins, else reel 2 on 28% of the rest (so about half the spins have one), decided by the spin number only
     let wildAt = -1, wild = null;
     if (!special && S.spin >= 1 && S.rules.wild !== false) {
@@ -1269,6 +1325,7 @@
     if (!special && S.forceSpecial) { special = S.forceSpecial; S.forceSpecial = null; }
     S.special = special || null;
     S.reels = makeReels(special);
+    if (special === 'passport' && S.passNat) GM.toast(`🛂 Passport Office: ${GM.flag(S.passNat)} <b>${GM.esc(S.passNat)}</b>`, 2800);
     S.selected = -1;
     S.revealed = S.revealNext; S.revealNext = false;
     S.phase = 'spinning';
@@ -1549,7 +1606,7 @@
     if (szc && GM.FX && GM.FX.makeStill) [...new Set(Object.values(szc.xev).map(x => x.lot).filter(Boolean))].forEach(l => GM.FX.makeStill(l));  // ready for the moments' cards
     const w = wx();
     if (w.sound) setTimeout(() => GM.sound.play(w.sound), 900);
-    return moment({ icon: '👔', name: 'Kick-off', tone: 'good', before: snap(), text: `${szc ? `<b>${szc.name}</b>: ${szc.kick} Anything can happen: triple-or-nothing cards, witches, hexes and more moments than ever. ` : ''}Formation <b>${shape}</b>.${w.name ? ` ${w.icon} <b>${w.name}</b>: ${w.note.replace(/^[^:]*: /, '')}` : ''} Appoint your manager: each has a perk and a catch.`, pick: kickoffMgrs(), onPick: k => { appoint(k); hired(); }, scene: 'kickoff', sound: 'whistle' });
+    return moment({ icon: '👔', name: 'Kick-off', tone: 'good', before: snap(), story: `${szc ? szc.name.replace(/^\S+ /, '') + ' · ' : ''}Formation ${shape}${w.name ? ` · ${w.icon} ${w.name}` : ''}`, text: `${szc ? `<b>${szc.name}</b>: ${szc.kick} Anything can happen: triple-or-nothing cards, witches, hexes and more moments than ever. ` : ''}Formation <b>${shape}</b>.${w.name ? ` ${w.icon} <b>${w.name}</b>: ${w.note.replace(/^[^:]*: /, '')}` : ''} Appoint your manager: each has a perk and a catch.`, pick: kickoffMgrs(), onPick: k => { appoint(k); hired(); }, scene: 'kickoff', sound: 'whistle' });
   }
 
   /* ---------------------------------------------------------------- CHAOS moments: one at a time, on the pitch
@@ -1878,7 +1935,7 @@
       const release = () => {
         if (released) return; released = true; busy = false;
         if (!o.pick) track(o.icon, o.name);
-        if (S.rules.chaos && (o.text || o.reveal)) S.moments = (S.moments || []).concat([{ icon: o.icon, name: o.name, text: (o.after || (o.reveal && o.reveal.text) || o.text).replace(/<[^>]+>/g, ''), rar: o.rarity || '' }]);
+        if (S.rules.chaos && (o.text || o.reveal) && !(o.name === 'Kick-off' && (S.moments || []).some(m => m.name === 'Kick-off'))) S.moments = (S.moments || []).concat([{ icon: o.icon, name: o.name, text: (o.story || o.after || (o.reveal && o.reveal.text) || o.text).replace(/<[^>]+>/g, ''), rar: o.rarity || '' }]);
         if (S.rules.chaos && S.online && GM.online) GM.online.pushRace(S);
         done();
       };
@@ -2091,6 +2148,7 @@
     if (S.modifier === 'rotation') mult = 0.5;
     // a Hat-Trick: all three on the reels signed as one, their numbers added; under the bar he counts half
     const trio = S.special === 'hero' ? S.reels.filter(x => !x.wild).map(x => byId(x.id)) : null;
+    const trioFrom = trio && !GM.store.get('calm', false) ? [...document.querySelectorAll('.stage .reel[data-reel]')].filter(e => !e.classList.contains('is-wild')).map(e => (e.querySelector('.avatar') || e).getBoundingClientRect()) : null;
     const base = trio ? trio.reduce((a, q) => { const w = pv(q); STAT_KEYS.forEach(k => { a[k] += w[k]; }); return a; }, { goals: 0, assists: 0, apps: 0 }) : pv(p);
     const short = trio ? base[S.stat] < (HAT[S.stat] || 50) : false;
     if (short) mult *= 0.5;
@@ -2142,6 +2200,7 @@
     }
     if (before) mark(slotIdx, '#coin');
     if (trio) mark(slotIdx, '#ball');
+    if (trioFrom) requestAnimationFrame(() => requestAnimationFrame(() => fuseFx(slotIdx, trio, trioFrom)));
     if (before) {  // Double or Nothing: a real coin toss before he takes his place
       await moment({ icon: '🎲', name: 'Double or nothing', tone: 'weird', before, coin: heads, scene: 'casino', sound: 'drumroll', text: `${GM.esc(p.name)}: heads he counts double, tails he counts for nothing…`,
         after: heads ? `<b>Heads!</b> ${GM.esc(p.name)} counts double.` : `<b>Tails…</b> ${GM.esc(p.name)} counts for nothing.` });
@@ -2268,7 +2327,7 @@
       }
       case 'joker': {
         // any wildcard this game allows (the everyday ones too), as often as each turns up on the reels
-        const types = Object.keys(WILDCARDS).filter(t => t !== 'joker' && (!S.rules.noWild.includes(t) || (tw().allow || []).includes(t)) && (!WILDCARDS[t].chaos || S.rules.chaos) && inSz(t));
+        const types = Object.keys(WILDCARDS).filter(t => t !== 'joker' && WILDCARDS[t].deal !== false && (!S.rules.noWild.includes(t) || (tw().allow || []).includes(t)) && (!WILDCARDS[t].chaos || S.rules.chaos) && inSz(t));
         const t = GM.rng(`${S.seed}|joker|${S.spin}|${S.wildUsed}|${k}`).weighted(types, x => WILDCARDS[x].w);
         S.inv[k] = t; GM.sound.play('shimmer'); wildFx('joker');
         GM.toast(`🃏 The Joker turns into ${WILDCARDS[t].icon} <b>${WILDCARDS[t].name}</b>`, 2600);
@@ -2391,6 +2450,7 @@
       setTimeout(() => { GM.toast(`✂️ <b>Bomb defused!</b> With seconds to spare: +${p} bonus`, 3000); GM.sound.play('cheer'); }, 200);
     }
     S.phase = 'done';
+    if (GM.FX && GM.FX.clear && !S.readonly) GM.FX.clear();  // nothing from the game (a witch mid-flight, swirling papers) carries on over the result
     const sc = scoreFor(S);
     S.final = sc;
     chProgress(true);
@@ -2399,7 +2459,7 @@
     if (GM.collectDraft && !S.readonly) {
       const rating = GM.teamRating(xiSlots);
       S.collected = GM.collectDraft({
-        mode: S.mode, stat: S.stat, total: sc.t, points: sc.total, hard: S.hard, xi: xiSlots.map(s => s.player),
+        mode: S.mode, stat: S.stat, total: sc.t, points: sc.total, hard: S.hard, easy: !!S.easy, xi: xiSlots.map(s => s.player),
         rating: rating.score, pairs: rating.pairs.length, wildUsed: S.wildUsed, coinWin: S.coinWin,
         bull: sc.diff === 0, closeness: sc.closeness != null ? sc.closeness : null, treble: !!(sc.hits && sc.hits.length === 3),
         slots: xiSlots.map(x => ({ name: x.player.name, g: x.g })), manager: S.manager || null, extreme: !!S.extreme || ['extreme', 'purist', 'chaosx'].includes(S.mode),  // (the main event and CHAOS on Extreme are modes of their own)
@@ -2432,7 +2492,9 @@
       // the leaderboard line on this screen (filled in when the score reaches the board: GM.boardNews in core.js)
       S.boardOn = !!(GM.lb.enabled && sc.total > 0); S.board = null;
       if (S.boardOn) render();
-      const { isBest } = await GM.recordScore(modeKey(), sc.total, S.target && !S.rules.max && !S.rules.treble ? { t: sc.t, g: S.target } : { t: sc.t });
+      const meta = { ...(S.target && !S.rules.max && !S.rules.treble ? { t: sc.t, g: S.target } : { t: sc.t }),
+        xi: S.xi.filter(x => x.p != null).map(x => byId(x.p).name), ...(S.manager && MANAGERS[S.manager] ? { mgr: MANAGERS[S.manager].name } : {}) };  // (their profile shows their best XI and favourite manager)
+      const { isBest } = await GM.recordScore(modeKey(), sc.total, meta);
       if (isBest && sc.total > 0 && S.mode !== 'daily') GM.toast('🏆 New personal best!');
       if (isBest && sc.total > 0 && S.mode !== 'daily' && GM.track) { GM.track('pb'); if (GM.celebrate) setTimeout(() => GM.celebrate(true), 1700); }  // your celebration (Locker)
       if (GM.native) { GM.native.gameDone(); if (isBest && sc.total > 0) { GM.buzz('win'); GM.native.happy('pb'); } }  // the Play review card, at a happy moment
@@ -2493,7 +2555,8 @@
       return `<div class="slot empty ${s.pos !== baseForm()[i] ? 'moved' : ''} ${tgt ? 'target' : ''}" data-slot="${i}" title="${GM.POS_NAME[s.pos]}"><span class="pos pos-${GM.GROUP[s.pos]}">${s.pos}</span>${marksHtml(i)}</div>`;
     }
     const p = byId(s.p);
-    const surname = (p.name.includes(' ') ? p.name.split(' ').slice(1).join(' ') : p.name) + (s.trio && s.trio.length > 1 ? ` +${s.trio.length - 1}` : '');
+    const fused = s.trio && s.trio.length > 1;
+    const surname = fused ? fusedName(s.trio) : (p.name.includes(' ') ? p.name.split(' ').slice(1).join(' ') : p.name);
     const pk = S.parked && S.parked[i] && SPRITE[S.parked[i]] ? `<i class="parked ${(SIDE[baseForm()[i]] ?? 1) === 2 ? 'r' : ''}" aria-hidden="true">${(GM.FX && GM.FX.on && GM.FX.still(S.parked[i])) || SPRITE[S.parked[i]]}</i>` : '';
     // CHAOS: the card's colour says how he's doing against his own numbers (blue up, red down, grey as he was)
     let tone = '', pct = '';
@@ -2504,8 +2567,8 @@
         if (S.phase === 'done') pct = `<span class="slot-pct">${r > 1 ? '+' : '−'}${base > 0 ? Math.round(Math.abs(r - 1) * 100) + '%' : fmt(s.g)}</span>`;
       }
     }
-    return `<div class="slot filled ${s.fresh ? 'fresh' : ''} ${away[i] ? 'away' : ''} ${tone}" data-slot="${i}" title="${GM.esc(p.name)}"${S.wonky && S.wonky[i] ? ` data-wonky style="--wk:${S.wonky[i]}deg"` : ''}>${pk}${pct}${marksHtml(i)}
-      ${GM.avatar(p)}<span class="slot-name">${GM.esc(surname)}</span>
+    return `<div class="slot filled ${s.fresh ? 'fresh' : ''} ${away[i] ? 'away' : ''} ${tone}" data-slot="${i}" title="${GM.esc(fused ? s.trio.map(id => byId(id).name).join(' + ') : p.name)}"${S.wonky && S.wonky[i] ? ` data-wonky style="--wk:${S.wonky[i]}deg"` : ''}>${pk}${pct}${marksHtml(i)}
+      ${fused ? fusedFace(s.trio) : GM.avatar(p)}<span class="slot-name">${GM.esc(surname)}</span>
       <span class="slot-goals ${splatted(i) ? 'splatted' : ''}"><span class="sg">${S.rules.treble && s.v ? `${s.v.goals}·${s.v.assists}·${s.v.apps}` : fmt(s.g)}</span>${MOD_TAG[s.mod] || ''}</span><span class="slot-pos" title="${GM.POS_NAME[s.pos]}">${s.pos}</span></div>`;
   }
 
@@ -2664,7 +2727,7 @@
     const bus = S.bus ? await img(SPRITE.bus) : null, w = wx();
     const ring = { up: '#3987e5', down: '#e66767' };
     return GM.teamPicture(S.xi.map((s, i) => ({ pos: s.pos, p: s.p != null ? PL()[s.p] : null, v: s.p != null ? s.g : null, ring: ring[toneOf(i)] })), {
-      title: `CHAOS${S.hard ? ' · Hard' : ''}`, sub: [S.manager && MANAGERS[S.manager] ? `${MANAGERS[S.manager].name}` : '', w.name ? `${w.name}` : '', `${fmt(sc.bonus)} bonus`].filter(Boolean).join(' · '),
+      title: `CHAOS${S.hard ? ' · Hard' : S.easy ? ' · Easy' : ''}`, sub: [S.manager && MANAGERS[S.manager] ? `${MANAGERS[S.manager].name}` : '', w.name ? `${w.name}` : '', `${fmt(sc.bonus)} bonus`].filter(Boolean).join(' · '),
       total: sc.total, totalLabel: 'CHAOS pts',
       draw(c, px, py, pw, ph) {
         if (S.weather === 'snow') { c.fillStyle = 'rgba(255,255,255,.28)'; c.fillRect(px, py, pw, ph); }
@@ -2829,7 +2892,7 @@
     const nReels = Math.max(3, S.reels.length);
     const sp = S.special && WILDCARDS[S.special];
     root.innerHTML = `
-      <div class="topbar"><a href="#/" class="back">‹</a><h2><span class="t-name">${icon} ${modeName().replace(/^Ultimate Wildcard CHAOS/, 'CHAOS').replace(/^Matchday XI · /, '')}</span>${S.hard ? '<small class="hard-pill">Hard</small>' : ''}${S.ch ? '<small class="hard-pill ch-pill">⚔️ Challenge</small>' : ''}</h2><span class="top-btns">${S.online ? '' : GM.lbButton(modeKey())}<button class="icon-btn" id="help">?</button></span></div>
+      <div class="topbar"><a href="#/" class="back">‹</a><h2><span class="t-name">${icon} ${modeName().replace(/^Ultimate Wildcard CHAOS/, 'CHAOS').replace(/^Matchday XI · /, '')}</span>${S.hard ? '<small class="hard-pill">Hard</small>' : S.easy ? '<small class="hard-pill easy-pill">Easy</small>' : ''}${S.ch ? '<small class="hard-pill ch-pill">⚔️ Challenge</small>' : ''}</h2><span class="top-btns">${S.online ? '' : GM.lbButton(modeKey())}<button class="icon-btn" id="help">?</button></span></div>
       ${S.ch && GM.challenge ? GM.challenge.ghostHtml(S) : S.vs ? `<div class="banner">⚔️ Beat <b>${GM.esc(S.vs)}</b>’s score of <b>${GM.esc(S.vss)}</b></div>` : ''}
       ${S.online ? `<div class="opp-bar" id="oppbar">${(GM.online && GM.online.oppBar && GM.online.oppBar(S.online.code)) || `🌐 Racing <b>${GM.esc(S.online.opp)}</b>…`}</div>` : ''}
       ${counterHtml()}
@@ -2863,6 +2926,7 @@
   function poolText() {
     const r = S.rules, w = r.wild !== false ? ' and use your wildcards well' : '';
     if (S.fx || r.club || r.nation) return `Every player ${S.fx ? 'either club has had' : S.nat ? 'from that country' : 'the club has had'} in the Premier League is equally likely to turn up: spot the big numbers${w}.`;
+    if (S.easy && !r.all) return `Every player with 50+ apps can turn up, and on Easy the big names more often: a star about 4 times as often as an average player. Spot the big numbers${w}.`;
     if (r.fame) return `Every player with 50+ apps can turn up, and the better known they are, the more often${S.hard ? ' (on Hard, much less so: a star turns up about 4 times as often as an average player, not 16)' : ': a star turns up about 16 times as often as an average player'}.`;
     if (r.all) return `Every one of the 5,000+ PL players is equally likely to turn up, so most are strangers: spot the big numbers${w}.`;
     return `Every player with 50+ apps is equally likely to turn up, so you’ll mostly see journeymen: spot the big numbers${w}.`;
@@ -2872,7 +2936,7 @@
     GM.modal(`<h3>How to play</h3>
       ${r.treble ? `<p>🏆 <b>The Treble:</b> one XI, three targets – <b>${fmt(TREBLE.goals)} goals</b>, <b>${fmt(TREBLE.assists)} assists</b> and <b>${fmt(TREBLE.apps)} appearances</b>. Strikers bring goals, creators bring assists, old warhorses bring apps: balance them.</p>`
       : r.mystery ? `<p>🎲 <b>Mystery Target:</b> you’re counting <b>${S.st.label}</b>, but the target is secret – somewhere between ${fmt(MYSTERY[S.stat][0])} and ${fmt(MYSTERY[S.stat][1])}. The thermometer tells you how close you are. It’s revealed at full time.</p>`
-      : r.chaos ? `<p>🌪️ <b>Ultimate Wildcard CHAOS:</b> build the XI with the most PL ${L}, and then some. Your score is your ${L} <b>plus bonus points</b> for the kind of team you build: teammates who played together (chemistry), your squad rating, PL title medals, Hall of Famers, one-club men, journeymen (5+ clubs) and ten-season veterans.</p>
+      : r.chaos ? `<p>🌪️ <b>CHAOS:</b> build the XI with the most PL ${L}, and then some. Your score is your ${L} <b>plus bonus points</b> for the kind of team you build: teammates who played together (chemistry), your squad rating, PL title medals, Hall of Famers, one-club men, journeymen (5+ clubs) and ten-season veterans.</p>
         <p>👔 <b>Your manager</b> brings a perk and a catch (👍 and 👎 on the reels show who he’d like). He can get the sack.</p>
         ${S.stat !== 'apps' ? `<p>🧤 <b>Keepers count too:</b> ${S.stat === 'goals' ? 'a goal for every three' : 'an assist for about every four'} Premier League clean sheets.</p>` : ''}
         <p>⚡ <b>The CHAOS meter</b> fills every time you take or play a wildcard. When it’s full, the next spin opens with a big moment: a 🌪️ tornado through your XI, a ⚡ lightning strike, a 🚌 bus parade, ⏰ deadline day, 💥 CHAOS unleashed or a sacking.</p>
@@ -2883,12 +2947,13 @@
       <p>Each spin shows three players who fit an open position. Their ${L} are hidden until you sign one. You keep spinning until the XI is full.</p>
       <p>Every player has real positions – <b>GK, LB, CB, RB, LM, CM, RM, ST</b>. Tap a player, then tap one of the highlighted slots he can play.</p>
       <p><b>Wildcards</b> appear on the reels from the 2nd spin – grab one instead of a player and use it when you like (hold up to 3):</p>
-      <ul class="wc-list">${Object.entries(WILDCARDS).filter(([k, w]) => !r.noWild.includes(k) && (!w.chaos || r.chaos)).map(([, w]) => `<li>${w.icon} <b>${w.name}</b> – ${w.desc(wst())}</li>`).join('')}</ul>
+      <ul class="wc-list">${Object.entries(WILDCARDS).filter(([k, w]) => !r.noWild.includes(k) && (!w.chaos || r.chaos) && w.deal !== false).map(([, w]) => `<li>${w.icon} <b>${w.name}</b> – ${w.desc(wst())}</li>`).join('')}</ul>
       <p><b>Scoring:</b> ${r.treble ? 'up to 333 points per stat (full marks when exact, nothing once you’re 25% out). All three within 3% wins the Treble: +500. Two = the Double: +150.'
         : r.mystery ? '1000 minus 5 points per 1% you miss by (roughly). Hit it exactly for a +500 bullseye.'
         : r.chaos ? `your XI’s PL ${L} plus every bonus, shown at full time.` : r.max ? `your score is your XI’s total PL ${L} (after any wildcard modifiers).` : `1000 minus 5 for every ${S.stat === 'goals' ? 'goal' : `${fmt(Math.round(S.target / 442 * 10) / 10)} ${L}`} off target. Exactly ${fmt(S.target)} = +500 bullseye bonus.`}</p>
       <p>🤝 A player who shares a club with your last signing may turn up to tempt you.</p>
       ${!S.hard && blind() ? '<p>⚡ <b>Extreme:</b> every one of the 5,000+ PL players, and just names and positions on the reels – no clubs, years, apps or nationality. Separate leaderboard.</p>' : ''}
+      ${S.easy ? '<p>🙂 <b>Easy:</b> big names turn up more often (a star about 4 times as often as an average player), and all the clues are on the reels. Separate leaderboard.</p>' : ''}
       ${S.hard ? `<p>🥵 <b>Hard mode:</b> just names and positions – no clubs, years, apps or nationality${r.fame || !r.max ? `, and far fewer star players on the reels${r.max ? '' : ' (same targets)'}` : ''}. Separate leaderboard.</p>` : ''}
       <div class="row"><button class="btn" data-close>Got it</button></div>`);
   }
@@ -2907,7 +2972,7 @@
         : S.rules.chaos ? `<div class="result-total">${fmt(sc.total)}<small>CHAOS points · ${fmt(sc.t)} ${S.st.label} + ${fmt(sc.bonus)} bonus</small></div>`
         : `<div class="result-total ${sc.diff === 0 ? 'bull' : ''}">${fmt(sc.t)}<small>PL ${S.st.label}${S.rules.max ? '' : ` · target ${fmt(S.target)} · <b>${Math.round(sc.t / S.target * 1000) / 10}%</b>`}</small></div>`}
         ${S.rules.chaos ? `<div class="chaos-level">${chaosLevel()}</div>${S.manager ? `<div class="muted small">👔 Manager: ${MANAGERS[S.manager].icon} ${MANAGERS[S.manager].name}</div>` : ''}
-          ${(S.moments || []).length ? `<details class="chaos-story"><summary>📜 What happened</summary><ol>${S.moments.map(m => `<li>${m.icon} <b>${GM.esc(m.name)}</b> ${GM.esc(m.text)}</li>`).join('')}</ol></details>` : ''}` : ''}
+          ${(S.moments || []).length ? `<details class="chaos-story"><summary>📜 What happened (${S.moments.length})</summary><ol>${S.moments.map(m => `<li><span class="cs-i">${m.icon}</span><span class="cs-t"><b>${GM.esc(m.name)}</b><small>${GM.esc(m.name === 'Kick-off' && m.text.length > 90 ? m.text.replace(/^.*?(Formation [^.]+)\..*$/, '$1') : m.text)}</small></span></li>`).join('')}</ol></details>` : ''}` : ''}
         ${S.rules.max && !S.rules.chaos ? '' : `${S.rules.chaos ? '' : `<div class="result-score">${fmt(sc.total)}<small>points</small></div>`}
         ${S.rules.chaos && (S.newMgrs || []).length ? `<div class="mgr-new">🔓 New manager${S.newMgrs.length > 1 ? 's' : ''} unlocked: ${S.newMgrs.map(k => `${MANAGERS[k].icon} <b>${MANAGERS[k].name}</b>`).join(', ')}</div>` : ''}
         ${S.rules.chaos ? chartHtml() : ''}
@@ -2934,27 +2999,27 @@
     const chEl = GM.$('#ch-h2h', root);
     if (chEl && GM.challenge) { if (S.rematch) GM.challenge.sendRematch(S, sc, chEl); else if (S.ch) GM.challenge.fill(chEl, S.ch.code, S.ch.play); }
     const am = GM.$('#all-mgrs', root); if (am) am.onclick = managersModal;
-    const again = GM.$('#again', root); if (again) again.onclick = () => start(root, S.mode, { hard: S.hard, extreme: S.extreme, stat: S.rules.mystery ? undefined : S.stat, club: S.club, nat: S.nat });
+    const again = GM.$('#again', root); if (again) again.onclick = () => start(root, S.mode, { hard: S.hard, easy: S.easy, extreme: S.extreme, stat: S.rules.mystery ? undefined : S.stat, club: S.club, nat: S.nat });
     GM.$('#share', root).onclick = () => GM.share(resultText(sc));
     GM.$('#sharepic', root).onclick = async () => {
       // the pitch just as it is on screen; the drawn picture if that can't be done
       const btn = GM.$('#sharepic', root); if (btn) btn.disabled = true;
       const shot = GM.screenPicture && await GM.screenPicture(GM.$('.pitch', root), {
-        title: `${modeName()}${S.hard ? ' · Hard' : ''}`, sub: S.rules.chaos ? [S.manager && MANAGERS[S.manager] ? MANAGERS[S.manager].name : '', `${fmt(sc.bonus || 0)} bonus`].filter(Boolean).join(' · ') : S.rules.max ? `My XI's Premier League ${S.st.label}` : `${sc.total} points · ${fmt(sc.t)} / ${fmt(S.target || 0)} ${S.st.label}`,
+        title: `${modeName()}${S.hard ? ' · Hard' : S.easy ? ' · Easy' : ''}`, sub: S.rules.chaos ? [S.manager && MANAGERS[S.manager] ? MANAGERS[S.manager].name : '', `${fmt(sc.bonus || 0)} bonus`].filter(Boolean).join(' · ') : S.rules.max ? `My XI's Premier League ${S.st.label}` : `${sc.total} points · ${fmt(sc.t)} / ${fmt(S.target || 0)} ${S.st.label}`,
         total: S.rules.chaos ? sc.total : sc.t, totalLabel: S.rules.chaos ? 'pts' : S.st.label });
       if (btn) btn.disabled = false;
       if (shot) { GM.shareImage(shot, resultText(sc)); return; }
       if (S.rules.chaos) { GM.shareImage(await chaosPicture(sc), resultText(sc)); return; }
       const png = GM.teamPicture(S.xi.map(s => ({ pos: s.pos, p: s.p != null ? PL()[s.p] : null, v: s.p != null ? s.g : null })), {
-        title: `${modeName()}${S.hard ? ' · Hard' : ''}`, sub: S.rules.max ? `My XI's Premier League ${S.st.label}` : `${sc.total} points · ${fmt(sc.t)} / ${fmt(S.target || 0)} ${S.st.label}`,
+        title: `${modeName()}${S.hard ? ' · Hard' : S.easy ? ' · Easy' : ''}`, sub: S.rules.max ? `My XI's Premier League ${S.st.label}` : `${sc.total} points · ${fmt(sc.t)} / ${fmt(S.target || 0)} ${S.st.label}`,
         total: sc.t, totalLabel: S.st.label });
       GM.shareImage(png, resultText(sc));
     };
     if (GM.$('#challenge', root)) GM.$('#challenge', root).onclick = async () => {
       // a proper challenge (their XI, their line, the head-to-head, the tally); the plain link if the server can't be reached
       const btn = GM.$('#challenge', root); btn.disabled = true;
-      const txt = S.rules.max ? `⚽ Goal Machine – my ${modeName()}${S.hard ? ' (Hard)' : ''} XI has ${fmt(S.rules.chaos ? sc.total : sc.t)} ${S.rules.chaos ? 'pts' : 'PL ' + S.st.label}. Same spins, can you beat it?`
-        : `⚽ Goal Machine – I scored ${sc.total} in ${modeName()}${S.hard ? ' (Hard)' : ''}. Same spins, can you beat me?`;
+      const txt = S.rules.max ? `⚽ Goal Machine – my ${modeName()}${S.hard ? ' (Hard)' : S.easy ? ' (Easy)' : ''} XI has ${fmt(S.rules.chaos ? sc.total : sc.t)} ${S.rules.chaos ? 'pts' : 'PL ' + S.st.label}. Same spins, can you beat it?`
+        : `⚽ Goal Machine – I scored ${sc.total} in ${modeName()}${S.hard ? ' (Hard)' : S.easy ? ' (Easy)' : ''}. Same spins, can you beat me?`;
       const sent = GM.challenge && await GM.challenge.send(S, sc, txt);  // friends in the app and/or a link
       btn.disabled = false;
       if (sent) return;
@@ -2962,15 +3027,15 @@
       const m = S.mode === 'daily' ? 'ultimate' : S.mode;
       const url = `${GM.baseUrl()}#/draft?m=${m}&s=${S.stat}${S.club ? '&c=' + encodeURIComponent(S.club) : ''}${S.nat ? '&n=' + encodeURIComponent(S.nat) : ''}${S.extreme ? '&x=1' : ''}&seed=${encodeURIComponent(S.seed)}${S.hard ? '&h=1' : ''}&vs=${encodeURIComponent(name)}&vss=${sc.total}`;
       GM.share(S.rules.max
-        ? `⚽ Goal Machine – my ${modeName()}${S.hard ? ' (Hard)' : ''} XI has ${fmt(sc.t)} PL ${S.st.label}. Same spins, can you beat it?`
-        : S.rules.treble || S.rules.mystery ? `⚽ Goal Machine – I scored ${sc.total} in ${modeName()}${S.hard ? ' (Hard)' : ''}. Same spins, can you beat me?`
-        : `⚽ Goal Machine – I scored ${sc.total} in ${modeName()}${S.hard ? ' (Hard)' : ''} (${fmt(sc.t)}/${fmt(S.target)}). Same spins, can you beat me?`, url);
+        ? `⚽ Goal Machine – my ${modeName()}${S.hard ? ' (Hard)' : S.easy ? ' (Easy)' : ''} XI has ${fmt(sc.t)} PL ${S.st.label}. Same spins, can you beat it?`
+        : S.rules.treble || S.rules.mystery ? `⚽ Goal Machine – I scored ${sc.total} in ${modeName()}${S.hard ? ' (Hard)' : S.easy ? ' (Easy)' : ''}. Same spins, can you beat me?`
+        : `⚽ Goal Machine – I scored ${sc.total} in ${modeName()}${S.hard ? ' (Hard)' : S.easy ? ' (Easy)' : ''} (${fmt(sc.t)}/${fmt(S.target)}). Same spins, can you beat me?`, url);
     };
   }
 
   function resultText(sc) {
     const icons = S.log.map(l => ({ G: '🧤', D: '🛡️', M: '⚙️', F: '⚽' }[GM.GROUP[l]] || l)).join('');
-    const head = S.mode === 'daily' ? `Daily Ultimate · ${GM.today()}` : modeName() + (S.hard ? ' (Hard)' : '');
+    const head = S.mode === 'daily' ? `Daily Ultimate · ${GM.today()}` : modeName() + (S.hard ? ' (Hard)' : S.easy ? ' (Easy)' : '');
     const rating = GM.teamRating ? GM.teamRating(S.xi.filter(s => s.p != null).map(s => ({ ...s, player: byId(s.p) }))) : null;
     const tier = rating ? `\n${rating.tier.icon} ${rating.tier.name}` : '';
     if (S.rules.chaos) return `⚽ Goal Machine – ${head}\n🌪️ ${fmt(sc.total)} CHAOS points (${fmt(sc.t)} ${S.st.label} + ${fmt(sc.bonus)} bonus)${tier}\n${icons}`;

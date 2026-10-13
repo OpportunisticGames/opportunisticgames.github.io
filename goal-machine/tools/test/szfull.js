@@ -38,6 +38,10 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     }
     const r = await pg.evaluate(() => { const S = GM.draft.state(); return { total: GM.draft.total(S), filled: S.xi.filter(x => x.p != null).length, slots: S.xi.length, mode: S.mode }; });
     ok(done && Number.isFinite(r.total) && r.filled === r.slots && r.mode === 'szchaos', `game ${g + 1}: full time with ${forced} wild moments forced in, ${r.filled}/${r.slots} signed, ${r.total} pts`);
+    // 5.32.2: nothing from the game carries on over the result (a witch mid-flight), and the story lists the kick-off once, briefly
+    const end = await pg.evaluate(() => ({ lot: [...document.querySelectorAll('.fx-lottie')].filter(e => !e.closest('.result')).length, ko: (GM.draft.state().moments || []).filter(m => m.name === 'Kick-off').map(m => m.text) }));
+    ok(end.lot === 0, `game ${g + 1}: no flyers or moment animations left over the result (${end.lot})`);
+    ok(end.ko.length <= 1 && end.ko.every(t => t.length < 90), `game ${g + 1}: "What happened" has the kick-off once, in one short line (${JSON.stringify(end.ko)})`);
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + [...new Set(errs)].slice(0, 3).join(' | ') : ''));
   await b.close();

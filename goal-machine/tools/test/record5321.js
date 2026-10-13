@@ -17,7 +17,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   // the board's answer is faked: [all time, this month] as {rank, of, score}
   const fake = (all, mon) => pg.evaluate(([all, mon]) => { GM.lb.mine = async (m, n, month) => (month ? mon : all); }, [all, mon]);
   const news = async (mode, score, all, mon) => { await fake(all, mon); return pg.evaluate(([m, s]) => GM.boardNews(m, s).then(x => x ? x.title + ' | ' + x.sub : ''), [mode, score]); };
-  ok(/^Record! You’re top of Ultimate Wildcard \| Ahead of all 37 players, all time/.test(await news('ultimate', 400, { rank: 1, of: 37, score: 400 }, { rank: 1, of: 12, score: 400 })), 'top of the board all time: a record');
+  ok(/^Record! You’re top of Ultimate \| Ahead of all 37 players, all time/.test(await news('ultimate', 400, { rank: 1, of: 37, score: 400 }, { rank: 1, of: 12, score: 400 })), 'top of the board all time: a record');
   ok(/^You’re top of .*CHAOS \(Hard\) in /.test(await news('chaosh', 1500, { rank: 3, of: 20, score: 1500 }, { rank: 1, of: 6, score: 1500 })), 'top this month: a record for the month');
   let t = await news('target', 900, { rank: 4, of: 50, score: 900 }, { rank: 2, of: 9, score: 900 });
   ok(/^Top 3 in .* on Target/.test(t), `#2 of 9 this month beats #4 of 50 all time (top 3 needs 6+): ${t}`);

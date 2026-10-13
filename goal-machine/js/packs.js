@@ -27,6 +27,17 @@
   });
   GM.TIERS = TIERS;
   GM.cardTier = p => TIER.get(p.pk) || 'b';
+  // 🌍 countries: each one's best-known player is its foil No. 1 card, and its five best known (fewer for a small country)
+  // are its set in the Album; a set of three or more pays a Nations pack when you've finished every card in it
+  const NO1 = new Map(), SETS = {};
+  GM.players.slice().sort((a, b) => b.fame - a.fame).forEach(p => {
+    if (!p.nat) return;
+    if (!NO1.has(p.nat)) NO1.set(p.nat, p.pk);
+    (SETS[p.nat] = SETS[p.nat] || []).length < 5 && SETS[p.nat].push(p);
+  });
+  GM.isNo1 = p => !!p && NO1.get(p.nat) === p.pk;
+  GM.NATION_SETS = SETS;
+  const SET_MIN = 3;
   GM.tierCounts = () => Object.fromEntries(ORDER.map(t => [t, POOL[t].length]));
 
   const load = () => {
@@ -40,7 +51,21 @@
     if (c.seenDay !== GM.today()) { c.seen = {}; c.seenDay = GM.today(); }
     return c;
   };
-  const save = c => GM.store.set('cards', c);
+  const save = c => { checkSets(c); GM.store.set('cards', c); };
+  // a country set just finished: a Nations pack (sets you'd already finished before 5.33: up to three packs at once)
+  function checkSets(c) {
+    const was = c.sets || null; c.sets = was || [];
+    const fresh = Object.keys(SETS).filter(n => SETS[n].length >= SET_MIN && !c.sets.includes(n) && SETS[n].every(p => done(c, p)));
+    if (!fresh.length) return;
+    c.sets = c.sets.concat(fresh);
+    const give = was ? fresh : fresh.slice(0, 3);
+    setTimeout(() => {
+      if (!was && fresh.length > 1) { GM.toast(`🌍 You’ve already finished <b>${fresh.length} country sets</b>: ${give.length} Nations packs for you`, 3600); GM.givePack(give.length, 'country sets', 'nations'); return; }
+      give.forEach((n, i) => setTimeout(() => { GM.toast(`${GM.flag(n)} <b>${GM.esc(n)}</b> set complete! A 🌍 Nations pack`, 3200); GM.givePack(1, `${n} set`, 'nations'); }, i * 3400));
+    }, 1500);
+  }
+  GM.nationSets = () => { const c = load(); return Object.keys(SETS).filter(n => SETS[n].length >= SET_MIN).map(n => ({ nat: n, cards: SETS[n], have: SETS[n].filter(p => done(c, p)).length, no1: SETS[n][0], done: (c.sets || []).includes(n) }))
+    .sort((a, b) => b.have / b.cards.length - a.have / a.cards.length || b.cards.length - a.cards.length); };
   const need = p => TIERS[GM.cardTier(p)].need;
   const packed = (c, p) => c.k[p.pk] || 0;
   // finished: all the pieces, and (Silver and up) at least one of them from a pack
@@ -76,6 +101,8 @@
     legendary: { name: 'Legendary Pack', badge: '🌟', sub: () => 'Gold or better all through, a wildcard, and something from the vault', pool: () => null, min: 'g', up: 5, wild: 'pick' },
     season: { name: 'Season Pack', badge: '🏆', sub: () => 'A season reward: two Gold or better', pool: () => null, min: 'g', up: 2 },
     mission: { name: 'Mission Pack', badge: '🎯', sub: () => 'All three missions: Silver or better and a wildcard', pool: () => null, min: 's', up: 3, wild: 'pick' },
+    fresh: { name: 'Fresh Pack', badge: '🆕', sub: () => 'Traded in from your duplicate pile: five cards you haven’t finished', pool: () => null, fresh: true },
+    referral: { name: 'Referral Pack', badge: '🤝', sub: () => 'For bringing a mate: three Gold or better and a wildcard', pool: () => null, min: 'g', up: 3, wild: 'pick' },
     chaos: { name: 'CHAOS Pack', badge: '🌪️', sub: () => 'Anything could be in here: 3 to 7 pieces', pool: () => null, chaos: true },
   };
   GM.PACKS = PACKS;
@@ -131,7 +158,11 @@
   GM.packedXI = function (stat = 'goals') {
     const c = load(), key = GM.STATS[stat].key;
     const xi = GM.dreamXI(GM.players.filter(p => done(c, p)), key);
-    return { xi, total: xi.reduce((t, s) => t + (s.player ? s.player[key] : 0), 0), n: xi.filter(s => s.player).length };
+    // 🌍 the nation bonus (goals): +3 for every teammate after the first from the same country
+    const by = {}; xi.forEach(x => { if (x.player && x.player.nat) by[x.player.nat] = (by[x.player.nat] || 0) + 1; });
+    const nats = Object.entries(by).filter(([, k]) => k >= 2).sort((a, b) => b[1] - a[1]);
+    const bonus = stat === 'goals' ? nats.reduce((t, [, k]) => t + (k - 1) * 3, 0) : 0;
+    return { xi, base: xi.reduce((t, s) => t + (s.player ? s.player[key] : 0), 0), bonus, nats, get total() { return this.base + this.bonus; }, n: xi.filter(s => s.player).length };
   };
   // a better Packed XI goes on the board (goals)
   function updateXI() {
@@ -146,7 +177,17 @@
   /* ---------------------------------------------------------------- drawing a pack */
   // someone from the tier (within the pack's theme if it has one, dropping a tier if the theme has nobody there),
   // preferring cards you haven't finished and nobody already in this pack
-  function pickFrom(c, r, t, theme, taken) {
+  // 5.34: packs deal at random, so cards you've finished turn up again as your album fills (duplicates: they go on your
+  // ♻️ duplicate pile, 1/2/3/5 points by tier, and 100 points trades in for a 🆕 Fresh pack of cards you haven't finished).
+  // Before, packs dodged finished cards, which made the album fill too fast. `fresh` keeps the old dodging.
+  const DUPE = { b: 1, s: 2, g: 3, l: 5 }, DUPE_PACK = 100;
+  GM.DUPE_PACK = DUPE_PACK;
+  GM.dupePile = () => load().dupes || 0;
+  GM.tradeDupes = function () {
+    const c = load(); if ((c.dupes || 0) < DUPE_PACK) return false;
+    c.dupes -= DUPE_PACK; save(c); GM.givePack(1, 'your duplicate pile', 'fresh'); GM.buzz('confirm'); return true;
+  };
+  function pickFrom(c, r, t, theme, taken, fresh) {
     const tiers = ORDER.slice(0, ORDER.indexOf(t) + 1).reverse();
     for (const k of tiers) {
       const list = theme ? theme.filter(p => GM.cardTier(p) === k) : POOL[k];
@@ -155,8 +196,8 @@
         const wait = list.filter(q => (c.p[q.pk] || 0) > 0 && !packed(c, q) && !done(c, q) && !taken.has(q.pk));
         if (wait.length) return r.pick(wait);
       }
-      for (let i = 0; i < 40; i++) { const q = r.pick(list); if (!done(c, q) && !taken.has(q.pk)) return q; }
-      const q = r.pick(list); if (!taken.has(q.pk)) return q;
+      if (fresh) { for (let i = 0; i < 40; i++) { const q = r.pick(list); if (!done(c, q) && !taken.has(q.pk)) return q; } }
+      for (let i = 0; i < 20; i++) { const q = r.pick(list); if (!taken.has(q.pk)) return q; }
     }
     return r.pick(theme && theme.length ? theme : POOL.b);
   }
@@ -166,6 +207,7 @@
     legend: { icon: '🟣', name: 'Legend’s choice', text: 'Choose one of these three Legends', w: 10 },
   };
   GM.PACK_WILDS = WILDS;
+  GM.scoutOptions = () => wildOptions(load(), GM.rng('scout|' + Date.now()), 'scout', null, new Set()).options;  // (a 🔭 Scout's Tip, prizes.js)
   // the three options for a wildcard: { kind, options } (a Scout's tip with nothing started becomes a Pick one)
   function wildOptions(c, r, kind, theme, taken) {
     const out = [], seen = new Set(taken);
@@ -187,7 +229,7 @@
       // a pack's promise: its last few pieces at least a tier (Silver for levelling up, Gold for Royale…)
       if (P.min && i >= n - P.up && ORDER.indexOf(t) < ORDER.indexOf(P.min)) t = r.weighted(ORDER.slice(ORDER.indexOf(P.min)), k => TIERS[k].odds);
       if (P.chaos && r() < 0.15) t = ORDER[Math.min(ORDER.length - 1, ORDER.indexOf(t) + 1)];  // CHAOS: now and then a tier up
-      const p = pickFrom(c, r, t, theme, taken);
+      const p = pickFrom(c, r, t, theme, taken, P.fresh);
       taken.add(p.pk);
       out.push({ p, t: GM.cardTier(p) });
     }
@@ -204,7 +246,12 @@
     return out.sort((a, b) => rank(a) - rank(b));
   }
   function apply(c, x) {
-    if (done(c, x.p)) { x.spare = true; return; }
+    if (done(c, x.p)) {  // a duplicate: onto the pile
+      x.spare = true; x.dupe = DUPE[GM.cardTier(x.p)] || 1;
+      const was = c.dupes || 0; c.dupes = was + x.dupe;
+      if (was < DUPE_PACK && c.dupes >= DUPE_PACK) setTimeout(() => GM.toast(`♻️ Your duplicate pile is full: trade it in for a 🆕 Fresh pack (Locker → Cards)`, 3600), 2500);
+      return;
+    }
     x.firstPack = !packed(c, x.p);
     c.p[x.p.pk] = Math.min(need(x.p), (c.p[x.p.pk] || 0) + 1);
     c.k[x.p.pk] = packed(c, x.p) + 1;
@@ -262,13 +309,14 @@
     const pips = Array.from({ length: n }, (_, i) => gift && i === n - 1
       ? `<i class="gift${pk >= 1 ? ' on' : ''}${pk >= 1 && x.firstPack && opts.fresh && !x.spare ? ' new' : ''}"></i>`
       : `<i class="${i < anyOn ? 'on' : ''}${i === anyOn - 1 && !x.firstPack && opts.fresh && !x.spare ? ' new' : ''}"></i>`).join('');
-    return `<div class="pcard tier-${t}${x.finished ? ' finished' : ''}${opts.cls ? ' ' + opts.cls : ''}"${opts.attr || ''}><div class="pc-inner">${backHtml}
-      <div class="pc-front"><span class="pc-sheen"></span>
+    const no1 = GM.isNo1(p);
+    return `<div class="pcard tier-${t}${no1 ? ' no1' : ''}${x.finished ? ' finished' : ''}${opts.cls ? ' ' + opts.cls : ''}"${opts.attr || ''}><div class="pc-inner">${backHtml}
+      <div class="pc-front"><span class="pc-sheen"></span>${no1 ? `<span class="pc-no1">No.1 ${GM.flag(p.nat)}</span><span class="pc-foil"></span>` : ''}
         <div class="pc-top"><b class="pc-num">${p.goals}</b><small>GLS</small><span class="pc-pos">${p.poss[0]}</span><span class="pc-flag">${GM.flag(p.nat)}</span></div>
         <div class="pc-photo">${GM.avatar(p, 'lg')}</div>
         <div class="pc-name${short(p.name).length > 13 ? ' xxlong' : short(p.name).length > 10 ? ' xlong' : short(p.name).length > 7 ? ' long' : ''}">${GM.esc(short(p.name))}</div>
         <div class="pc-stats"><span><b>${p.ast}</b>AST</span><span><b>${p.apps}</b>APP</span><span><b>${p.first}</b>DEB</span></div>
-        <div class="pc-foot"><span class="pc-club">${GM.esc(GM.clubShort(p.main))}</span><span class="pc-pips">${x.spare ? '<em>spare</em>' : pips}</span></div>
+        <div class="pc-foot"><span class="pc-club">${GM.esc(GM.clubShort(p.main))}</span><span class="pc-pips">${x.spare ? `<em>♻️ +${x.dupe || DUPE[t] || 1}</em>` : pips}</span></div>
         ${x.finished ? '<span class="pc-done">COMPLETE</span>' : ''}${x.chose ? `<span class="pc-chose">${WILDS[x.chose].icon}</span>` : ''}</div></div></div>`;
   };
 
@@ -396,7 +444,7 @@
     const slot = s => s.player
       ? `<div class="slot filled tier-${GM.cardTier(s.player)}" data-psheet="${GM.esc(s.player.pk)}" title="${GM.esc(s.player.name)}">${GM.avatar(s.player)}<span class="slot-name">${GM.esc(s.player.name.split(' ').slice(-1)[0])}</span><span class="slot-goals">${s.player.goals}</span><span class="slot-pos">${s.pos}</span></div>`
       : `<div class="slot empty"><span class="pos pos-${GM.GROUP[s.pos]}">${s.pos}</span></div>`;
-    return `<div class="pitch packed"><div class="pitch-lines"></div><div class="shape">${px.total.toLocaleString()} goals · ${px.n}/11</div>
+    return `<div class="pitch packed"><div class="pitch-lines"></div><div class="shape">${(px.base != null ? px.base : px.total).toLocaleString()} goals${px.bonus ? ` + ${px.bonus} 🌍` : ""} · ${px.n}/11</div>
       ${rows.map(r => `<div class="pitch-row">${px.xi.filter(s => r.includes(s.pos)).map(slot).join('')}</div>`).join('')}</div>`;
   };
   // the Album's pack box: the next pack, how many are waiting, and Open
@@ -408,6 +456,21 @@
       <div><b>${n ? `${n} pack${n > 1 ? 's' : ''}` : 'No packs'}</b><small>${n ? `Next: ${PACKS[type].name}` : `Free one in ${hrs}h`}</small>
         ${n ? '<button class="btn small" id="openpack">🎁 Open</button>' : ''}</div></div>`;
   };
+  // ♻️ the duplicate pile: points from duplicates, traded in for a Fresh pack
+  function dupeBox() {
+    const n = GM.dupePile(), full = n >= DUPE_PACK;
+    return `<div class="dupe-box ${full ? 'full' : ''}"><span>♻️</span><span><b>Duplicate pile: ${Math.min(n, DUPE_PACK)}/${DUPE_PACK}</b>
+      <small>Duplicates from packs: 🟫 1 · ⚪ 2 · 🟡 3 · 🟣 5 points. ${DUPE_PACK} trade in for a 🆕 Fresh pack of cards you haven’t finished${n > DUPE_PACK ? ` (${n - DUPE_PACK} more waiting)` : ''}</small>
+      <div class="bar"><i style="width:${Math.min(100, n / DUPE_PACK * 100)}%"></i></div></span>${full ? '<button class="btn small" data-dupes>Trade in</button>' : ''}</div>`;
+  }
+  document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-dupes]'); if (!b) return; if (GM.tradeDupes()) { GM.toast('🆕 A Fresh pack for your duplicates!', 2600); const box = b.closest('.dupe-box'); if (box) box.outerHTML = dupeBox(); } });
+  // 🌍 the Album's country sets: each country's five best known, its No. 1 foil first
+  function countrySets() {
+    const sets = GM.nationSets(), fin = sets.filter(x => x.done).length;
+    return `<details class="set nat-sets"><summary><span>🌍 Country sets <small class="muted">${fin}/${sets.length} complete</small></span></summary>
+      <p class="muted small">Finish every card in a country’s set (its best-known players) for a 🌍 Nations pack. The first card is the country’s foil No. 1.</p>
+      <div class="nat-list">${sets.map(x => `<div class="nat-row ${x.done ? 'done' : ''}"><span class="nat-flag">${GM.flag(x.nat)}</span><span class="nat-nm"><b>${GM.esc(x.nat)}</b><small>${x.cards.map(p => GM.esc(p.name.split(' ').slice(-1)[0])).join(' · ')}</small></span><span class="nat-of">${x.done ? '✅' : `${x.have}/${x.cards.length}`}</span></div>`).join('')}</div></details>`;
+  }
   GM.cardsFinished = () => { const c = load(); return GM.players.filter(p => done(c, p)).length; };
   // the finished cards themselves (Goal Royale builds its decks from them)
   GM.cardsOwned = () => { const c = load(); return GM.players.filter(p => done(c, p)); };
@@ -422,7 +485,10 @@
         <li>Every player with 50+ PL apps is a card: 🟫 Bronze needs 1 piece, ⚪ Silver 2, 🟡 Gold 3 and 🟣 Legend 5. Finished cards go into your 🃏 XI.</li>
         <li>🎁 A free pack every day: a 🌍 Nations pack in an international break, a 🏟️ Matchday pack when your club plays. A bonus pack for three daily games in a day, for every new badge and every level, and a 🟣 Legends pack when you go up a rank.</li>
         <li>🃏 Some packs hold a wildcard: pick one of three, a scout’s tip for a card that’s nearly there, or (rarely) a Legend of your choice.</li>
-        <li>✍️ Signing a player in any draft gives you a piece of his card, once a day per player. From Silver up, signings fill a card to one piece short: the last one (the ◆) has to come from a pack. Five packed pieces finish a Legend too. Bronze cards can be finished by signing alone.</li></ul></details>
+        <li>✍️ Signing a player in any draft gives you a piece of his card, once a day per player. From Silver up, signings fill a card to one piece short: the last one (the ◆) has to come from a pack. Five packed pieces finish a Legend too. Bronze cards can be finished by signing alone.</li>
+        <li>♻️ Packs deal at random, so cards you’ve finished come round again: duplicates go on your pile (🟫 1, ⚪ 2, 🟡 3, 🟣 5 points), and 100 points trade in for a 🆕 Fresh pack of cards you haven’t finished.</li></ul></details>
+      ${dupeBox()}
+      ${countrySets()}
       ${started.length ? `<div class="card-grid">${started.slice(0, 120).map(p => GM.cardHtml({ p, t: GM.cardTier(p), have: c.p[p.pk], pack: packed(c, p), finished: done(c, p) }, { back: false, attr: ` data-psheet="${GM.esc(p.pk)}"` })).join('')}</div>${started.length > 120 ? `<p class="muted center">…and ${started.length - 120} more</p>` : ''}`
         : '<p class="muted center">No pieces yet. Open a pack, or sign players in any draft.</p>'}`;
   };

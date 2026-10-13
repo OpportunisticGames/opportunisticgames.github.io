@@ -137,5 +137,11 @@
   1.0,
   "whoosh",
   "swoosh"
+ ],
+ "jet": [
+  3.0,
+  "jet airplane flyby",
+  "airplane flyover",
+  "aircraft take off"
  ]
 }

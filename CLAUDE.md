@@ -94,6 +94,17 @@ game mode for players; this file is about how to work on it.
   add the credit, delete `cand/`.
 - Manager portraits: `fx/mgr/<key>.jpg` (free-licence Wikipedia photos, 320px) with face positions in `fx/mgr/credits.json`, fetched by
   `managers.yml` / `tools/fetch_managers.py` (add the article to `ARTICLES` for a new manager); shown by `GM.CFX.faceImg`.
+- **Levels (5.34):** `GM.LEVELS` easy/normal/hard/extreme. Easy (draft games in `GM.EASY_MODES` only): reels weighted by
+  √fame (big names about ×4; Target games fame^1.2), clues shown, boards `<key>e`, not in Best Players (`gm_main_board`)
+  or the Ultimate/CHAOS badges; it travels in the seed (`e~…`, `GM.seedEasy`), so challenges/races/share links match.
+  `GM.levelKey(k)` = the board at your level. Classic (`classic`, `classicwild`) is retired from the menus (old links work).
+  Duplicates (5.34, packs.js): packs deal at random (`fresh` packs still dodge finished cards); a duplicate adds `DUPE` points
+  (1/2/3/5) to `cards.dupes`; `GM.tradeDupes()` swaps 100 for a 🆕 `fresh` pack (button in Locker → Cards).
+- 5.33 bits: `GM.lbList(rows, o)` (core.js) draws every board (podium, pictures via `GM.isFriend`, ▲▼ from `gm:lbSeen`);
+  nation cards in packs.js (`GM.isNo1`, `GM.NATION_SETS`, `checkSets` pays a Nations pack, Packed XI `bonus`); CHAOS
+  moment `visa` sets `S.passNat` + `S.forceSpecial = 'passport'` (a `deal: false` wildcard); Hat-Trick fusion
+  (`fusedName`, `fusedFace`, `fuseFx` in draft.js); renewables in prizes.js (`GM.CONSUM`: freeze/boost/scout,
+  `gm:consum`, `GM.freezeCheck` in daily.js, season bonus tiers every 1,000 XP after tier 30 in rewards.js).
 - `locker.js` – 🎒 the Locker tab (`GM.lockerHub(root, {v})`: views `season` (rewards.js `GM.seasonPage`), `xi`/`cards`/`signed`/`badges`
   (collection.js `GM.albumView`) and `kit`, what you wear). Future seasons' and unstarted events' items stay hidden (`GM.lockerSecret`).
   The kit (`GM.LOCKER`, 64 items): pitch styles (`body.pk-*`), card backs (`body.cbk-*`), celebrations + horns
@@ -151,6 +162,10 @@ Everything goes through security-definer RPCs that check the account with `gm_au
   At full time `GM.boardNews` (core.js, after the submit; `GM.lb.mine(mode, name, month)`) works out your place: a 👑 record, a
   "Top N" (`GM.BOARD_TIERS`, only if the board has 2N+ players) or just the place; it fires `gm:board` and draft.js shows it in
   the result card (`#board-news`, `GM.boardNewsHtml`); screens without that slot get a `GM.notice` card.
+- **5.33:** `player_profile(p_name, p_me)` (profile.js `GM.profile`; tap any `.lb-row[data-name]` or `[data-profile]`), scores'
+  meta carries `xi` (names) and `mgr`; `claim_referral(p_user, p_key, p_ref)` + `referrals` table (?ref=NAME links,
+  `GM.invite`, both get a `referral` pack, made friends, `activity` kinds `referral`/`referral_in`; the inviter's pack is
+  handed out by `GM.feed.load`, remembered in `gm:refGot`).
 - Also: `save_backup` / `load_backup`, `delete_account`, avatars
   (`set_avatar`, `get_avatars`, `report_avatar`).
 Change SQL with the Supabase MCP tools (`apply_migration`); read a function first with `pg_get_functiondef`.
@@ -174,12 +189,16 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
 1. Serve the repo root: `python3 -m http.server 8765` from the repo root (it sometimes dies; just restart it).
 2. **Run them with `node run.js`** from `goal-machine/tools/test/` (it starts the server if needed, runs 3 at a time, prints one
    summary with times and any failures; the full output of each goes to `lay/<name>.log`): `node run.js` = the quick set (a few
-   minutes, after every change), `node run.js full` = everything (before a merge), `node run.js chaos,cards` = just those.
+   minutes), `node run.js full` = everything, `node run.js chaos,cards` = just those. **The owner's rule: don't run the tests
+   after every change.** Keep building; run them once, before merging (the full set, or the quick set plus the tests for
+   what changed), and fix anything they find then. A quick look in the browser while building is fine.
    New tests: use `helpers.js` where the look doesn't matter: `fast(ctx)` (Calm on, the game's timers 10× faster) and
    `idle(pg)` (taps through CHAOS cards and waits for the spin, instead of fixed sleeps). Never `pg.click` a CHAOS card that
    may be mid-action without a short `{ timeout }`: Playwright waits 30 s for it to become tappable (that made the CHAOS tests
    take minutes). Or run one script on its own with `node <script>.js`. Each uses `mockserver.js`, which fakes the
    Supabase RPCs in memory (test accounts Alice/Bob/Cara), so nothing touches the real database.
+   - `new534.js` – 5.34: Easy deals more big names, its own board key, travels in the seed, the four-level switch, Classic gone from the menus.
+   - `new533.js` – 5.33: profiles, invites, the podium, nation sets and No. 1s, Visa trouble!, the Hat-Trick fusion, Streak Freeze, Double XP and the bonus tiers.
    - `record5321.js` – where your score landed: record all time / this month, Top 3/10 by board size, just the place on a small board, an older best, a daily board, and the line on a real full-time screen.
    - `beaten532.js` – two phones: a beaten alert in the inbox (and off with the switch), the 🔔 count and drawer, Bob's crown, Best Players points.
    - `offline531.js` – a newer cloud backup is offered once and restores, backing up on leaving the app, the offline strip and cards, scores kept and sent later. `offline.js` – the service worker opens the game from cache offline and on a hanging network.

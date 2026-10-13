@@ -11,9 +11,41 @@
 
 (function () {
   const L = () => GM.LOCKER || {};
+  /* ---------------------------------------------------------------- renewable rewards
+     Things you can win again and again (the Locker's kit is one of each): 🧊 Streak Freeze covers a day you miss (it's
+     used by itself), ⚡ Double XP doubles your XP for 30 minutes, 🔭 Scout's Tip is a pack piece for one of your nearly
+     finished cards (you choose). They live in 'consum'; use them from the 🎁 sheet. */
+  const CONSUM = {
+    freeze: { icon: '🧊', name: 'Streak Freeze', desc: 'Covers a day you miss: your daily streak carries on. Used by itself' },
+    boost: { icon: '⚡', name: 'Double XP', desc: 'Double XP (and season XP) for 30 minutes' },
+    scout: { icon: '🔭', name: 'Scout’s Tip', desc: 'A pack piece for one of your nearly finished cards: you choose' },
+  };
+  GM.CONSUM = CONSUM;
+  GM.consum = k => +((GM.store.get('consum', {}) || {})[k] || 0);
+  GM.addConsum = (k, n = 1) => { const c = GM.store.get('consum', {}) || {}; c[k] = Math.max(0, (+c[k] || 0) + n); GM.store.set('consum', c); };
+  GM.boostLeft = () => Math.max(0, GM.store.get('boostUntil', 0) - Date.now());
+  GM.useBoost = function () {
+    if (!GM.consum('boost')) return;
+    GM.addConsum('boost', -1);
+    GM.store.set('boostUntil', Math.max(Date.now(), GM.store.get('boostUntil', 0)) + 30 * 60e3);
+    GM.toast('⚡ <b>Double XP</b> for the next 30 minutes!', 3000); GM.sound.play('levelup'); GM.buzz('confirm');
+  };
+  GM.useScout = function () {
+    if (!GM.consum('scout')) return;
+    const opts = GM.scoutOptions ? GM.scoutOptions() : [];
+    if (!opts.length) { GM.addConsum('scout', -1); GM.grant({ pack: 'standard' }, 'your Scout’s Tip (no cards started yet)'); return; }
+    const m = GM.modal(`<div class="center"><h3>🔭 Scout’s Tip</h3><p class="muted small">Pick a card: it gets a pack piece</p>
+      <div class="scout-pick">${opts.map((p, k) => `<button data-sc="${k}">${GM.cardHtml({ p, t: GM.cardTier(p), have: GM.cardPieces(p), pack: GM.cardPackPieces(p) }, { back: false })}</button>`).join('')}</div>
+      <button class="btn ghost small" data-close>Not now</button></div>`);
+    GM.$$('[data-sc]', m.el).forEach(b => b.onclick = () => {
+      const p = opts[+b.dataset.sc]; m.close(); GM.addConsum('scout', -1);
+      const x = GM.cardPackPiece(p); GM.buzz('confirm'); GM.sound.play('shimmer');
+      GM.toast(x.finished ? `🧩 <b>${GM.esc(p.name)}</b> card complete!` : `🔭 A piece for <b>${GM.esc(p.name)}</b>`, 2600);
+    });
+  };
   const label = r => r.pack ? `${(GM.PACKS && GM.PACKS[r.pack] || {}).badge || '🎁'} ${(GM.PACKS && GM.PACKS[r.pack] || { name: 'Pack' }).name}`
     : r.item ? `${GM.LOCKER_KINDS[L()[r.item].kind].icon} ${L()[r.item].name}` : r.xp ? `⚡ ${r.xp} season XP` : r.spin ? `🎡 ${r.spin} spin${r.spin > 1 ? 's' : ''}`
-    : r.vault ? '🏛️ A vault item' : r.choice ? '🎁 Pick one of three' : '🎁';
+    : r.vault ? '🏛️ A vault item' : r.choice ? '🎁 Pick one of three' : r.freeze ? `🧊 ${r.freeze > 1 ? r.freeze + ' Streak Freezes' : 'Streak Freeze'}` : r.boost ? '⚡ Double XP' : r.scout ? '🔭 Scout’s Tip' : '🎁';
   GM.rewardLabel = label;
 
   /* ---------------------------------------------------------------- the vault */
@@ -33,12 +65,16 @@
     else if (r.xp && GM.seasonXP) { GM.seasonXP(r.xp); if (!quiet) GM.toast(`⚡ <b>+${r.xp} season XP</b>${why ? ` · ${GM.esc(why)}` : ''}`, 2400); }
     else if (r.spin) { GM.store.set('spins', +GM.store.get('spins', 0) + r.spin); if (!quiet) setTimeout(() => GM.toast(`🎡 <b>+${r.spin} spin${r.spin > 1 ? 's' : ''}</b> on the prize wheel${why ? ` · ${GM.esc(why)}` : ''}`, 2600), 300); GM.rewardDots(); }
     else if (r.vault) { const it = vaultPick(Math.random); return it ? GM.grant({ item: it.id }, why, quiet) : GM.grant({ pack: 'legendary' }, why, quiet); }
+    else if (r.freeze || r.boost || r.scout) {
+      const k = r.freeze ? 'freeze' : r.boost ? 'boost' : 'scout'; GM.addConsum(k, r[k]);
+      if (!quiet) setTimeout(() => GM.toast(`${CONSUM[k].icon} <b>${label(r)}</b>${why ? ` · ${GM.esc(why)}` : ''}${k === 'freeze' ? '' : ' · use it from 🎁'}`, 2800), 300);
+    }
     else if (r.choice) { GM.store.set('choices', (GM.store.get('choices', []) || []).concat([{ opts: r.choice, why: why || '' }])); if (!quiet) setTimeout(() => { if (document.body.classList.contains('has-tabs')) GM.pickReward(); else GM.toast('🎁 <b>Pick one of three</b> is waiting under the 🎁 on the menus', 2800); }, 900); GM.rewardDots(); }  // never over a game
     return r;
   };
   // the dots on the season chip: spins to use, a choice waiting
   GM.rewardDots = () => { GM.$$('.season-chip').forEach(el => { if (GM.seasonChip) el.outerHTML = GM.seasonChip(); }); };
-  GM.rewardsWaiting = () => +GM.store.get('spins', 0) + (GM.store.get('choices', []) || []).length;
+  GM.rewardsWaiting = () => +GM.store.get('spins', 0) + (GM.store.get('choices', []) || []).length + GM.consum('boost') + GM.consum('scout');
 
   /* ---------------------------------------------------------------- pick one of three */
   GM.pickReward = function () {
@@ -60,6 +96,7 @@
   const WHEEL = [
     { r: { xp: 50 }, w: 26, c: '#2563eb' }, { r: { pack: 'standard' }, w: 20, c: '#16a34a' }, { r: { xp: 100 }, w: 16, c: '#7c3aed' },
     { r: { pack: 'level' }, w: 14, c: '#0891b2' }, { r: { spin: 1 }, w: 9, c: '#f59e0b' }, { r: { xp: 200 }, w: 7, c: '#db2777' },
+    { r: { freeze: 1 }, w: 7, c: '#38bdf8' }, { r: { boost: 1 }, w: 7, c: '#facc15' },
     { r: { vault: 1 }, w: 5, c: '#9333ea' }, { r: { pack: 'legendary' }, w: 3, c: '#eab308' },
   ];
   GM.WHEEL = WHEEL;
@@ -107,6 +144,8 @@
     if (n % 10 === 0) return [{ pack: 'legendary' }];
     if (n % 5 === 0) return [{ choice: [{ pack: 'season' }, { spin: 2 }, { vault: 1 }] }];
     if (n % 3 === 0) return [{ spin: 1 }, { pack: 'level' }];
+    if (n % 7 === 0) return [{ freeze: 1 }, { pack: 'level' }];   // (the renewables only take levels that were a plain pack)
+    if (n % 4 === 2) return [{ scout: 1 }, { pack: 'level' }];
     return [{ pack: 'level' }];
   };
   GM.roadHtml = function (lvl) {

@@ -18,7 +18,7 @@
   const link = code => `${GM.baseUrl()}#/c?id=${code}`;
   const local = code => GM.store.get('ch:' + code, null);
   const top = (t, back = '#/') => `<div class="topbar"><a href="${back}" class="back">‹</a><h2>${t}</h2><span></span></div>`;
-  const modeName = ch => { const k = GM.draft.modeKey(ch.mode, ch.stat, ch.hard, ch.club || ch.nat, ch.extreme); return ((GM.MODES || {})[k] || (GM.MODES || {})[ch.mode] || { name: 'Draft' }).name + (ch.hard ? ' · Hard' : ''); };
+  const modeName = ch => { const k = GM.draft.modeKey(ch.mode, ch.stat, ch.hard, ch.club || ch.nat, ch.extreme, GM.seedEasy(ch.seed)); return ((GM.MODES || {})[k] || (GM.MODES || {})[ch.mode] || { name: 'Draft' }).name + (ch.hard ? ' · Hard' : ''); };
   const unitOf = p => (p && p.game && p.game.unit) || 'pts';
   const draftUrl = (ch, extra = '') => `#/draft?m=${ch.mode}&s=${ch.stat}&seed=${enc(ch.seed)}${ch.hard ? '&h=1' : ''}${ch.extreme ? '&x=1' : ''}${ch.club ? '&c=' + enc(ch.club) : ''}${ch.nat ? '&n=' + enc(ch.nat) : ''}${extra}`;
   // a line: [[players signed, total], …]; the total after n signings

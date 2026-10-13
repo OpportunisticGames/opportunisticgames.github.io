@@ -23,6 +23,97 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
+### Card tiers that feel right 💬 *(owner, 13 Oct 2026)*
+> "might it be worth having more player tiers? I only say this because I look at some of the golds and silvers and they
+> don't feel quite right"
+
+Notes: tiers come from `fame` (apps × (1 + goals/30)) ranks: Hall of Famers + top 25 Legend, next 200 Gold, next 500
+Silver. It rewards long careers and goals, not quality: Barry, Milner, Crouch are Legends; Ronaldo, Haaland, De Bruyne,
+Silva Gold; Kanté, Suárez, Bale, Van der Sar, De Gea Silver; Rúben Dias Bronze. Dodgy Owner's OVR is no better (keepers low).
+Proposal: a card rating (per-game quality by position, keepers' clean sheets, titles/HoF/honours, longevity with
+diminishing returns), ranked within each position so every tier has keepers and defenders; maybe a 💎 Icon tier
+(~20 all-time greats, 7 pieces) above Legend. Show the owner the full new Legend/Gold list before building. Finished
+cards stay finished. Waiting for go.
+
+### Duplicates in packs, and a duplicate pile ✅ 5.34 *(owner, 13 Oct 2026)*
+> "would it slow down pack progression so it's not too quick if we enabled duplicates? i was thinking maybe you could up it
+> to 10 for legends or something but now i'm thinking maybe we just enable duplicates? could potentially give a reward for
+> duplicates, maybe they go in like a duplicate pile and you get 1 point for bronze, two for silver, three for gold and 5
+> for legendary and then once you got like 50 points you got a pack or something like that?"
+
+Notes: today packs try hard (40 goes) to avoid cards you've finished, so duplicates ("spare") are rare. Dealing honestly
+at random lets them happen more as your album fills: progress slows by itself, most at the end. The pile turns them back
+into something: 1/2/3/5 points by tier, a pack at 50. Ideas and questions in the chat.
+**Owner:** "I don't think it should be super generous, are you thinking 100 is better? (finished cards making
+duplicates straight away:) yes". Built: honest random dealing, the pile at 100 points for a 🆕 Fresh pack (only cards
+you haven't finished), pack pieces only (signings never make duplicates), the pile in Locker → Cards.
+
+### Clearer names for the main draft modes ✅ 5.34 *(owner, 13 Oct 2026)*
+> "Can you also go over all the names of the main draft game modes - just looking at the leaderboard i see why it would
+> be easy for someone to be confused - do all the names actually make sense or could some be better"
+
+Today there are two real choices (who turns up, and wildcards or not) plus the difficulty, but the names mix them up:
+Classic Wildcard / Classic (stars more likely), Ultimate Wildcard / Ultimate (all equal), Extreme Wildcard / Extreme
+Purist (everyone ever), Ultimate Wildcard CHAOS. Problems: "Classic" v "Ultimate" doesn't say what's different;
+"Ultimate" without wildcards sounds bigger than "Ultimate Wildcard"; "Extreme" is both a difficulty and a mode name;
+"Purist" only exists on Extreme; the CHAOS name is long. Proposal in the chat (display names only: board keys, scores
+and badges stay as they are).
+- **Owner (13 Oct):** "Is there a real point in having big names hard and extreme? would it instead be better to just
+  have classic become the easy mode? like the easy mode always favours big names a little bit?" **Our view: yes.** One
+  main event (Ultimate, wildcards on or "Pure"); levels: 🙂 Easy (new: big names about ×4, clues shown), ⚽ Normal (all
+  50+ equal, clues), 🥵 Hard (equal, no clues), ☠️ Extreme (everyone ever, no clues). Easy across every draft mode.
+  Questions: fresh Easy boards (old Classic ones hidden)? Easy counts for Best Players at half points? New players start
+  on Easy for 3 games? **Owner (go):** "1. yes 2. no easy shouldn't count, or count all positions: you decide 3. new
+  players shouldn't have to start on easy. let's do it!" We decided: Easy doesn't count for Best Players (or the Ultimate/
+  CHAOS badges); fresh Easy boards (keys end in e; old Classic boards hidden); new players start on Normal. Easy travels
+  in the seed ("e~") so challenges and races match.
+
+### 5.33: the owner's go on six ideas ✅ 5.33 *(owner, 13 Oct 2026)*
+> "19. oo maybe stuff like streak freeze is a good idea for a reward you can get that is like renewable instead of all the
+> one time rewards so far - some other rewards like that would be good. 25. Hattrick hero is its own spin right? but you're
+> right it could use a rework - like three players actually turned into one would be cool. Right now you just choose one
+> player and it adds their scores, something that looks cool and chaotic like three faces together or something could be
+> good. 4. player profiles needs doing. 6. let's do that and have a referral pack. 3. yes i like those ideas. 1. yes a
+> nicer leaderboard please!"
+- **Renewable rewards:** consumables you can win again and again: 🧊 Streak Freeze (covers one missed day), and more like
+  it. They fill the season track once its items are owned, and bonus tiers after the last one.
+- **Hat-Trick Hero:** the three players become one fused player, three faces merged on the pitch, with a chaotic fusion.
+- **Player profiles:** tap any name for their picture, level, title, best boards, crowns, Best Players place, favourite
+  manager, best XI and record against you.
+- **Invite a friend:** a share link; when a new player claims a name from it, both get a 🤝 Referral pack.
+- **Nation cards:** flags on cards, a foil No. 1 card per country, country sets in the Album, Nation packs, a Packed XI
+  bonus for same-country teammates, and Passport Office in CHAOS.
+- **Leaderboards:** a podium for the top 3, pictures, movement since you last looked, your row pinned, tap for a profile.
+- **Owner, mid-build:** "how about a moment, like the conscription moment but instead you get a spin of players from the
+  country that the removed player is from? visa issues, a passport office and a plane". Built as 🛂 Visa trouble! (a
+  LottieFiles plane takes him, a visa-stamp Lottie, then the Passport Office spin); Passport Office is no longer a
+  wildcard you can be dealt, only the moment's spin.
+- **Decisions we made:** profile photos only for friends (as Settings promises), initials for everyone else; scores now
+  carry the XI's names and the CHAOS manager (profiles show them for scores from 5.33 on); referrals capped at 20 per
+  inviter, new accounts only (3 days); the Packed XI's nation bonus is +3 goals per extra teammate from a country.
+- **Still open:** a longer season track (option a) wasn't picked: the bonus tiers and renewables are in; ask again if
+  the track still feels short.
+
+### A nicer leaderboard layout 💬 *(owner, 13 Oct 2026)*
+> "I think there has to be a nicer leaderboard layout. No worries if there isn't."
+
+Notes: today a board is a plain list of rows (rank, name, level, score). Ideas: a podium for the top 3 (pictures, frames,
+titles, the score big), everyone's profile picture on their row, your own row pinned at the bottom when you're off screen
+("#57 · 120 to beat #56"), small ▲▼ movement since yesterday, the gap to the next place, and tapping a row to see that
+XI (the meta already has it). Questions: podium on every board or only Best Players and the main event? Pictures on the
+public boards (today they're only shown to friends and opponents)?
+
+### Rewards fill up too fast 💬 *(owner, 13 Oct 2026)*
+> "We're going to need far more rewards or make changes to how you get them because I think you fill them up very fast"
+
+Notes (from the owner's own backup, 13 Oct): season tier 16 of 30 two days into October (4,240 of 7,500 XP), level 24.
+The season track is 30 tiers × 250 XP and every XP counts on it; a draft gives ~40 XP (+50 per badge, +300 per mission).
+Options: (a) a longer track: 50 tiers with rising costs (250 → 600), about 4× the XP; (b) "bonus tiers" after the last one
+(a pack or spin every 1,000 XP) so it never runs dry; (c) count less on the season track (season XP only from missions,
+dailies and wins, not every draft); (d) more things to win: more Locker items each season (pitch styles, card backs,
+frames, celebrations), duplicate items turn into "kit tokens" to buy a chosen one. Our suggestion: (a) + (b), plus (d)
+over time. Question: should the level road slow down too (level 24 already), e.g. steeper XP per level after 20?
+
 ### Tell me at full time when I break a record ✅ 5.32.1 *(owner, 12 Oct 2026)*
 > "In the same way when you break a record should it not tell you when you finish the game?"
 
@@ -312,7 +403,7 @@ challenges / challenge_plays; inbox items cs/cf/cr/co/cm). Not counted in the we
   sit on a Centurion; the armband passes down in CHAOS (captain ×2, then vice-captain ×1.5, then ×1.25). Skip the bag-slot
   cost (more to explain). Re-run the manager simulation after.
 
-### CHAOS: the screen gets messier as the game goes on 🚧 being built in 5.17 *(owner, 2 Oct 2026)*
+### CHAOS: the screen gets messier as the game goes on ✅ 5.17 *(owner, 2 Oct 2026)*
 - **Owner's words:** "make the screen a little more chaotic as time goes on? E.g if you got the pigeon a little pigeon stays
   on somewhere around the pitch, an ambulance is there for an injured player, a tornado does wreck things a little etc. There
   could even be a thing that splatters on your screen or obscures some of your current players' numbers? Like you'd then
@@ -325,7 +416,7 @@ challenges / challenge_plays; inbox items cs/cf/cr/co/cm). Not counted in the we
 - **Questions:** how messy at the end of a wild game (cap at about 6 leftovers)? Can you wipe the splat off (tap 3 times)?
   Does Daily CHAOS / a race get the same leftovers (yes, it's seeded)?
 
-### CHAOS: keepers that matter, ways to win points back, more wildcards and managers 🚧 being built in 5.17 *(owner, 2 Oct 2026)*
+### CHAOS: keepers that matter, ways to win points back, more wildcards and managers ✅ 5.17 *(owner, 2 Oct 2026)*
 - **Owner's words:** "Who ate all the pies" is a dud in goals mode (keepers don't score). Either a flat bonus, or "rework it
   so keepers can actually contribute to the game". Also: "a way for a player to regain the points they have lost, like a
   wildcard to reset a player's points, or a super rare event that makes everyone who has lost points regain points". And
@@ -351,7 +442,7 @@ challenges / challenge_plays; inbox items cs/cf/cr/co/cm). Not counted in the we
   likelier).
 
 
-### Google Play Games: achievements and Sidekick 💬 *(owner, 2 Oct 2026)*
+### Google Play Games: achievements and Sidekick ✅ 5.12–5.13 *(owner, 2 Oct 2026)*
 - **Owner's words:** Sidekick is switched on in Play Console; wants our badges to count as Google Play achievements
   (Play Points, the Play Games profile, Sidekick).
 - **What it needs:** Play Games Services v2 (`play-services-games-v2`) in the Android app, one achievement per badge
@@ -362,7 +453,7 @@ challenges / challenge_plays; inbox items cs/cf/cr/co/cm). Not counted in the we
 - **Questions (old):** which badges become achievements (all, or about 30 of the best)? Icons (512x512) and descriptions
   for each. Sign-in: PGS v2 signs in automatically, so no extra button, but we should say what it shares.
 
-### Player sheet: tap any player for a profile 💬 *(owner, 2 Oct 2026)*
+### Player sheet: tap any player for a profile ✅ (player.js, GM.playerSheet) *(owner, 2 Oct 2026)*
 - **Owner's words:** "it would be nice if you could click a player, whether it be on a pack, in the player index or even in
   game, and see a little bio about the player maybe? Idk how big of a job this would be, but … it could even just be their
   apps, goals, assists, who they played for, when they played, how many times you have used them in games etc. … if on a game
@@ -386,7 +477,7 @@ challenges / challenge_plays; inbox items cs/cf/cr/co/cm). Not counted in the we
   on reel cards at all. Still open: Hard mode (probably the same sheet, since the player is already signed), bio now or later.
 - **Owner (2 Oct):** Hard mode is fine for the sheet. Waiting for the go to build it (after the photos land).
 
-### Cards are too easy from drafts: every Silver+ card needs one pack piece 💬 *(owner, 2 Oct 2026)*
+### Cards are too easy from drafts: every Silver+ card needs one pack piece ✅ *(owner, 2 Oct 2026)*
 - **Owner's words:** "it does feel too easy, maybe too easy for the legends? Like in CHAOS you can get multiple Centurion
   throws per game. I like that you can get players from game modes too. Maybe every card needs to be both packed as well as
   in game? A legend you could do in game 4 times but you would still need to pack them once to complete it? … You don't have
@@ -641,7 +732,7 @@ challenges / challenge_plays; inbox items cs/cf/cr/co/cm). Not counted in the we
   collect emails. Later, if lost accounts become a problem, an **optional** "link your email / Google account to
   recover your progress", never required.
 
-### Share your whole day *(Claude's idea)*
+### Share your whole day ✅ 5.5 *(Claude's idea)*
 - Footle and the drafts already have share buttons. This adds one "Share my day" on the Today page: every daily
   result plus your streak in one spoiler-free post, with the link. One post a day in a group chat is how Wordle
   spread.

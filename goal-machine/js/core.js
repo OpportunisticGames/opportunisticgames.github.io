@@ -373,6 +373,20 @@ GM.getName = () => (GM.account() || {}).name || GM.store.get('name', '');
 GM.newKey = () => [...crypto.getRandomValues(new Uint8Array(16))].map(b => b.toString(16).padStart(2, '0')).join('');
 GM.NAME_RULE = /^[A-Za-z0-9][A-Za-z0-9 _.-]{1,18}[A-Za-z0-9]$/;
 /** Claims a name for this device (or confirms it's already ours). Resolves 'ok', 'taken', 'bad_name', 'rude_name' or 'offline'. */
+// 🤝 invite a friend: a link with ?ref=NAME. A new player who claims a name from it gets a Referral pack, and so does the
+// inviter (claim_referral on the server, which also makes them friends; the inviter's pack arrives with their 🔔 feed)
+(function keepRef() {
+  const m = (location.search + '&' + location.hash).match(/[?&]ref=([^&#]+)/);
+  if (m && !GM.store.get('account', null)) GM.store.set('refBy', decodeURIComponent(m[1]).slice(0, 30));
+})();
+GM.inviteLink = () => { const a = GM.account(); return a ? `${GM.baseUrl()}?ref=${encodeURIComponent(a.name)}` : GM.baseUrl(); };
+GM.invite = async function () {
+  if (!GM.account()) { if (!(await GM.accountModal('Claim your name first: your invite link carries it.'))) return; }
+  GM.share('⚽ Come and play Goal Machine with me! Sign up from my link and we both get a 🤝 Referral pack.', GM.inviteLink());
+};
+GM.inviteHtml = (sub = 'Share your link: when they claim a name, you both get a 🤝 Referral pack') =>
+  `<button class="invite-card" data-invite><span>🤝</span><span><b>Invite a friend</b><small>${sub}</small></span><i>›</i></button>`;
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-invite]'); if (b) { e.preventDefault(); GM.invite(); } });
 GM.claimName = async function (name, key) {
   name = name.trim();
   if (!GM.NAME_RULE.test(name)) return 'bad_name';
@@ -381,7 +395,14 @@ GM.claimName = async function (name, key) {
   key = key || (acc && acc.key) || GM.newKey();
   let res;
   try { res = await GM.lb.rpc('claim_name', { p_username: name, p_key: key }); } catch (e) { return 'offline'; }
-  if (res === 'ok') { GM.store.set('account', { name, key }); GM.store.set('name', name); }
+  if (res === 'ok') {
+    GM.store.set('account', { name, key }); GM.store.set('name', name);
+    const ref = !acc && GM.store.get('refBy', null);   // a brand-new account from someone's invite
+    if (ref) GM.lb.rpc('claim_referral', { p_user: name, p_key: key, p_ref: ref }).then(r => {
+      if (r === 'ok') { GM.grant({ pack: 'referral' }, `${ref}’s invite`); setTimeout(() => GM.toast(`🤝 You joined from <b>${GM.esc(ref)}</b>’s invite: a Referral pack each, and you’re friends!`, 4000), 600); }
+      if (r !== 'auth') GM.store.set('refBy', null);
+    }).catch(() => {});
+  }
   return res;
 };
 /** The name to post scores under: claims one first if needed (asking if there isn't one). Null if the player skips. */
@@ -452,10 +473,11 @@ GM.useTransferCode = async function (code) {
 // league), not on the public leaderboards. GM.userPic(name) draws initials in a colour made from the name; any
 // [data-user] on the page then gets its picture filled in (fetched in batches, cached for the visit).
 GM.pics = {};
-GM.userPic = function (name, cls = '') {
+// photo: false = initials only (the public boards and profiles of people who aren't your friends: pictures are for friends)
+GM.userPic = function (name, cls = '', photo = true) {
   const h = [...(name || '?')].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7) % 360;
-  const pic = GM.pics[(name || '').toLowerCase()];
-  return `<span class="avatar upic ${cls}" data-user="${GM.esc(name || '')}" style="--cb:hsl(${h} 55% 42%);--cf:#fff"><b>${GM.esc(GM.initials(name || '?'))}</b>${pic ? `<img src="${pic}" alt="">` : ''}</span>`;
+  const pic = photo && GM.pics[(name || '').toLowerCase()];
+  return `<span class="avatar upic ${cls}"${photo ? ` data-user="${GM.esc(name || '')}"` : ''} style="--cb:hsl(${h} 55% 42%);--cf:#fff"><b>${GM.esc(GM.initials(name || '?'))}</b>${pic ? `<img src="${pic}" alt="">` : ''}</span>`;
 };
 GM.fillPics = async function () {
   const els = GM.$$('[data-user]'), want = [...new Set(els.map(e => e.dataset.user.toLowerCase()))].filter(n => n && !(n in GM.pics));
@@ -634,11 +656,41 @@ GM.lbModal = async function (key) {
   try {
     const rows = await GM.lb.top(key), el = GM.$('#lbpop', m.el);
     if (!el) return;
-    el.innerHTML = rows.length ? rows.slice(0, 25).map((r, i) => `<div ${GM.lbRow(r.name, me)}><span>${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span><span>${GM.esc(r.name)}${GM.lbLevel(r)}${GM.pctTag(key, r.meta)}</span><b>${GM.scoreText(key, r.score)}${pts}</b></div>`).join('')
+    el.innerHTML = rows.length ? GM.lbList(rows.slice(0, 25), { key, unit: /^d?chaos/.test(key) ? ' pts' : '' })
       : '<div class="muted">No scores yet – be the first!</div>';
     if (rows.some(r => r.name !== me)) el.insertAdjacentHTML('beforeend', GM.lbReportHint);
     const mine = GM.$('.lb-row.me', el); if (mine) mine.scrollIntoView({ block: 'nearest' });
   } catch (e) { const el = GM.$('#lbpop', m.el); if (el) el.innerHTML = GM.net.msg('this leaderboard', '<div class="muted">Couldn’t load the leaderboard.</div>'); }
+};
+// 🏆 one look for every board (Ranks, Best Players, the in-game pop-up): a podium for the top three, then rows with a
+// picture (initials; photos for your friends), level and title, and ▲▼ for how far each has moved since you last looked
+// at this board. rows: [{name, score, level, meta, crowns?}]; o: { key, unit (' pts'), score: r => text, extra: r => html }
+GM.isFriend = name => (GM.store.get('friendNames', []) || []).some(x => x.toLowerCase() === String(name).toLowerCase());
+GM.lbList = function (rows, o = {}) {
+  const me = GM.getName(), key = o.key || '', unit = o.unit ? `<small>${o.unit}</small>` : '';
+  const sc = r => (o.score ? o.score(r) : GM.scoreText(key, r.score)) + unit;
+  const pic = (n, cls) => GM.userPic(n, cls, n === me || GM.isFriend(n));
+  // movement since you last looked (kept on this phone, per board)
+  const seenAll = GM.store.get('lbSeen', {}) || {}, seen = seenAll[key] || null, now = {};
+  const rankOf = (r, i) => (r.rank != null ? +r.rank : i + 1);
+  const move = (r, i) => {
+    const k = r.name.toLowerCase(), was = seen && seen[k], is = rankOf(r, i); now[k] = is;
+    if (!seen) return '<i class="mv"></i>';
+    if (!was) return '<i class="mv new">new</i>';
+    return was > is ? `<i class="mv up">▲${was - is}</i>` : was < is ? `<i class="mv down">▼${is - was}</i>` : '<i class="mv"></i>';
+  };
+  const extra = r => (o.extra ? o.extra(r) : GM.pctTag(key, r.meta));
+  let html = '';
+  if (rows.length >= 3) {
+    const pod = [[rows[1], 1], [rows[0], 0], [rows[2], 2]];
+    html += `<div class="podium">${pod.map(([r, i]) => `<button class="pod pod${rankOf(r, i)} ${r.name === me ? 'me' : ''}" data-profile="${GM.esc(r.name)}">
+      <span class="pod-medal">${['🥇', '🥈', '🥉'][Math.min(2, rankOf(r, i) - 1)]}</span>${pic(r.name, rankOf(r, i) === 1 ? 'xl' : 'lg')}
+      <b>${GM.esc(r.name)}</b>${move(r, i)}<em>${sc(r)}</em>${r.level ? `<i class="lv-tag">Lv ${r.level}</i>` : ''}<span class="pod-step">${rankOf(r, i)}</span></button>`).join('')}</div>`;
+  }
+  html += rows.slice(rows.length >= 3 ? 3 : 0).map((r, j) => { const i = j + (rows.length >= 3 ? 3 : 0), rk = rankOf(r, i);
+    return `<div ${GM.lbRow(r.name, me).replace('lb-row', 'lb-row lbx')}><span class="lb-rk">${rk <= 3 ? ['🥇', '🥈', '🥉'][rk - 1] : rk}</span>${pic(r.name, 'sm')}<span class="lb-nm">${GM.esc(r.name)}${GM.lbLevel(r)}${extra(r)}</span>${move(r, i)}<b>${sc(r)}</b></div>`; }).join('');
+  if (key) { seenAll[key] = now; GM.store.set('lbSeen', seenAll); }
+  return html;
 };
 // How close a Target score came, as a share of the target ("97.6%"): meta.t is your total, meta.g the target.
 // Scores from before the target was saved use the target of the time.
@@ -663,28 +715,35 @@ GM.lbYou = async function (key, el) {
   if (mine) show(row(`#${mine.rank}`, `${GM.esc(name)}${GM.pctTag(key, mine.meta)}<small class="muted"> · of ${mine.of.toLocaleString()}${GM.lbMonth() && !/:/.test(key) ? ' this month' : ''} · ${new Date(mine.at).toLocaleDateString()}</small>`, mine.score));
   else if (localBest != null) show(row('–', `${name ? GM.esc(name) : 'You'}${GM.pctTag(key, localTop.m)}<small class="muted"> · not on the board yet</small>`, localBest));
   else show('<div class="muted">You haven’t played this one yet</div>');
+  // how far to the next place up
+  if (mine && mine.rank > 1) {
+    try {
+      const up = await GM.lb.above(key, mine.rank), gap = up ? up.score - mine.score : 0;
+      if (up && el.isConnected) el.insertAdjacentHTML('beforeend', `<div class="lb-gap">${gap > 0 ? `${GM.scoreText(key, gap)}${pts} to catch` : 'Level with'} <b>${GM.esc(up.name)}</b> (#${mine.rank - 1})</div>`);
+    } catch (e) { /* no matter */ }
+  }
 };
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-lb]'); if (b) { e.preventDefault(); GM.lbModal(b.dataset.lb); } });
-// Leaderboard rows carry data-name (not your own), and tapping one offers to report the name. Three reports from different
+// Leaderboard rows carry data-name: tapping one opens that player’s profile (profile.js), where you can report the name. Three reports from different
 // players hide it from the public boards until its owner changes it (report_name in Supabase).
 GM.lbMonth = () => GM.store.get('lbMonth', true) !== false;
 // This month / All time, for boards that aren't for one day or match
 GM.lbPeriod = key => (/:/.test(key) ? '' : `<div class="hard-toggle small lb-period">${[[1, '📅 This month'], [0, '🏆 All time']].map(([v, l]) => `<a class="${+GM.lbMonth() === v ? 'on' : ''}" data-per="${v}">${l}</a>`).join('')}</div>`);
 GM.lbLevel = r => (r.level ? `<i class="lv-tag">Lv ${r.level}</i>` : '') + (GM.titleHtml && r.name ? GM.titleHtml(r.name) : '');  // and their Locker title
-GM.lbRow = (name, me) => `class="lb-row ${name === me ? 'me' : ''}"${name === me ? '' : ` data-name="${GM.esc(name)}"`}`;
-GM.lbReportHint = '<p class="muted center small">Tap a name to report it if it’s offensive</p>';
-document.addEventListener('click', async e => {
-  const row = e.target.closest && e.target.closest('.lb-row[data-name]');
-  if (!row || !GM.lb.enabled) return;
-  const n = row.dataset.name, a = GM.account();
+GM.lbRow = (name, me) => `class="lb-row ${name === me ? 'me' : ''}" data-name="${GM.esc(name)}"`;  // (tap: their profile, profile.js)
+GM.lbReportHint = '<p class="muted center small">Tap a name for their profile (and to report it if it’s offensive)</p>';
+// report a name (from a profile): three reports from different players hide it
+GM.reportName = async function (n) {
+  if (!GM.lb.enabled) return;
+  const a = GM.account();
   if (!await GM.confirm(`🚩 Report “${GM.esc(n)}” as an offensive name? If several players report it, it's hidden from the leaderboards.`, 'Report', 'Cancel')) return;
   if (!a) { GM.toast('Claim a leaderboard name first (⚙️ Settings), then you can report names'); return; }
   try {
     const r = await GM.lb.rpc('report_name', { p_user: a.name, p_key: a.key, p_target: n });
     GM.toast(r === 'hidden' ? 'Thanks – that name has been hidden' : r === 'ok' ? 'Thanks – reported' : 'Couldn’t report that name');
-    if (r === 'hidden') row.remove();
+    if (r === 'hidden') GM.$$('.lb-row[data-name]').forEach(x => { if (x.dataset.name === n) x.remove(); });
   } catch (err) { GM.toast('Couldn’t reach the server – try again'); }
-});
+};
 // Has my name been hidden after reports? Checked once a session; the Ranks page and Settings then ask for a new one.
 GM.nameHidden = async function () {
   const a = GM.account();
@@ -854,37 +913,37 @@ GM.autocomplete = function (input, box, onPick, { exclude, plain, pool } = {}) {
 
 /* ------------------------------------------------------------------ scores + leaderboard */
 GM.MODES = {
-  ultimate: { name: 'Ultimate Wildcard', icon: '👑' },
-  ultimateast: { name: 'Ultimate Wildcard – Assists', icon: '👑' },
-  ultimateapps: { name: 'Ultimate Wildcard – Apps', icon: '👑' },
+  ultimate: { name: 'Ultimate', icon: '👑' },
+  ultimateast: { name: 'Ultimate – Assists', icon: '👑' },
+  ultimateapps: { name: 'Ultimate – Apps', icon: '👑' },
   target: { name: 'Target 500 – Goals', icon: '🎯' },
   targetast: { name: 'Target 325 – Assists', icon: '🎯' },
   targetapps: { name: 'Target 3,400 – Apps', icon: '🎯' },
   treble: { name: 'The Treble', icon: '🏆' },
   mystery: { name: 'Mystery Target', icon: '🎲' },
   daily: { name: 'Daily Ultimate', get icon() { return GM.calIcon(); } },
-  classicwild: { name: 'Classic Wildcard', icon: '⭐' },
+  classicwild: { name: 'Classic Wildcard (old)', icon: '⭐' },
   classicwildast: { name: 'Classic Wildcard – Assists', icon: '⭐' },
   classicwildapps: { name: 'Classic Wildcard – Apps', icon: '⭐' },
-  classic: { name: 'Classic', icon: '⭐' },
+  classic: { name: 'Classic (old)', icon: '⭐' },
   classicast: { name: 'Classic – Assists', icon: '⭐' },
   classicapps: { name: 'Classic – Apps', icon: '⭐' },
-  ultimatepure: { name: 'Ultimate', icon: '👑' },
-  ultimatepureast: { name: 'Ultimate – Assists', icon: '👑' },
-  ultimatepureapps: { name: 'Ultimate – Apps', icon: '👑' },
-  extreme: { name: 'Extreme Wildcard', icon: '⚡' },
-  extremeast: { name: 'Extreme Wildcard – Assists', icon: '⚡' },
-  extremeapps: { name: 'Extreme Wildcard – Apps', icon: '⚡' },
-  purist: { name: 'Extreme Purist', icon: '💎' },
-  puristast: { name: 'Extreme Purist – Assists', icon: '💎' },
-  puristapps: { name: 'Extreme Purist – Apps', icon: '💎' },
+  ultimatepure: { name: 'Ultimate · Pure', icon: '👑' },
+  ultimatepureast: { name: 'Ultimate · Pure – Assists', icon: '👑' },
+  ultimatepureapps: { name: 'Ultimate · Pure – Apps', icon: '👑' },
+  extreme: { name: 'Ultimate (Extreme)', icon: '⚡' },
+  extremeast: { name: 'Ultimate – Assists (Extreme)', icon: '⚡' },
+  extremeapps: { name: 'Ultimate – Apps (Extreme)', icon: '⚡' },
+  purist: { name: 'Ultimate · Pure (Extreme)', icon: '💎' },
+  puristast: { name: 'Ultimate · Pure – Assists (Extreme)', icon: '💎' },
+  puristapps: { name: 'Ultimate · Pure – Apps (Extreme)', icon: '💎' },
   hopper: { name: 'Club Hopper', icon: '🦘' },
   hilo: { name: 'Higher or Lower', icon: '↕️' },
   whoami: { name: 'Who Am I?', icon: '🕵️' },
   grid: { name: 'Club Grid', icon: '#️⃣' },
   tally: { name: 'Guess the Tally', icon: '🔢' },
   hattrick: { name: 'Hat-Trick', icon: '🃏' },
-  chaos: { name: 'Ultimate Wildcard CHAOS', icon: '🌪️' }, chaosast: { name: 'CHAOS – Assists', icon: '🌪️' }, chaosapps: { name: 'CHAOS – Apps', icon: '🌪️' },
+  chaos: { name: 'CHAOS', icon: '🌪️' }, chaosast: { name: 'CHAOS – Assists', icon: '🌪️' }, chaosapps: { name: 'CHAOS – Apps', icon: '🌪️' },
   match: { name: 'Matchday XI', icon: '🏟️' },
   nation: { name: 'International XI', icon: '🌍' },
   packedxi: { name: 'Packed XI', icon: '🃏' },
@@ -894,7 +953,7 @@ GM.MODES = {
   reign: { name: 'Reign Check', icon: '👑' },
   royale: { name: 'Goal Royale', icon: '⚔️' },
   szchaos: { name: 'Seasonal CHAOS', icon: '✨' }, szchaosast: { name: 'Seasonal CHAOS – Assists', icon: '✨' }, szchaosapps: { name: 'Seasonal CHAOS – Apps', icon: '✨' },
-  chaosx: { name: 'CHAOS Extreme', icon: '🌪️' }, chaosxast: { name: 'CHAOS Extreme – Assists', icon: '🌪️' }, chaosxapps: { name: 'CHAOS Extreme – Apps', icon: '🌪️' },
+  chaosx: { name: 'CHAOS (Extreme)', icon: '🌪️' }, chaosxast: { name: 'CHAOS – Assists (Extreme)', icon: '🌪️' }, chaosxapps: { name: 'CHAOS – Apps (Extreme)', icon: '🌪️' },
   moneyball: { name: 'Moneyball', icon: '💰' }, moneyballast: { name: 'Moneyball – Assists', icon: '💰' }, moneyballapps: { name: 'Moneyball – Apps', icon: '💰' },
   window: { name: 'Transfer Window', icon: '🔄' }, windowast: { name: 'Transfer Window – Assists', icon: '🔄' }, windowapps: { name: 'Transfer Window – Apps', icon: '🔄' },
 };
@@ -907,14 +966,22 @@ GM.HARD_MODES = ['ultimate', 'ultimateast', 'ultimateapps', 'chaos', 'chaosast',
   'money', 'boss', 'owner'];
 // Difficulty, one switch: Normal, Hard (names and positions only) or Extreme (see GM.EXTREME_GAMES; the Main event and CHAOS use every one
 // of the 5,000+ PL players instead of the 50+ app ones). Before 5.5 Hard was on its own and Extreme was a pool switch.
-GM.LEVELS = { normal: ['🙂', 'Normal', '50+ apps · clues shown'], hard: ['🥵', 'Hard', 'names & positions only'], extreme: ['⚡', 'Extreme', 'every player, names & positions only'] };
+// 5.34: 🙂 Easy (big names turn up more, about ×4; the draft games only, with their own boards "<key>e"; it replaced
+// the old Classic pool, whose boards are kept but no longer shown) before Normal.
+GM.LEVELS = { easy: ['🙂', 'Easy', 'big names more often · clues shown'], normal: ['⚽', 'Normal', '50+ apps, all equal · clues shown'], hard: ['🥵', 'Hard', 'names & positions only'], extreme: ['⚡', 'Extreme', 'every player, names & positions only'] };
+GM.EASY_MODES = ['ultimate', 'ultimateast', 'ultimateapps', 'ultimatepure', 'ultimatepureast', 'ultimatepureapps', 'chaos', 'chaosast', 'chaosapps',
+  'szchaos', 'szchaosast', 'szchaosapps', 'target', 'targetast', 'targetapps', 'treble', 'mystery'];
+GM.seedEasy = seed => /^e~/.test(String(seed || ''));  // an Easy game's seed says so, so a challenge or a race deals the same reels
+// the board for a game at the level you're on (Easy and Hard boards end in e / h; Extreme has its own keys)
+GM.levelKey = (k, lv = GM.level()) => (lv === 'hard' && GM.HARD_MODES.includes(k) ? k + 'h' : lv === 'easy' && GM.EASY_MODES.includes(k) ? k + 'e' : lv === 'extreme' && GM.extremeKey(k) || k);
 GM.level = () => {
   const l = GM.store.get('level', null);
-  return GM.LEVELS[l] ? l : GM.store.get('hard', false) ? 'hard' : GM.store.get('ultPool', '') === 'extreme' ? 'extreme' : 'normal';
+  return GM.LEVELS[l] ? l : GM.store.get('hard', false) ? 'hard' : GM.store.get('ultPool', '') === 'extreme' ? 'extreme' : GM.store.get('ultPool', '') === 'classic' ? 'easy' : 'normal';
 };
 GM.setLevel = l => GM.store.set('level', GM.LEVELS[l] ? l : 'normal');
 GM.isHard = () => GM.level() === 'hard';
 GM.isExtreme = () => GM.level() === 'extreme';
+GM.isEasy = () => GM.level() === 'easy';
 GM.setHard = v => GM.setLevel(v ? 'hard' : 'normal');
 
 // Look: 'light' (default), 'dark', 'auto' to follow the phone, or 'club' (dark, in your favourite club's colours).
@@ -1007,6 +1074,9 @@ GM.onAppEvent('update', v => {
 GM.onAppEvent('pgsPlayer', id => { if (id) GM.store.set('pgsPlayer', id); });
 Object.keys(GM.MODES).filter(k => GM.HARD_MODES.includes(k)).forEach(k => {
   GM.MODES[k + 'h'] = { name: GM.MODES[k].name + ' (Hard)', icon: GM.MODES[k].icon };
+});
+Object.keys(GM.MODES).filter(k => GM.EASY_MODES.includes(k)).forEach(k => {
+  GM.MODES[k + 'e'] = { name: GM.MODES[k].name + ' (Easy)', icon: GM.MODES[k].icon };
 });
 // Extreme in the other games. Where the game shows you players (the Target games, Higher or Lower, Guess the Tally, the
 // money games) it deals from every PL player. Where you type names (Who Am I?, the Club Grid, Club Hopper) every PL
@@ -1150,6 +1220,12 @@ GM.lb = {
     return r.json();
   },
   // your account's best on a board, with your rank and how many are on it (null if you haven't a score there)
+  // the player one place above `rank` on the board you're looking at
+  async above(mode, rank) {
+    const r = await this._f(`${this.cfg.supabaseUrl}/rest/v1/${this.view(mode)}?select=name,score&mode=eq.${encodeURIComponent(mode)}&order=score.desc,created_at.asc&offset=${Math.max(0, rank - 2)}&limit=1`, { headers: this.headers() });
+    if (!r.ok) throw new Error(await r.text());
+    return (await r.json())[0] || null;
+  },
   // (month: true / false for that board, or leave it out for the one the player is looking at)
   async mine(mode, name = GM.getName(), month) {
     if (!name) return null;

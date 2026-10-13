@@ -39,11 +39,11 @@
   const A = [
     // drafts
     ['first', '🥅', 'First XI', 'Finish your first draft.', e => e.type === 'draft'],
-    ['ult300', '🥉', '300 Club', 'Score 300+ goals in Ultimate Wildcard.', e => ult(e, 'goals') && e.total >= 300],
-    ['ult400', '🥈', '400 Club', 'Score 400+ goals in Ultimate Wildcard.', e => ult(e, 'goals') && e.total >= 400],
-    ['ult500', '🥇', 'Goal Machine', 'Score 500+ goals in Ultimate Wildcard.', e => ult(e, 'goals') && e.total >= 500],
-    ['ast250', '🅰️', 'Creator', 'Build an XI with 250+ assists in Ultimate Wildcard.', e => ult(e, 'assists') && e.total >= 250],
-    ['apps4000', '🏃', 'Iron Men', 'Build an XI with 4,000+ apps in Ultimate Wildcard.', e => ult(e, 'apps') && e.total >= 4000],
+    ['ult300', '🥉', '300 Club', 'Score 300+ goals in Ultimate (wildcards on, not Easy).', e => ult(e, 'goals') && e.total >= 300],
+    ['ult400', '🥈', '400 Club', 'Score 400+ goals in Ultimate (wildcards on, not Easy).', e => ult(e, 'goals') && e.total >= 400],
+    ['ult500', '🥇', 'Goal Machine', 'Score 500+ goals in Ultimate (wildcards on, not Easy).', e => ult(e, 'goals') && e.total >= 500],
+    ['ast250', '🅰️', 'Creator', 'Build an XI with 250+ assists in Ultimate (wildcards on, not Easy).', e => ult(e, 'assists') && e.total >= 250],
+    ['apps4000', '🏃', 'Iron Men', 'Build an XI with 4,000+ apps in Ultimate (wildcards on, not Easy).', e => ult(e, 'apps') && e.total >= 4000],
     ['bull', '🎯', 'Bullseye', 'Hit a Target exactly.', e => e.type === 'draft' && e.bull && e.mode === 'target'],
     ['treble', '🏆', 'Treble Winners', 'Win the Treble – goals, assists and apps all within 3%.', e => e.type === 'draft' && e.treble],
     ['close', '📏', 'Near Miss', 'Finish within 2% of a Target.', e => e.type === 'draft' && e.mode === 'target' && e.closeness != null && e.closeness <= 10],
@@ -56,7 +56,7 @@
     ['club5', '🏟️', 'Club Legends', 'Have 5+ players from the same club in one XI.', e => e.type === 'draft' && maxSameClub(e.xi) >= 5],
     ['wild5', '🃏', 'Wildcard Wizard', 'Use 5 wildcards in one game.', e => e.type === 'draft' && e.wildUsed >= 5],
     ['coin', '🎲', 'Fortune Favours', 'Win a Double or Nothing coin toss.', e => e.type === 'draft' && e.coinWin],
-    ['chaos', '🌪️', 'Agent of Chaos', 'Score 500+ points in Ultimate Wildcard CHAOS (goals).', e => chaos(e) && e.stat === 'goals' && e.points >= 500],
+    ['chaos', '🌪️', 'Agent of Chaos', 'Score 500+ points in CHAOS (goals, not Easy).', e => chaos(e) && e.stat === 'goals' && e.points >= 500],
     ['fan6', '🧣', 'Proper Fan', 'Have 6+ players who played for your club in one XI (not in a Club or Matchday XI).', e => e.type === 'draft' && e.mode !== 'club' && e.mode !== 'match' && GM.favClub() && e.xi.filter(p => p.clubs.includes(GM.favClub())).length >= 6],
     ['lifers', '🗓️', 'Lifers', 'Every player in your XI had a PL career spanning 10+ seasons.', e => e.type === 'draft' && e.xi.length === 11 && e.xi.every(p => plSeasons(p) >= 10)],
     // CHAOS challenges
@@ -154,7 +154,7 @@
   ].map(([id, icon, name, desc, test, secret]) => ({ id, icon, name, desc, test, secret: !!secret, cat: CAT_OF(id, secret) }));
 
   GM.badgeIds = () => A.map(x => x.id);  // (tests: every badge must be reachable)
-  const chaos = e => e.type === 'draft' && (e.mode === 'chaos' || e.mode === 'chaosx');
+  const chaos = e => e.type === 'draft' && (e.mode === 'chaos' || e.mode === 'chaosx') && !e.easy;  // (Easy games don't earn the CHAOS and Ultimate badges)
   // an Extreme draft finished before its badge worked (the main event and CHAOS on Extreme weren't counted): its score's on the board
   const everExtreme = () => ['extreme', 'purist', 'chaosx', 'targetx', 'treblex', 'mysteryx'].some(k => ['', 'ast', 'apps'].some(s => GM.best(k + s) > 0));
   const md = e => e.type === 'draft' && e.mode === 'match';
@@ -186,7 +186,7 @@
   };
   const relegated = p => Object.entries(p.stints || {}).some(([c, ys]) => [...ys].some(y => (DOWN[y] || []).includes(c)));
   GM.relegated = relegated; GM.plSeasons = plSeasons;
-  const ult = (e, stat) => e.type === 'draft' && (e.mode === 'ultimate' || e.mode === 'daily') && e.stat === stat;
+  const ult = (e, stat) => e.type === 'draft' && (e.mode === 'ultimate' || e.mode === 'daily') && e.stat === stat && !e.easy;
   // (the game's board key: Hard ends in h and Extreme in x, e.g. hiloh, tallyx; the badges count every level)
   const game = (e, m) => e.type === 'game' && e.mode.replace(/:.*/, '').replace(/[hx]$/, '') === m;
   function maxSameClub(xi) {
@@ -432,6 +432,7 @@
     root.innerHTML = `
       ${view === 'xi' ? `<div class="alb-xi-head"><p class="muted">Your team, built only from <b>finished cards</b>: the best player you’ve got in every position. Finish cards by opening packs and signing players.</p>${GM.lbButton('packedxi')}</div>
         ${GM.packedPitch(px)}
+        ${px.bonus ? `<p class="center nat-bonus">🌍 Nation bonus <b>+${px.bonus}</b> · ${px.nats.map(([n, k]) => `${GM.flag(n)} ×${k}`).join(' ')}</p>` : '<p class="muted center small">🌍 Teammates from the same country add a nation bonus (+3 each after the first)</p>'}
         ${px.n < 11 ? `<p class="muted center small">${11 - px.n} place${11 - px.n > 1 ? 's' : ''} still empty. Finish a card in that position to fill it: <a href="#/locker?v=cards">🧩 your cards ›</a></p>` : ''}
         <a class="btn ghost" href="#/leaderboard?m=packedxi">🏆 Packed XI leaderboard</a>` : ''}
 
