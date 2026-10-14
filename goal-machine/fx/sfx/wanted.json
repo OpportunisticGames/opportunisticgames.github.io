@@ -140,16 +140,24 @@
  ],
  "jet": [
   3.0,
-  "jet airplane flyby",
+  "re:(aeroplane|airplane|aircraft|airliner|jet (engine|plane|aircraft|fly)|fly-?by|fly-?over|take-?off|boeing|airbus)",
   "airplane flyover",
-  "aircraft take off",
-  "jet engine"
+  "aircraft flyby",
+  "jet aircraft",
+  "airliner take off",
+  "plane passing overhead",
+  "aircraft landing"
  ],
  "rainsoft": [
   6.0,
-  "gentle rain",
+  "re:\\brain(fall|y|storm|drops?)?\\b|\\bshower\\b|drizzle",
+  "rain sound",
+  "rain ambience",
+  "rainfall",
+  "rain on roof",
   "rain on window",
-  "light rain",
-  "rain ambience"
+  "rain drops",
+  "gentle rain",
+  "rain storm"
  ]
 }
