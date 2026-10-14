@@ -311,7 +311,7 @@
       : `<i class="${i < anyOn ? 'on' : ''}${i === anyOn - 1 && !x.firstPack && opts.fresh && !x.spare ? ' new' : ''}"></i>`).join('');
     const no1 = GM.isNo1(p);
     return `<div class="pcard tier-${t}${no1 ? ' no1' : ''}${x.finished ? ' finished' : ''}${opts.cls ? ' ' + opts.cls : ''}"${opts.attr || ''}><div class="pc-inner">${backHtml}
-      <div class="pc-front"><span class="pc-sheen"></span>${no1 ? `<span class="pc-no1">No.1 ${GM.flag(p.nat)}</span><span class="pc-foil"></span>` : ''}
+      <div class="pc-front"><span class="pc-sheen"></span>${no1 ? `<span class="pc-bigflag" aria-hidden="true">${GM.flag(p.nat)}</span><span class="pc-no1tag">Nº1</span><span class="pc-foil"></span><span class="pc-glare"></span>` : ''}
         <div class="pc-top"><b class="pc-num">${p.goals}</b><small>GLS</small><span class="pc-pos">${p.poss[0]}</span><span class="pc-flag">${GM.flag(p.nat)}</span></div>
         <div class="pc-photo">${GM.avatar(p, 'lg')}</div>
         <div class="pc-name${short(p.name).length > 13 ? ' xxlong' : short(p.name).length > 10 ? ' xlong' : short(p.name).length > 7 ? ' long' : ''}">${GM.esc(short(p.name))}</div>

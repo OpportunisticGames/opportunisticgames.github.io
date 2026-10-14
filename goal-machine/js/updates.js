@@ -9,12 +9,15 @@
 (function () {
   GM.UPDATES = [
     {
-      v: 95, label: '5.34.1', date: '2026-10-14', title: '📰 A clearer Updates page, and every club on the card',
+      v: 95, label: '5.34.1', date: '2026-10-14', title: '📰 A clearer Updates page, an easier Easy, and your own profile',
       items: [
         '📰 The Updates page tells the story in big updates now (CHAOS rebuilt, Packs and levels, Challenges, the Locker, Seasonal CHAOS…), each with what came in it. Tap one to see every update inside',
         '🏟️ Well-travelled players no longer lose clubs off the edge of their reel card: the badges shrink, then take a second row, and only the real journeymen show “+N”',
         '🌧️ The rain is a real recording of rain now, not hiss',
         '✈️ Visa trouble!’s plane sounds like a real plane flying over',
+        '🎯 Easy is properly easier in the Target games: the reels are the same as Normal’s (more big names only overshot the target), and every player shows a rough number, like ≈60 goals, to steer by',
+        '👤 Tap your own picture on the top bar for your profile: the boards you top, your Best Players place, your best XI, and how other players see you (your kit is one tap from there)',
+        '🌍 A country’s No. 1 has its own card: his flag big across the top corner, a gold Nº1, a holographic finish and a glint that sweeps across (no more banner over the top)',
       ],
     },
     {

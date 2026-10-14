@@ -4,6 +4,14 @@ Bugs reported by the owner (or found along the way). **Bugs get fixed straight a
 version they shipped in. Newest at the top.
 
 ### Fixed in 5.34.1 *(owner, 14 Oct 2026)*
+- "Sometimes Easy is actually harder: on Target for goals you're getting players who scored more goals, so it's harder
+  to get the number": Easy weighted the Target reels by fame^1.2, so more big scorers and more overshooting. Easy's
+  Target/Treble/Mystery reels are now Normal's, and each player shows a rough number (≈60, `easyHint`/`rough` in draft.js).
+- "The No. 1 thing on player cards is ugly … maybe a slightly different card design, a bigger flag across the corner,
+  more shiny": the banner is gone; a No. 1 card has its own design: a big waving flag across the top corner behind the
+  face (`.pc-bigflag`), a gold Nº1, a stronger holo foil and a sweeping glint (`.pc-glare`, off in Calm).
+- "You should be able to see your own profile, I don't know where to go to see how many boards I'm top of": your
+  picture on the top bar now opens your profile (`data-profile`), with "how other players see you", Your kit and Settings.
 - "When you do a spin on Easy and the player has many clubs it cuts off which clubs they played for, as it presents them in
   one line": the reel's club badges were one row with no wrapping, centred and clipped at both ends (even three clubs
   could lose a bit). Now `fitChips` (draft.js) tries smaller badges, then a second row (with a smaller photo if the card

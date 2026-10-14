@@ -46,7 +46,7 @@
     if (ld) ld.hidden = !fresh;
     if (status.hidden || !GM.levelChip) return;
     const me = (GM.account() || {}).name || GM.getName() || 'You', n = GM.toOpenCount();
-    const html = `<a class="gs-me" href="#/locker?v=kit" aria-label="Your kit">${GM.userPic(me)}${fresh ? '<i class="new-dot"></i>' : ''}</a>${GM.levelChip()}${GM.seasonChip ? GM.seasonChip() : ''}
+    const html = `<a class="gs-me" href="#/locker?v=kit"${GM.account() ? ` data-profile="${GM.esc(me)}" aria-label="Your profile"` : ' aria-label="Your kit"'}>${GM.userPic(me)}${fresh ? '<i class="new-dot"></i>' : ''}</a>${GM.levelChip()}${GM.seasonChip ? GM.seasonChip() : ''}
       ${GM.account() ? `<button class="gs-bell ${GM.feed.unseen() ? 'hot' : ''}" aria-label="What’s been happening"><span>🔔</span>${GM.feed.unseen() ? `<i>${GM.feed.unseen()}</i>` : ''}</button>` : ''}
       <button class="gs-open ${n ? 'hot' : ''}" aria-label="To open"><span>🎁</span><b>${n}</b></button>`;
     if (html === status._h) return;

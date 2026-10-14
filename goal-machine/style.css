@@ -3598,9 +3598,16 @@ body.calm .board-news.rec { animation: none; }
 body.calm .pp-book, body.calm .pp-stamp { animation: none; }
 
 /* 🌍 nation cards: the foil No. 1, country sets, the Packed XI's nation bonus */
-.pcard.no1 .pc-front { box-shadow: 0 0 0 2px #f6e27a, 0 0 16px rgba(246,226,122,.55); }
-.pc-no1 { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); z-index: 3; padding: 1px 7px; border-radius: 999px; background: linear-gradient(90deg, #f6e27a, #fff6c2, #f6e27a); color: #4a3800; font: 900 .55rem Inter, sans-serif; letter-spacing: .04em; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,.3); }
-.pc-foil { position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit; mix-blend-mode: color-dodge; opacity: .5;
+.pcard.no1 .pc-front { box-shadow: 0 0 0 2px #f6e27a, 0 0 14px rgba(246,226,122,.5); }
+/* a country's No. 1: his flag big across the top corner, a holographic finish and a glint that sweeps across */
+.pcard.no1 .pc-front { isolation: isolate; }
+.pcard.no1 .pc-front > .pc-bigflag { position: absolute; z-index: 0; top: .05em; right: -.18em; font-size: 7.2em; line-height: 1; transform: rotate(16deg); opacity: .8; filter: saturate(1.3) drop-shadow(0 2px 4px rgba(0,0,0,.25)); pointer-events: none;
+  -webkit-mask-image: linear-gradient(225deg, #000 35%, transparent 80%); mask-image: linear-gradient(225deg, #000 35%, transparent 80%); }
+.pcard.no1 .pc-front > .pc-no1tag { position: absolute; z-index: 3; top: 10%; right: 11%; font: 700 .95em/1 Oswald, sans-serif; letter-spacing: .02em; color: #fff6c2; text-shadow: 0 1px 0 #8a6400, 0 2px 6px rgba(0,0,0,.55); }
+.pcard.no1 .pc-front > .pc-glare { position: absolute; inset: 0; z-index: 3; pointer-events: none; border-radius: inherit; background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.55) 48%, transparent 58%); background-size: 300% 100%; animation: glare 4.5s ease-in-out infinite; mix-blend-mode: overlay; }
+@keyframes glare { 0%, 55% { background-position: 130% 0; } 100% { background-position: -130% 0; } }
+body.calm .pc-glare { animation: none; opacity: 0; }
+.pcard.no1 .pc-front > .pc-foil, .pc-foil { position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit; mix-blend-mode: color-dodge; opacity: .55;
   background: linear-gradient(115deg, transparent 20%, rgba(255,0,170,.35) 32%, rgba(0,255,255,.35) 42%, rgba(255,255,0,.35) 52%, transparent 64%); background-size: 250% 250%; animation: foil 3.2s linear infinite; }
 @keyframes foil { from { background-position: 120% 0; } to { background-position: -120% 0; } }
 body.calm .pc-foil { animation: none; }
@@ -3641,3 +3648,8 @@ body.calm .fuse .fz { animation: none; }
 .dupe-box > span:nth-child(2) { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .dupe-box small { color: var(--muted); font-size: .72rem; }
 .dupe-box.full { outline: 2px solid var(--accent); }
+
+/* your own profile (tap your picture on the top bar) */
+.prof-you { margin: -2px 0 8px; text-align: center; font: 800 .66rem Inter, sans-serif; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
+.prof-acts .btn { position: relative; }
+.prof-acts .new-dot { position: absolute; top: -3px; right: -3px; }

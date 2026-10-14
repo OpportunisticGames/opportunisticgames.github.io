@@ -1163,7 +1163,9 @@
   // same targets - big numbers are rarer, so one wrong pick can put the target out of reach.
   // Hard and Extreme hide the clues on the reels: names and positions only (Extreme is every PL player on top)
   const blind = () => !!(S.hard || S.extreme || ['extreme', 'purist', 'chaosx'].includes(S.mode));
-  const reelWeight = () => (S.easy ? (S.rules.max && !S.rules.fame ? p => Math.sqrt(p.fame) : p => Math.pow(S.rules.weight(p), 1.2))
+  // Easy: in the most-wins games the big names turn up more; in the Target games more big names would only overshoot the
+  // target, so the reels are Normal's and Easy gives a rough number for every player instead (easyHint)
+  const reelWeight = () => (S.easy ? (S.rules.max && !S.rules.fame ? p => Math.sqrt(p.fame) : S.rules.weight)
     : S.hard && (!S.rules.max || S.rules.fame) ? p => Math.sqrt(S.rules.weight(p)) : S.rules.weight);
   // what wildcard descriptions talk about: in the Treble a wildcard affects all three numbers
   const wst = () => S.rules.treble ? { ...S.st, label: 'numbers', bigLabel: 'goals' } : S.st;
@@ -2506,6 +2508,9 @@
   const posBadges = GM.posBadges;
   // a small secondary number on the reel card that isn't the stat being played for
   const hintStat = p => S.stat === 'apps' || S.rules.mystery ? '' : `<small>${fmt(p.apps)} apps</small>`;
+  // Easy's clue in the Target games: a number rounded to the nearest 5 (10 over 50, 25 for apps)
+  const rough = (v, k) => { const u = k === 'apps' ? 25 : v >= 50 ? 10 : 5; return Math.max(v ? u : 0, Math.round(v / u) * u); };
+  const easyHint = (p, k) => (S.easy && !S.rules.max ? `≈${fmt(rough(pv(p)[k], k))}` : '?');
 
   function reelInner(x) {
     if (!x) return '';
@@ -2520,8 +2525,8 @@
     const p = byId(x.id);
     const reveal = S.revealed;
     const num = S.rules.treble
-      ? `<div class="reel-goals treble-num ${reveal ? 'show' : ''}">${STAT_KEYS.map(k => `<span><b>${reveal ? fmt(pv(p)[k]) : '?'}</b> ${GM.STATS[k].icon}</span>`).join('')}</div>`
-      : `<div class="reel-goals ${reveal ? 'show' : ''}">${reveal ? `<b>${fmt(val(p))}</b> ${S.st.label}` : `<b>?</b> ${S.st.label}`}${reveal && keeperPts(p) && S.stat !== 'apps' ? `<small>🧤 ${fmt(p.cs)} clean sheets</small>` : blind() ? '' : hintStat(p)}</div>`;
+      ? `<div class="reel-goals treble-num ${reveal ? 'show' : ''}">${STAT_KEYS.map(k => `<span><b>${reveal ? fmt(pv(p)[k]) : easyHint(p, k)}</b> ${GM.STATS[k].icon}</span>`).join('')}</div>`
+      : `<div class="reel-goals ${reveal ? 'show' : ''}">${reveal ? `<b>${fmt(val(p))}</b> ${S.st.label}` : `<b>${S.rules.max ? '?' : easyHint(p, S.stat)}</b> ${S.st.label}`}${reveal && keeperPts(p) && S.stat !== 'apps' ? `<small>🧤 ${fmt(p.cs)} clean sheets</small>` : blind() ? '' : hintStat(p)}</div>`;
     if (blind()) {
       return `${GM.avatar(p, 'lg', true)}
       <div class="reel-name">${GM.esc(p.name)}</div>
@@ -2956,7 +2961,7 @@
   function poolText() {
     const r = S.rules, w = r.wild !== false ? ' and use your wildcards well' : '';
     if (S.fx || r.club || r.nation) return `Every player ${S.fx ? 'either club has had' : S.nat ? 'from that country' : 'the club has had'} in the Premier League is equally likely to turn up: spot the big numbers${w}.`;
-    if (S.easy && !r.all) return `Every player with 50+ apps can turn up, and on Easy the big names more often: a star about 4 times as often as an average player. Spot the big numbers${w}.`;
+    if (S.easy && !r.all && r.max) return `Every player with 50+ apps can turn up, and on Easy the big names more often: a star about 4 times as often as an average player. Spot the big numbers${w}.`;
     if (r.fame) return `Every player with 50+ apps can turn up, and the better known they are, the more often${S.hard ? ' (on Hard, much less so: a star turns up about 4 times as often as an average player, not 16)' : ': a star turns up about 16 times as often as an average player'}.`;
     if (r.all) return `Every one of the 5,000+ PL players is equally likely to turn up, so most are strangers: spot the big numbers${w}.`;
     return `Every player with 50+ apps is equally likely to turn up, so you’ll mostly see journeymen: spot the big numbers${w}.`;
@@ -2983,7 +2988,7 @@
         : r.chaos ? `your XI’s PL ${L} plus every bonus, shown at full time.` : r.max ? `your score is your XI’s total PL ${L} (after any wildcard modifiers).` : `1000 minus 5 for every ${S.stat === 'goals' ? 'goal' : `${fmt(Math.round(S.target / 442 * 10) / 10)} ${L}`} off target. Exactly ${fmt(S.target)} = +500 bullseye bonus.`}</p>
       <p>🤝 A player who shares a club with your last signing may turn up to tempt you.</p>
       ${!S.hard && blind() ? '<p>⚡ <b>Extreme:</b> every one of the 5,000+ PL players, and just names and positions on the reels – no clubs, years, apps or nationality. Separate leaderboard.</p>' : ''}
-      ${S.easy ? '<p>🙂 <b>Easy:</b> big names turn up more often (a star about 4 times as often as an average player), and all the clues are on the reels. Separate leaderboard.</p>' : ''}
+      ${S.easy ? (S.rules.max ? '<p>🙂 <b>Easy:</b> big names turn up more often (a star about 4 times as often as an average player), and all the clues are on the reels. Separate leaderboard.</p>' : '<p>🙂 <b>Easy:</b> every player on the reels shows a rough number (≈60 means somewhere near 60), so you can steer for the target. Separate leaderboard.</p>') : ''}
       ${S.hard ? `<p>🥵 <b>Hard mode:</b> just names and positions – no clubs, years, apps or nationality${r.fame || !r.max ? `, and far fewer star players on the reels${r.max ? '' : ' (same targets)'}` : ''}. Separate leaderboard.</p>` : ''}
       <div class="row"><button class="btn" data-close>Got it</button></div>`);
   }
