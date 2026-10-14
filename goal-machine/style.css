@@ -3664,3 +3664,13 @@ body.calm .fuse .fz { animation: none; }
 .o-hero.draw { background: linear-gradient(135deg, #93c5fd, #3b82f6); color: #0b1f44; }
 @keyframes ohin { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
 body.calm .o-hero { animation: none; }
+
+/* 👀 watching your opponent's draft, live */
+.page-watch .watch-score { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; margin: 4px 0 8px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); }
+.page-watch .watch-score > span { display: flex; align-items: center; gap: 6px; font-size: .85rem; }
+.page-watch .watch-score .avatar { width: 30px; height: 30px; font-size: .7rem; }
+.page-watch .watch-score strong { font: 700 1.6rem Oswald, sans-serif; } .page-watch .watch-score strong small { font-size: .7rem; font-family: Inter, sans-serif; opacity: .7; }
+.live-pill { background: #ef4444 !important; color: #fff !important; animation: livepulse 1.4s ease-in-out infinite; }
+@keyframes livepulse { 50% { opacity: .55; } }
+body.calm .live-pill { animation: none; }
+.watch-go { margin: 8px 0; }

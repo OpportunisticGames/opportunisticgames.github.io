@@ -368,11 +368,13 @@
       return;
     }
     // you've finished: stay on your full-time report until you ask for the comparison
+    // 👀 watching them build their XI, live, on a page like your own draft (once you've finished yours)
+    if (q.watch && mine.done && !r.result && opp) return watchPage(root, r, seat);
     // (once the result is in, that's what matters online: straight to the comparison and who won)
     const onReport = inDraft && S.phase === 'done' && !q.v && !r.result;
     if (onReport) {
       const res = GM.$('#race-result', root);
-      if (res) res.innerHTML = `<div class="banner">⏳ ${opp ? `${esc(opp)} is on ${theirs.n || 0}/11 – watch them below, or tap for their XI` : 'Waiting for someone to join'}</div>${opp ? watchPanel(r, theirs, opp) : ''}`;
+      if (res) res.innerHTML = `<div class="banner">⏳ ${opp ? `${esc(opp)} is on ${theirs.n || 0}/11` : 'Waiting for someone to join'}</div>${opp ? watchButton(r, opp) + watchPanel(r, theirs, opp) : ''}`;
       return;
     }
     summary(root, r, seat);
@@ -495,6 +497,37 @@
       ${reels ? `<div class="watch-reels"><small>Their options</small><div>${reels}</div></div>` : ''}</div>`;
   }
 
+  const watchButton = (r, opp) => `<a class="btn big watch-go" href="#/online?room=${r.code}&watch=1">👀 Watch ${esc(opp)} build their XI</a>`;
+  // their draft, live: the pitch filling up, the three players they're choosing between, their total and the CHAOS bar,
+  // drawn with the draft's own look. The room refreshes on its own, so it moves as they play; the result takes over
+  function watchPage(root, r, seat) {
+    const them = other(seat), opp = r[them], t = r.race[them] || {}, st = GM.STATS[r.stat] || GM.STATS.goals;
+    const x = t.x || FORMATION.map(pos => [pos]), lp = t.lp;
+    const SIDE = { LB: 0, LM: 0, RB: 2, RM: 2 }, lat = pos => SIDE[pos] ?? 1;
+    const rows = ['F', 'M', 'D', 'G'].map(g => x.map((c, i) => [c, i]).filter(([c]) => GM.GROUP[c[0]] === g).sort((a, b) => lat(a[0][0]) - lat(b[0][0]) || a[1] - b[1])).filter(r => r.length);
+    const slot = ([pos, pk, v]) => {
+      const p = pk && GM.byPk.get(pk);
+      if (!p) return `<div class="slot empty"><span class="pos pos-${GM.GROUP[pos]}">${pos}</span></div>`;
+      const sur = p.name.includes(' ') ? p.name.split(' ').slice(1).join(' ') : p.name;
+      return `<div class="slot filled ${lp && lp[1] === pk ? 'fresh' : ''}" data-psheet="${esc(p.pk)}">${GM.avatar(p)}<span class="slot-name">${esc(sur)}</span><span class="slot-goals"><span class="sg">${fmt(v)}</span></span><span class="slot-pos">${pos}</span></div>`;
+    };
+    const reel = ([k, w]) => {
+      if (k === 'w') { const W = (GM.draft.WILDCARDS || {})[w] || {}; return `<div class="reel is-wild"><div class="wild-card"><div class="wild-icon">${W.icon || '🃏'}</div><div class="wild-name">${esc(W.name || 'Wildcard')}</div><div class="tag">WILDCARD</div></div></div>`; }
+      const p = GM.byPk.get(k);
+      return p ? `<div class="reel" data-psheet="${esc(p.pk)}">${GM.avatar(p, 'lg')}<div class="reel-name">${esc(p.name)}</div><div class="reel-meta">${p.poss.map(q => `<span class="pos pos-${GM.GROUP[q]}">${q}</span>`).join('')} ${GM.flag(p.nat)}</div><div class="reel-goals"><b>?</b> ${st.label}</div></div>` : '<div class="reel idle"><div class="reel-q">?</div></div>';
+    };
+    const reels = (t.rl || []).length ? t.rl.map(reel).join('') : Array.from({ length: 3 }, () => '<div class="reel spinning"><div class="reel-spin">…</div></div>').join('');
+    const total = r.variant === 'chaos' ? `${fmt(t.c || 0)} <small>CHAOS pts</small>` : `${fmt(t.t || 0)} <small>${st.label}</small>`;
+    const meter = t.mt ? `<div class="chaos-meter watch-meter ${t.mt[1] ? 'due' : ''}"><span>${t.mt[1] ? 'NEXT SPIN!' : 'CHAOS'}</span>${Array.from({ length: GM.draft.METER }, (_, i) => `<i class="${t.mt[1] || i < t.mt[0] ? 'on' : ''}"></i>`).join('')}</div>` : '';
+    root.className = 'page-draft page-online page-watch';
+    root.innerHTML = `<div class="topbar"><a href="#/online?room=${r.code}" class="back">‹</a><h2><span class="t-name">👀 ${esc(opp)}’s XI</span><small class="hard-pill live-pill">LIVE</small></h2><span></span></div>
+      <div class="watch-score"><span>${GM.userPic(opp)}<b>${esc(opp)}</b></span><strong>${total}</strong><span>${t.n || 0}/11${t.sp ? ` · spin ${t.sp}` : ''}${r.variant === 'target' && t.n ? ` · ${fmt(t.d || 0)} off` : ''}</span></div>
+      ${meter}${t.ev ? `<p class="watch-ev">${t.ev[0]} <b>${esc(t.ev[1])}</b></p>` : ''}
+      <div class="pitch"><div class="pitch-lines"></div>${rows.map(row => `<div class="pitch-row ${row.length > 4 ? 'crowded' : ''}">${row.map(([c]) => slot(c)).join('')}</div>`).join('')}</div>
+      <div class="dock"><div class="stage"><div class="reels">${t.done ? '' : reels}</div></div>
+        <div class="msg"><div class="m-next">${t.done ? `✅ ${esc(opp)} has finished: the result’s on its way` : `${esc(opp)} is choosing… tap a player for his sheet`}</div></div></div>`;
+  }
+
   /* ---------------------------------------------------------------- the comparison (both games) */
   function summary(root, r, seat) {
     const them = other(seat), opp = r[them] || 'Waiting…', st = GM.STATS[r.stat];
@@ -511,6 +544,7 @@
         d: base.d, c: base.c || 0, tg: base.tg };
     };
     const A = sums(seat), B = sums(them);
+    if (root.classList.contains('page-watch')) root.className = 'page-online';  // the result takes over from watching
     const weights = r.kind === 'race' ? [50, 30, 20] : [60, 40, 0];
     const mmss = ms => (ms == null ? '–' : `${Math.floor(ms / 60000)}m ${String(Math.round(ms / 1000) % 60).padStart(2, '0')}s`);
     // Target and CHAOS Races are all-or-nothing: closest to the target, or most CHAOS points
@@ -535,7 +569,7 @@
       ${r.result ? resultHero(r, seat)
         : `<div class="banner">⏳ ${r.guest ? `${esc(opp)} is still building their XI (${B.n}/11). You can watch it fill up here.` : 'Nobody has joined yet.'}</div>`}
       ${inviteBar(r)}
-      ${r.kind === 'race' && A.done && !r.result && r.race[them] ? watchPanel(r, r.race[them], opp) : ''}
+      ${r.kind === 'race' && A.done && !r.result && r.race[them] ? watchButton(r, opp) + watchPanel(r, r.race[them], opp) : ''}
       <table class="cmp-points"><tr><th></th><th>You</th><th>${esc(opp)}</th>${single ? '' : '<th>Pts</th>'}</tr>
         ${rows.map(([label, w, a, b, s]) => `<tr><td>${label}</td><td class="${bothDone && s > 0 ? 'won' : ''}">${a}</td><td class="${bothDone && s < 0 ? 'won' : ''}">${b}</td>${single ? '' : `<td>${w}</td>`}</tr>`).join('')}</table>
       <div class="cmp"><div><h4>You</h4>${side(team(seat), 'p1')}</div><div><h4>${esc(opp)}</h4>${side(team(them), 'p2')}</div></div>

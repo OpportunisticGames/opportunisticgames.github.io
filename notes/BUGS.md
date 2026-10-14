@@ -4,6 +4,9 @@ Bugs reported by the owner (or found along the way). **Bugs get fixed straight a
 version they shipped in. Newest at the top.
 
 ### Fixed in 5.34.1 *(owner, 14 Oct 2026)*
+- "There wasn't really a nice way to watch his XI get built, it said tap here but didn't do anything": the waiting
+  banner said "tap for their XI" but wasn't tappable. Now a 👀 Watch button opens `watchPage` (online.js,
+  `#/online?room=…&watch=1`): their pitch, reels, total and CHAOS bar drawn with the draft's own look, updated live.
 - "A glitch in Dodgy Owner lets you keep increasing sell offers until you're getting ridiculous offers" (a friend's best
   was 7.8 trillion): Ask for more rolled `rng(seed|more|player|week)`, the same number every time that week, so a yes was
   always a yes (+20% each tap, forever). Now each ask has its own roll (1 in 2, then 1 in 4), two asks at most ("final
