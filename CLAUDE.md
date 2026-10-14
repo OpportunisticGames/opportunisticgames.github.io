@@ -36,7 +36,8 @@ game mode for players; this file is about how to work on it.
   from `goal-machine/` (it bumps every `?v=` in `index.html` and the service worker cache). `v` = the next cache
   number; `label` = the version players see, in three levels: **5.0** a big change to how the game plays, **4.10**
   new features or modes (4.9 → 4.10 → 4.11), **4.10.1** bug fixes and polish only (the Updates page folds these into
-  the release they patch).
+  the release they patch). The Updates page groups releases into big updates (`CHAPTERS` in updates.js: from a `v`,
+  icon, title, one-line blurb); when a release starts a new chapter (a new way to play, a new part of the app), add one.
 - **Announce feature releases:** after merging a release with a new mode or a big feature (4.10, 5.0, not fix-ups),
   insert one row into `announcements` (title, body, link to the new thing, e.g. `…/goal-machine/#/updates`).
   Players with "New game modes" on get it as a notification within ~15 minutes (once, for 3 days).

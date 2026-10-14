@@ -3,6 +3,14 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.34.1 *(owner, 14 Oct 2026)*
+- "When you do a spin on Easy and the player has many clubs it cuts off which clubs they played for, as it presents them in
+  one line": the reel's club badges were one row with no wrapping, centred and clipped at both ends (even three clubs
+  could lose a bit). Now `fitChips` (draft.js) tries smaller badges, then a second row (with a smaller photo if the card
+  needs the room), and only then shows the rest as "+N".
+- "The rain recording sounds a bit staticy": the old recording was flat hiss right up to 16 kHz. Swapped for a real
+  recording of heavy summer rain (you can hear the drops), with the top end rolled off and a fade in.
+
 ### Fixed in 5.32.2 *(owner, 13 Oct 2026)*
 - "A big witch in the middle of the Seasonal CHAOS end board": the Halloween flyers (bats, ghost, witch) and a moment's
   witch could still be crossing the screen when full time arrived; the deco was switched off but anything mid-flight carried

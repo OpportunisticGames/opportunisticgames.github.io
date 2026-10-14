@@ -147,17 +147,5 @@
   "airliner take off",
   "plane passing overhead",
   "aircraft landing"
- ],
- "rainsoft": [
-  6.0,
-  "re:\\brain(fall|y|storm|drops?)?\\b|\\bshower\\b|drizzle",
-  "rain sound",
-  "rain ambience",
-  "rainfall",
-  "rain on roof",
-  "rain on window",
-  "rain drops",
-  "gentle rain",
-  "rain storm"
  ]
 }

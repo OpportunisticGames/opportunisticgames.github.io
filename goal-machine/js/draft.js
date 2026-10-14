@@ -2852,9 +2852,39 @@
   function fitReels() {
     GM.$$('.stage .reel', root).forEach(r => {
       const over = () => { const d = GM.$('.wild-desc', r); return r.scrollHeight > r.clientHeight + 1 || (d && d.scrollHeight > d.clientHeight + 1); };
-      r.classList.remove('fit1', 'fit2', 'fit3');
+      r.classList.remove('fit1', 'fit2', 'fit3', 'fitc');
+      fitChips(r, over);
       for (const c of ['fit1', 'fit2', 'fit3']) { if (!over()) break; r.classList.add(c); }
     });
+  }
+
+  // a well-travelled player's clubs: smaller badges first, then a second row if the card has room, else "+N" for the rest
+  function fitChips(r, over) {
+    const ch = GM.$('.chips', r);
+    if (!ch || !ch.offsetParent) return;
+    GM.$$('.chip-more', ch).forEach(x => x.remove());
+    ch.classList.remove('tight', 'two');
+    GM.$$('.chip', ch).forEach(x => { x.hidden = false; });
+    const spill = () => ch.scrollHeight > ch.clientHeight + 1 || ch.scrollWidth > ch.clientWidth + 1;
+    if (!spill()) return;
+    ch.classList.add('tight');
+    if (!spill()) return;
+    ch.classList.add('two');  // a second row, if the card has room (a smaller photo makes some)
+    if (over()) r.classList.add('fitc');
+    if (over()) { r.classList.remove('fitc'); ch.classList.remove('two'); }
+    if (!spill()) return;
+    const chips = GM.$$('.chip', ch);
+    const more = document.createElement('span');
+    more.className = 'chip chip-more';
+    ch.appendChild(more);
+    let hid = 0;
+    for (let i = chips.length - 1; i > 0; i--) {
+      more.textContent = `+${hid}`;
+      if (hid && !spill()) break;
+      chips[i].hidden = true; hid++;
+    }
+    more.textContent = `+${hid}`;
+    more.title = chips.filter(x => x.hidden).map(x => x.title).join(', ');
   }
 
   // one line for what's happening (a CHAOS event, a storm, an active wildcard) and one for what to do next

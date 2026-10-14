@@ -1071,6 +1071,11 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
 .stage .reel-goals { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: baseline; column-gap: 4px; row-gap: 0; padding: 3px 5px; margin-top: 4px; line-height: 1.15; }
 .stage .reel-goals small { flex-basis: 100%; }
 .stage .reel .reel-meta { row-gap: 1px; line-height: 1.2; }
+.stage .reel .chips.tight { gap: 2px; }
+.stage .reel .chips.tight .chip { padding: 1px 3px; font-size: .58rem; letter-spacing: 0; border-radius: 4px; }
+.stage .reel .chips.two { height: 34px; flex-wrap: wrap; align-content: center; }
+.stage .reel .chips .chip[hidden] { display: none; }
+.stage .reel .chip-more { --cb: #4a5a52; --cf: #fff; }
 .stage .reel:has(.mate) .chips { display: none; } .stage .mate + .avatar { margin-top: 10px; }
 /* the three stats always look the same: icon on top, name underneath, all three on one row */
 .hard-toggle .sb-ico, .stat-seg .sb-ico { font-style: normal; font-size: 1.1rem; line-height: 1.2; display: block; }
@@ -1105,7 +1110,7 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
 .ox i { font-style: normal; font-weight: 800; color: #ffe27a; }
 /* cards that don't fit give way step by step (fitReels in draft.js) */
 .stage .reel.fit1 .chips, .stage .reel.fit2 .mate { display: none; }
-.stage .reel.fit2 .avatar.lg { width: 30px; height: 30px; font-size: .7rem; }
+.stage .reel.fitc .avatar.lg, .stage .reel.fit2 .avatar.lg { width: 30px; height: 30px; font-size: .7rem; }
 .stage .reel.fit3 .avatar { display: none; }
 .stage .reel.fit1 .wild-icon { font-size: 1.4rem; }
 .stage .reel.fit1 .wild-desc { -webkit-line-clamp: 6; }
@@ -1120,6 +1125,24 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
 .ntoggles label small { margin: 0; }
 .ntoggles input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--accent); flex: none; }
 .ntoggles select.input { width: auto; flex: none; padding: 6px 8px; }
+/* Updates: the big updates as chapters, each opening to its releases */
+.chapters { display: grid; gap: 10px; margin-top: 8px; }
+.chapter { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 3px 0 var(--edge); }
+.chapter.now { border: 2px solid var(--accent); }
+.chapter > summary { list-style: none; display: flex; gap: 12px; padding: 14px; cursor: pointer; }
+.chapter > summary::-webkit-details-marker { display: none; }
+.ch-ico { flex: none; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 1.6rem; background: var(--inset); }
+.ch-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ch-txt > b { font: 700 1.15rem Oswald, sans-serif; line-height: 1.15; }
+.ch-txt small { color: var(--muted); font-size: .74rem; }
+.ch-txt > span { font-size: .86rem; }
+.ch-heads { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; font-style: normal; }
+.ch-heads em { font-style: normal; font-size: .7rem; font-weight: 700; padding: 2px 7px; border-radius: 8px; background: var(--inset); color: var(--muted); }
+.ch-meta { margin-top: 2px; }
+.ch-now { font-size: .66rem; padding: 1px 6px; border-radius: 6px; background: var(--accent); color: #0a2a1f; text-transform: uppercase; letter-spacing: .5px; }
+.chapter[open] .ch-meta::after { content: ' ▲'; } .chapter:not([open]) .ch-meta::after { content: ' ▼'; }
+.chapter > .releases { margin: 0; padding: 0 10px 10px; }
+.chapter .release { box-shadow: none; padding: 10px 12px; }
 /* Updates: fix-up releases folded into the release they patch */
 .release .fixups { margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 8px; }
 .release .fixups summary { cursor: pointer; font-size: .82rem; color: var(--muted); font-weight: 700; }

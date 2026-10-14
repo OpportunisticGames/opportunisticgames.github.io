@@ -34,6 +34,9 @@ Proposal: a card rating (per-game quality by position, keepers' clean sheets, ti
 diminishing returns), ranked within each position so every tier has keepers and defenders; maybe a 💎 Icon tier
 (~20 all-time greats, 7 pieces) above Legend. Show the owner the full new Legend/Gold list before building. Finished
 cards stay finished. Waiting for go.
+**Owner (14 Oct): "Go!"** Draft built (`goal-machine/tools/card_rating.js`, list in `notes/card-tiers-draft.md`, made by
+`tools/card_tiers_draft.js`): a rating ranked within position, 💎 Icons = Hall of Fame + the six best-rated others.
+Waiting for the owner to check the list before the game changes.
 
 ### Duplicates in packs, and a duplicate pile ✅ 5.34 *(owner, 13 Oct 2026)*
 > "would it slow down pack progression so it's not too quick if we enabled duplicates? i was thinking maybe you could up it
