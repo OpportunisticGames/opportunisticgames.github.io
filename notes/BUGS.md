@@ -4,6 +4,10 @@ Bugs reported by the owner (or found along the way). **Bugs get fixed straight a
 version they shipped in. Newest at the top.
 
 ### Fixed in 5.35 *(owner, 14 Oct 2026)*
+- "The problem little line that doesn't do anything is still here" (build 58, only in the Play app, not in Chrome; it
+  only moves if you grab it, and grows when touched): a phone maker's draggable quick-scroll bar on the WebView (build 58
+  already turned off Android's own scrollbar). `GameWebView` (MainActivity.java) reports no scroll range of its own
+  (the page scrolls itself), so there's nothing for such a bar to attach to. Needs the next app build (59).
 - "The XIs seem squished again … on the online race there's no picture": on shorter screens (status bar, the race bar)
   the slots went under 62px and `slots-compact` hid every face. Compact slots now keep a 22px face (only under 50px do
   they go), and on screens under 820px the score box drops its little line, so the pitch keeps more height.
