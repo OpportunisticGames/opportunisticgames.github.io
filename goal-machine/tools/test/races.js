@@ -51,7 +51,7 @@ async function playDraft(pg, tag) {
     console.log('  sums host', JSON.stringify({ t: room.race.host.t, d: room.race.host.d, c: room.race.host.c, tg: room.race.host.tg }), 'guest', JSON.stringify({ t: room.race.guest.t, d: room.race.guest.d, c: room.race.guest.c, tg: room.race.guest.tg }));
     console.log('  result', JSON.stringify(room.result));
     await B.goto(U + '#/online?room=' + code + '&v=1'); await B.waitForTimeout(1500);
-    console.log('  B compare:', await B.$eval('.cmp-points', e => e.innerText.replace(/\s+/g, ' ')).catch(() => '?'), '|', await B.$eval('.race-final', e => e.innerText).catch(() => '?'));
+    console.log('  B compare:', await B.$eval('.cmp-points', e => e.innerText.replace(/\s+/g, ' ')).catch(() => '?'), '|', await B.$eval('.o-hero', e => e.innerText).catch(() => '?'));
     await B.screenshot({ path: `lay/race_${kind}_cmp.png` });
     await B.goto(U + '#/online'); await B.waitForTimeout(600);
     console.log('  chaos look after leaving:', await B.evaluate(() => document.body.classList.contains('chaos-mode')));

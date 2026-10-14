@@ -140,8 +140,12 @@
  ],
  "jet": [
   3.0,
-  "jet airplane flyby",
+  "re:(aeroplane|airplane|aircraft|airliner|jet (engine|plane|aircraft|fly)|fly-?by|fly-?over|take-?off|boeing|airbus)",
   "airplane flyover",
-  "aircraft take off"
+  "aircraft flyby",
+  "jet aircraft",
+  "airliner take off",
+  "plane passing overhead",
+  "aircraft landing"
  ]
 }

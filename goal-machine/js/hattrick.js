@@ -497,10 +497,11 @@
     const turnFor = w => (w === 0 ? 'host' : w === 1 ? 'guest' : 'none');
     const finalAll = () => ({ host: { done: true, t: G.scores[0] }, guest: { done: true, t: G.scores[1] } });
     const res = r.result, iWon = res && res.winner === seat;
+    if (done && res && api.resultFx && !GM.store.get('htfx:' + r.code)) { GM.store.set('htfx:' + r.code, 1); setTimeout(() => api.resultFx(r, seat), 300); }
     G.online = {
       human: s => s < 2,
       bar: (api.inviteBar(r) || '') + (bad ? '<div class="banner">⚠️ This game got out of step. Tap ‹ and open it again.</div>' : '')
-        + (done && res ? `<div class="banner race-final">${res.resigned ? (res.resigned === seat ? '🏳️ You resigned' : `🏳️ ${GM.esc(r[seat === 'host' ? 'guest' : 'host'])} resigned`) : res.winner === 'draw' ? '🤝 A draw' : iWon ? '🏆 You win!' : `😬 ${GM.esc(r[res.winner])} wins`}</div>` : ''),
+        + (done && res ? (api.resultHero ? api.resultHero(r, seat, `${G.scores[seat === 'host' ? 0 : 1]}–${G.scores[seat === 'host' ? 1 : 0]} at full time`) : '') : ''),
       foot: done ? '' : `<div class="actions"><button class="btn ghost small" id="oresign">🏳️ ${r.guest ? 'Resign' : r.quick ? 'Stop searching' : 'Cancel invite'}</button></div>`,
       wire: root => { api.wireInvite(root, r); api.resignButton(root, r, seat); },
       send: async move => {

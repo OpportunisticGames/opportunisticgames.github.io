@@ -23,7 +23,7 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
-### Card tiers that feel right 💬 *(owner, 13 Oct 2026)*
+### Card tiers that feel right ✅ 5.35 *(owner, 13 Oct 2026)*
 > "might it be worth having more player tiers? I only say this because I look at some of the golds and silvers and they
 > don't feel quite right"
 
@@ -34,6 +34,11 @@ Proposal: a card rating (per-game quality by position, keepers' clean sheets, ti
 diminishing returns), ranked within each position so every tier has keepers and defenders; maybe a 💎 Icon tier
 (~20 all-time greats, 7 pieces) above Legend. Show the owner the full new Legend/Gold list before building. Finished
 cards stay finished. Waiting for go.
+**Owner (14 Oct): "Go!"** Draft built (`goal-machine/tools/card_rating.js`, list in `notes/card-tiers-draft.md`, made by
+`tools/card_tiers_draft.js`): a rating ranked within position, 💎 Icons = Hall of Fame + the six best-rated others.
+Waiting for the owner to check the list before the game changes.
+**Owner: "No no it should take longer to finish."** Built in 5.35 as drafted: 30 Icons (7 pieces, pack odds 1), 45 Legend,
+190 Gold, 500 Silver, 1,274 Bronze; `GM.cardRating` in packs.js; old finished cards kept in `cards.fin` (save v3). ✅
 
 ### Duplicates in packs, and a duplicate pile ✅ 5.34 *(owner, 13 Oct 2026)*
 > "would it slow down pack progression so it's not too quick if we enabled duplicates? i was thinking maybe you could up it

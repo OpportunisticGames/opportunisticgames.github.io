@@ -1163,7 +1163,9 @@
   // same targets - big numbers are rarer, so one wrong pick can put the target out of reach.
   // Hard and Extreme hide the clues on the reels: names and positions only (Extreme is every PL player on top)
   const blind = () => !!(S.hard || S.extreme || ['extreme', 'purist', 'chaosx'].includes(S.mode));
-  const reelWeight = () => (S.easy ? (S.rules.max && !S.rules.fame ? p => Math.sqrt(p.fame) : p => Math.pow(S.rules.weight(p), 1.2))
+  // Easy: in the most-wins games the big names turn up more; in the Target games more big names would only overshoot the
+  // target, so the reels are Normal's and Easy gives a rough number for every player instead (easyHint)
+  const reelWeight = () => (S.easy ? (S.rules.max && !S.rules.fame ? p => Math.sqrt(p.fame) : S.rules.weight)
     : S.hard && (!S.rules.max || S.rules.fame) ? p => Math.sqrt(S.rules.weight(p)) : S.rules.weight);
   // what wildcard descriptions talk about: in the Treble a wildcard affects all three numbers
   const wst = () => S.rules.treble ? { ...S.st, label: 'numbers', bigLabel: 'goals' } : S.st;
@@ -2506,6 +2508,9 @@
   const posBadges = GM.posBadges;
   // a small secondary number on the reel card that isn't the stat being played for
   const hintStat = p => S.stat === 'apps' || S.rules.mystery ? '' : `<small>${fmt(p.apps)} apps</small>`;
+  // Easy's clue in the Target games: a number rounded to the nearest 5 (10 over 50, 25 for apps)
+  const rough = (v, k) => { const u = k === 'apps' ? 25 : v >= 50 ? 10 : 5; return Math.max(v ? u : 0, Math.round(v / u) * u); };
+  const easyHint = (p, k) => (S.easy && !S.rules.max ? `≈${fmt(rough(pv(p)[k], k))}` : '?');
 
   function reelInner(x) {
     if (!x) return '';
@@ -2520,8 +2525,8 @@
     const p = byId(x.id);
     const reveal = S.revealed;
     const num = S.rules.treble
-      ? `<div class="reel-goals treble-num ${reveal ? 'show' : ''}">${STAT_KEYS.map(k => `<span><b>${reveal ? fmt(pv(p)[k]) : '?'}</b> ${GM.STATS[k].icon}</span>`).join('')}</div>`
-      : `<div class="reel-goals ${reveal ? 'show' : ''}">${reveal ? `<b>${fmt(val(p))}</b> ${S.st.label}` : `<b>?</b> ${S.st.label}`}${reveal && keeperPts(p) && S.stat !== 'apps' ? `<small>🧤 ${fmt(p.cs)} clean sheets</small>` : blind() ? '' : hintStat(p)}</div>`;
+      ? `<div class="reel-goals treble-num ${reveal ? 'show' : ''}">${STAT_KEYS.map(k => `<span><b>${reveal ? fmt(pv(p)[k]) : easyHint(p, k)}</b> ${GM.STATS[k].icon}</span>`).join('')}</div>`
+      : `<div class="reel-goals ${reveal ? 'show' : ''}">${reveal ? `<b>${fmt(val(p))}</b> ${S.st.label}` : `<b>${S.rules.max ? '?' : easyHint(p, S.stat)}</b> ${S.st.label}`}${reveal && keeperPts(p) && S.stat !== 'apps' ? `<small>🧤 ${fmt(p.cs)} clean sheets</small>` : blind() ? '' : hintStat(p)}</div>`;
     if (blind()) {
       return `${GM.avatar(p, 'lg', true)}
       <div class="reel-name">${GM.esc(p.name)}</div>
@@ -2835,7 +2840,7 @@
       const want = cur + (fresh && k === 0 ? window.innerHeight - (root.getBoundingClientRect().bottom + window.scrollY) : spare) / rows;
       const next = Math.max(46, Math.min(86, Math.floor(want)));
       if (Math.abs(next - cur) >= 1) root.style.setProperty('--slot-h', next + 'px');
-      root.classList.toggle('slots-compact', next < 62);
+      root.classList.toggle('slots-compact', next < 62); root.classList.toggle('slots-tiny', next < 50);
       if (over() <= 0 || next === 46) break;
     }
     // still too tall at the smallest slots (a small phone with big text): scale the whole game down to fit
@@ -2847,14 +2852,44 @@
   addEventListener('scroll', () => { const d = document.querySelector('.cz-deco'); if (d) czPlace(d); }, { passive: true });
   if (document.fonts) document.fonts.ready.then(() => { fitKey = ''; if (S && root) { fitPitch(); fitReels(); } });
   // Each card measures itself: if its contents don't fit (bigger fonts on some phones, a two-line name), the less
-  // important bits give way one step at a time (fit1: club badges, fit2: a smaller photo and no link line,
+  // important bits give way one step at a time (fitc: a smaller photo, fit1: club badges, fit2: a smaller photo and no link line,
   // fit3: no photo), so the stat box and a wildcard's full text always show
   function fitReels() {
     GM.$$('.stage .reel', root).forEach(r => {
       const over = () => { const d = GM.$('.wild-desc', r); return r.scrollHeight > r.clientHeight + 1 || (d && d.scrollHeight > d.clientHeight + 1); };
-      r.classList.remove('fit1', 'fit2', 'fit3');
-      for (const c of ['fit1', 'fit2', 'fit3']) { if (!over()) break; r.classList.add(c); }
+      r.classList.remove('fit1', 'fit2', 'fit3', 'fitc');
+      fitChips(r, over);
+      for (const c of ['fitc', 'fit1', 'fit2', 'fit3']) { if (!over()) break; r.classList.add(c); }  // a smaller photo before the clubs go
     });
+  }
+
+  // a well-travelled player's clubs: smaller badges first, then a second row if the card has room, else "+N" for the rest
+  function fitChips(r, over) {
+    const ch = GM.$('.chips', r);
+    if (!ch || !ch.offsetParent) return;
+    GM.$$('.chip-more', ch).forEach(x => x.remove());
+    ch.classList.remove('tight', 'two');
+    GM.$$('.chip', ch).forEach(x => { x.hidden = false; });
+    const spill = () => ch.scrollHeight > ch.clientHeight + 1 || ch.scrollWidth > ch.clientWidth + 1;
+    if (!spill()) return;
+    ch.classList.add('tight');
+    if (!spill()) return;
+    ch.classList.add('two');  // a second row, if the card has room (a smaller photo makes some)
+    if (over()) r.classList.add('fitc');
+    if (over()) { r.classList.remove('fitc'); ch.classList.remove('two'); }
+    if (!spill()) return;
+    const chips = GM.$$('.chip', ch);
+    const more = document.createElement('span');
+    more.className = 'chip chip-more';
+    ch.appendChild(more);
+    let hid = 0;
+    for (let i = chips.length - 1; i > 0; i--) {
+      more.textContent = `+${hid}`;
+      if (hid && !spill()) break;
+      chips[i].hidden = true; hid++;
+    }
+    more.textContent = `+${hid}`;
+    more.title = chips.filter(x => x.hidden).map(x => x.title).join(', ');
   }
 
   // one line for what's happening (a CHAOS event, a storm, an active wildcard) and one for what to do next
@@ -2926,7 +2961,7 @@
   function poolText() {
     const r = S.rules, w = r.wild !== false ? ' and use your wildcards well' : '';
     if (S.fx || r.club || r.nation) return `Every player ${S.fx ? 'either club has had' : S.nat ? 'from that country' : 'the club has had'} in the Premier League is equally likely to turn up: spot the big numbers${w}.`;
-    if (S.easy && !r.all) return `Every player with 50+ apps can turn up, and on Easy the big names more often: a star about 4 times as often as an average player. Spot the big numbers${w}.`;
+    if (S.easy && !r.all && r.max) return `Every player with 50+ apps can turn up, and on Easy the big names more often: a star about 4 times as often as an average player. Spot the big numbers${w}.`;
     if (r.fame) return `Every player with 50+ apps can turn up, and the better known they are, the more often${S.hard ? ' (on Hard, much less so: a star turns up about 4 times as often as an average player, not 16)' : ': a star turns up about 16 times as often as an average player'}.`;
     if (r.all) return `Every one of the 5,000+ PL players is equally likely to turn up, so most are strangers: spot the big numbers${w}.`;
     return `Every player with 50+ apps is equally likely to turn up, so you’ll mostly see journeymen: spot the big numbers${w}.`;
@@ -2953,7 +2988,7 @@
         : r.chaos ? `your XI’s PL ${L} plus every bonus, shown at full time.` : r.max ? `your score is your XI’s total PL ${L} (after any wildcard modifiers).` : `1000 minus 5 for every ${S.stat === 'goals' ? 'goal' : `${fmt(Math.round(S.target / 442 * 10) / 10)} ${L}`} off target. Exactly ${fmt(S.target)} = +500 bullseye bonus.`}</p>
       <p>🤝 A player who shares a club with your last signing may turn up to tempt you.</p>
       ${!S.hard && blind() ? '<p>⚡ <b>Extreme:</b> every one of the 5,000+ PL players, and just names and positions on the reels – no clubs, years, apps or nationality. Separate leaderboard.</p>' : ''}
-      ${S.easy ? '<p>🙂 <b>Easy:</b> big names turn up more often (a star about 4 times as often as an average player), and all the clues are on the reels. Separate leaderboard.</p>' : ''}
+      ${S.easy ? (S.rules.max ? '<p>🙂 <b>Easy:</b> big names turn up more often (a star about 4 times as often as an average player), and all the clues are on the reels. Separate leaderboard.</p>' : '<p>🙂 <b>Easy:</b> every player on the reels shows a rough number (≈60 means somewhere near 60), so you can steer for the target. Separate leaderboard.</p>') : ''}
       ${S.hard ? `<p>🥵 <b>Hard mode:</b> just names and positions – no clubs, years, apps or nationality${r.fame || !r.max ? `, and far fewer star players on the reels${r.max ? '' : ' (same targets)'}` : ''}. Separate leaderboard.</p>` : ''}
       <div class="row"><button class="btn" data-close>Got it</button></div>`);
   }

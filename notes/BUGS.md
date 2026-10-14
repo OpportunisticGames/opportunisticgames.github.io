@@ -3,6 +3,52 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.35 *(owner, 14 Oct 2026)*
+- "The problem little line that doesn't do anything is still here" (build 58, only in the Play app, not in Chrome; it
+  only moves if you grab it, and grows when touched): a phone maker's draggable quick-scroll bar on the WebView (build 58
+  already turned off Android's own scrollbar). `GameWebView` (MainActivity.java) reports no scroll range of its own
+  (the page scrolls itself), so there's nothing for such a bar to attach to. Needs the next app build (59).
+- "The XIs seem squished again … on the online race there's no picture": on shorter screens (status bar, the race bar)
+  the slots went under 62px and `slots-compact` hid every face. Compact slots now keep a 22px face (only under 50px do
+  they go), and on screens under 820px the score box drops its little line, so the pitch keeps more height.
+- "The number of goals touch the edge of the box": the face was sized `slot height − 38px`, leaving too little for the
+  name and number; now `− 44px`.
+- "On the Halloween one the names aren't readable … the name is black but the position is white": the beach pitch style
+  made names dark brown, which disappeared on Halloween's dark pitch. Names are white with a shadow on every pitch now,
+  and the beach gives filled slots a darker box so they read on sand.
+- "The question marks aren't even" on the reels: a two-line name made a card short of room, so it hid its clubs, and the
+  number box (pushed down only by the clubs' `margin-top: auto`) rose. The box now always sits at the bottom
+  (`.reel-goals { margin-top: auto }`), and a card short of room shrinks the photo (`fitc`) before it drops the clubs.
+- "I just got a Legendary pack with no Legend": it only promised Gold or better. Its last card is now always a Legend
+  or better (1 in 5 an Icon), and the pack says so.
+- "There wasn't really a nice way to watch his XI get built, it said tap here but didn't do anything": the waiting
+  banner said "tap for their XI" but wasn't tappable. Now a 👀 Watch button opens `watchPage` (online.js,
+  `#/online?room=…&watch=1`): their pitch, reels, total and CHAOS bar drawn with the draft's own look, updated live.
+- "A glitch in Dodgy Owner lets you keep increasing sell offers until you're getting ridiculous offers" (a friend's best
+  was 7.8 trillion): Ask for more rolled `rng(seed|more|player|week)`, the same number every time that week, so a yes was
+  always a yes (+20% each tap, forever). Now each ask has its own roll (1 in 2, then 1 in 4), two asks at most ("final
+  offer"), a cap at about twice his value, profit and skimming count for at most 40 legacy each, and bests over 1,000
+  left by the glitch are cleared on the phone.
+- "On some online games it doesn't make it clear you've won or lost … would it not make more sense to finish on the
+  compare page": a finished race stayed on your own full-time report with a one-line banner. Once the result is in, it
+  goes straight to the comparison, topped by a big result card (`resultHero` in online.js) with a trophy, confetti,
+  fanfare, cheer and your Locker celebration for a win, a groan and a broken heart for a loss (`resultFx`); Hat-Trick
+  online uses the same card.
+- "Sometimes Easy is actually harder: on Target for goals you're getting players who scored more goals, so it's harder
+  to get the number": Easy weighted the Target reels by fame^1.2, so more big scorers and more overshooting. Easy's
+  Target/Treble/Mystery reels are now Normal's, and each player shows a rough number (≈60, `easyHint`/`rough` in draft.js).
+- "The No. 1 thing on player cards is ugly … maybe a slightly different card design, a bigger flag across the corner,
+  more shiny": the banner is gone; a No. 1 card has its own design: a big waving flag across the top corner behind the
+  face (`.pc-bigflag`), a gold Nº1, a stronger holo foil and a sweeping glint (`.pc-glare`, off in Calm).
+- "You should be able to see your own profile, I don't know where to go to see how many boards I'm top of": your
+  picture on the top bar now opens your profile (`data-profile`), with "how other players see you", Your kit and Settings.
+- "When you do a spin on Easy and the player has many clubs it cuts off which clubs they played for, as it presents them in
+  one line": the reel's club badges were one row with no wrapping, centred and clipped at both ends (even three clubs
+  could lose a bit). Now `fitChips` (draft.js) tries smaller badges, then a second row (with a smaller photo if the card
+  needs the room), and only then shows the rest as "+N".
+- "The rain recording sounds a bit staticy": the old recording was flat hiss right up to 16 kHz. Swapped for a real
+  recording of heavy summer rain (you can hear the drops), with the top end rolled off and a fade in.
+
 ### Fixed in 5.32.2 *(owner, 13 Oct 2026)*
 - "A big witch in the middle of the Seasonal CHAOS end board": the Halloween flyers (bats, ghost, witch) and a moment's
   witch could still be crossing the screen when full time arrived; the deco was switched off but anything mid-flight carried

@@ -962,8 +962,13 @@ body.chaos-mode .reel .reel-goals { background: rgba(0, 0, 0, .35); color: #ffe6
 
 /* the draft pitch grows into the space on taller phones (it was sized for the smallest ones), still fitting one screen */
 .page-draft .slot { min-height: 0; height: var(--slot-h, 52px); overflow: hidden; }  /* set once by fitPitch() in draft.js; filled or empty, the same size */
-.page-draft .slot .avatar { flex: none; width: clamp(24px, calc(var(--slot-h, 52px) - 38px), 40px); height: clamp(24px, calc(var(--slot-h, 52px) - 38px), 40px); }
-.page-draft.slots-compact .slot .avatar { display: none; }  /* short slots: name and number only */
+.page-draft .slot .avatar { flex: none; width: clamp(22px, calc(var(--slot-h, 52px) - 44px), 40px); height: clamp(22px, calc(var(--slot-h, 52px) - 44px), 40px); }  /* (room left for the name and the number, which never touch the edge) */
+.page-draft.slots-compact .slot .avatar { width: 22px; height: 22px; font-size: .55rem; }  /* short slots: a small face, never none */
+.page-draft.slots-compact .slot { gap: 0; line-height: 1.1; }
+.page-draft.slots-compact .slot-goals { font-size: .66rem; line-height: 1.25; }
+.page-draft.slots-tiny .slot .avatar { display: none; }  /* only the very shortest: name and number */
+/* short screens: the score box slims down (no little line) so the pitch keeps its height */
+@media (max-height: 820px) { .page-draft .counter .spark { display: none; } .page-draft .counter.max { padding-top: 6px; padding-bottom: 6px; } }
 .page-draft .pitch-row { margin: clamp(2px, calc((100dvh - 760px) / 25), 6px) 0; }
 .page-draft .slot-name { font-size: clamp(.66rem, calc(.5rem + .4dvh), .78rem); }
 .page-draft .banner.chaos-event { padding: 6px 10px; margin: 4px 0; font-size: .82rem; line-height: 1.3; }
@@ -1071,6 +1076,11 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
 .stage .reel-goals { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: baseline; column-gap: 4px; row-gap: 0; padding: 3px 5px; margin-top: 4px; line-height: 1.15; }
 .stage .reel-goals small { flex-basis: 100%; }
 .stage .reel .reel-meta { row-gap: 1px; line-height: 1.2; }
+.stage .reel .chips.tight { gap: 2px; }
+.stage .reel .chips.tight .chip { padding: 1px 3px; font-size: .58rem; letter-spacing: 0; border-radius: 4px; }
+.stage .reel .chips.two { height: 34px; flex-wrap: wrap; align-content: center; }
+.stage .reel .chips .chip[hidden] { display: none; }
+.stage .reel .chip-more { --cb: #4a5a52; --cf: #fff; }
 .stage .reel:has(.mate) .chips { display: none; } .stage .mate + .avatar { margin-top: 10px; }
 /* the three stats always look the same: icon on top, name underneath, all three on one row */
 .hard-toggle .sb-ico, .stat-seg .sb-ico { font-style: normal; font-size: 1.1rem; line-height: 1.2; display: block; }
@@ -1105,7 +1115,7 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
 .ox i { font-style: normal; font-weight: 800; color: #ffe27a; }
 /* cards that don't fit give way step by step (fitReels in draft.js) */
 .stage .reel.fit1 .chips, .stage .reel.fit2 .mate { display: none; }
-.stage .reel.fit2 .avatar.lg { width: 30px; height: 30px; font-size: .7rem; }
+.stage .reel.fitc .avatar.lg, .stage .reel.fit2 .avatar.lg { width: 30px; height: 30px; font-size: .7rem; }
 .stage .reel.fit3 .avatar { display: none; }
 .stage .reel.fit1 .wild-icon { font-size: 1.4rem; }
 .stage .reel.fit1 .wild-desc { -webkit-line-clamp: 6; }
@@ -1120,6 +1130,24 @@ button.icon-btn.lb-btn { font: inherit; font-size: 1.1rem; cursor: pointer; }
 .ntoggles label small { margin: 0; }
 .ntoggles input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--accent); flex: none; }
 .ntoggles select.input { width: auto; flex: none; padding: 6px 8px; }
+/* Updates: the big updates as chapters, each opening to its releases */
+.chapters { display: grid; gap: 10px; margin-top: 8px; }
+.chapter { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 3px 0 var(--edge); }
+.chapter.now { border: 2px solid var(--accent); }
+.chapter > summary { list-style: none; display: flex; gap: 12px; padding: 14px; cursor: pointer; }
+.chapter > summary::-webkit-details-marker { display: none; }
+.ch-ico { flex: none; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 1.6rem; background: var(--inset); }
+.ch-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ch-txt > b { font: 700 1.15rem Oswald, sans-serif; line-height: 1.15; }
+.ch-txt small { color: var(--muted); font-size: .74rem; }
+.ch-txt > span { font-size: .86rem; }
+.ch-heads { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; font-style: normal; }
+.ch-heads em { font-style: normal; font-size: .7rem; font-weight: 700; padding: 2px 7px; border-radius: 8px; background: var(--inset); color: var(--muted); }
+.ch-meta { margin-top: 2px; }
+.ch-now { font-size: .66rem; padding: 1px 6px; border-radius: 6px; background: var(--accent); color: #0a2a1f; text-transform: uppercase; letter-spacing: .5px; }
+.chapter[open] .ch-meta::after { content: ' ▲'; } .chapter:not([open]) .ch-meta::after { content: ' ▼'; }
+.chapter > .releases { margin: 0; padding: 0 10px 10px; }
+.chapter .release { box-shadow: none; padding: 10px 12px; }
 /* Updates: fix-up releases folded into the release they patch */
 .release .fixups { margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 8px; }
 .release .fixups summary { cursor: pointer; font-size: .82rem; color: var(--muted); font-weight: 700; }
@@ -3125,7 +3153,7 @@ body.pk-snow .pitch, .lk-pre.pk-snow .lk-pitch { background: radial-gradient(cir
 body.pk-mud .pitch, .lk-pre.pk-mud .lk-pitch { background: radial-gradient(ellipse at 50% 50%, #6b4a2b 0 18%, transparent 40%), radial-gradient(ellipse at 50% 92%, #6b4a2b 0 12%, transparent 30%), radial-gradient(ellipse at 50% 8%, #6b4a2b 0 12%, transparent 30%), repeating-linear-gradient(180deg, #3f6b35 0 34px, #3a6331 34px 68px); }
 body.pk-astro .pitch, .lk-pre.pk-astro .lk-pitch { background: repeating-linear-gradient(90deg, #22b35a 0 22px, #1fa553 22px 44px); }
 body.pk-beach .pitch, .lk-pre.pk-beach .lk-pitch { background: radial-gradient(circle at 15% 85%, rgba(255, 255, 255, .25), transparent 25%), repeating-linear-gradient(180deg, #e8c983 0 34px, #e0bf76 34px 68px); }
-body.pk-beach .pitch .slot-name { color: #3b2a12; text-shadow: none; }
+body.pk-beach .pitch .slot.filled { background: rgba(60, 38, 10, .42); }  /* names stay white like everywhere; a darker box makes them read on sand */
 body.pk-neon .pitch, .lk-pre.pk-neon .lk-pitch { background: repeating-linear-gradient(180deg, #0b1020 0 34px, #0e1428 34px 68px); box-shadow: 0 0 0 2px #22d3ee, 0 0 22px rgba(34, 211, 238, .45); }
 body.pk-neon .pitch .pitch-lines { filter: drop-shadow(0 0 3px #22d3ee) hue-rotate(160deg) brightness(1.4); }
 body.pk-gold .pitch, .lk-pre.pk-gold .lk-pitch { background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, .25) 45%, transparent 60%), repeating-linear-gradient(180deg, #b8912a 0 34px, #a9831f 34px 68px); }
@@ -3575,9 +3603,16 @@ body.calm .board-news.rec { animation: none; }
 body.calm .pp-book, body.calm .pp-stamp { animation: none; }
 
 /* 🌍 nation cards: the foil No. 1, country sets, the Packed XI's nation bonus */
-.pcard.no1 .pc-front { box-shadow: 0 0 0 2px #f6e27a, 0 0 16px rgba(246,226,122,.55); }
-.pc-no1 { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); z-index: 3; padding: 1px 7px; border-radius: 999px; background: linear-gradient(90deg, #f6e27a, #fff6c2, #f6e27a); color: #4a3800; font: 900 .55rem Inter, sans-serif; letter-spacing: .04em; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,.3); }
-.pc-foil { position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit; mix-blend-mode: color-dodge; opacity: .5;
+.pcard.no1 .pc-front { box-shadow: 0 0 0 2px #f6e27a, 0 0 14px rgba(246,226,122,.5); }
+/* a country's No. 1: his flag big across the top corner, a holographic finish and a glint that sweeps across */
+.pcard.no1 .pc-front { isolation: isolate; }
+.pcard.no1 .pc-front > .pc-bigflag { position: absolute; z-index: 0; top: .05em; right: -.18em; font-size: 7.2em; line-height: 1; transform: rotate(16deg); opacity: .8; filter: saturate(1.3) drop-shadow(0 2px 4px rgba(0,0,0,.25)); pointer-events: none;
+  -webkit-mask-image: linear-gradient(225deg, #000 35%, transparent 80%); mask-image: linear-gradient(225deg, #000 35%, transparent 80%); }
+.pcard.no1 .pc-front > .pc-no1tag { position: absolute; z-index: 3; top: 10%; right: 11%; font: 700 .95em/1 Oswald, sans-serif; letter-spacing: .02em; color: #fff6c2; text-shadow: 0 1px 0 #8a6400, 0 2px 6px rgba(0,0,0,.55); }
+.pcard.no1 .pc-front > .pc-glare { position: absolute; inset: 0; z-index: 3; pointer-events: none; border-radius: inherit; background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.55) 48%, transparent 58%); background-size: 300% 100%; animation: glare 4.5s ease-in-out infinite; mix-blend-mode: overlay; }
+@keyframes glare { 0%, 55% { background-position: 130% 0; } 100% { background-position: -130% 0; } }
+body.calm .pc-glare { animation: none; opacity: 0; }
+.pcard.no1 .pc-front > .pc-foil, .pc-foil { position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit; mix-blend-mode: color-dodge; opacity: .55;
   background: linear-gradient(115deg, transparent 20%, rgba(255,0,170,.35) 32%, rgba(0,255,255,.35) 42%, rgba(255,255,0,.35) 52%, transparent 64%); background-size: 250% 250%; animation: foil 3.2s linear infinite; }
 @keyframes foil { from { background-position: 120% 0; } to { background-position: -120% 0; } }
 body.calm .pc-foil { animation: none; }
@@ -3618,3 +3653,49 @@ body.calm .fuse .fz { animation: none; }
 .dupe-box > span:nth-child(2) { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .dupe-box small { color: var(--muted); font-size: .72rem; }
 .dupe-box.full { outline: 2px solid var(--accent); }
+
+/* your own profile (tap your picture on the top bar) */
+.prof-you { margin: -2px 0 8px; text-align: center; font: 800 .66rem Inter, sans-serif; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
+.prof-acts .btn { position: relative; }
+.prof-acts .new-dot { position: absolute; top: -3px; right: -3px; }
+
+/* online: the result, big at the top of the comparison */
+.o-hero { display: grid; justify-items: center; gap: 2px; margin: 10px 0; padding: 16px 12px 14px; border-radius: 20px; text-align: center; box-shadow: 0 4px 0 rgba(0,0,0,.25); animation: ohin .6s cubic-bezier(.2,1.6,.4,1) both; }
+.o-hero .oh-ico { font-size: 2.6rem; line-height: 1; }
+.o-hero b { font: 700 2rem/1.1 Oswald, sans-serif; text-transform: uppercase; letter-spacing: .02em; }
+.o-hero small { font-weight: 700; opacity: .85; font-size: .9rem; }
+.o-hero.win { background: linear-gradient(135deg, #ffe27a, #f5b301); color: #3a2600; box-shadow: 0 4px 0 #b37f00, 0 0 28px rgba(255,210,63,.55); }
+.o-hero.lose { background: linear-gradient(135deg, #4b5563, #1f2937); color: #f3f4f6; }
+.o-hero.draw { background: linear-gradient(135deg, #93c5fd, #3b82f6); color: #0b1f44; }
+@keyframes ohin { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+body.calm .o-hero { animation: none; }
+
+/* 👀 watching your opponent's draft, live */
+.page-watch .watch-score { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; margin: 4px 0 8px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); }
+.page-watch .watch-score > span { display: flex; align-items: center; gap: 6px; font-size: .85rem; }
+.page-watch .watch-score .avatar { width: 30px; height: 30px; font-size: .7rem; }
+.page-watch .watch-score strong { font: 700 1.6rem Oswald, sans-serif; } .page-watch .watch-score strong small { font-size: .7rem; font-family: Inter, sans-serif; opacity: .7; }
+.live-pill { background: #ef4444 !important; color: #fff !important; animation: livepulse 1.4s ease-in-out infinite; }
+@keyframes livepulse { 50% { opacity: .55; } }
+body.calm .live-pill { animation: none; }
+.watch-go { margin: 8px 0; }
+
+/* 💎 Icon cards (5.34.1): midnight and ice, a diamond sheen, a slow holo and a frosted edge */
+.tier-i .pc-front { color: #fff; --pc-bg: radial-gradient(120% 90% at 50% 0%, #1e3a5f 0%, #0b1226 55%, #05070f 100%); --pc-edge: linear-gradient(135deg, #ffffff, #a5f3fc 30%, #e0e7ff 55%, #67e8f9 80%, #ffffff); }
+.tier-i .pc-name { border-color: rgba(165, 243, 252, .45); text-shadow: 0 0 8px rgba(103, 232, 249, .6); }
+.tier-i .pc-num, .tier-i .pc-stats b { color: #cffafe; }
+.tier-i .pc-sheen { background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.75) 46%, rgba(165,243,252,.5) 52%, transparent 66%) -200% 0 / 250% 100% no-repeat,
+  conic-gradient(from 0deg, rgba(103,232,249,.22), rgba(224,231,255,.18), rgba(192,132,252,.2), rgba(103,232,249,.22)); mix-blend-mode: screen; animation: card-sheen 2.6s ease-in-out infinite; }
+.tier-i .pc-front::after { content: '💎'; position: absolute; z-index: 2; top: 5%; right: 9%; font-size: .9em; filter: drop-shadow(0 0 6px rgba(103,232,249,.9)); }
+.pcard.no1.tier-i .pc-front::after { display: none; }
+.pitch.packed .slot.tier-i { box-shadow: 0 0 0 2px #a5f3fc, 0 0 16px #22d3ee; }
+.po-cards .pcard.flipped.tier-i { animation: po-shine .9s ease-out; }
+body.calm .tier-i .pc-sheen { animation: none; }
+
+/* the number box always sits at the bottom of a reel card, so the three line up whatever's above them
+   (a two-line name, two rows of clubs, no clubs at all) */
+.stage .reel .reel-goals { margin-top: auto; }
+.stage .reel:not(.fit1):not(:has(.mate)) .chips + .reel-goals { margin-top: 4px; }
+
+/* a pitch style's name colour (the beach's dark brown) on a CHAOS pitch that's been made dark (Halloween, fog): white */
+body[data-cz] .pitch .slot-name { color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,.85) !important; }

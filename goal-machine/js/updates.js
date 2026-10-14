@@ -9,6 +9,25 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 95, label: '5.35', date: '2026-10-14', title: '💎 Icon cards, watching races live, and a clearer Updates page',
+      items: [
+        '💎 New top tier: 30 Icon cards (the Hall of Fame and the very best), seven pieces each and rare in packs. Every card’s tier is now worked out from how good he really was for his position (titles, awards, goals or clean sheets per game, top-four seasons), not just how famous, so there are keeper and defender Legends too. Cards you’d finished stay finished',
+        '📰 The Updates page tells the story in big updates now (CHAOS rebuilt, Packs and levels, Challenges, the Locker, Seasonal CHAOS…), each with what came in it. Tap one to see every update inside',
+        '🌟 A Legendary Pack now always has a Legend in it (and sometimes an Icon)',
+        '📏 The number boxes on the reels always line up, even when a name takes two lines',
+        '📱 On shorter phones the pitch no longer loses every face: small slots keep a small photo, the number never touches the edge, and names stay white (and readable) on every pitch style, Halloween’s included',
+        '🏟️ Well-travelled players no longer lose clubs off the edge of their reel card: the badges shrink, then take a second row, and only the real journeymen show “+N”',
+        '🌧️ The rain is a real recording of rain now, not hiss',
+        '✈️ Visa trouble!’s plane sounds like a real plane flying over',
+        '🎯 Easy is properly easier in the Target games: the reels are the same as Normal’s (more big names only overshot the target), and every player shows a rough number, like ≈60 goals, to steer by',
+        '👤 Tap your own picture on the top bar for your profile: the boards you top, your Best Players place, your best XI, and how other players see you (your kit is one tap from there)',
+        '🏆 Online games finish on who won: once both XIs are in, you land on the comparison with a big You win! (trophy, confetti, fanfare and your celebration) or a commiseration if not, instead of your own full-time report',
+        '👀 Finished your race first? Watch your opponent build their XI live, on a page just like your own draft: their pitch filling up, the three players they’re choosing from, their total and the CHAOS bar. The result takes over the moment they finish',
+        '🕴️ Dodgy Owner: Ask for more can no longer be pressed until the bids reach silly money. Each ask is a fresh gamble, clubs walk after two, nobody pays more than about twice what a player’s worth, and profit counts for at most 40 legacy',
+        '🌍 A country’s No. 1 has its own card: his flag big across the top corner, a gold Nº1, a holographic finish and a glint that sweeps across (no more banner over the top)',
+      ],
+    },
+    {
       v: 93, label: '5.34', date: '2026-10-13', title: '🙂 An Easy level, clearer names, and duplicates',
       items: [
         '🙂 New Easy level (next to Normal, Hard and Extreme): the big names turn up more often, about four times as often as an average player, with all the clues on the reels. Every draft game has it, with its own leaderboards (Easy ones don’t count for Best Players or badges)',
@@ -856,10 +875,28 @@
   GM.versionLabel = (GM.UPDATES.find(u => u.v === GM.VERSION) || GM.UPDATES[0]).label;
   GM.hasUnseenUpdate = () => GM.store.get('seenVersion', 0) < GM.UPDATES[0].v;
 
-  const ERAS = { 1: 'The launch', 2: 'The Android app', 3: 'New look, sound + dailies', 4: 'Online', 5: 'Hat-Trick' };
+  // The big updates: the story of the game in chapters, newest last. Each starts at a release (v) and runs until the next.
+  // A new chapter = a big update (a new way to play, a new part of the app); add one here when it lands.
+  const CHAPTERS = [
+    { v: 1, icon: '⚽', title: 'Kick-off', blurb: 'The first Goal Machine: spin the reels, build an XI, chase the record.' },
+    { v: 6, icon: '🤖', title: 'The Android app', blurb: 'Goal Machine on your home screen, with weekly stats and the Treble.' },
+    { v: 13, icon: '🎨', title: 'A new look, sound and daily games', blurb: 'Music and sound, Head to Head, the daily games and streaks, and your club.' },
+    { v: 15, icon: '🌐', title: 'Online with friends', blurb: 'Duels, races and the transfer market against your friends, and the first CHAOS.' },
+    { v: 27, icon: '🃏', title: 'Hat-Trick and Quick match', blurb: 'Football Spades, online, and a game against anyone every day.' },
+    { v: 33, icon: '🌪️', title: 'CHAOS rebuilt', blurb: 'CHAOS starts again from scratch: managers, moments, weather and noise. Plus matchdays and secrets.' },
+    { v: 37, icon: '🎁', title: 'Packs, levels and the Album', blurb: 'Open packs, level up, collect every card, and the new Moneyball.' },
+    { v: 42, icon: '🕴️', title: 'Secret games', blurb: 'Dodgy Owner, Reign Check and games you have to unlock.' },
+    { v: 46, icon: '🏅', title: '100 badges and Play Games', blurb: 'A hundred badges, Google Play Games achievements and leaderboards.' },
+    { v: 54, icon: '🚑', title: 'CHAOS comes alive', blurb: 'Real animations, ambulances and weather, a sheet for every player, and watching your opponent live.' },
+    { v: 72, icon: '⚔️', title: 'Challenges', blurb: 'Send any game to a friend, watch along, rematch, and a better app.' },
+    { v: 78, icon: '🎒', title: 'The Locker and seasons', blurb: 'A season every month with its own track, missions and kit to wear.' },
+    { v: 81, icon: '🎃', title: 'Seasonal CHAOS', blurb: 'CHAOS dressed for the season, with its own characters and wild moments.' },
+    { v: 88, icon: '🏆', title: 'Records, rivals and profiles', blurb: 'Offline play, Beaten! alerts, Best Players, profiles, invites, nation cards and the Easy level.' },
+  ];
   const when = d => new Date(d + 'T12:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+  const short = d => new Date(d + 'T12:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
   const releaseCard = (u, open) => `<article class="release ${u.v === GM.VERSION || (u.fixes || []).some(f => f.v === GM.VERSION) ? 'current' : ''}">
-      <header><span class="ver ${/\.0$/.test(u.label) ? 'major' : ''}">v${u.label}</span><b>${GM.esc(u.title)}</b>
+      <header><span class="ver">v${u.label}</span><b>${GM.esc(u.title)}</b>
         <small>${when(u.date)}${u.app ? ` · 🤖 App build ${u.app}` : ''}</small></header>
       <ul ${open ? '' : 'class="short"'}>${u.items.map(i => `<li>${i}</li>`).join('')}</ul>
       ${(u.fixes || []).length ? `<details class="fixups"><summary>🔧 ${u.fixes.length} fix-up${u.fixes.length > 1 ? 's' : ''} (v${u.fixes.map(f => f.label).join(', v')})</summary>
@@ -872,17 +909,29 @@
     const releases = GM.UPDATES.filter(u => !isFix(u)).map(u => ({ ...u, fixes: GM.UPDATES.filter(f => isFix(f) && base(f) === u.label) }));
     GM.UPDATES.filter(f => isFix(f) && !releases.some(u => u.label === base(f))).forEach(f => releases.push({ ...f, fixes: [] }));  // an orphan fix-up shows on its own
     releases.sort((a, b) => b.v - a.v);
+    const latest = releases[0];
+    // each chapter's releases, newest chapter first
+    const chapters = CHAPTERS.map((c, i) => ({ ...c, rel: releases.filter(u => u.v >= c.v && (!CHAPTERS[i + 1] || u.v < CHAPTERS[i + 1].v)) }))
+      .filter(c => c.rel.length).reverse();
+    const range = c => { const o = c.rel[c.rel.length - 1], n = c.rel[0]; return o.date === n.date ? when(o.date) : `${short(o.date)} – ${when(n.date)}`; };
+    const vers = c => { const o = c.rel[c.rel.length - 1].label, n = c.rel[0].label; return o === n ? `v${o}` : `v${o} – v${n}`; };
+    const count = c => c.rel.length + c.rel.reduce((t, u) => t + u.fixes.length, 0);
     root.innerHTML = `<div class="topbar"><a href="#/" class="back">‹</a><h2>📰 Updates</h2><span></span></div>
       <div class="version-strip">
         <div><small>Game version</small><b>v${GM.versionLabel}</b></div>
         <div><small>${build != null ? 'Android app' : 'Player data'}</small><b>${build != null ? 'Build ' + build : GM.dataDate}</b></div>
       </div>
       ${GM.appOutdated() ? `<a class="btn big" href="${GM.APK_URL}">📲 Get the newest Android app</a>` : ''}
-      <p class="muted center">Game updates arrive automatically. The Android app only needs updating when it says <b>🤖 App build</b>.</p>
-      <div class="releases">${releases.map((u, i) => {
-        const major = u.label.split('.')[0], prev = i && releases[i - 1].label.split('.')[0];
-        return (major !== prev ? `<h3 class="section-title era">Version ${major}<span class="more">${ERAS[major] || ''}</span></h3>` : '') + releaseCard(u, i < 3);
-      }).join('')}</div>`;
+      <h3 class="section-title">🆕 Latest</h3>
+      <div class="releases">${releaseCard(latest, true)}</div>
+      <h3 class="section-title era">⭐ The big updates</h3>
+      <p class="muted small center">The story so far, newest first. Tap one to see every update in it.</p>
+      <div class="chapters">${chapters.map((c, i) => `<details class="chapter ${i ? '' : 'now'}">
+        <summary><span class="ch-ico">${c.icon}</span><span class="ch-txt"><b>${GM.esc(c.title)}</b><small>${range(c)}</small><span>${GM.esc(c.blurb)}</span>
+          <i class="ch-heads">${c.rel.slice().reverse().map(u => `<em>${GM.esc(u.title.replace(/^\P{L}+/u, ''))}</em>`).join('')}</i>
+          <small class="ch-meta">${i ? '' : '<b class="ch-now">Now</b> '}${count(c)} update${count(c) > 1 ? 's' : ''} · ${vers(c)}</small></span></summary>
+        <div class="releases">${c.rel.map(u => releaseCard(u, false)).join('')}</div></details>`).join('')}</div>
+      <p class="muted center small">Game updates arrive by themselves. The Android app only needs updating when one says <b>🤖 App build</b>.</p>`;
     GM.store.set('seenVersion', GM.UPDATES[0].v);
   };
 

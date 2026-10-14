@@ -36,7 +36,8 @@ game mode for players; this file is about how to work on it.
   from `goal-machine/` (it bumps every `?v=` in `index.html` and the service worker cache). `v` = the next cache
   number; `label` = the version players see, in three levels: **5.0** a big change to how the game plays, **4.10**
   new features or modes (4.9 → 4.10 → 4.11), **4.10.1** bug fixes and polish only (the Updates page folds these into
-  the release they patch).
+  the release they patch). The Updates page groups releases into big updates (`CHAPTERS` in updates.js: from a `v`,
+  icon, title, one-line blurb); when a release starts a new chapter (a new way to play, a new part of the app), add one.
 - **Announce feature releases:** after merging a release with a new mode or a big feature (4.10, 5.0, not fix-ups),
   insert one row into `announcements` (title, body, link to the new thing, e.g. `…/goal-machine/#/updates`).
   Players with "New game modes" on get it as a notification within ~15 minutes (once, for 3 days).
@@ -100,6 +101,10 @@ game mode for players; this file is about how to work on it.
   `GM.levelKey(k)` = the board at your level. Classic (`classic`, `classicwild`) is retired from the menus (old links work).
   Duplicates (5.34, packs.js): packs deal at random (`fresh` packs still dodge finished cards); a duplicate adds `DUPE` points
   (1/2/3/5) to `cards.dupes`; `GM.tradeDupes()` swaps 100 for a 🆕 `fresh` pack (button in Locker → Cards).
+- **Card tiers (5.35, packs.js):** `GM.cardRating(p)` (length of career, per-game output for his position, titles and
+  top-four seasons, CL/WC/Golden Boots, PFA/FWA awards); 💎 Icon (`i`, 7 pieces) = Hall of Fame + the six best-rated others,
+  then per position 45 Legend / 190 Gold / 500 Silver overall. Cards finished under the old fame tiers stay finished
+  (`cards.fin`, save v3). `tools/card_rating.js` + `card_tiers_draft.js` print the lists for checking.
 - 5.33 bits: `GM.lbList(rows, o)` (core.js) draws every board (podium, pictures via `GM.isFriend`, ▲▼ from `gm:lbSeen`);
   nation cards in packs.js (`GM.isNo1`, `GM.NATION_SETS`, `checkSets` pays a Nations pack, Packed XI `bonus`); CHAOS
   moment `visa` sets `S.passNat` + `S.forceSpecial = 'passport'` (a `deal: false` wildcard); Hat-Trick fusion

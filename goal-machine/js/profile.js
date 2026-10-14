@@ -16,12 +16,13 @@
     let d = null, failed = false;
     try { d = await GM.lb.rpc('player_profile', { p_name: name, p_me: me || null }); } catch (e) { failed = true; }
     const el = GM.$('#profbody', m.el);
+    const kicker = mine ? '<p class="prof-you">This is how other players see you</p>' : '';
     if (!el) return;
     if (!d) { el.innerHTML = failed ? GM.net.msg(`${esc(name)}’s profile`, '<p class="muted center">Couldn’t load the profile – try again in a bit.</p>') : '<p class="muted center">No profile to show.</p>'; return; }
     const photo = mine || d.friend;
     const bests = [d.mbest && `#${d.mbest.rank} this month`, d.best && `#${d.best.rank} all time`].filter(Boolean).join(' · ');
     const vs = d.vs && d.vs.w + d.vs.d + d.vs.l ? d.vs : null;
-    el.innerHTML = `<div class="prof-head">${GM.userPic(d.name, 'xl', photo)}
+    el.innerHTML = `${kicker}<div class="prof-head">${GM.userPic(d.name, 'xl', photo)}
         <div><h3>${esc(d.name)}${GM.titleHtml ? GM.titleHtml(d.name) : ''}</h3>
           <small>${d.level ? `<i class="lv-tag">Lv ${d.level}</i> ` : ''}${d.club ? `${esc(d.club)} fan · ` : ''}playing since ${monthYear(d.since)}</small></div></div>
       <div class="prof-tiles">
@@ -33,7 +34,7 @@
         <div class="prof-xi">${d.xi.xi.map(p => `<span>${esc(p)}</span>`).join('')}</div>` : ''}
       ${d.mgr ? `<p class="prof-line">👔 Favourite CHAOS manager: <b>${esc(d.mgr)}</b></p>` : ''}
       ${d.boards.length ? `<h4>🏆 Best places</h4><div class="prof-boards">${d.boards.map(b => `<a href="#/leaderboard?m=${encodeURIComponent(b.mode)}"><span>${b.rk === 1 ? '👑' : b.rk <= 3 ? ['', '', '🥈', '🥉'][b.rk] : '#' + b.rk}</span><span>${esc(GM.boardName ? GM.boardName(b.mode) : b.mode)}<small>#${b.rk} of ${n(b.n)}</small></span><b>${GM.scoreText ? GM.scoreText(b.mode, b.score) : n(b.score)}</b></a>`).join('')}</div>` : '<p class="muted center small">No scores on the boards yet.</p>'}
-      ${mine ? '' : `<div class="prof-acts">${GM.account() && !d.friend ? '<button class="btn small" id="prof-add">👋 Add friend</button>' : ''}${GM.account() && d.friend ? `<a class="btn small" href="#/online?tab=friends">⚔️ Play ${esc(d.name)}</a>` : ''}<button class="btn ghost small" id="prof-report">🚩 Report name</button></div>`}`;
+      ${mine ? `<div class="prof-acts"><a class="btn small" href="#/locker?v=kit">🎒 Your kit${GM.lockerNew && GM.lockerNew() ? ' <i class="new-dot"></i>' : ''}</a><a class="btn ghost small" href="#/settings">⚙️ Name & picture</a></div>` : `<div class="prof-acts">${GM.account() && !d.friend ? '<button class="btn small" id="prof-add">👋 Add friend</button>' : ''}${GM.account() && d.friend ? `<a class="btn small" href="#/online?tab=friends">⚔️ Play ${esc(d.name)}</a>` : ''}<button class="btn ghost small" id="prof-report">🚩 Report name</button></div>`}`;
     GM.$$('a', el).forEach(a => a.addEventListener('click', () => m.close()));
     const add = GM.$('#prof-add', el);
     if (add) add.onclick = async () => {

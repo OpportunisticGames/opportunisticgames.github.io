@@ -244,7 +244,7 @@
     whistle: { f: 'whistle', dur: 0.9 }, redwhistle: { f: 'whistle' }, fulltime: { f: 'whistle', rate: 0.97 },
     cheer: { f: 'cheer', vol: 0.8 }, boo: { f: 'boo', vol: 0.8 }, applause: { f: 'applause', vol: 0.7 },
     ambulance: { f: 'ambulance', vol: 0.6 }, police: { f: 'police', vol: 0.55 }, siren: { f: 'police', dur: 1.4, vol: 0.5 },
-    heli: { f: 'heli', vol: 0.8 }, thunder: { f: 'thunder' }, rain: { f: 'rain', vol: 0.6 }, wind: { f: 'wind', vol: 0.7 },
+    heli: { f: 'heli', vol: 0.8 }, jet: { f: 'jet', vol: 0.8 }, thunder: { f: 'thunder' }, rain: { f: 'rain', vol: 0.6 }, wind: { f: 'wind', vol: 0.7 },
     coinland: { f: 'coin', vol: 0.8 }, cash: { f: 'cash', vol: 0.7 }, slotspin: { f: 'slot', vol: 0.6 }, camera: { f: 'camera' },
     vuvuzela: { f: 'vuvuzela', vol: 0.55 }, boom: { f: 'bang', vol: 0.8 }, firework: { f: 'firework', vol: 0.8 }, bell: { f: 'bells', vol: 0.6 },
     screech: { f: 'screech', vol: 0.6 }, bus: { f: 'engine', vol: 0.6 }, dog: { f: 'dog', vol: 0.7 }, pigeon: { f: 'pigeon' },

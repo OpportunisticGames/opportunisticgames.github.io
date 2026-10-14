@@ -968,7 +968,7 @@ GM.HARD_MODES = ['ultimate', 'ultimateast', 'ultimateapps', 'chaos', 'chaosast',
 // of the 5,000+ PL players instead of the 50+ app ones). Before 5.5 Hard was on its own and Extreme was a pool switch.
 // 5.34: 🙂 Easy (big names turn up more, about ×4; the draft games only, with their own boards "<key>e"; it replaced
 // the old Classic pool, whose boards are kept but no longer shown) before Normal.
-GM.LEVELS = { easy: ['🙂', 'Easy', 'big names more often · clues shown'], normal: ['⚽', 'Normal', '50+ apps, all equal · clues shown'], hard: ['🥵', 'Hard', 'names & positions only'], extreme: ['⚡', 'Extreme', 'every player, names & positions only'] };
+GM.LEVELS = { easy: ['🙂', 'Easy', 'more big names, rough numbers in Targets'], normal: ['⚽', 'Normal', '50+ apps, all equal · clues shown'], hard: ['🥵', 'Hard', 'names & positions only'], extreme: ['⚡', 'Extreme', 'every player, names & positions only'] };
 GM.EASY_MODES = ['ultimate', 'ultimateast', 'ultimateapps', 'ultimatepure', 'ultimatepureast', 'ultimatepureapps', 'chaos', 'chaosast', 'chaosapps',
   'szchaos', 'szchaosast', 'szchaosapps', 'target', 'targetast', 'targetapps', 'treble', 'mystery'];
 GM.seedEasy = seed => /^e~/.test(String(seed || ''));  // an Easy game's seed says so, so a challenge or a race deals the same reels

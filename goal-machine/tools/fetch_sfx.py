@@ -65,12 +65,14 @@ index = json.loads((OUT / 'index.json').read_text()) if (OUT / 'index.json').exi
 for key, spec in WANT.items():
     if key.startswith('_') or any(k.startswith(key + '_') for k in index) or (ROOT / f'fx/sfx/{key}.mp3').exists():  # picked already
         continue
-    maxlen, terms = spec[0], spec[1:]
+    maxlen, terms = spec[0], [t for t in spec[1:] if not t.startswith('re:')]
+    # an optional 're:…' entry: the title or description must match it (so 'jet' doesn't find a woman called Jet)
+    must = next((re.compile(t[3:], re.I) for t in spec[1:] if t.startswith('re:')), None)
     seen, cands = set(), []
     for t in terms:
         try:
             for c in search(t) + oga(t):
-                if c['url'] in seen or c['size'] > 25_000_000:
+                if c['url'] in seen or c['size'] > 25_000_000 or (must and not must.search(c['title'] + ' ' + c['desc'])):
                     continue
                 if c['length'] is not None and not (0.3 <= c['length'] <= 120):
                     continue

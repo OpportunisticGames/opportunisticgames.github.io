@@ -50,11 +50,12 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        web = new WebView(this);
+        web = new GameWebView(this);
         web.setBackgroundColor(0xFF07261D);
         // no scrollbars: Android draws its own over the page (a line on the right that does nothing useful on a phone)
         web.setVerticalScrollBarEnabled(false);
         web.setHorizontalScrollBarEnabled(false);
+        web.setScrollBarSize(0);
 
         Achievements.checkSignIn(this, false);   // Play Games Services (a do-nothing in the sideload APK)
         WebSettings s = web.getSettings();
@@ -524,5 +525,18 @@ public class MainActivity extends Activity {
         public void retry() {
             web.post(() -> web.loadUrl(failedUrl));
         }
+    }
+
+    /**
+     * The page scrolls itself (Chromium does it), so Android needs no scrollbar for it. Some phone makers add their own
+     * draggable quick-scroll bar to any view that says it can scroll, which turns up on the right of the game and does
+     * nothing useful. Telling Android the range is exactly what's on screen leaves those bars nothing to attach to;
+     * the page itself still scrolls as before.
+     */
+    static class GameWebView extends WebView {
+        GameWebView(android.content.Context c) { super(c); }
+        @Override protected int computeVerticalScrollRange() { return computeVerticalScrollExtent(); }
+        @Override protected int computeHorizontalScrollRange() { return computeHorizontalScrollExtent(); }
+        @Override protected boolean awakenScrollBars() { return false; }
     }
 }

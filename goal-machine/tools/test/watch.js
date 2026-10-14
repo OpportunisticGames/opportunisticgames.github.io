@@ -54,12 +54,17 @@ async function playDraft(pg, tag) {
     ok(w && /Watching Bob/.test(w.text), `${kind}: the finished player sees a Watch panel for the other (${w && w.text.slice(0, 80)})`);
     ok(w && w.reels >= 1 && w.reels <= 3, `${kind}: it shows their options (${w && w.reels})`);
     ok(kind !== 'chaos' || (w && w.meter), `${kind}: CHAOS shows the CHAOS bar`);
+    // 👀 the live watch page: Bob's pitch and reels, drawn like a draft
+    await A.click('.watch-go'); await A.waitForTimeout(2500);
+    const lv = await A.evaluate(() => ({ page: document.getElementById('app').classList.contains('page-watch'), slots: document.querySelectorAll('.pitch .slot').length, filled: document.querySelectorAll('.pitch .slot.filled').length, reels: document.querySelectorAll('.stage .reel').length }));
+    ok(lv.page && lv.slots === 11 && lv.reels >= 1, `${kind}: Watch shows Bob's draft live: 11 slots (${lv.filled} filled), ${lv.reels} reels`);
+    await A.screenshot({ path: `lay/watch_live_${kind}.png` });
     const sum = server.rooms[code].race.guest || {};
     ok(JSON.stringify(sum).length < 3500, `${kind}: what Bob posts stays well under the 4,000-byte limit (${JSON.stringify(sum).length})`);
     await playDraft(B); await B.waitForTimeout(1500); await A.waitForTimeout(2500);
     ok(!(await A.$('.watch')), `${kind}: the panel goes once they have finished`);
     if (kind === 'chaos') {
-      const line = await A.evaluate(() => (document.querySelector('.race-final') || {}).innerText || '');
+      const line = await A.evaluate(() => (document.querySelector('.o-hero') || {}).innerText || '');
       ok(/CHAOS points/.test(line) && !/match points/.test(line), `CHAOS Race result has no points out of 100: "${line.replace(/\s+/g, ' ')}"`);
       await A.goto(U + '#/online?room=' + code + '&v=1'); await A.waitForTimeout(1500);
       const tbl = await A.$eval('.cmp-points', e => e.innerText.replace(/\s+/g, ' '));

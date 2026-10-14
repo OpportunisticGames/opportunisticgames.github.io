@@ -48,10 +48,10 @@
   "author": "Amuzujoe"
  },
  "rain": {
-  "title": "Rain (1).ogg",
-  "source": "https://commons.wikimedia.org/wiki/File:Rain_(1).ogg",
-  "licence": "Public domain",
-  "author": "ezwa"
+  "title": "Heavy Rain in Summer.ogg",
+  "source": "https://commons.wikimedia.org/wiki/File:Heavy_Rain_in_Summer.ogg",
+  "licence": "CC BY-SA 3.0",
+  "author": "Fiver, der Hellseher"
  },
  "wind": {
   "title": "Strong winds before the Rain.ogg",
@@ -148,5 +148,11 @@
   "source": "https://opengameart.org/content/wind-whoosh-loop",
   "licence": "CC0",
   "author": "SketchMan3"
+ },
+ "jet": {
+  "title": "428086 inspectorj airplane-boeing-flyby-right-to-left-a.wav",
+  "source": "https://commons.wikimedia.org/wiki/File:428086_inspectorj_airplane-boeing-flyby-right-to-left-a.wav",
+  "licence": "CC BY 4.0",
+  "author": "InspectorJ"
  }
 }
