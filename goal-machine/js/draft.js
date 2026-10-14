@@ -2840,7 +2840,7 @@
       const want = cur + (fresh && k === 0 ? window.innerHeight - (root.getBoundingClientRect().bottom + window.scrollY) : spare) / rows;
       const next = Math.max(46, Math.min(86, Math.floor(want)));
       if (Math.abs(next - cur) >= 1) root.style.setProperty('--slot-h', next + 'px');
-      root.classList.toggle('slots-compact', next < 62);
+      root.classList.toggle('slots-compact', next < 62); root.classList.toggle('slots-tiny', next < 50);
       if (over() <= 0 || next === 46) break;
     }
     // still too tall at the smallest slots (a small phone with big text): scale the whole game down to fit

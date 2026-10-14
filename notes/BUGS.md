@@ -4,6 +4,14 @@ Bugs reported by the owner (or found along the way). **Bugs get fixed straight a
 version they shipped in. Newest at the top.
 
 ### Fixed in 5.35 *(owner, 14 Oct 2026)*
+- "The XIs seem squished again … on the online race there's no picture": on shorter screens (status bar, the race bar)
+  the slots went under 62px and `slots-compact` hid every face. Compact slots now keep a 22px face (only under 50px do
+  they go), and on screens under 820px the score box drops its little line, so the pitch keeps more height.
+- "The number of goals touch the edge of the box": the face was sized `slot height − 38px`, leaving too little for the
+  name and number; now `− 44px`.
+- "On the Halloween one the names aren't readable … the name is black but the position is white": the beach pitch style
+  made names dark brown, which disappeared on Halloween's dark pitch. Names are white with a shadow on every pitch now,
+  and the beach gives filled slots a darker box so they read on sand.
 - "The question marks aren't even" on the reels: a two-line name made a card short of room, so it hid its clubs, and the
   number box (pushed down only by the clubs' `margin-top: auto`) rose. The box now always sits at the bottom
   (`.reel-goals { margin-top: auto }`), and a card short of room shrinks the photo (`fitc`) before it drops the clubs.

@@ -15,6 +15,7 @@
         '📰 The Updates page tells the story in big updates now (CHAOS rebuilt, Packs and levels, Challenges, the Locker, Seasonal CHAOS…), each with what came in it. Tap one to see every update inside',
         '🌟 A Legendary Pack now always has a Legend in it (and sometimes an Icon)',
         '📏 The number boxes on the reels always line up, even when a name takes two lines',
+        '📱 On shorter phones the pitch no longer loses every face: small slots keep a small photo, the number never touches the edge, and names stay white (and readable) on every pitch style, Halloween’s included',
         '🏟️ Well-travelled players no longer lose clubs off the edge of their reel card: the badges shrink, then take a second row, and only the real journeymen show “+N”',
         '🌧️ The rain is a real recording of rain now, not hiss',
         '✈️ Visa trouble!’s plane sounds like a real plane flying over',
