@@ -261,8 +261,8 @@
     parts.push(['🏆 The Cup', won * 4 + (S.cup.won ? 25 : 0)]);
     parts.push([`${OW.icon} Ambition: ${OW.ambition}`, OW.amb(S, pos) ? 30 : 0]);
     parts.push(['📣 The fans', Math.round(S.fans / 10)]);
-    parts.push(['💷 Profit', Math.max(-15, Math.round(profit(S) / 3))]);
-    if (S.skim) parts.push(['💼 Skimmed for yourself', Math.round(S.skim / 2)]);
+    parts.push(['💷 Profit', Math.min(40, Math.max(-15, Math.round(profit(S) / 3)))]);  // capped: money can't buy a legacy on its own
+    if (S.skim) parts.push(['💼 Skimmed for yourself', Math.min(40, Math.round(S.skim / 2))]);
     if (S.over && S.over !== 'done') parts.push([{ fans: '📣 Forced out by the fans', bankrupt: '🏦 Administration', expelled: '⚖️ Banned by the league' }[S.over], -30]);
     return { parts, total: Math.max(0, parts.reduce((a, p) => a + p[1], 0)) };
   }

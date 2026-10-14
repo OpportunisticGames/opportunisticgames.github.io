@@ -290,7 +290,7 @@
       last = sig;
       if (r.kind === 'race') race(root, r, seat, q);
       else if (r.kind === 'auction') GM.market.auctionOnline(root, r, seat, { rpc, auth, summary, top: (t, back) => top(t, back), inviteBar, wireInvite, resignButton, refresh: () => GM.online.refresh && GM.online.refresh() });
-      else if (r.variant === 'hattrick') GM.hattrickOnline(root, r, seat, { rpc, auth, inviteBar, wireInvite, resignButton, refresh: () => GM.online.refresh && GM.online.refresh() });
+      else if (r.variant === 'hattrick') GM.hattrickOnline(root, r, seat, { rpc, auth, inviteBar, wireInvite, resignButton, resultHero, resultFx, refresh: () => GM.online.refresh && GM.online.refresh() });
       else duel(root, r, seat);
       if (r.status === 'done' || r.status === 'declined') { over = true; clearInterval(poll); poll = null; }
     };
@@ -368,12 +368,11 @@
       return;
     }
     // you've finished: stay on your full-time report until you ask for the comparison
-    const onReport = inDraft && S.phase === 'done' && !q.v;
+    // (once the result is in, that's what matters online: straight to the comparison and who won)
+    const onReport = inDraft && S.phase === 'done' && !q.v && !r.result;
     if (onReport) {
       const res = GM.$('#race-result', root);
-      if (res) res.innerHTML = r.result ? `<div class="banner race-final">${resultLine(r, seat)}</div>`
-        : `<div class="banner">⏳ ${opp ? `${esc(opp)} is on ${theirs.n || 0}/11 – watch them below, or tap for their XI` : 'Waiting for someone to join'}</div>${opp ? watchPanel(r, theirs, opp) : ''}`;
-      if (r.result && !root.dataset.played) { root.dataset.played = 1; GM.sound.play(r.result.winner === seat ? 'fanfare' : 'fulltime'); if (GM.checkOnline) GM.checkOnline(r, seat); }
+      if (res) res.innerHTML = `<div class="banner">⏳ ${opp ? `${esc(opp)} is on ${theirs.n || 0}/11 – watch them below, or tap for their XI` : 'Waiting for someone to join'}</div>${opp ? watchPanel(r, theirs, opp) : ''}`;
       return;
     }
     summary(root, r, seat);
@@ -457,6 +456,31 @@
       : `${o.icon} ${o.text === 'Won' ? 'You win' : o.text === 'Lost' ? `${esc(opp)} wins` : 'A draw'} · ${o.score}${o.unit ? ' ' + o.unit : ''}`;
   };
 
+  // the result, big at the top of the comparison: online it's who won that matters
+  const resultHero = (r, seat, subTxt) => {
+    const o = outcome(r, seat), opp = r[other(seat)], k = r.result.winner === 'draw' ? 'draw' : r.result.winner === seat ? 'win' : 'lose';
+    const head = o.resigned ? (o.resigned === seat ? 'You resigned' : `${esc(opp)} resigned`) : { win: 'You win!', lose: `${esc(opp)} wins`, draw: 'A draw' }[k];
+    const sub = o.resigned ? (o.resigned === seat ? `${esc(opp)} takes it` : 'The win is yours') : subTxt || `${o.score}${o.unit ? ' ' + o.unit : ''}`;
+    return `<div class="o-hero ${k}"><span class="oh-ico">${{ win: '🏆', lose: '😞', draw: '🤝' }[k]}</span><b>${head}</b><small>${sub}</small></div>`;
+  };
+  // …and it sounds and looks like it: the fanfare, your celebration, a trophy and confetti for a win; a groan for a loss
+  const resultFx = (r, seat) => {
+    const win = r.result.winner === seat, draw = r.result.winner === 'draw';
+    GM.sound.play('fulltime');
+    setTimeout(() => {
+      if (win) { GM.sound.play('fanfare'); setTimeout(() => GM.sound.play('cheer'), 500); GM.buzz && GM.buzz('win'); }
+      else GM.sound.play(draw ? 'applause' : 'groan');
+      const FX = GM.FX && GM.FX.on && !GM.store.get('calm', false) ? GM.FX : null, hero = GM.$('.o-hero');
+      if (!FX || !hero) return;
+      const b = hero.getBoundingClientRect();
+      try {
+        if (win) { FX.lottie('trophy', { x: b.left + b.width / 2, y: b.top + b.height / 2, w: 170 }); FX.confetti(document.body, 140); if (GM.celebrate) setTimeout(() => GM.celebrate(true), 900); }
+        else if (!draw) FX.lottie('heartbreak', { x: b.left + b.width / 2, y: b.top + b.height / 2, w: 110 });
+        else FX.confetti(hero, 40);
+      } catch (e) { /* effects are a bonus */ }
+    }, 700);
+  };
+
   // 👀 Watch: once you've finished a race, your opponent's spin, the CHAOS bar and their latest moment, live
   function watchPanel(r, theirs, opp) {
     if (theirs.done || !theirs.n && !theirs.rl) return '';
@@ -508,7 +532,7 @@
         <div class="h2h-team p1">${GM.userPic(me(), 'board')}<b>You</b><strong>${pts ? fmt(pts[0]) : fmt(r.variant === 'chaos' ? A.c : A.t)}</strong><small>${pts ? 'points' : single && r.result ? (r.variant === 'chaos' ? 'CHAOS points' : off(A)) : `${A.n}/11`}</small></div>
         <div class="h2h-mid"><small>${r.variant === 'target' && tg ? `🎯 ${fmt(tg)} ${st.label}` : `${st.icon} ${st.name}`}</small><span>VS</span><small id="orec"></small></div>
         <div class="h2h-team p2">${r[them] ? GM.userPic(opp, 'board') : ''}<b>${esc(opp)}</b><strong>${pts ? fmt(pts[1]) : fmt(r.variant === 'chaos' ? B.c : B.t)}</strong><small>${pts ? 'points' : single && r.result ? (r.variant === 'chaos' ? 'CHAOS points' : off(B)) : `${B.n}/11${B.done ? ' ✓' : ''}`}</small></div></div>
-      ${r.result ? `<div class="banner race-final">${resultLine(r, seat)}</div>`
+      ${r.result ? resultHero(r, seat)
         : `<div class="banner">⏳ ${r.guest ? `${esc(opp)} is still building their XI (${B.n}/11). You can watch it fill up here.` : 'Nobody has joined yet.'}</div>`}
       ${inviteBar(r)}
       ${r.kind === 'race' && A.done && !r.result && r.race[them] ? watchPanel(r, r.race[them], opp) : ''}
@@ -530,7 +554,7 @@
     if (sp) sp.onclick = () => GM.shareImage(GM.teamPicture(team(seat).map(x => ({ pos: x.pos, p: x.p, v: x.v })), {
       title: `${KIND[gk(r)].name} v ${opp}`, sub: r.result ? resultLine(r, seat).replace(/<[^>]+>/g, '') : `${st.icon} ${st.name}`, total: A.t, totalLabel: st.label }),
       `⚽ Goal Machine ${KIND[gk(r)].name} v ${opp}`);
-    if (r.result && !root.dataset.played) { root.dataset.played = r.code; GM.sound.play(r.result.winner === seat ? 'fanfare' : 'fulltime'); if (GM.checkOnline) GM.checkOnline(r, seat); }
+    if (r.result && root.dataset.played !== r.code) { root.dataset.played = r.code; resultFx(r, seat); if (GM.checkOnline) GM.checkOnline(r, seat); }
     if (r.guest) rpc('online_friends', auth()).then(fr => {
       const f = (fr || []).find(x => x.name === opp), el = GM.$('#orec', root);
       if (el && f) el.innerHTML = `Record W${f.w} D${f.d} L${f.l}`;

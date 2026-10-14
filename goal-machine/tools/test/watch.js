@@ -59,7 +59,7 @@ async function playDraft(pg, tag) {
     await playDraft(B); await B.waitForTimeout(1500); await A.waitForTimeout(2500);
     ok(!(await A.$('.watch')), `${kind}: the panel goes once they have finished`);
     if (kind === 'chaos') {
-      const line = await A.evaluate(() => (document.querySelector('.race-final') || {}).innerText || '');
+      const line = await A.evaluate(() => (document.querySelector('.o-hero') || {}).innerText || '');
       ok(/CHAOS points/.test(line) && !/match points/.test(line), `CHAOS Race result has no points out of 100: "${line.replace(/\s+/g, ' ')}"`);
       await A.goto(U + '#/online?room=' + code + '&v=1'); await A.waitForTimeout(1500);
       const tbl = await A.$eval('.cmp-points', e => e.innerText.replace(/\s+/g, ' '));

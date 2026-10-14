@@ -4,6 +4,8 @@
    deal with the inbox, play this week's games (live or simulated), then the next week; or sim to the next decision.
    Boards: owner, ownerh, ownerx (league points). */
 'use strict';
+// a season's legacy can't pass a few hundred: clear any best left by the old Ask-for-more glitch (5.34.1)
+['owner', 'ownerh', 'ownerx', 'ownere'].forEach(k => { if (GM.best(k) > 1000) GM.store.set('best:' + k, 0); });
 
 (function () {
   const O = () => GM.owner, esc = GM.esc, byPk = k => GM.anyByPk(k);
@@ -297,7 +299,7 @@
       let body = '';
       if (mtab === 'search') body = searchHtml();
       else if (mtab === 'offers') body = S.offers.length ? S.offers.map((o, n) => { const x = S.squad.find(y => y.k === o.k); if (!x) return ''; const p = P(x); return `<div class="ow-offer">${GM.avatar(p, '', plain)}<span><b>${esc(o.club)} bid ${money(o.fee)}</b><small>for ${esc(p.name)}: worth ${money(x.value)}, ${paidTxt(x)}${x.listed ? ', listed' : ''}</small><small class="${o.fee - (x.paid || 0) >= 0 ? 'up' : 'down'}">${o.fee - (x.paid || 0) >= 0 ? 'Profit' : 'Loss'}: ${money(Math.abs(Math.round((o.fee - (x.paid || 0)) * 10) / 10))}</small></span>
-          <span class="ow-choices"><button class="btn small" data-offer="${n}" data-act="yes">Accept</button><button class="btn small ghost" data-offer="${n}" data-act="more">Ask for more</button><button class="btn small ghost" data-offer="${n}" data-act="no">Reject</button></span></div>`; }).join('') : '<p class="muted center">No offers. Transfer-list a player (Squad tab) and clubs will come in during a window.</p>';
+          <span class="ow-choices"><button class="btn small" data-offer="${n}" data-act="yes">Accept</button>${o.final ? '' : `<button class="btn small ghost" data-offer="${n}" data-act="more">Ask for more</button>`}<button class="btn small ghost" data-offer="${n}" data-act="no">Reject</button></span></div>`; }).join('') : '<p class="muted center">No offers. Transfer-list a player (Squad tab) and clubs will come in during a window.</p>';
       else if (mtab === 'free') body = `<p class="cb-hint">Free agents sign any time, for wages only. New ones every few weeks.</p>${rowsHtml(S.free.map(byPk).filter(Boolean), true)}`;
       else body = S.shortlist.length ? rowsHtml(S.shortlist.map(byPk).filter(Boolean)) : '<p class="muted center">Star players in the market to keep an eye on them.</p>';
       return `${banner}<div class="seg ow-mtabs">${tabs.map(([k, l]) => `<button data-mtab="${k}" class="${mtab === k ? 'on' : ''}">${l}</button>`).join('')}</div>${body}`;
@@ -386,8 +388,12 @@
       const i = S.squad.findIndex(x => x.k === o.k);
       if (act === 'no') { S.offers.splice(n, 1); const x = S.squad[i]; if (x && x.listed) x.mor = Math.max(0, x.mor - 5); save(); return hub(); }
       if (act === 'more') {
-        const r = GM.rng(`${S.seed}|more|${o.k}|${S.week}`)();
-        if (r < 0.5) { o.fee = Math.round(o.fee * 1.2 * 10) / 10; GM.toast(`${esc(o.club)} go up to ${money(o.fee)}`); } else { S.offers.splice(n, 1); GM.toast(`${esc(o.club)} walk away`); }
+        // each ask is its own roll and the odds shrink (1 in 2, then 1 in 4, then they've had enough), and no club goes
+        // past about twice what he's worth: asking again and again used to be the same lucky roll every time
+        o.asks = (o.asks || 0) + 1;
+        const x = S.squad[i], cap = x ? Math.round(Math.max(x.value * 2, o.fee) * 10) / 10 : o.fee;
+        const r = GM.rng(`${S.seed}|more|${o.k}|${S.week}|${o.asks}`)();
+        if (o.asks <= 2 && r < (o.asks === 1 ? 0.5 : 0.25) && o.fee < cap) { o.fee = Math.min(cap, Math.round(o.fee * 1.2 * 10) / 10); o.final = o.asks === 2 || o.fee >= cap; GM.toast(`${esc(o.club)} go up to ${money(o.fee)}${o.final ? ' – their final offer' : ''}`); } else { S.offers.splice(n, 1); GM.toast(`${esc(o.club)} walk away`); }
         save(); return hub();
       }
       if (E.sell(S, i, o.fee, o.club)) { GM.sound.play('cash'); save(); hub(); } else GM.toast(`You need at least ${E.SQUAD_MIN} players`);

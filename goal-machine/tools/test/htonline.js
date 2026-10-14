@@ -65,7 +65,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   const room = server.rooms[code];
   ok(room && room.status === 'done' && room.result && ['host', 'guest', 'draw'].includes(room.result.winner), 'the server has the result: ' + JSON.stringify(room.result) + ' from ' + JSON.stringify(room.race));
   await A.goto(U + '#/'); await A.goto(U + '#/online?room=' + code); await A.waitForTimeout(2200);
-  ok(!!(await A.$('.race-final')), 'Alice sees the final result'); await A.screenshot({ path: 'lay/hto_final.png' });
+  ok(!!(await A.$('.o-hero')), 'Alice sees the final result'); await A.screenshot({ path: 'lay/hto_final.png' });
   await B.goto(U + '#/online?tab=done'); await B.waitForTimeout(1200);
   ok((await B.textContent('#odone')).includes('Hat-Trick'), 'the finished game is listed as a Hat-Trick');
   console.log(errs.join('\n') || 'no page errors'); await b.close();

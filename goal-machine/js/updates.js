@@ -17,6 +17,8 @@
         '✈️ Visa trouble!’s plane sounds like a real plane flying over',
         '🎯 Easy is properly easier in the Target games: the reels are the same as Normal’s (more big names only overshot the target), and every player shows a rough number, like ≈60 goals, to steer by',
         '👤 Tap your own picture on the top bar for your profile: the boards you top, your Best Players place, your best XI, and how other players see you (your kit is one tap from there)',
+        '🏆 Online games finish on who won: once both XIs are in, you land on the comparison with a big You win! (trophy, confetti, fanfare and your celebration) or a commiseration if not, instead of your own full-time report',
+        '🕴️ Dodgy Owner: Ask for more can no longer be pressed until the bids reach silly money. Each ask is a fresh gamble, clubs walk after two, nobody pays more than about twice what a player’s worth, and profit counts for at most 40 legacy',
         '🌍 A country’s No. 1 has its own card: his flag big across the top corner, a gold Nº1, a holographic finish and a glint that sweeps across (no more banner over the top)',
       ],
     },

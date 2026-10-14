@@ -4,6 +4,16 @@ Bugs reported by the owner (or found along the way). **Bugs get fixed straight a
 version they shipped in. Newest at the top.
 
 ### Fixed in 5.34.1 *(owner, 14 Oct 2026)*
+- "A glitch in Dodgy Owner lets you keep increasing sell offers until you're getting ridiculous offers" (a friend's best
+  was 7.8 trillion): Ask for more rolled `rng(seed|more|player|week)`, the same number every time that week, so a yes was
+  always a yes (+20% each tap, forever). Now each ask has its own roll (1 in 2, then 1 in 4), two asks at most ("final
+  offer"), a cap at about twice his value, profit and skimming count for at most 40 legacy each, and bests over 1,000
+  left by the glitch are cleared on the phone.
+- "On some online games it doesn't make it clear you've won or lost … would it not make more sense to finish on the
+  compare page": a finished race stayed on your own full-time report with a one-line banner. Once the result is in, it
+  goes straight to the comparison, topped by a big result card (`resultHero` in online.js) with a trophy, confetti,
+  fanfare, cheer and your Locker celebration for a win, a groan and a broken heart for a loss (`resultFx`); Hat-Trick
+  online uses the same card.
 - "Sometimes Easy is actually harder: on Target for goals you're getting players who scored more goals, so it's harder
   to get the number": Easy weighted the Target reels by fame^1.2, so more big scorers and more overshooting. Easy's
   Target/Treble/Mystery reels are now Normal's, and each player shows a rough number (≈60, `easyHint`/`rough` in draft.js).

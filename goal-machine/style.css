@@ -3653,3 +3653,14 @@ body.calm .fuse .fz { animation: none; }
 .prof-you { margin: -2px 0 8px; text-align: center; font: 800 .66rem Inter, sans-serif; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
 .prof-acts .btn { position: relative; }
 .prof-acts .new-dot { position: absolute; top: -3px; right: -3px; }
+
+/* online: the result, big at the top of the comparison */
+.o-hero { display: grid; justify-items: center; gap: 2px; margin: 10px 0; padding: 16px 12px 14px; border-radius: 20px; text-align: center; box-shadow: 0 4px 0 rgba(0,0,0,.25); animation: ohin .6s cubic-bezier(.2,1.6,.4,1) both; }
+.o-hero .oh-ico { font-size: 2.6rem; line-height: 1; }
+.o-hero b { font: 700 2rem/1.1 Oswald, sans-serif; text-transform: uppercase; letter-spacing: .02em; }
+.o-hero small { font-weight: 700; opacity: .85; font-size: .9rem; }
+.o-hero.win { background: linear-gradient(135deg, #ffe27a, #f5b301); color: #3a2600; box-shadow: 0 4px 0 #b37f00, 0 0 28px rgba(255,210,63,.55); }
+.o-hero.lose { background: linear-gradient(135deg, #4b5563, #1f2937); color: #f3f4f6; }
+.o-hero.draw { background: linear-gradient(135deg, #93c5fd, #3b82f6); color: #0b1f44; }
+@keyframes ohin { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+body.calm .o-hero { animation: none; }
