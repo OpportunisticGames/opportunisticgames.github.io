@@ -3,7 +3,12 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
-### Fixed in 5.34.1 *(owner, 14 Oct 2026)*
+### Fixed in 5.35 *(owner, 14 Oct 2026)*
+- "The question marks aren't even" on the reels: a two-line name made a card short of room, so it hid its clubs, and the
+  number box (pushed down only by the clubs' `margin-top: auto`) rose. The box now always sits at the bottom
+  (`.reel-goals { margin-top: auto }`), and a card short of room shrinks the photo (`fitc`) before it drops the clubs.
+- "I just got a Legendary pack with no Legend": it only promised Gold or better. Its last card is now always a Legend
+  or better (1 in 5 an Icon), and the pack says so.
 - "There wasn't really a nice way to watch his XI get built, it said tap here but didn't do anything": the waiting
   banner said "tap for their XI" but wasn't tappable. Now a 👀 Watch button opens `watchPage` (online.js,
   `#/online?room=…&watch=1`): their pitch, reels, total and CHAOS bar drawn with the draft's own look, updated live.

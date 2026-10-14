@@ -2852,14 +2852,14 @@
   addEventListener('scroll', () => { const d = document.querySelector('.cz-deco'); if (d) czPlace(d); }, { passive: true });
   if (document.fonts) document.fonts.ready.then(() => { fitKey = ''; if (S && root) { fitPitch(); fitReels(); } });
   // Each card measures itself: if its contents don't fit (bigger fonts on some phones, a two-line name), the less
-  // important bits give way one step at a time (fit1: club badges, fit2: a smaller photo and no link line,
+  // important bits give way one step at a time (fitc: a smaller photo, fit1: club badges, fit2: a smaller photo and no link line,
   // fit3: no photo), so the stat box and a wildcard's full text always show
   function fitReels() {
     GM.$$('.stage .reel', root).forEach(r => {
       const over = () => { const d = GM.$('.wild-desc', r); return r.scrollHeight > r.clientHeight + 1 || (d && d.scrollHeight > d.clientHeight + 1); };
       r.classList.remove('fit1', 'fit2', 'fit3', 'fitc');
       fitChips(r, over);
-      for (const c of ['fit1', 'fit2', 'fit3']) { if (!over()) break; r.classList.add(c); }
+      for (const c of ['fitc', 'fit1', 'fit2', 'fit3']) { if (!over()) break; r.classList.add(c); }  // a smaller photo before the clubs go
     });
   }
 

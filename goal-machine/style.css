@@ -3674,3 +3674,20 @@ body.calm .o-hero { animation: none; }
 @keyframes livepulse { 50% { opacity: .55; } }
 body.calm .live-pill { animation: none; }
 .watch-go { margin: 8px 0; }
+
+/* 💎 Icon cards (5.34.1): midnight and ice, a diamond sheen, a slow holo and a frosted edge */
+.tier-i .pc-front { color: #fff; --pc-bg: radial-gradient(120% 90% at 50% 0%, #1e3a5f 0%, #0b1226 55%, #05070f 100%); --pc-edge: linear-gradient(135deg, #ffffff, #a5f3fc 30%, #e0e7ff 55%, #67e8f9 80%, #ffffff); }
+.tier-i .pc-name { border-color: rgba(165, 243, 252, .45); text-shadow: 0 0 8px rgba(103, 232, 249, .6); }
+.tier-i .pc-num, .tier-i .pc-stats b { color: #cffafe; }
+.tier-i .pc-sheen { background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.75) 46%, rgba(165,243,252,.5) 52%, transparent 66%) -200% 0 / 250% 100% no-repeat,
+  conic-gradient(from 0deg, rgba(103,232,249,.22), rgba(224,231,255,.18), rgba(192,132,252,.2), rgba(103,232,249,.22)); mix-blend-mode: screen; animation: card-sheen 2.6s ease-in-out infinite; }
+.tier-i .pc-front::after { content: '💎'; position: absolute; z-index: 2; top: 5%; right: 9%; font-size: .9em; filter: drop-shadow(0 0 6px rgba(103,232,249,.9)); }
+.pcard.no1.tier-i .pc-front::after { display: none; }
+.pitch.packed .slot.tier-i { box-shadow: 0 0 0 2px #a5f3fc, 0 0 16px #22d3ee; }
+.po-cards .pcard.flipped.tier-i { animation: po-shine .9s ease-out; }
+body.calm .tier-i .pc-sheen { animation: none; }
+
+/* the number box always sits at the bottom of a reel card, so the three line up whatever's above them
+   (a two-line name, two rows of clubs, no clubs at all) */
+.stage .reel .reel-goals { margin-top: auto; }
+.stage .reel:not(.fit1):not(:has(.mate)) .chips + .reel-goals { margin-top: 4px; }

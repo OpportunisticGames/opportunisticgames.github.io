@@ -137,7 +137,7 @@
     ['colpack', '🎁', 'Pack Opener', 'Open your first pack.', e => game(e, 'pack')],
     ['colwalk', '🚶', 'Walkout', 'Pull a Legend in a pack.', e => game(e, 'pack') && e.extra && e.extra.legend],
     ['colgold', '🟡', 'Gold Standard', 'Finish a Gold card.', () => GM.cardsDone('g') >= 1],
-    ['collegend', '🟣', 'Legendary', 'Finish a Legend card.', () => GM.cardsDone('l') >= 1],
+    ['collegend', '🟣', 'Legendary', 'Finish a Legend (or Icon) card.', () => GM.cardsDone('l') + GM.cardsDone('i') >= 1],
     ['colxi', '🃏', 'Fully Packed', 'Fill all 11 places in your Packed XI.', () => GM.packedXI().n === 11],
     ['ibhome', '🏴', 'Home Nations', 'Build International XIs for England, Scotland, Wales and Northern Ireland.', (e, a) => intl(e) && HOME.every(n => (a.nations || []).includes(n)), true],
     // progress: how long you've played (the hidden/visible split and the points live in notes/BADGES.md)

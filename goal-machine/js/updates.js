@@ -9,9 +9,12 @@
 (function () {
   GM.UPDATES = [
     {
-      v: 95, label: '5.34.1', date: '2026-10-14', title: '📰 A clearer Updates page, an easier Easy, and your own profile',
+      v: 95, label: '5.35', date: '2026-10-14', title: '💎 Icon cards, watching races live, and a clearer Updates page',
       items: [
+        '💎 New top tier: 30 Icon cards (the Hall of Fame and the very best), seven pieces each and rare in packs. Every card’s tier is now worked out from how good he really was for his position (titles, awards, goals or clean sheets per game, top-four seasons), not just how famous, so there are keeper and defender Legends too. Cards you’d finished stay finished',
         '📰 The Updates page tells the story in big updates now (CHAOS rebuilt, Packs and levels, Challenges, the Locker, Seasonal CHAOS…), each with what came in it. Tap one to see every update inside',
+        '🌟 A Legendary Pack now always has a Legend in it (and sometimes an Icon)',
+        '📏 The number boxes on the reels always line up, even when a name takes two lines',
         '🏟️ Well-travelled players no longer lose clubs off the edge of their reel card: the badges shrink, then take a second row, and only the real journeymen show “+N”',
         '🌧️ The rain is a real recording of rain now, not hiss',
         '✈️ Visa trouble!’s plane sounds like a real plane flying over',

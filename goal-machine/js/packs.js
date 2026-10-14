@@ -1,6 +1,6 @@
 /* Goal Machine – packs: player cards you finish piece by piece, and the Packed XI you build from finished cards.
-   Every player with 50+ PL apps is a card: 🟫 Bronze (1 piece), ⚪ Silver (2), 🟡 Gold (3) or 🟣 Legend (5), by how
-   well known he is (Hall of Famers are always Legends). Pieces come from packs and from signing him in a draft, once a
+   Every player with 50+ PL apps is a card: 🟫 Bronze (1 piece), ⚪ Silver (2), 🟡 Gold (3), 🟣 Legend (5) or 💎 Icon (7),
+   by how good he was (GM.cardRating; Hall of Famers are always Icons). Pieces come from packs and from signing him in a draft, once a
    day per player, so the stars that turn up all the time still take a while. From Silver up, signings can only fill a
    card to one piece short: the last has to come from a pack (c.k counts a card's pack pieces; five packed pieces also
    finish a Legend). The Packed XI is the best XI of finished cards, with its own leaderboard.
@@ -17,14 +17,47 @@
     s: { name: 'Silver', icon: '⚪', need: 2, odds: 30 },
     g: { name: 'Gold', icon: '🟡', need: 3, odds: 12 },
     l: { name: 'Legend', icon: '🟣', need: 5, odds: 3 },
+    i: { name: 'Icon', icon: '💎', need: 7, odds: 1 },
   };
-  const ORDER = ['b', 's', 'g', 'l'];
-  // by fame: Hall of Famers and the 25 best known are Legends, then the next 200 Gold and the next 500 Silver
-  const TIER = new Map(), POOL = { b: [], s: [], g: [], l: [] };
-  GM.players.slice().sort((a, b) => b.fame - a.fame).forEach((p, i) => {
-    const t = p.hon.H || i < 25 ? 'l' : i < 225 ? 'g' : i < 725 ? 's' : 'b';
-    TIER.set(p.pk, t); POOL[t].push(p);
-  });
+  const ORDER = ['b', 's', 'g', 'l', 'i'];
+  const hi = t => t === 'l' || t === 'i';  // the top two: the big reveal when they come out of a pack
+  // 5.34.1: a card's tier comes from a rating, not just fame (tools/card_rating.js is the same sum, for checking lists).
+  // The rating adds up how long he played (less for each extra season), what he produced per game for his position,
+  // PL titles and top-four seasons (less for squad players), Champions Leagues, World Cups, Golden Boots and the
+  // Player of the Year awards. 💎 Icons are the Hall of Fame plus the six best-rated others; below them, each position
+  // gets the same share of each tier (45 Legend, 190 Gold, 500 Silver), so there are keeper and defender Legends too.
+  const U = 'Manchester United', A = 'Arsenal', C = 'Chelsea', L = 'Liverpool', MC = 'Manchester City', T = 'Tottenham Hotspur', N = 'Newcastle United', AV = 'Aston Villa', LE = 'Leeds United';
+  const TOP4 = [[U, AV, 'Norwich City', 'Blackburn Rovers'], [U, 'Blackburn Rovers', N, A], ['Blackburn Rovers', U, 'Nottingham Forest', L], [U, N, L, AV], [U, N, A, L], [A, U, L, C], [U, A, C, LE], [U, A, LE, L], [U, A, L, LE], [A, L, U, N], [U, A, N, C], [A, C, U, L], [C, A, U, 'Everton'], [C, U, L, A], [U, C, L, A], [U, C, A, L], [U, L, C, A], [C, U, A, T], [U, C, MC, A], [MC, U, A, T], [U, MC, C, A], [MC, L, C, A], [C, MC, A, U], ['Leicester City', A, T, MC], [C, T, MC, L], [MC, U, T, L], [MC, L, C, T], [L, MC, U, C], [MC, U, L, C], [MC, L, C, T], [MC, A, U, N], [MC, A, L, AV], [L, A, MC, C]];
+  // PFA Players' Player and FWA Footballer of the Year, 1993 on
+  const AWARDS = ['Paul McGrath', 'Eric Cantona', 'Alan Shearer', 'Les Ferdinand', 'Alan Shearer', 'Dennis Bergkamp', 'David Ginola', 'Roy Keane', 'Teddy Sheringham', 'Ruud van Nistelrooy', 'Thierry Henry', 'Thierry Henry', 'John Terry', 'Steven Gerrard', 'Cristiano Ronaldo', 'Cristiano Ronaldo', 'Ryan Giggs', 'Wayne Rooney', 'Gareth Bale', 'Robin van Persie', 'Gareth Bale', 'Luis Suárez', 'Eden Hazard', 'Riyad Mahrez', "N'Golo Kanté", 'Mohamed Salah', 'Virgil van Dijk', 'Kevin De Bruyne', 'Kevin De Bruyne', 'Mohamed Salah', 'Erling Haaland', 'Phil Foden', 'Mohamed Salah',
+    'Chris Waddle', 'Alan Shearer', 'Jürgen Klinsmann', 'Eric Cantona', 'Gianfranco Zola', 'Dennis Bergkamp', 'David Ginola', 'Roy Keane', 'Teddy Sheringham', 'Robert Pires', 'Thierry Henry', 'Thierry Henry', 'Frank Lampard', 'Thierry Henry', 'Cristiano Ronaldo', 'Cristiano Ronaldo', 'Steven Gerrard', 'Wayne Rooney', 'Scott Parker', 'Robin van Persie', 'Gareth Bale', 'Luis Suárez', 'Eden Hazard', 'Jamie Vardy', "N'Golo Kanté", 'Mohamed Salah', 'Raheem Sterling', 'Jordan Henderson', 'Rúben Dias', 'Mohamed Salah', 'Erling Haaland', 'Phil Foden', 'Mohamed Salah'];
+  const AW = new Map(); AWARDS.forEach(n => AW.set(n, (AW.get(n) || 0) + 1));
+  const top4 = p => { let n = 0; for (const [c, ys] of Object.entries(p.stints)) for (const y of ys) { const t = TOP4[y - 1992]; if (t && t.includes(c)) n++; } return n; };
+  const seasons = p => { const ys = new Set(); Object.values(p.stints).forEach(x => x.forEach(y => ys.add(y))); return ys.size || (p.last - p.first + 1) || 1; };
+  GM.cardRating = p => {
+    const g = p.goals, a = p.ast, n = p.apps, h = p.hon, t4 = top4(p);
+    const reg = Math.max(0.15, Math.min(1, n / (seasons(p) * 30))) ** 2;  // a regular, or a squad player
+    const pg = p.pos === 'F' ? (g + 0.5 * a) / n : p.pos === 'M' ? (g + 0.8 * a) / n : p.pos === 'D' ? (g + a) / n : p.cs / n;
+    const base = { F: 0.45, M: 0.25, D: 0.08, G: 0.3 }[p.pos];  // about a good regular's rate
+    const out = p.pos === 'F' ? g + 0.5 * a : p.pos === 'M' ? (g + 0.8 * a) * 1.4 : p.pos === 'D' ? (g + a) * 0.6 : p.cs * 1.2;
+    return 7 * Math.sqrt(Math.min(n, 450)) + out * Math.min(1.6, Math.max(0.6, pg / base))
+      + (p.pos === 'D' ? 3 * Math.sqrt(Math.min(n, 500)) + reg * ((h.P || 0) * 8 + t4 * 5) : 0) + reg * ((h.P || 0) * 14 + t4 * 7)
+      + (h.C || 0) * 14 + (h.W || 0) * 18 + (h.B || 0) * 30 + (AW.get(p.name) || 0) * 45 + (h.H ? 120 : 0);
+  };
+  const TIER = new Map(), POOL = { b: [], s: [], g: [], l: [], i: [] }, Q = new Map();
+  GM.players.forEach(p => Q.set(p, GM.cardRating(p)));
+  const byQ = (a, b) => Q.get(b) - Q.get(a);
+  GM.players.filter(p => p.hon.H).concat(GM.players.filter(p => !p.hon.H).sort(byQ).slice(0, 6)).forEach(p => TIER.set(p.pk, 'i'));
+  const rest = GM.players.filter(p => !TIER.has(p.pk)), share = { l: 45 / rest.length, g: 190 / rest.length, s: 500 / rest.length };
+  for (const pos of 'GDMF') {
+    const g = rest.filter(p => p.pos === pos).sort(byQ), n = g.length;
+    const cut = { l: Math.round(n * share.l), g: Math.round(n * (share.l + share.g)), s: Math.round(n * (share.l + share.g + share.s)) };
+    g.forEach((p, i) => TIER.set(p.pk, i < cut.l ? 'l' : i < cut.g ? 'g' : i < cut.s ? 's' : 'b'));
+  }
+  GM.players.forEach(p => POOL[TIER.get(p.pk)].push(p));
+  // the tiers before 5.34.1 (by fame), only to keep cards finished then finished now
+  const OLD = new Map();
+  GM.players.slice().sort((a, b) => b.fame - a.fame).forEach((p, i) => OLD.set(p.pk, p.hon.H || i < 25 ? 'l' : i < 225 ? 'g' : i < 725 ? 's' : 'b'));
   GM.TIERS = TIERS;
   GM.cardTier = p => TIER.get(p.pk) || 'b';
   // 🌍 countries: each one's best-known player is its foil No. 1 card, and its five best known (fewer for a small country)
@@ -48,6 +81,12 @@
       for (const [pk, n] of Object.entries(c.p)) if (n >= TIERS[TIER.get(pk) || 'b'].need) c.k[pk] = c.k[pk] || 1;
       c.v = 2;
     }
+    if (c.v === 2) {             // 5.34.1's new tiers: a card you'd finished stays finished, whatever its tier is now
+      c.fin = {};
+      for (const [pk, n] of Object.entries(c.p)) { const o = OLD.get(pk) || 'b'; if (n >= TIERS[o].need && (o === 'b' || (c.k[pk] || 0) >= 1)) c.fin[pk] = 1; }
+      c.v = 3;
+    }
+    if (!c.fin) c.fin = {};
     if (c.seenDay !== GM.today()) { c.seen = {}; c.seenDay = GM.today(); }
     return c;
   };
@@ -69,9 +108,9 @@
   const need = p => TIERS[GM.cardTier(p)].need;
   const packed = (c, p) => c.k[p.pk] || 0;
   // finished: all the pieces, and (Silver and up) at least one of them from a pack
-  const done = (c, p) => (c.p[p.pk] || 0) >= need(p) && (GM.cardTier(p) === 'b' || packed(c, p) >= 1);
+  const done = (c, p) => !!(c.fin && c.fin[p.pk]) || ((c.p[p.pk] || 0) >= need(p) && (GM.cardTier(p) === 'b' || packed(c, p) >= 1));
   // the most signings can add: one short of full until a pack piece is in
-  const gameCap = (c, p) => (GM.cardTier(p) === 'b' || packed(c, p) >= 1 ? need(p) : need(p) - 1);
+  const gameCap = (c, p) => (done(c, p) ? Math.max(need(p), c.p[p.pk] || 0) : GM.cardTier(p) === 'b' || packed(c, p) >= 1 ? need(p) : need(p) - 1);
   GM.cardPieces = p => load().p[p.pk] || 0;
   GM.cardPackPieces = p => load().k[p.pk] || 0;
   GM.cardState = p => { const c = load(); return { tracked: TIER.has(p.pk), t: GM.cardTier(p), have: c.p[p.pk] || 0, need: need(p), pack: packed(c, p), done: done(c, p) }; };
@@ -98,7 +137,7 @@
     badge: { name: 'Badge Pack', badge: '🏅', sub: () => 'Five pieces and a wildcard', pool: () => null, wild: 'pick' },
     dailies: { name: 'Daily Hat-Trick Pack', badge: '🎩', sub: () => 'Three dailies in a day: one Gold or better', pool: () => null, min: 'g', up: 1 },
     royale: { name: 'Royale Pack', badge: '👑', sub: () => 'Gold or better, and a wildcard', pool: () => null, min: 'g', up: 1, wild: 'pick' },
-    legendary: { name: 'Legendary Pack', badge: '🌟', sub: () => 'Gold or better all through, a wildcard, and something from the vault', pool: () => null, min: 'g', up: 5, wild: 'pick' },
+    legendary: { name: 'Legendary Pack', badge: '🌟', sub: () => 'A Legend or better, Gold all through, a wildcard, and something from the vault', pool: () => null, min: 'g', up: 5, wild: 'pick', top: 'l' },
     season: { name: 'Season Pack', badge: '🏆', sub: () => 'A season reward: two Gold or better', pool: () => null, min: 'g', up: 2 },
     mission: { name: 'Mission Pack', badge: '🎯', sub: () => 'All three missions: Silver or better and a wildcard', pool: () => null, min: 's', up: 3, wild: 'pick' },
     fresh: { name: 'Fresh Pack', badge: '🆕', sub: () => 'Traded in from your duplicate pile: five cards you haven’t finished', pool: () => null, fresh: true },
@@ -180,7 +219,7 @@
   // 5.34: packs deal at random, so cards you've finished turn up again as your album fills (duplicates: they go on your
   // ♻️ duplicate pile, 1/2/3/5 points by tier, and 100 points trades in for a 🆕 Fresh pack of cards you haven't finished).
   // Before, packs dodged finished cards, which made the album fill too fast. `fresh` keeps the old dodging.
-  const DUPE = { b: 1, s: 2, g: 3, l: 5 }, DUPE_PACK = 100;
+  const DUPE = { b: 1, s: 2, g: 3, l: 5, i: 8 }, DUPE_PACK = 100;
   GM.DUPE_PACK = DUPE_PACK;
   GM.dupePile = () => load().dupes || 0;
   GM.tradeDupes = function () {
@@ -225,10 +264,11 @@
     const P = PACKS[type], theme = P.pool(), taken = new Set(), out = [], n = P.chaos ? 3 + r.int(5) : 5;
     for (let i = 0; i < n; i++) {
       let t = r.weighted(ORDER, k => TIERS[k].odds);
-      if ((i === n - 1 || type === 'legends') && t === 'b') t = r.weighted(['s', 'g', 'l'], k => TIERS[k].odds);
+      if ((i === n - 1 || type === 'legends') && t === 'b') t = r.weighted(['s', 'g', 'l', 'i'], k => TIERS[k].odds);
       // a pack's promise: its last few pieces at least a tier (Silver for levelling up, Gold for Royale…)
       if (P.min && i >= n - P.up && ORDER.indexOf(t) < ORDER.indexOf(P.min)) t = r.weighted(ORDER.slice(ORDER.indexOf(P.min)), k => TIERS[k].odds);
       if (P.chaos && r() < 0.15) t = ORDER[Math.min(ORDER.length - 1, ORDER.indexOf(t) + 1)];  // CHAOS: now and then a tier up
+      if (P.top && i === n - 1 && ORDER.indexOf(t) < ORDER.indexOf(P.top)) t = r() < 0.2 ? 'i' : P.top;  // the Legendary pack's promise: a Legend (1 in 5 an Icon)
       const p = pickFrom(c, r, t, theme, taken, P.fresh);
       taken.add(p.pk);
       out.push({ p, t: GM.cardTier(p) });
@@ -288,7 +328,7 @@
     res.better = px.total > res.before ? px.total : 0;
     if (res.cards.some(x => x.wild)) return;  // wait for the choice
     if (res.checked) return; res.checked = true;
-    GM.checkGame('pack', c.opened, { legend: res.cards.some(x => x.t === 'l'), finished: res.cards.filter(x => x.finished).map(x => x.t),
+    GM.checkGame('pack', c.opened, { legend: res.cards.some(x => hi(x.t)), finished: res.cards.filter(x => x.finished).map(x => x.t),
       xi: px.n, type: res.type, wild: res.cards.some(x => x.chose) });
     GM.packDots();
   }
@@ -361,8 +401,8 @@
       GM.sound.play('deal', cards.length);
       // the backs of the good ones glow before they turn
       later(700, () => {
-        res.cards.forEach((x, i) => { if (x.wild) cards[i].classList.add('hint-w'); else if (x.t === 'g' || x.t === 'l') cards[i].classList.add('hint-' + x.t); });
-        if (res.cards.some(x => x.wild || x.t === 'g' || x.t === 'l')) GM.sound.play('shimmer', res.cards.some(x => x.t === 'l' && !x.wild));
+        res.cards.forEach((x, i) => { if (x.wild) cards[i].classList.add('hint-w'); else if (x.t === 'g' || hi(x.t)) cards[i].classList.add('hint-' + (x.t === 'i' ? 'l' : x.t)); });
+        if (res.cards.some(x => x.wild || x.t === 'g' || hi(x.t))) GM.sound.play('shimmer', res.cards.some(x => hi(x.t) && !x.wild));
       });
       later(1300, () => flip(0));
       function flip(i) {
@@ -370,13 +410,13 @@
         const x = res.cards[i];
         const go = () => {
           cards[i].classList.add('flipped');
-          GM.sound.play(x.wild ? 'wild' : x.t === 'l' ? 'fanfare' : x.t === 'g' ? 'jackpot' : x.t === 's' ? 'silver' : 'card');
-          if (x.finished && !x.wild && !x.spare && x.t !== 'b') later(x.t === 'l' ? 900 : 350, () => GM.sound.play('snap'));
-          if (x.t === 'g' || x.t === 'l') burst(cards[i], x.t);
+          GM.sound.play(x.wild ? 'wild' : hi(x.t) ? 'fanfare' : x.t === 'g' ? 'jackpot' : x.t === 's' ? 'silver' : 'card');
+          if (x.finished && !x.wild && !x.spare && x.t !== 'b') later(hi(x.t) ? 900 : 350, () => GM.sound.play('snap'));
+          if (x.t === 'g' || hi(x.t)) burst(cards[i], x.t);
           if (x.wild) return later(700, () => choose(x, i, () => later(500, () => flip(i + 1))));
-          later(fast ? 180 : x.t === 'l' ? 1500 : x.t === 'g' ? 1000 : 600, () => flip(i + 1));
+          later(fast ? 180 : hi(x.t) ? 1500 : x.t === 'g' ? 1000 : 600, () => flip(i + 1));
         };
-        if (x.t === 'l' && !x.wild) walkout(x.p, go); else go();
+        if (hi(x.t) && !x.wild) walkout(x.p, go); else go();
       }
       // a wildcard: three cards face up, tap one
       function choose(x, i, then) {
@@ -394,7 +434,7 @@
             card.innerHTML = GM.cardHtml(x, { fresh: true });
             const nc = card.firstElementChild; nc.classList.add('flipped', 'from-wild');
             cards[i].replaceWith(nc); cards[i] = nc;
-            if (x.t === 'g' || x.t === 'l') burst(nc, x.t);
+            if (x.t === 'g' || hi(x.t)) burst(nc, x.t);
             then();
           });
         });
@@ -413,13 +453,13 @@
     function burst(card, t) {
       if (FX) {
         const r = card.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
-        FX.shockwave(x, y, t === 'l' ? 0xe879f9 : 0xffe14a, t === 'l' ? 1.8 : 1); FX.sparks(x, y, { n: t === 'l' ? 60 : 30, tint: t === 'l' ? 0xf0abfc : 0xffe14a }); FX.shimmer(card, t === 'l' ? 0xe879f9 : 0xffe14a);
-        if (t === 'l') { FX.fireworks(el, 4); FX.lottie('trophy', { x, y: r.top - 40, w: 140, cls: 'po-trophy' }); }
+        const tint = t === 'i' ? 0x67e8f9 : hi(t) ? 0xe879f9 : 0xffe14a; FX.shockwave(x, y, tint, t === 'i' ? 2.2 : hi(t) ? 1.8 : 1); FX.sparks(x, y, { n: t === 'i' ? 90 : hi(t) ? 60 : 30, tint: t === 'i' ? 0xcffafe : hi(t) ? 0xf0abfc : 0xffe14a }); FX.shimmer(card, tint);
+        if (hi(t)) { FX.fireworks(el, t === 'i' ? 7 : 4); FX.lottie('trophy', { x, y: r.top - 40, w: 140, cls: 'po-trophy' }); }
       }
-      const fx = el.querySelector('.po-fx'), r = card.getBoundingClientRect(), n = t === 'l' ? 36 : 18;
-      const cols = t === 'l' ? ['#f0abfc', '#a855f7', '#fde047', '#fff'] : ['#fde047', '#facc15', '#fff'];
+      const fx = el.querySelector('.po-fx'), r = card.getBoundingClientRect(), n = hi(t) ? 36 : 18;
+      const cols = t === 'i' ? ['#a5f3fc', '#67e8f9', '#e0f2fe', '#fff'] : hi(t) ? ['#f0abfc', '#a855f7', '#fde047', '#fff'] : ['#fde047', '#facc15', '#fff'];
       for (let k = 0; k < n; k++) {
-        const s = document.createElement('i'), a = Math.random() * Math.PI * 2, d = 60 + Math.random() * (t === 'l' ? 160 : 90);
+        const s = document.createElement('i'), a = Math.random() * Math.PI * 2, d = 60 + Math.random() * (hi(t) ? 160 : 90);
         s.style.cssText = `left:${r.left + r.width / 2}px;top:${r.top + r.height / 2}px;background:${cols[k % cols.length]};--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d}px`;
         fx.appendChild(s); setTimeout(() => s.remove(), 1100);
       }

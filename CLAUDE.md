@@ -101,6 +101,10 @@ game mode for players; this file is about how to work on it.
   `GM.levelKey(k)` = the board at your level. Classic (`classic`, `classicwild`) is retired from the menus (old links work).
   Duplicates (5.34, packs.js): packs deal at random (`fresh` packs still dodge finished cards); a duplicate adds `DUPE` points
   (1/2/3/5) to `cards.dupes`; `GM.tradeDupes()` swaps 100 for a 🆕 `fresh` pack (button in Locker → Cards).
+- **Card tiers (5.35, packs.js):** `GM.cardRating(p)` (length of career, per-game output for his position, titles and
+  top-four seasons, CL/WC/Golden Boots, PFA/FWA awards); 💎 Icon (`i`, 7 pieces) = Hall of Fame + the six best-rated others,
+  then per position 45 Legend / 190 Gold / 500 Silver overall. Cards finished under the old fame tiers stay finished
+  (`cards.fin`, save v3). `tools/card_rating.js` + `card_tiers_draft.js` print the lists for checking.
 - 5.33 bits: `GM.lbList(rows, o)` (core.js) draws every board (podium, pictures via `GM.isFriend`, ▲▼ from `gm:lbSeen`);
   nation cards in packs.js (`GM.isNo1`, `GM.NATION_SETS`, `checkSets` pays a Nations pack, Packed XI `bonus`); CHAOS
   moment `visa` sets `S.passNat` + `S.forceSpecial = 'passport'` (a `deal: false` wildcard); Hat-Trick fusion

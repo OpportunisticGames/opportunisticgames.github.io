@@ -16,10 +16,10 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   });
   await pg.reload(); await pg.waitForTimeout(600);
 
-  const t = await pg.evaluate(() => ({ c: GM.tierCounts(), all: GM.players.length, hof: GM.players.filter(p => p.hon.H).every(p => GM.cardTier(p) === 'l'),
+  const t = await pg.evaluate(() => ({ c: GM.tierCounts(), all: GM.players.length, hof: GM.players.filter(p => p.hon.H).every(p => GM.cardTier(p) === 'i'),
     shearer: GM.cardTier(GM.players.find(p => p.name === 'Alan Shearer')) }));
-  ok(t.c.l >= 25 && t.c.l <= 60 && t.c.g > 150 && t.c.s > 400 && t.c.b + t.c.s + t.c.g + t.c.l === t.all, `tiers: ${JSON.stringify(t.c)} of ${t.all} players`);
-  ok(t.hof && t.shearer === 'l', 'Hall of Famers (Shearer included) are Legends');
+  ok(t.c.i === 30 && t.c.l === 45 && t.c.g === 190 && t.c.s === 500 && t.c.b + t.c.s + t.c.g + t.c.l + t.c.i === t.all, `tiers: ${JSON.stringify(t.c)} of ${t.all} players`);
+  ok(t.hof && t.shearer === 'i', 'Hall of Famers (Shearer included) are 💎 Icons');
   ok(await pg.evaluate(() => GM.packsWaiting() === 1) && (await pg.textContent('.gm-status .gs-open b')) === '1', 'a free pack every day, and the 🎁 on the top bar says so');
   // no break or matchday in this test: a plain Daily Pack
   await pg.evaluate(() => { GM.setFixtures([['2099-01-01T15:00:00Z', 'Everton', 'Chelsea']], []); });
@@ -61,7 +61,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     return { once, days, stuck, finished: x.finished, xi: GM.packedXI().xi.some(s => s.player && s.player.name === 'Alan Shearer') };
   });
   ok(dr.once === 1, 'signing the same player twice in a day gives one piece');
-  ok(dr.days.join() === '2,3,4,4,4,4' && dr.stuck.pieces === 4 && dr.stuck.packed === 0, `signings fill a Legend to 4 of 5 and stop (${dr.days.join(' → ')})`);
+  ok(dr.days.join() === '2,3,4,5,6,6' && dr.stuck.pieces === 6 && dr.stuck.packed === 0, `signings fill an Icon to 6 of 7 and stop (${dr.days.join(' → ')})`);
   ok(!dr.stuck.inXI && !dr.stuck.ach, 'a Legend with four signings is not finished: not in the Packed XI, no Legendary badge');
   ok(dr.finished && dr.xi, 'one piece from a pack finishes him and he goes into the Packed XI');
   ok(await pg.evaluate(() => GM.best('packedxi') > 0 && GM.store.get('cards').best > 0), 'a better Packed XI goes on its leaderboard');
@@ -104,8 +104,10 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     return out;
   });
   kinds.forEach(k => ok(k.face && k.name.includes(GM_N[k.t]) && k.why.includes('test ' + k.t) && k.cards >= 3, `${GM_N[k.t]}: its own face, the name, why you got it, ${k.cards} cards (${k.tiers})`));
-  ok(/[sgl].*[sgl]/.test(kinds[0].tiers.replace(/w/g, '')), 'a Level Up Pack has two Silver or better');
-  ok(/[gl]/.test(kinds[2].tiers), 'a Royale Pack has a Gold or better');
+  ok(/[sgli].*[sgli]/.test(kinds[0].tiers.replace(/w/g, '')), 'a Level Up Pack has two Silver or better');
+  ok(/[gli]/.test(kinds[2].tiers), 'a Royale Pack has a Gold or better');
+  const lgp = await pg.evaluate(() => { const out = []; for (let i = 0; i < 20; i++) { const c = GM.store.get('cards'); c.extra = [{ t: 'legendary', why: 'test' }]; c.daily = GM.today(); GM.store.set('cards', c); const r = GM.openPack(); out.push(r.cards.some(x => x.t === 'l' || x.t === 'i' || (x.wild && x.wild.kind === 'legend'))); } return out; });
+  ok(lgp.every(Boolean), `every Legendary Pack has a Legend or an Icon (${lgp.filter(Boolean).length}/20)`);
   ok(kinds[1].tiers.includes('w') && kinds[2].tiers.includes('w'), 'Badge and Royale Packs always have a wildcard');
 
   // a wildcard: Pick one — three face up, your choice gets the piece
