@@ -64,7 +64,9 @@
       if (!a || !GM.lb.enabled || this._busy || (!force && Date.now() - this.at < 60e3)) return this.data;
       this._busy = true; this.at = Date.now();
       try {
-        const d = await GM.lb.rpc('activity_feed', { p_user: a.name, p_key: a.key });
+        const prefs = { move: true, friends: true, results: true, modes: false, streak: false, comeback: false, matchday: false, beaten: false };
+        const [d, inbox] = await Promise.all([GM.lb.rpc('activity_feed', { p_user: a.name, p_key: a.key }), GM.lb.rpc('app_inbox', { p_user: a.name, p_prefs: prefs }).catch(() => null)]);
+        if (Array.isArray(inbox)) this.inbox = inbox.filter(x => /^(g|r|f|cs|cf|cr|co|cm):/.test(x.id));
         if (d && !d.error) {
           this.data = d; GM.statusBar();
           // 🤝 someone joined from your invite: your Referral pack (once each, remembered with your backup)
@@ -78,8 +80,18 @@
       catch (e) { /* offline: keep what we had */ } finally { this._busy = false; }
       return this.data;
     },
-    unseen() { const d = this.data, seen = GM.store.get('feedSeen', ''); return d && d.items ? d.items.filter(x => /^(beaten|referral)$/.test(x.kind) && x.at > seen).length : 0; },
+    inbox: [],
+    // what's new: anything since you last opened the 🔔 (or cleared it), and games, results and challenges you haven't seen
+    unseen() {
+      const d = this.data, seen = GM.store.get('feedSeen', ''), clr = GM.store.get('feedCleared', ''), done = GM.inboxSeenList();
+      const items = d && d.items ? d.items.filter(x => x.at > seen && x.at > clr && recent(x.at)).length : 0;
+      return items + (this.inbox || []).filter(x => !done.includes(x.id)).length;
+    },
   };
+  // the 🔔 forgets things you've already seen: opened the drawer, or looked at that game's result
+  const recent = t => !t || Date.now() - new Date(t).getTime() < 7 * 864e5;
+  GM.inboxSeenList = () => GM.store.get('inboxSeen', []) || [];
+  GM.inboxSeen = ids => { const l = GM.inboxSeenList(); [].concat(ids).forEach(id => { if (id && !l.includes(id)) l.push(id); }); GM.store.set('inboxSeen', l.slice(-200)); GM.statusBar(); };
   // a board's name from its key (ultimateh → Ultimate (Hard), targetxast → Target 325 – Assists (Extreme))
   GM.boardName = k => {
     if (GM.MODES[k]) return GM.MODES[k].name;
@@ -91,15 +103,17 @@
     const a = GM.account();
     if (!a) return GM.toast('Claim a name in Settings to see what’s been happening');
     const m = GM.modal(`<div class="feed"><h3 class="center">🔔 What’s been happening</h3><div id="feedbody"><p class="muted center">Loading…</p></div></div>`);
-    const prefs = { move: true, friends: true, results: true, modes: false, streak: false, comeback: false, matchday: false, beaten: false };
-    const [d, inbox] = await Promise.all([GM.feed.load(true), GM.lb.rpc('app_inbox', { p_user: a.name, p_prefs: prefs }).catch(() => [])]);
+    const d = await GM.feed.load(true), inbox = GM.feed.inbox || [];
     const el = GM.$('#feedbody', m.el);
     if (!el) return;
     if (!d) { el.innerHTML = GM.net.msg('what’s been happening', '<p class="muted center">Couldn’t load it – try again in a bit.</p>'); return; }
     const seen = GM.store.get('feedSeen', ''), here = l => (l || '').replace(/^[^#]*#/, '#');
     const ago = t => { const s = Math.max(0, (new Date(d.now) - new Date(t)) / 1000); return s < 3600 ? Math.max(1, Math.round(s / 60)) + ' min ago' : s < 86400 ? Math.round(s / 3600) + ' h ago' : Math.round(s / 86400) + ' d ago'; };
     const all = d.crowns || [], month = d.mcrowns || [], tops = [...new Set(month.concat(all))];
-    const waiting = (inbox || []).filter(x => /^(g|r|f|cs|cf|cr|co|cm):/.test(x.id));
+    // waiting on you: your moves and new challenges (and results you haven't looked at yet); seen results drop off
+    const seenIds = GM.inboxSeenList(), clr = GM.store.get('feedCleared', '');
+    const waiting = inbox.filter(x => /^(g|f|cs|cm):/.test(x.id) || !seenIds.includes(x.id));
+    const lately = d.items.filter(x => recent(x.at) && x.at > clr).slice(0, 12);
     const item = (cls, title, sub, href) => `<a class="feed-item ${cls}" href="${GM.esc(here(href))}"><b>${GM.esc(title)}</b><small>${sub}</small></a>`;
     el.innerHTML = `<div class="feed-tops">
         <a class="feed-stat" href="#/leaderboard?m=bestplayers"><b>🏅 ${d.mbest ? '#' + d.mbest.rank : '–'}</b><small>Best Players this month${d.mbest ? ` · ${d.mbest.points} pts` : ''}</small></a>
@@ -107,12 +121,14 @@
         <a class="feed-stat" href="#/leaderboard"><b>📅 ${month.length}</b><small>you top this month</small></a></div>
       ${tops.length ? `<details class="set feed-crowns"><summary><span>👑 Where you’re top</span></summary>${tops.map(k => `<a href="#/leaderboard?m=${encodeURIComponent(k)}">${GM.esc(GM.boardName(k))}<small>${all.includes(k) ? (month.includes(k) ? 'all time and this month' : 'all time') : 'this month'}</small></a>`).join('')}</details>` : ''}
       ${waiting.length ? `<h4>⏳ Waiting for you</h4>${waiting.map(x => item('wait', x.title, GM.esc(x.body || ''), x.link)).join('')}` : ''}
-      <h4>📰 Lately</h4>
-      ${d.items.length ? d.items.map(x => item((x.at > seen ? 'new ' : '') + x.kind, x.title, `${GM.esc(x.body || '')} · ${ago(x.at)}`, x.link)).join('')
-        : '<p class="muted center small">Nothing yet. Get to the top of a leaderboard and we’ll tell you if anyone knocks you off it.</p>'}
+      <h4 class="feed-h">📰 Lately ${lately.length ? '<button class="btn ghost small" id="feedclear">Clear</button>' : ''}</h4>
+      <div id="feedlately">${lately.length ? lately.map(x => item((x.at > seen ? 'new ' : '') + x.kind, x.title, `${GM.esc(x.body || '')} · ${ago(x.at)}`, x.link)).join('')
+        : `<p class="muted center small">${d.items.length ? '✅ All caught up.' : 'Nothing yet. Get to the top of a leaderboard and we’ll tell you if anyone knocks you off it.'}</p>`}</div>
       ${GM.inviteHtml()}`;
     GM.$$('a', el).forEach(l => l.addEventListener('click', () => m.close()));
-    GM.store.set('feedSeen', d.now); GM.statusBar();
+    const cb = GM.$('#feedclear', el);
+    if (cb) cb.onclick = () => { GM.store.set('feedCleared', d.now); GM.$('#feedlately', el).innerHTML = '<p class="muted center small">✅ All caught up.</p>'; cb.remove(); GM.buzz('click'); };
+    GM.store.set('feedSeen', d.now); GM.inboxSeen(inbox.filter(x => !/^(g|f|cs|cm):/.test(x.id)).map(x => x.id)); GM.statusBar();
   };
   // the 🎁 sheet: one place for everything waiting, with a way to each
   GM.toOpen = function () {

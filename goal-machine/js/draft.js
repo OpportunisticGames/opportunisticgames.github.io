@@ -1045,7 +1045,7 @@
     // Daily CHAOS: the same chaos for everyone today, goals, one go
     const dailyChaos = mode === 'chaos' && !!opts.daily && !opts.seed;
     // 🙂 Easy: the draft games only, never with Hard or Extreme; it travels in the seed ("e~…") so a friend gets the same reels
-    const easy = !!(GM.EASY_MODES && GM.EASY_MODES.includes(mode) && mode !== 'daily' && !dailyChaos && !fx && !opts.hard && !(opts.extreme && RULES_X[mode]) && (opts.seed ? GM.seedEasy(opts.seed) : opts.easy));
+    const easy = !!(GM.EASY_MODES && GM.EASY_MODES.includes(mode) && mode !== 'daily' && !dailyChaos && !fx && !opts.hard && !(opts.extreme && RULES_X[mode]) && (opts.online ? !!opts.easy : opts.seed ? GM.seedEasy(opts.seed) : opts.easy));  // (online: the room's level)
     const seed = mode === 'daily' ? 'daily:' + GM.today() : dailyChaos ? 'dchaos:' + GM.today() : fx ? 'match:' + fx.id : (opts.seed || (easy ? 'e~' : '') + GM.newSeed());
     let stat = mode === 'daily' || dailyChaos || fx ? 'goals' : (GM.STATS[opts.stat] ? opts.stat : 'goals');
     let target = RULES[mode] && !RULES[mode].max ? TARGETS[stat] : null;
@@ -2908,7 +2908,8 @@
   }
 
   // only draw while you're still on this game: a delayed animation or sound cue must never paint a draft over the page you went to
-  const onThisGame = () => { const h = location.hash; return S.online ? h.includes(S.online.code) : /^#\/(draft|daily)\b/.test(h); };
+  // (online: once the result has taken over the screen, `away`, the game never draws over it again)
+  const onThisGame = () => { const h = location.hash; return S.online ? h.includes(S.online.code) && !S.online.away : /^#\/(draft|daily)\b/.test(h); };
   function render() {
     if (S && S.rules && S.rules.chaos && S.sz && document.body.dataset.cz !== S.sz && onThisGame()) szLook();
     if (!S || !onThisGame()) return;
@@ -3023,7 +3024,7 @@
       ${GM.report ? GM.report(xi, S.st, S.rules.treble) : ''}
       ${pitchHtml()}
       <div class="actions col">
-        ${S.online ? `<div id="race-result"></div><a class="btn big" href="#/online?room=${S.online.code}&v=1">🆚 Compare teams${S.mode === 'chaos' || S.mode === 'target' ? '' : ' & match points'}</a>` : S.fx ? `<a class="btn big" href="#/matchday">🏟️ Back to matchday</a>` : S.mode !== 'daily' && !S.dailyChaos ? `<button class="btn big" id="again">🔁 Play again</button>` : `<div class="muted">New Daily ${S.dailyChaos ? 'CHAOS' : 'Ultimate'} tomorrow</div>`}
+        ${S.online ? `<div id="race-result"></div><a class="btn big" href="#/online?room=${S.online.code}&v=1">🆚 See who won</a>` : S.fx ? `<a class="btn big" href="#/matchday">🏟️ Back to matchday</a>` : S.mode !== 'daily' && !S.dailyChaos ? `<button class="btn big" id="again">🔁 Play again</button>` : `<div class="muted">New Daily ${S.dailyChaos ? 'CHAOS' : 'Ultimate'} tomorrow</div>`}
         ${S.fx ? '' : '<button class="btn" id="challenge">⚔️ Challenge a friend (same spins)</button>'}
         <button class="btn ghost" id="share">📤 Share result</button>
         <button class="btn ghost" id="sharepic">🖼️ Share a picture of your ${S.rules.chaos ? 'CHAOS pitch' : 'XI'}</button>

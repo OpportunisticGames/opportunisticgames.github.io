@@ -3643,8 +3643,9 @@ body.calm .fuse .fz { animation: none; }
 @keyframes fz-pop { from { transform: scale(1.9); } to { transform: scale(1); } }
 
 /* 🔭 Scout's Tip: pick a card */
-.scout-pick { display: flex; gap: 6px; justify-content: center; margin: 10px 0; }
-.scout-pick button { background: none; border: 0; padding: 0; cursor: pointer; flex: 1; max-width: 110px; }
+.scout-pick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0; width: 100%; align-self: stretch; }
+.scout-pick button { background: none; border: 0; padding: 0; cursor: pointer; width: 100%; min-width: 0; }
+.scout-pick button .pcard { width: 100%; font-size: 9px; }
 .st-bonus { display: block; margin-top: 4px; }
 
 /* ♻️ the duplicate pile */
@@ -3731,3 +3732,11 @@ body.calm .tour-ring { transition: none; }
 .card-filters button { flex: none; white-space: nowrap; }
 .cards-head { margin: 4px 0 8px; font-weight: 700; font-size: .9rem; }
 button.nat-row { font: inherit; color: inherit; border: 0; text-align: left; width: 100%; cursor: pointer; }
+
+/* the comparison: what wins it, and the tie-breakers (5.38) */
+.cmp-points td small { display: block; font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+.cmp-points tr.tiebreak td { opacity: .75; font-size: .92em; }
+.opp-dots { display: flex; justify-content: center; gap: 5px; margin: 10px 0; }
+.opp-dots i { width: 16px; height: 16px; border-radius: 50%; background: var(--inset); border: 2px solid var(--line); }
+.opp-dots i.on { background: var(--accent); border-color: var(--accent); }
+.feed-h { display: flex; align-items: center; justify-content: space-between; }
