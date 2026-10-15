@@ -222,7 +222,7 @@
     GM.$('.cal-slot', tabbar).innerHTML = GM.calIcon();  // stays right past midnight
     const locked = GM.secretLocked && GM.secretLocked(path);  // a secret game you haven't unlocked yet
     if (locked) { GM.ownerLook(false); return GM.secretLockPage(app, locked); }
-    try { page(path, q); } catch (e) {
+    try { page(path, q); if (GM.firstTimeTips) GM.firstTimeTips(path, q); if (!path && GM.tourOffer) GM.tourOffer(); } catch (e) {
       // a page that fails to draw: never leave the last page up in the wrong look, say so and offer a way out
       console.error(e);
       GM.chaosLook(false); GM.moneyLook(false); GM.ownerLook(false);
@@ -493,7 +493,9 @@
       <section class="settings links" ${sub ? 'hidden' : ''}>
         <a href="#" id="s-share">📣 Share Goal Machine with a friend<span>›</span></a>
         <a href="#" id="s-feedback">✉️ Report a bug or suggest something<span>›</span></a>
+        <a href="#" id="s-tour">🧭 Take the tour<span>›</span></a>
         <a href="#" id="s-howto">❓ How Goal Machine works<span>›</span></a>
+        <a href="#" id="s-tips">💡 Show the game tips again<span>›</span></a>
         <a href="#/updates">📰 Updates & version history ${GM.hasUnseenUpdate() ? '<i class="new-dot inline"></i>' : ''}<span>›</span></a>
         <a href="#/about">ℹ️ About the data<span>›</span></a>
         ${build == null ? `<a href="${GM.PLAY_URL}" target="_blank" rel="noopener">🤖 The Android app on Google Play<span>›</span></a>` : ''}
@@ -550,6 +552,8 @@
       setTimeout(nstatus, 2500); setTimeout(nstatus, 6000);
     };
     GM.$('#s-howto').onclick = e => { e.preventDefault(); GM.welcome(); };
+    GM.$('#s-tour').onclick = e => { e.preventDefault(); GM.tour(); };
+    GM.$('#s-tips').onclick = e => { e.preventDefault(); GM.resetTips(); GM.toast('💡 The tips will show again the first time you open each game'); };
     GM.$('#s-feedback').onclick = e => { e.preventDefault(); GM.feedback(); };
     GM.$('#s-share').onclick = e => { e.preventDefault(); GM.shareGame(); };
     wire('s-theme', v => { GM.setTheme(v); if (v === 'club' && !GM.favClub()) GM.toast('🏟️ Pick your favourite club below to see its colours'); });

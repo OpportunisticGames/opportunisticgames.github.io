@@ -23,7 +23,7 @@ formations, and badges round 2.
 
 ## 💬 To discuss
 
-### A better tutorial: introduce the app and the website 💬 *(owner, 15 Oct 2026)*
+### A better tutorial: introduce the app and the website ✅ 5.36 *(owner, 15 Oct 2026)*
 > "I also think we need to improve the tutorial - i would like something that introduces people to the app & website
 > just a little bit better, so they understand how it works. This is important after all the updates we've made.
 > Obviously the tutorial shouldnt take too long, but things people wouldnt quickly understand by themselves"
@@ -32,7 +32,9 @@ Today: a welcome card, then "Play your first XI" (coach bubbles for spin, pick, 
 explains the top bar (level, season tier, 🎁), cards and packs, Today's streaks and missions, Online, Ranks, the Locker
 or the four levels. Proposal in the chat: keep the first XI, then a 30-second tour of bubbles on the real screen (tap to
 go on, skip any time), first-time explainers for the deeper games (CHAOS, Hat-Trick, Dodgy Owner, Targets), a website
-version ending on the Play Store, and offering it once to existing players. Waiting for go.
+version ending on the Play Store, and offering it once to existing players.
+**Owner:** "tour after first xi … get them to play a game and then show them round"; first-time tips "but nothing time
+consuming"; existing players once, "and also have like maybe a tutorial button in the settings". ✅ Built in 5.36 (`js/tour.js`).
 
 ### Making money from the game 💬 *(owner, 15 Oct 2026)*
 > "Is is there anyway i could feasibly make money off this game legally"

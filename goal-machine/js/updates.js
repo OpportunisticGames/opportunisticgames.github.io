@@ -9,11 +9,14 @@
 (function () {
   GM.UPDATES = [
     {
-      v: 96, label: '5.35.1', date: '2026-10-15', title: '📲 Goal Machine on Google Play',
+      v: 96, label: '5.36', date: '2026-10-15', title: '🧭 A tour of the app, and Goal Machine on Google Play',
       items: [
+        '🧭 New here? After your first XI we’ll show you round in 30 seconds: your level and season, what’s waiting to open, the difficulty levels, and what lives in Today, Online, Ranks and the Locker. Been here a while? You’ll be offered it once, and it’s always in Settings → Take the tour',
+        '💡 The first time you open CHAOS, the Targets, Hat-Trick or Dodgy Owner, a few quick tips on how it works (bring them back in Settings)',
         '📲 The Android app is on Google Play: on an Android phone the website now always shows a Get the app on Google Play button',
         '🎵 Music is on from the start (turn it off any time in Settings)',
         '🏷️ NEW and UPDATED tags on the games now last three weeks from the update, instead of hanging around',
+        '🔧 A secret game no longer breaks if your deck has a 💎 Icon in it',
       ],
     },
     {

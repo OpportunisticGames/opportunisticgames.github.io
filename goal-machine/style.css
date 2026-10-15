@@ -3699,3 +3699,20 @@ body.calm .tier-i .pc-sheen { animation: none; }
 
 /* a pitch style's name colour (the beach's dark brown) on a CHAOS pitch that's been made dark (Halloween, fog): white */
 body[data-cz] .pitch .slot-name { color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,.85) !important; }
+
+/* 🧭 the tour: a spotlight on one thing at a time and a bubble that says what it is */
+.tour { position: fixed; inset: 0; z-index: 120; cursor: pointer; }
+.tour-ring { position: fixed; border-radius: 14px; box-shadow: 0 0 0 3px #ffe600, 0 0 0 9999px rgba(0, 0, 0, .62); transition: all .35s cubic-bezier(.2, .9, .3, 1); pointer-events: none; }
+.tour-bubble { position: fixed; padding: 12px 14px 10px; border-radius: 16px; background: #ffe600; color: #2a1a00; font-size: .88rem; line-height: 1.4; box-shadow: 0 10px 30px rgba(0, 0, 0, .4); animation: pw-in .35s cubic-bezier(.2, 1.4, .4, 1); }
+.tour-bubble b { display: block; font: 700 1.1rem Oswald, sans-serif; letter-spacing: .3px; margin-bottom: 2px; }
+.tour-bubble::after { content: ''; position: absolute; left: calc(var(--ax, 50%) - 8px); bottom: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: #ffe600; }
+.tour-bubble.below::after { bottom: auto; top: -8px; border-top: 0; border-bottom: 8px solid #ffe600; }
+.tour-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.tour-row small { flex: 1; font-weight: 700; opacity: .65; }
+.tour-row .btn { color: #2a1a00; } .tour-row .btn.ghost { background: rgba(0, 0, 0, .08); border-color: transparent; box-shadow: none; }
+body.calm .tour-ring { transition: none; }
+/* first-time tips for the deeper games */
+.welcome.tips .wl-kicker { font: 800 .7rem Inter, sans-serif; letter-spacing: 2px; text-transform: uppercase; color: var(--hi); text-align: center; margin-bottom: 8px; }
+.tip-row { display: flex; gap: 10px; align-items: flex-start; text-align: left; margin: 8px 0; }
+.tip-row > span { flex: none; width: 38px; height: 38px; display: grid; place-items: center; font-size: 1.3rem; border-radius: 12px; background: var(--inset); }
+.tip-row p { margin: 0; font-size: .88rem; line-height: 1.4; } .tip-row p b { display: block; font-size: .95rem; }
