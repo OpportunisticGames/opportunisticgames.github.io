@@ -3,6 +3,10 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.36.1 *(owner, 15 Oct 2026)*
+- "Now the Play app is showing Get the app": 5.36's permanent Play button only checked whether the phone was Android,
+  not whether you were already in the app (`window.AndroidApp`). It's hidden inside the app again.
+
 ### Fixed in 5.36 *(owner, 15 Oct 2026)*
 - (found by the tests) Goal Royale broke when your deck had a 💎 Icon card (5.35): it only knew four tiers. An Icon now
   plays as a Legend there.
