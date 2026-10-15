@@ -9,6 +9,16 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 97, label: '5.37', date: '2026-10-15', title: '🔎 Find any card, your club’s cards, and Icons that glisten',
+      items: [
+        '🔎 Locker → Cards has a search box: find any player’s card, finished or not. And filters: Started, Finished, your club’s players and All cards',
+        '🌍 Country sets explain themselves, sit under your cards, and tap one to see that country’s five cards',
+        '💎 Icon cards glisten now (a slow shimmer with twinkles) instead of a quick flash, and the 💎 and Nº1 no longer sit under the ✓',
+        '🃏 Players who went up a tier in 5.35 (Legends who became Icons) now need their extra pieces: they show how many you have, not a tick. Players who went down stay finished',
+        '📲 The Android app no longer shows a “Get the app on Google Play” button (you’ve already got it!)',
+      ],
+    },
+    {
       v: 96, label: '5.36', date: '2026-10-15', title: '🧭 A tour of the app, and Goal Machine on Google Play',
       items: [
         '🧭 New here? After your first XI we’ll show you round in 30 seconds: your level and season, what’s waiting to open, the difficulty levels, and what lives in Today, Online, Ranks and the Locker. Been here a while? You’ll be offered it once, and it’s always in Settings → Take the tour',

@@ -46,7 +46,7 @@ async function phone(b, name, key, errs, extra = '') {
     const d = document.createElement('div'); d.innerHTML = GM.cardHtml({ p: no1[0], t: GM.cardTier(no1[0]) }, { back: false });
     return { no1: no1.length, sets: sets.length, eng: eng.length, foil: !!d.querySelector('.pc-foil') }; });
   ok(nat.no1 > 30 && nat.sets > 20 && nat.eng === 5 && nat.foil, `a foil No. 1 per country and country sets (${JSON.stringify(nat)})`);
-  const bonus = await A.evaluate(() => { GM.NATION_SETS.England.forEach(p => { for (let k = 0; k < 6; k++) GM.cardPackPiece(p); }); const px = GM.packedXI(); return { bonus: px.bonus, total: px.total, base: px.base, eng: (GM.store.get('cards').sets || []).includes('England') }; });
+  const bonus = await A.evaluate(() => { GM.NATION_SETS.England.forEach(p => { for (let k = 0; k < 7; k++) GM.cardPackPiece(p); }); const px = GM.packedXI(); return { bonus: px.bonus, total: px.total, base: px.base, eng: (GM.store.get('cards').sets || []).includes('England') }; });
   ok(bonus.eng && bonus.bonus > 0 && bonus.total === bonus.base + bonus.bonus, `finishing England's set; the Packed XI's nation bonus (${JSON.stringify(bonus)})`);
   // 🧊 renewables
   const ren = await A.evaluate(() => {

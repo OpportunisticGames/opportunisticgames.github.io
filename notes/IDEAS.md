@@ -21,6 +21,11 @@ formations, and badges round 2.
 9. ~~Card game~~ shipped as 🃏 Hat-Trick (beta); next: online and a Daily Hat-Trick
 10. Manager mode
 
+### Find cards: search and your club's cards ✅ 5.37 *(owner, 15 Oct 2026)*
+> "there's no way to search for players so you can see cards you want to see. You should also be able to see your cards
+> from your club."
+Built straight away (we were on the cards): a search box and Started / Finished / your club / All filters in Locker → Cards.
+
 ## 💬 To discuss
 
 ### A better tutorial: introduce the app and the website ✅ 5.36 *(owner, 15 Oct 2026)*

@@ -346,7 +346,7 @@
         <a class="icon-btn" href="#/updates" aria-label="Updates">📰${GM.hasUnseenUpdate() ? '<i class="new-dot"></i>' : ''}</a></div>
       <header class="hero">
         <p>${club ? `<span class="fan-chip">${GM.clubChip(club, true)}</span> <span class="banter">${GM.esc(GM.clubBanter(club))}</span>` : `${GM.allPlayers ? GM.allPlayers.length.toLocaleString() : '5,000+'} Premier League players · 1992 to today`}</p>
-        ${hasNativeApp ? '' : isAndroid ? `<div class="install-bar"><a class="btn small" id="getapk" href="${GM.PLAY_URL}" target="_blank" rel="noopener">🤖 Get the app on Google Play</a></div>`
+        ${hasNativeApp || window.AndroidApp ? '' : isAndroid ? `<div class="install-bar"><a class="btn small" id="getapk" href="${GM.PLAY_URL}" target="_blank" rel="noopener">🤖 Get the app on Google Play</a></div>`
           : installHidden() ? '' : `<div class="install-bar"><button class="btn small" id="install" hidden>📲 Install app</button>
           <button class="install-x" id="install-x" title="I already have it" aria-label="Hide">✕</button></div>`}
         ${GM.appOutdated() ? `<div class="install-bar"><a class="btn small" href="${GM.PLAY_URL}">📲 New version of the app – tap to update</a></div>` : ''}

@@ -108,9 +108,11 @@
   const need = p => TIERS[GM.cardTier(p)].need;
   const packed = (c, p) => c.k[p.pk] || 0;
   // finished: all the pieces, and (Silver and up) at least one of them from a pack
-  const done = (c, p) => !!(c.fin && c.fin[p.pk]) || ((c.p[p.pk] || 0) >= need(p) && (GM.cardTier(p) === 'b' || packed(c, p) >= 1));
+  // (5.36.2: a card that went up a tier in 5.35, a Legend that's now an Icon, needs its extra pieces like any other: the owner's
+  // call. Cards that went down still have the pieces, so they stay finished by themselves.)
+  const done = (c, p) => (c.p[p.pk] || 0) >= need(p) && (GM.cardTier(p) === 'b' || packed(c, p) >= 1);
   // the most signings can add: one short of full until a pack piece is in
-  const gameCap = (c, p) => (done(c, p) ? Math.max(need(p), c.p[p.pk] || 0) : GM.cardTier(p) === 'b' || packed(c, p) >= 1 ? need(p) : need(p) - 1);
+  const gameCap = (c, p) => (GM.cardTier(p) === 'b' || packed(c, p) >= 1 ? need(p) : need(p) - 1);
   GM.cardPieces = p => load().p[p.pk] || 0;
   GM.cardPackPieces = p => load().k[p.pk] || 0;
   GM.cardState = p => { const c = load(); return { tracked: TIER.has(p.pk), t: GM.cardTier(p), have: c.p[p.pk] || 0, need: need(p), pack: packed(c, p), done: done(c, p) }; };
@@ -500,36 +502,68 @@
   function dupeBox() {
     const n = GM.dupePile(), full = n >= DUPE_PACK;
     return `<div class="dupe-box ${full ? 'full' : ''}"><span>♻️</span><span><b>Duplicate pile: ${Math.min(n, DUPE_PACK)}/${DUPE_PACK}</b>
-      <small>Duplicates from packs: 🟫 1 · ⚪ 2 · 🟡 3 · 🟣 5 points. ${DUPE_PACK} trade in for a 🆕 Fresh pack of cards you haven’t finished${n > DUPE_PACK ? ` (${n - DUPE_PACK} more waiting)` : ''}</small>
+      <small>Duplicates from packs: 🟫 1 · ⚪ 2 · 🟡 3 · 🟣 5 · 💎 8 points. ${DUPE_PACK} trade in for a 🆕 Fresh pack of cards you haven’t finished${n > DUPE_PACK ? ` (${n - DUPE_PACK} more waiting)` : ''}</small>
       <div class="bar"><i style="width:${Math.min(100, n / DUPE_PACK * 100)}%"></i></div></span>${full ? '<button class="btn small" data-dupes>Trade in</button>' : ''}</div>`;
   }
   document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-dupes]'); if (!b) return; if (GM.tradeDupes()) { GM.toast('🆕 A Fresh pack for your duplicates!', 2600); const box = b.closest('.dupe-box'); if (box) box.outerHTML = dupeBox(); } });
-  // 🌍 the Album's country sets: each country's five best known, its No. 1 foil first
+  // 🌍 the Album's country sets: each country's five best known (its No. 1 first). Tap one to see its cards above.
   function countrySets() {
     const sets = GM.nationSets(), fin = sets.filter(x => x.done).length;
-    return `<details class="set nat-sets"><summary><span>🌍 Country sets <small class="muted">${fin}/${sets.length} complete</small></span></summary>
-      <p class="muted small">Finish every card in a country’s set (its best-known players) for a 🌍 Nations pack. The first card is the country’s foil No. 1.</p>
-      <div class="nat-list">${sets.map(x => `<div class="nat-row ${x.done ? 'done' : ''}"><span class="nat-flag">${GM.flag(x.nat)}</span><span class="nat-nm"><b>${GM.esc(x.nat)}</b><small>${x.cards.map(p => GM.esc(p.name.split(' ').slice(-1)[0])).join(' · ')}</small></span><span class="nat-of">${x.done ? '✅' : `${x.have}/${x.cards.length}`}</span></div>`).join('')}</div></details>`;
+    return `<details class="set nat-sets"><summary><span>🌍 Country sets <small class="muted">${fin}/${sets.length} done · a free Nations pack each</small></span></summary>
+      <p class="muted small">Each country’s set is its five best-known players. Finish all five cards for a 🌍 Nations pack. Tap a country to see its cards.</p>
+      <div class="nat-list">${sets.map(x => `<button class="nat-row ${x.done ? 'done' : ''}" data-cnat="${GM.esc(x.nat)}"><span class="nat-flag">${GM.flag(x.nat)}</span><span class="nat-nm"><b>${GM.esc(x.nat)}</b><small>${x.cards.map(p => GM.esc(p.name.split(' ').slice(-1)[0])).join(' · ')}</small></span><span class="nat-of">${x.done ? '✅' : `${x.have}/${x.cards.length}`}</span></button>`).join('')}</div></details>`;
   }
+  // the cards on show: search by name, or a filter (started, finished, your club's, a country's set, everyone)
+  const CF = { q: '', f: 'started', nat: null, tier: '' };
+  const short1 = n => GM.fold(n);
+  function gridHtml() {
+    const c = load(), club = GM.favClub && GM.favClub(), q = short1(CF.q.trim());
+    let list = q.length >= 2 ? GM.players.filter(p => p.key.includes(q))
+      : CF.f === 'set' && CF.nat ? (GM.NATION_SETS[CF.nat] || [])
+      : CF.f === 'club' && club ? GM.players.filter(p => p.clubs.includes(club))
+      : CF.f === 'done' ? GM.players.filter(p => done(c, p))
+      : CF.f === 'all' ? GM.players.slice()
+      : GM.players.filter(p => c.p[p.pk]);
+    if (CF.tier && !(CF.f === 'set' && CF.nat)) list = list.filter(p => GM.cardTier(p) === CF.tier);
+    if (!(CF.f === 'set' && CF.nat)) list.sort((a, b) => ORDER.indexOf(GM.cardTier(b)) - ORDER.indexOf(GM.cardTier(a)) || (done(c, b) - done(c, a)) || b.fame - a.fame);
+    const head = q.length >= 2 ? `${list.length} player${list.length === 1 ? '' : 's'} called “${GM.esc(CF.q.trim())}”`
+      : CF.f === 'set' && CF.nat ? `${GM.flag(CF.nat)} ${GM.esc(CF.nat)}’s set: ${list.filter(p => done(c, p)).length}/${list.length} finished`
+      : CF.f === 'club' && club ? `${GM.esc(club)}: ${list.filter(p => done(c, p)).length}/${list.length} finished` : '';
+    const empty = q.length >= 2 ? 'Nobody by that name with 50+ PL apps.' : CF.f === 'done' ? 'No finished cards yet.' : 'No pieces yet. Open a pack, or sign players in any draft.';
+    return `${head ? `<p class="cards-head">${head}</p>` : ''}${list.length ? `<div class="card-grid">${list.slice(0, 120).map(p => GM.cardHtml({ p, t: GM.cardTier(p), have: c.p[p.pk] || 0, pack: packed(c, p), finished: done(c, p) }, { back: false, attr: ` data-psheet="${GM.esc(p.pk)}"` })).join('')}</div>${list.length > 120 ? `<p class="muted center">…and ${list.length - 120} more: search for a name to find someone</p>` : ''}`
+      : `<p class="muted center">${empty}</p>`}`;
+  }
+  const filterChips = () => {
+    const club = GM.favClub && GM.favClub();
+    return [['started', '✍️ Started'], ['done', '✅ Finished'], ...(club ? [['club', `🏟️ ${GM.esc(club.replace(/ (United|City|Hotspur|Wanderers|Albion|Athletic|Rovers|and Hove Albion)$/, ''))}`]] : []), ['all', '📚 All cards']]
+      .map(([k, l]) => `<button class="${CF.f === k && !CF.q ? 'on' : ''}" data-cf="${k}">${l}</button>`).join('');
+  };
+  const redraw = () => { const g = document.getElementById('card-grid'); if (g) g.innerHTML = gridHtml(); const f = document.getElementById('card-filters'); if (f) f.innerHTML = filterChips(); };
+  document.addEventListener('input', e => { if (e.target.id === 'card-q') { CF.q = e.target.value; redraw(); } });
+  document.addEventListener('click', e => {
+    const f = e.target.closest && e.target.closest('[data-cf]'), n = e.target.closest && e.target.closest('[data-cnat]');
+    if (f) { CF.f = f.dataset.cf; CF.nat = null; CF.q = ''; const i = document.getElementById('card-q'); if (i) i.value = ''; redraw(); }
+    if (n) { CF.f = 'set'; CF.nat = n.dataset.cnat; CF.q = ''; const i = document.getElementById('card-q'); if (i) i.value = ''; redraw(); const g = document.getElementById('card-search'); if (g) g.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  });
   GM.cardsFinished = () => { const c = load(); return GM.players.filter(p => done(c, p)).length; };
   // the finished cards themselves (Goal Royale builds its decks from them)
   GM.cardsOwned = () => { const c = load(); return GM.players.filter(p => done(c, p)); };
   // the Album's Cards section: how many of each tier you've finished, the cards you've started, and how it works
   GM.cardsSection = function (tier = '') {
     const c = load();
+    CF.tier = tier;
     const counts = ORDER.map(t => [t, POOL[t].filter(p => done(c, p)).length, POOL[t].length]);
-    const started = GM.players.filter(p => c.p[p.pk] && (!tier || GM.cardTier(p) === tier))
-      .sort((a, b) => ORDER.indexOf(GM.cardTier(b)) - ORDER.indexOf(GM.cardTier(a)) || (done(c, b) - done(c, a)) || b.fame - a.fame);
     return `<div class="tier-row">${counts.map(([t, have, all]) => `<a class="${tier === t ? 'on' : ''}" href="#/album?v=cards${tier === t ? '' : '&t=' + t}"><span>${TIERS[t].icon}</span><b>${have}/${all}</b><small>${TIERS[t].name} · ${TIERS[t].need} piece${TIERS[t].need > 1 ? 's' : ''}</small></a>`).join('')}</div>
       <details class="set how-cards"><summary><span>❓ How cards work</span></summary><ul class="how-list">
-        <li>Every player with 50+ PL apps is a card: 🟫 Bronze needs 1 piece, ⚪ Silver 2, 🟡 Gold 3 and 🟣 Legend 5. Finished cards go into your 🃏 XI.</li>
+        <li>Every player with 50+ PL apps is a card: 🟫 Bronze needs 1 piece, ⚪ Silver 2, 🟡 Gold 3, 🟣 Legend 5 and 💎 Icon 7. Finished cards go into your 🃏 XI.</li>
         <li>🎁 A free pack every day: a 🌍 Nations pack in an international break, a 🏟️ Matchday pack when your club plays. A bonus pack for three daily games in a day, for every new badge and every level, and a 🟣 Legends pack when you go up a rank.</li>
         <li>🃏 Some packs hold a wildcard: pick one of three, a scout’s tip for a card that’s nearly there, or (rarely) a Legend of your choice.</li>
-        <li>✍️ Signing a player in any draft gives you a piece of his card, once a day per player. From Silver up, signings fill a card to one piece short: the last one (the ◆) has to come from a pack. Five packed pieces finish a Legend too. Bronze cards can be finished by signing alone.</li>
-        <li>♻️ Packs deal at random, so cards you’ve finished come round again: duplicates go on your pile (🟫 1, ⚪ 2, 🟡 3, 🟣 5 points), and 100 points trade in for a 🆕 Fresh pack of cards you haven’t finished.</li></ul></details>
+        <li>✍️ Signing a player in any draft gives you a piece of his card, once a day per player. From Silver up, signings fill a card to one piece short: the last one (the ◆) has to come from a pack. Bronze cards can be finished by signing alone.</li>
+        <li>♻️ Packs deal at random, so cards you’ve finished come round again: duplicates go on your pile (🟫 1, ⚪ 2, 🟡 3, 🟣 5, 💎 8 points), and 100 points trade in for a 🆕 Fresh pack of cards you haven’t finished.</li></ul></details>
       ${dupeBox()}
-      ${countrySets()}
-      ${started.length ? `<div class="card-grid">${started.slice(0, 120).map(p => GM.cardHtml({ p, t: GM.cardTier(p), have: c.p[p.pk], pack: packed(c, p), finished: done(c, p) }, { back: false, attr: ` data-psheet="${GM.esc(p.pk)}"` })).join('')}</div>${started.length > 120 ? `<p class="muted center">…and ${started.length - 120} more</p>` : ''}`
-        : '<p class="muted center">No pieces yet. Open a pack, or sign players in any draft.</p>'}`;
+      <div class="card-search" id="card-search"><input class="input" id="card-q" type="search" placeholder="🔎 Find a player’s card" value="${GM.esc(CF.q)}" autocomplete="off">
+        <div class="seg card-filters" id="card-filters">${filterChips()}</div></div>
+      <div id="card-grid">${gridHtml()}</div>
+      ${countrySets()}`;
   };
 })();
