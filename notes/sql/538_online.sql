@@ -1,4 +1,4 @@
--- 5.38 online update: apply with the Supabase MCP (apply_migration) when the release is merged.
+-- 5.38 online update: paste ALL of this into the Supabase SQL editor and Run (or apply_migration).
 -- 1) results: the bigger total wins; squad rating then time only break a tie; Seasonal CHAOS = most points
 -- 2) the finisher (result.by) isn't notified about a result they've just watched
 -- 3) a level per room (online defaults to Hard; Quick match is Hard)
@@ -124,3 +124,6 @@ do $$ declare d text; begin
   d := replace(d, $q$'level', r.level,$q$, $q$'level', r.level, 'reacts', r.reacts,$q$);
   execute d;
 end $$;
+grant execute on function public.online_create(text,text,text,text,text,text,text) to anon, authenticated;
+grant execute on function public.online_react(text,text,text,text) to anon, authenticated;
+revoke execute on function public.gm_finalise(text,text) from anon, authenticated, public;
