@@ -1,6 +1,6 @@
 # Goal Machine ⚽
 
-A fan-made take on FourFourTwo's 442GOALS: build a 4-4-2 whose players have scored exactly **442 Premier League goals**.
+A fan-made take on 442GOALS, created by Mark White at FourFourTwo: build a 4-4-2 whose players have scored exactly **442 Premier League goals**.
 It includes **2,039 players**: everyone with 50+ PL appearances from 1992/93 to today.
 
 Live: `https://opportunisticgames.github.io/goal-machine/` (a free site by Opportunistic Games)

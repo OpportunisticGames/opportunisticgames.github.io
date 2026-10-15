@@ -814,7 +814,7 @@
       ${GM.playSafe ? '' : `<p>📲 Android app: <a href="${GM.PLAY_URL}" target="_blank" rel="noopener">Goal Machine on Google Play</a> (no Play? <a href="${GM.APK_URL}">the APK</a>). Game updates arrive automatically in the app.</p>`}
       ${GM.playSafe ? '' : `<p>🎧 Soundtrack music from <a href="https://www.epidemicsound.com/">Epidemic Sound</a>: <span id="tune-credits">the songs in the playlist</span>.</p>`}
       <p>🔐 <a href="privacy.html">Privacy policy</a></p>
-      <p>This is a fan-made game inspired by FourFourTwo’s 442GOALS and is not affiliated with the Premier League or FourFourTwo.</p>
+      <p>⚽ The idea: Goal Machine is a fan-made game inspired by <b>442GOALS</b>, created by <b>Mark White</b> at FourFourTwo. It isn’t affiliated with the Premier League or FourFourTwo.</p>
       </div>`;
     if (!GM.allPlayers) GM.loadAll().then(all => { const el = GM.$('#ab-all'); if (el) el.textContent = all.length.toLocaleString(); }).catch(() => { });
     GM.sound.tuneList().then(list => {
@@ -827,6 +827,7 @@
   function credits() {
     const list = GM.players.filter(p => p.photo && p.photo.w).sort((a, b) => a.name.localeCompare(b.name));
     app.innerHTML = `<div class="topbar"><a href="#/about" class="back">‹</a><h2>📸 Photo credits</h2><span></span></div>
+      <p class="credit-idea">⚽ <b>The idea:</b> 442GOALS, created by Mark White at FourFourTwo, inspired Goal Machine.</p>
       <p class="muted">These photos come from Wikimedia Commons under the licences shown. Tap one to see the original file and its full licence.${GM.playSafe ? '' : ' Other photos are from premierleague.com and Transfermarkt.'}</p>
       <div class="plist">${list.length ? list.map(p => `<a class="prow credit" href="${GM.esc(p.photo.u)}" target="_blank" rel="noopener">${GM.avatar(p)}<div><b>${GM.esc(p.name)}</b>
         <small>📷 ${GM.esc(p.photo.a)} · ${GM.esc(p.photo.l)}</small></div></a>`).join('') : '<div class="muted">No Wikimedia photos in use yet.</div>'}</div>

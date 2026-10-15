@@ -22,7 +22,8 @@ game mode for players; this file is about how to work on it.
   While we're working on one part of the game (say CHAOS), the owner's ideas for that part go straight into the
   current update (log them, then build them with it); only ideas for other parts wait in the bank.
 - No personal names in the app, the address or the copy. The one exception the owner asked for: affectionate parodies of real managers as
-  the head coaches in Dodgy Owner and Reign Check (Pep Cardigola, José Moaninho and friends). No AI model names in commits, PRs or files.
+  the head coaches in Dodgy Owner and Reign Check (Pep Cardigola, José Moaninho and friends), and the credit to Mark White at
+  FourFourTwo, who created 442GOALS, the game that inspired this one (About and the credits page). No AI model names in commits, PRs or files.
 - **Secret games** (`js/secret.js`): locked knock-offs unlocked by doing something (Reign Check, Hat-Trick, Goal Royale).
   The owner's tester link `#/tester?code=owner-test-2026` unlocks them all on that device for play-testing.
 - **Build visuals properly, with the tools we have** (the owner asked for this): anything that moves or celebrates uses

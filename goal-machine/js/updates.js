@@ -18,6 +18,7 @@
         '🎵 Music is on from the start (turn it off any time in Settings)',
         '🏷️ NEW and UPDATED tags on the games now last three weeks from the update, instead of hanging around',
         '🔧 A secret game no longer breaks if your deck has a 💎 Icon in it',
+        '🙌 The credits now name Mark White at FourFourTwo, who created 442GOALS, the game that inspired this one',
       ],
     },
     {
