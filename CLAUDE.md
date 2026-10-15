@@ -22,7 +22,8 @@ game mode for players; this file is about how to work on it.
   While we're working on one part of the game (say CHAOS), the owner's ideas for that part go straight into the
   current update (log them, then build them with it); only ideas for other parts wait in the bank.
 - No personal names in the app, the address or the copy. The one exception the owner asked for: affectionate parodies of real managers as
-  the head coaches in Dodgy Owner and Reign Check (Pep Cardigola, José Moaninho and friends). No AI model names in commits, PRs or files.
+  the head coaches in Dodgy Owner and Reign Check (Pep Cardigola, José Moaninho and friends), and the credit to Mark White at
+  FourFourTwo, who created 442GOALS, the game that inspired this one (About and the credits page). No AI model names in commits, PRs or files.
 - **Secret games** (`js/secret.js`): locked knock-offs unlocked by doing something (Reign Check, Hat-Trick, Goal Royale).
   The owner's tester link `#/tester?code=owner-test-2026` unlocks them all on that device for play-testing.
 - **Build visuals properly, with the tools we have** (the owner asked for this): anything that moves or celebrates uses
@@ -127,6 +128,11 @@ game mode for players; this file is about how to work on it.
   batmoon, pumpkin, bunny, eggs, fireworks, sun, stopwatch, flags, trophy) and items (locker.js `src.s`); a calendar month; all XP also fills a 30-tier track, `GM.seasonXP`), weekly missions (on the Today tab: `GM.missionsHtml`, `GM.loginHtml`; three
   a week from `POOL`, counted by `GM.track(event)` calls in the games), login rewards (`GM.loginCheck`), `#/season`.
 - `promo.js` – the Home banner: matchday, the newest feature releases from the last 3 weeks (an entry's `promo` list, or a slide made from its title), a challenge waiting for you, a daily "Try today" game (`TRY`), news from `announcements`. Give a feature release a `promo` entry to choose its slide.
+- `tour.js` (5.36) – the tour (`GM.tour()`: a spotlight and bubble over each part of Home and the tab bar; offered after the
+  first XI (firstgame.js), once on Home to earlier players (`GM.tourOffer`, `gm:tourOffered`/`gm:tourSeen`), Settings → Take
+  the tour) and first-time tips for CHAOS/Targets/Hat-Trick/Dodgy Owner (`GM.firstTimeTips(path, q)` from the router,
+  `gm:tip:<key>`, after any CHAOS kick-off card; `GM.resetTips`). Neither pops up by itself under `navigator.webdriver`
+  (the tests) unless `gm:tourTest` is set. `GM.PLAY_URL` (core.js) is the Play Store link used everywhere for the app.
 - `modes.js` – quick games (Club Hopper, Higher or Lower, Who Am I?, Club Grid, Guess the Tally); `h2h.js` – pass-the-phone series.
 - `daily.js` – Today page, Footle, daily streaks. `collection.js` – Album, badges, Dream XIs. `report.js` – full-time report.
 - `picture.js` – share-a-picture of your XI: `GM.screenPicture` copies the pitch on screen (html-to-image, `js/vendor/`, loaded on first use) into a framed PNG; the drawn `GM.teamPicture` is the fallback. `audio.js` – synthesised sound + music. `updates.js` – changelog.
@@ -202,6 +208,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    may be mid-action without a short `{ timeout }`: Playwright waits 30 s for it to become tappable (that made the CHAOS tests
    take minutes). Or run one script on its own with `node <script>.js`. Each uses `mockserver.js`, which fakes the
    Supabase RPCs in memory (test accounts Alice/Bob/Cara), so nothing touches the real database.
+   - `tour536.js` – 5.36: the tour offered once on Home, every step's bubble and spotlight on screen (390 and 360 px), Settings → Take the tour, Skip, and the first-time tips (once each, back from Settings).
    - `new534.js` – 5.34: Easy deals more big names, its own board key, travels in the seed, the four-level switch, Classic gone from the menus.
    - `new533.js` – 5.33: profiles, invites, the podium, nation sets and No. 1s, Visa trouble!, the Hat-Trick fusion, Streak Freeze, Double XP and the bonus tiers.
    - `record5321.js` – where your score landed: record all time / this month, Top 3/10 by board size, just the place on a small board, an older best, a daily board, and the line on a real full-time screen.

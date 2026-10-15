@@ -3,11 +3,23 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.36 *(owner, 15 Oct 2026)*
+- (found by the tests) Goal Royale broke when your deck had a 💎 Icon card (5.35): it only knew four tiers. An Icon now
+  plays as a Legend there.
+- "The download the Android app button has an X next to it … it should stay permanently, but take you to the Play
+  Store link and not download the APK": on Android browsers the bar is now a permanent "Get the app on Google Play"
+  (`GM.PLAY_URL`), and Settings, About and the update prompts point to Play too (About keeps the APK for anyone without Play).
+- "It highlights NEW on just Auction and Dodgy Owner, while saying Moneyball is updated": the tags lasted until you
+  opened the game, however old (and Auction/CHAOS had a permanent NEW). Tags now last three weeks from their release.
+- (owner) "Better if music is on by default": menu and game music now default to on everywhere (it starts on the
+  first tap, as browsers ask).
+
 ### Fixed in 5.35 *(owner, 14 Oct 2026)*
 - "The problem little line that doesn't do anything is still here" (build 58, only in the Play app, not in Chrome; it
   only moves if you grab it, and grows when touched): a phone maker's draggable quick-scroll bar on the WebView (build 58
-  already turned off Android's own scrollbar). `GameWebView` (MainActivity.java) reports no scroll range of its own
-  (the page scrolls itself), so there's nothing for such a bar to attach to. Needs the next app build (59).
+  already turned off Android's own scrollbar). **Turned out (owner, 15 Oct) to be Google Play Games' Sidekick handle**,
+  which Play draws over games it knows; players switch it off in the Play Games app. The `GameWebView` tried in 5.35
+  was taken out again in 5.36.
 - "The XIs seem squished again … on the online race there's no picture": on shorter screens (status bar, the race bar)
   the slots went under 62px and `slots-compact` hid every face. Compact slots now keep a 22px face (only under 50px do
   they go), and on screens under 820px the score box drops its little line, so the pitch keeps more height.

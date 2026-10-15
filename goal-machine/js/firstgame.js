@@ -1,6 +1,6 @@
 /* Goal Machine – the first game: on first launch a new player is offered "Play your first XI", a normal Ultimate
    draft (no wildcards) with a coach bubble for each step (spin, pick, place) until they've got it, and a full-time
-   card that points them at what to try next. The three "how it works" cards are still under Settings. */
+   card that offers the tour of the app (tour.js). The three "how it works" cards are still under Settings. */
 'use strict';
 
 (function () {
@@ -63,9 +63,10 @@
     setTimeout(show, 2600);
     function card() {
       const m = GM.modal(`<div class="welcome"><div class="wl-icon">🎉</div><h3>Your first XI: ${sc.toLocaleString()} goals</h3>
-        <p>That’s the game. Now try <b>🌪️ CHAOS</b> for managers, storms and bonus points, the <b>📅 daily games</b> for your streak, or open your free <b>🎁 pack</b>.</p>
-        <div class="row"><a class="btn ghost" href="#/packs" data-close>🎁 My pack</a><a class="btn big" href="#/draft?m=chaos&s=goals" data-close>🌪️ Try CHAOS</a></div></div>`);
-      GM.$$('a[data-close]', m.el).forEach(a => a.addEventListener('click', () => m.close()));
+        <p>That’s the game! There’s a lot more round the app: levels, seasons, cards to collect, friends to play. Let us show you round, it takes 30 seconds.</p>
+        <div class="row"><button class="btn ghost" data-close>Not now</button><button class="btn big" id="ftour">🧭 Show me round</button></div></div>`);
+      GM.store.set('tourOffered', 1);  // (offered here: Home won't ask again)
+      GM.$('#ftour', m.el).onclick = () => { m.close(); GM.tour(); };
     }
   }
   function stop() { clearInterval(timer); timer = null; clear(); }

@@ -43,7 +43,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(await pg.$$eval('.ach.got b', e => e.map(x => x.textContent).join()).then(s => /Kick-off/.test(s) && /Away Win/.test(s) && /Chaos Merchant/.test(s)), 'online badges from a won CHAOS Race');
   for (const [v, want] of [['xi', 'xi'], ['cards', 'cards'], ['signed', 'cards'], ['sets', 'cards'], ['stats', 'cards']]) { await pg.goto(U + '#/'); await pg.goto(U + '#/album?v=' + v); await pg.waitForTimeout(300); ok(await pg.$eval('.lk-views a.on', e => e.dataset.v) === want && (want !== 'cards' || v === 'cards' || !!(await pg.$('.alb-sub a.on[href="#/album?v=signed"]'))), 'album section ' + v + ' (now in the 🎒 Locker tab' + (v === 'xi' || v === 'cards' ? ')' : ', under Cards → Signed)')); }
   await pg.screenshot({ path: 'lay/badges.png', fullPage: true });
-  // sound defaults: effects on everywhere; the Play version (no Soundtrack) starts with the game's own music on
+  // sound defaults: effects and the game's own music on everywhere (5.35.1)
   const snd = async play => {
     const c = await b.newContext(); if (play) await c.addInitScript(() => { window.AndroidApp = { channel: () => 'play' }; });
     const p = await c.newPage(); await p.route(/wikimedia|premierleague|transfermarkt|supabase/, r => r.abort());
@@ -51,6 +51,6 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     const r = await p.evaluate(() => ({ play: GM.playSafe, s: GM.sound.settings() })); await c.close(); return r;
   };
   const web = await snd(false), play = await snd(true);
-  ok(!web.play && web.s.sfx && web.s.bg === 'off' && play.play && play.s.sfx && play.s.bg === 'music', `sound defaults: effects on everywhere, and the Play version starts with the game's music on (web: ${web.s.bg}, Play: ${play.s.bg})`);
+  ok(!web.play && web.s.sfx && web.s.bg === 'music' && play.play && play.s.sfx && play.s.bg === 'music', `sound defaults: effects and music on everywhere (web: ${web.s.bg}, Play: ${play.s.bg})`);
   console.log(errs.join('\n') || 'no page errors'); await b.close();
 })();

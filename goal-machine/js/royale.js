@@ -24,7 +24,8 @@
   const arenaOf = t => ARENAS.reduce((a, x, i) => (t >= x[0] ? i : a), 0);
 
   /* ---------------------------------------------------------------- cards */
-  const tierOf = p => (p.youth ? 'b' : GM.cardTier(p));
+  // (a 💎 Icon plays as a Legend here: Royale has four tiers of abilities)
+  const tierOf = p => (p.youth ? 'b' : GM.cardTier(p) === 'i' ? 'l' : GM.cardTier(p));
   const posOf = p => p.pos;  // G / D / M / F
   const ovrOf = p => (GM.owner ? GM.owner.ovr(p) : 70);
   function card(p) {
@@ -159,7 +160,7 @@
   // an opponent's deck for an arena: better tiers higher up
   function aiDeck(arena, seed) {
     const r = GM.rng(seed + '|ai'), pool = { b: [], s: [], g: [], l: [] };
-    GM.players.forEach(p => pool[GM.cardTier(p)].push(p));
+    GM.players.forEach(p => pool[tierOf(p)].push(p));
     const mix = [['b', 'b', 'b', 'b', 'b', 'b', 'b', 'b'], ['b', 's', 'b', 's', 'g', 'b', 's', 'b'], ['s', 's', 'g', 'g', 's', 's', 'g', 'b'], ['s', 'g', 'g', 'g', 'l', 's', 'g', 's'], ['g', 'g', 'g', 'l', 'l', 'g', 's', 'g']][arena];
     const want = ['F', 'F', 'M', 'M', 'M', 'D', 'D', 'G'];
     return want.map((g, i) => { let c = pool[mix[i]].filter(p => p.pos === g); if (arena === 0) c = c.filter(p => ovrOf(p) <= 70); return card(c.length ? r.pick(c) : r.pick(pool[mix[i]])); });

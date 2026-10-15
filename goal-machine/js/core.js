@@ -411,7 +411,7 @@ GM.askName = async function () {
   if (acc || !GM.lb.enabled) return GM.getName() || (await GM.accountModal());
   const legacy = GM.store.get('name', '');
   if (legacy && (await GM.claimName(legacy)) === 'ok') return legacy;  // keep the name they already use, if it's free
-  return GM.accountModal(legacy ? `Someone already has the name “${legacy}” on the leaderboard. Pick another – it'll be yours alone.` : '');
+  return GM.accountModal(legacy ? `Someone already has the name “${legacy}” on the leaderboard. Pick another – it'll be yours alone.` : GM.NAME_WHY);
 };
 /** Changes this account's name, keeping its scores, friends, games and backup. Same results as GM.claimName. */
 GM.renameAccount = async function (name) {
@@ -426,6 +426,8 @@ GM.renameAccount = async function (name) {
 };
 GM.nameMsg = (r, v) => r === 'taken' ? `✗ “${v}” is taken – try another` : r === 'rude_name' ? '✗ That name isn’t allowed – try another'
   : r === 'offline' ? 'Couldn’t reach the leaderboard – try again in a bit' : '3–20 letters, numbers, spaces, dots, dashes or underscores';
+// why claim a name (the first score, the tour)
+GM.NAME_WHY = 'Your name puts your scores on the leaderboards, lets your mates find and challenge you, and backs up your cards and progress. Only you can use it.';
 GM.accountModal = function (note = '', rename = false) {
   return new Promise(res => {
     const m = GM.modal(`<h3>${rename ? '✏️ Change your name' : '🔒 Claim your leaderboard name'}</h3>
@@ -836,7 +838,8 @@ GM.share = async function (text, url) {
 // Invite a friend to the game itself (the home screen and Settings have a button for it)
 GM.SITE_URL = 'https://opportunisticgames.github.io/goal-machine/';
 GM.shareGame = () => GM.share('⚽ Goal Machine: spin the reels and build the biggest-scoring Premier League XI from 5,000+ real players. Daily games, online duels and more. Come and play me!', GM.SITE_URL);
-GM.APK_URL = 'https://github.com/OpportunisticGames/opportunisticgames.github.io/releases/latest/download/goal-machine.apk';
+GM.APK_URL = 'https://github.com/OpportunisticGames/opportunisticgames.github.io/releases/latest/download/goal-machine.apk';  // (the sideload build, for anyone without Play)
+GM.PLAY_URL = 'https://play.google.com/store/apps/details?id=goal.machine';  // the app, live on Google Play
 // Oldest Android app build that doesn't need replacing. Raise it after an app change players should pick up; older
 // apps then show an update link. Builds before AndroidApp.version() existed always count as out of date.
 GM.APP_MIN_BUILD = 26;  // build 26: instant push notifications (Firebase), and the 15-minute check really schedules

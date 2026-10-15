@@ -9,6 +9,19 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 96, label: '5.36', date: '2026-10-15', title: '🧭 A tour of the app, and Goal Machine on Google Play',
+      items: [
+        '🧭 New here? After your first XI we’ll show you round in 30 seconds: your level and season, what’s waiting to open, the difficulty levels, and what lives in Today, Online, Ranks and the Locker. Been here a while? You’ll be offered it once, and it’s always in Settings → Take the tour',
+        '🔒 The tour (and your first score) now say why it’s worth claiming a name: the leaderboards, your mates finding and challenging you, and your game backed up. Still no name at the end of the tour? It asks once more',
+        '💡 The first time you open CHAOS, the Targets, Hat-Trick or Dodgy Owner, a few quick tips on how it works (bring them back in Settings)',
+        '📲 The Android app is on Google Play: on an Android phone the website now always shows a Get the app on Google Play button',
+        '🎵 Music is on from the start (turn it off any time in Settings)',
+        '🏷️ NEW and UPDATED tags on the games now last three weeks from the update, instead of hanging around',
+        '🔧 A secret game no longer breaks if your deck has a 💎 Icon in it',
+        '🙌 The credits now name Mark White at FourFourTwo, who created 442GOALS, the game that inspired this one',
+      ],
+    },
+    {
       v: 95, label: '5.35', date: '2026-10-14', title: '💎 Icon cards, watching races live, and a clearer Updates page',
       items: [
         '💎 New top tier: 30 Icon cards (the Hall of Fame and the very best), seven pieces each and rare in packs. Every card’s tier is now worked out from how good he really was for his position (titles, awards, goals or clean sheets per game, top-four seasons), not just how famous, so there are keeper and defender Legends too. Cards you’d finished stay finished',
@@ -921,7 +934,7 @@
         <div><small>Game version</small><b>v${GM.versionLabel}</b></div>
         <div><small>${build != null ? 'Android app' : 'Player data'}</small><b>${build != null ? 'Build ' + build : GM.dataDate}</b></div>
       </div>
-      ${GM.appOutdated() ? `<a class="btn big" href="${GM.APK_URL}">📲 Get the newest Android app</a>` : ''}
+      ${GM.appOutdated() ? `<a class="btn big" href="${GM.PLAY_URL}">📲 Get the newest Android app</a>` : ''}
       <h3 class="section-title">🆕 Latest</h3>
       <div class="releases">${releaseCard(latest, true)}</div>
       <h3 class="section-title era">⭐ The big updates</h3>
