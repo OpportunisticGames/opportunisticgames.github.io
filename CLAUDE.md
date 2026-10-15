@@ -154,7 +154,8 @@ Everything goes through security-definer RPCs that check the account with `gm_au
   time only on a level total (duels/auction: rating); Target Race = closest (`d`), CHAOS and Seasonal CHAOS (`szchaos`) Races =
   most CHAOS points (`c`). `result.by` = who finished it (no result notification for them). `rooms.level` (easy/hard, null =
   normal; online_create `p_level`; Quick match Hard) is the race's level (`levelOf` in online.js). `online_get` leaves the
-  opponent's `x` (XI) out until you've finished yours. SQL for all of it: `notes/sql/538_online.sql`.
+  opponent's `x` (XI) out until you've finished yours. Reactions: `online_react` → `rooms.reacts` {seat: emoji}. SQL for all of
+  it: `notes/sql/538_online.sql`.
 - Names: `gm_name_ok` (offensive-word filter, used by `claim_name`, `rename_account` and `name_available`, which returns
   null for a banned name), `report_name` (3 reports hide a name from `best_scores` / `daily_board` via `players.name_hidden`),
   `name_status`, `rename_account` (moves scores, friends, rooms and backup to the new name).

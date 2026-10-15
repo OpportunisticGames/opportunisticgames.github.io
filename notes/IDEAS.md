@@ -33,6 +33,8 @@ Built straight away (we were on the cards): a search box and Started / Finished 
 Built: New game leads with CHAOS, Seasonal CHAOS (new as a race, variant `szchaos`), Target and Live; a level per room
 (`rooms.level`, Hard by default, Quick match Hard); online CHAOS gets the first-time tips; Easy's rough numbers and
 Hard's hidden clues work online through the room's level. Server changes in `notes/sql/538_online.sql`.
+Owner liked our three ideas, built too: a your-move card on Home (`GM.yourMoveHtml`, from the 🔔's inbox), reactions to
+a result (`online_react`, `rooms.reacts`), this month's record per friend; and Seasonal CHAOS in the Quick match rotation.
 
 ## 💬 To discuss
 

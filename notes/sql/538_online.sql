@@ -102,3 +102,25 @@ begin
     'bids_in', (select coalesce(json_agg(k), '[]'::json) from jsonb_object_keys(r.secret) k where k in ('host', 'guest')),
     'now', extract(epoch from now()), 'quick', r.quick, 'created', r.created_at, 'updated', r.updated_at);
 end $function$;
+
+-- reactions to a result (one each, changeable), shown on the comparison
+alter table public.rooms add column if not exists reacts jsonb not null default '{}'::jsonb;
+create or replace function public.online_react(p_user text, p_key text, p_code text, p_emoji text)
+ returns text language plpgsql security definer set search_path to 'public' as $function$
+declare u text := public.gm_auth(p_user, p_key); r public.rooms; seat text;
+begin
+  if u is null then return 'auth'; end if;
+  if p_emoji not in ('😂', '🔥', '👏', '😤', '😭', '🤝') then return 'bad'; end if;
+  select * into r from public.rooms where code = upper(btrim(p_code)) for update;
+  if not found then return 'no_room'; end if;
+  seat := case when r.host_user = u then 'host' when r.guest_user = u then 'guest' end;
+  if seat is null then return 'not_yours'; end if;
+  if r.status <> 'done' then return 'not_done'; end if;
+  update public.rooms set reacts = reacts || jsonb_build_object(seat, p_emoji) where code = r.code;
+  return 'ok';
+end $function$;
+do $$ declare d text; begin
+  d := pg_get_functiondef('public.online_get'::regproc);
+  d := replace(d, $q$'level', r.level,$q$, $q$'level', r.level, 'reacts', r.reacts,$q$);
+  execute d;
+end $$;

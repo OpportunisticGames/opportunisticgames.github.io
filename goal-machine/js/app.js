@@ -67,6 +67,7 @@
         const prefs = { move: true, friends: true, results: true, modes: false, streak: false, comeback: false, matchday: false, beaten: false };
         const [d, inbox] = await Promise.all([GM.lb.rpc('activity_feed', { p_user: a.name, p_key: a.key }), GM.lb.rpc('app_inbox', { p_user: a.name, p_prefs: prefs }).catch(() => null)]);
         if (Array.isArray(inbox)) this.inbox = inbox.filter(x => /^(g|r|f|cs|cf|cr|co|cm):/.test(x.id));
+        { const ym = document.getElementById('your-move'); if (ym) ym.innerHTML = GM.yourMoveHtml(); }  // Home's card, as soon as we know
         if (d && !d.error) {
           this.data = d; GM.statusBar();
           // 🤝 someone joined from your invite: your Referral pack (once each, remembered with your backup)
@@ -87,6 +88,13 @@
       const items = d && d.items ? d.items.filter(x => x.at > seen && x.at > clr && recent(x.at)).length : 0;
       return items + (this.inbox || []).filter(x => !done.includes(x.id)).length;
     },
+  };
+  // ⚔️ Home's card when a friend's waiting on you: your move, or a new game they've started against you
+  GM.yourMoveHtml = function () {
+    const waiting = (GM.feed.inbox || []).filter(x => /^(g|f):/.test(x.id) && /#\/online\?room=/.test(x.link || ''));
+    if (!waiting.length) return '';
+    const x = waiting[0], href = x.link.replace(/^[^#]*#/, '#');
+    return `<a class="your-move" href="${GM.esc(href)}"><span>⚔️</span><span><b>${GM.esc(x.title.replace(/^\S+\s/, ''))}</b><small>${waiting.length > 1 ? `+${waiting.length - 1} more waiting on you` : 'They’re waiting on you'}</small></span><span class="ym-go">Play ›</span></a>`;
   };
   // the 🔔 forgets things you've already seen: opened the drawer, or looked at that game's result
   const recent = t => !t || Date.now() - new Date(t).getTime() < 7 * 864e5;
@@ -367,7 +375,7 @@
           <button class="install-x" id="install-x" title="I already have it" aria-label="Hide">✕</button></div>`}
         ${GM.appOutdated() ? `<div class="install-bar"><a class="btn small" href="${GM.PLAY_URL}">📲 New version of the app – tap to update</a></div>` : ''}
       </header>
-      ${GM.firstXICard()}${GM.promoHtml()}
+      ${GM.firstXICard()}<div id="your-move">${GM.yourMoveHtml()}</div>${GM.promoHtml()}
       <div class="hard-toggle four" role="group" aria-label="Difficulty">${Object.entries(GM.LEVELS).map(([k, [i, n, sub]]) => `<button class="${k === level ? 'on' : ''}" data-level="${k}">${i} ${n}<small>${sub}</small></button>`).join('')}</div>
       <div class="seg home-tabs" id="htabs">${HTABS.map(([k, l, modes]) => `<button data-t="${k}">${l}${modes.some(m => newTag(m)) ? '<i class="new-dot"></i>' : ''}</button>`).join('')}</div>
       <div data-hpanel="main">

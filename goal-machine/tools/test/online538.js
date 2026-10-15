@@ -72,6 +72,21 @@ const done = (code, seat, sum) => server.rooms[code].race[seat] = { n: 11, done:
   await B.goto(U + '#/'); await B.waitForTimeout(1200);
   const bell2 = await B.evaluate(() => (document.querySelector('.gs-bell i') || {}).textContent || '');
   ok(+bell1 >= 1 && !bell2, `the 🔔 shows a number for the new result (${bell1}), and it goes once you've seen it (${bell2 || 'none'})`);
+  // 😂 a reaction, seen by the other player
+  await A.click('[data-rx="🔥"]'); await A.waitForTimeout(400);
+  await B.goto(U + '#/online?room=' + code); await B.waitForTimeout(2200);
+  const their = await B.evaluate(() => (document.querySelector('.o-their') || {}).innerText || '');
+  ok(server.rooms[code].reacts && server.rooms[code].reacts.host === '🔥' && /Alice/.test(their) && /🔥/.test(their), `a reaction to the result reaches your opponent (${their.replace(/\s+/g, ' ')})`);
+  await B.goto(U + '#/'); await B.waitForTimeout(400);
+  // ⚔️ Home: a card when a friend's waiting on you; Friends: this month's record
+  await A.click('#onew').catch(() => {});
+  const c2 = await A.evaluate(async () => (await GM.lb.rpc('online_create', { p_user: 'Bob', p_key: 'b'.repeat(28), p_kind: 'race', p_stat: 'goals', p_opp: 'Alice', p_level: 'hard' })).code);
+  await A.goto(U + '#/'); await A.waitForTimeout(600); await A.evaluate(() => GM.feed.load(true)); await A.waitForTimeout(1500);
+  const ym = await A.evaluate(() => (document.querySelector('.your-move') || {}).innerText || '');
+  ok(/move|Bob/.test(ym) && /Play/.test(ym), `Home shows a your-move card when a friend's waiting on you (${ym.replace(/\s+/g, ' ')})`);
+  await A.goto(U + '#/online?tab=friends'); await A.waitForTimeout(1500);
+  const fm = await A.evaluate(() => (document.querySelector('.f-month') || {}).innerText || '');
+  ok(/This month: W\d D\d L\d/.test(fm), `Friends: your record with each this month (${fm})`);
   // Scout's Tip: three cards you can tap
   await A.goto(U + '#/'); await A.waitForTimeout(800);
   await A.evaluate(() => { GM.addConsum('scout', 1); const pk = n => GM.players.find(p => p.name === n); ['Alan Shearer', 'Frank Lampard', 'Tim Cahill'].forEach(n => GM.cardPackPiece(pk(n))); GM.useScout(); });

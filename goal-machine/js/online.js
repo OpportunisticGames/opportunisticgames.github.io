@@ -31,7 +31,7 @@
   const gk = g => (['scout', 'target', 'chaos', 'szchaos', 'hattrick'].includes(g.variant) ? g.variant : g.kind);
   const serverKind = k => (k === 'scout' || k === 'hattrick' ? 'duel' : k === 'target' || k === 'chaos' || k === 'szchaos' ? 'race' : k);
   // Quick match's game of the day (UTC, so everyone everywhere is on the same one); plus = days ahead
-  const QM_DAYS = ['race', 'hattrick', 'chaos', 'duel', 'target', 'scout'];
+  const QM_DAYS = ['race', 'hattrick', 'chaos', 'duel', 'target', 'scout', 'szchaos'];
   const qmToday = (plus = 0) => QM_DAYS[(Math.floor(Date.now() / 864e5) + plus) % QM_DAYS.length];
   const QM_BANNER = { race: 'Same spins, fastest to the biggest XI', hattrick: 'Football Spades with a computer partner each', chaos: 'Storms, events and bonus points on shared spins',
     duel: 'Take turns and nick the player they wanted', target: 'One target number. Closest wins', scout: 'No names, just scouting clues', szchaos: 'This month’s Seasonal CHAOS, head to head' };
@@ -182,8 +182,14 @@
       const j2 = GM.$('#ojoin2'); if (j2) j2.onclick = () => { const c = GM.$('#ocode2').value.trim().toUpperCase(); if (c.length === 5) location.hash = '#/online?join=' + c; else GM.toast('Codes are 5 letters'); };
       // the Games tab shows how many are waiting on you; the list itself marks your moves loudly
       const n = GM.$('[data-n="games"]'); if (n) { n.textContent = yours.length || ''; n.classList.toggle('hot', !!yours.length); }
+      // 📅 this month against each friend (from your recent games), next to the all-time record
+      const month = new Date().toISOString().slice(0, 7);
+      const monthRec = name => { const t = { w: 0, d: 0, l: 0 };
+        (games || []).filter(g => g.status === 'done' && g.result && (g.updated || '').slice(0, 7) === month && (g.host === name || g.guest === name)).forEach(g => {
+          const st = g.host === me() ? 'host' : 'guest', w = g.result.winner; t[w === 'draw' ? 'd' : w === st ? 'w' : 'l']++; });
+        return t.w + t.d + t.l ? `<small class="f-month">📅 This month: <b class="w">W${t.w}</b> <b class="d">D${t.d}</b> <b class="l">L${t.l}</b></small>` : ''; };
       GM.$('#ofriends').innerHTML = friends.length ? friends.map(f => `<div class="friend"><button class="f-av" data-fmenu="${esc(f.name)}" title="Options">${GM.userPic(f.name)}</button>
-          <span class="f-main"><b>${esc(f.name)}</b>${GM.titleHtml ? GM.titleHtml(f.name) : ''}${f.w + f.d + f.l ? record(f) : '<small class="muted">No games yet</small>'}</span>
+          <span class="f-main"><b>${esc(f.name)}</b>${GM.titleHtml ? GM.titleHtml(f.name) : ''}${f.w + f.d + f.l ? record(f) : '<small class="muted">No games yet</small>'}${monthRec(f.name)}</span>
           <button class="btn small" data-challenge="${esc(f.name)}">⚔️ Play</button></div>`).join('')
         : '<p class="muted center">Add friends by their Goal Machine name, or send an invite code. Anyone you play is added automatically.</p>';
       GM.$$('[data-challenge]').forEach(b => b.onclick = () => newGame(b.dataset.challenge));
@@ -303,7 +309,7 @@
       if (!r) { stopPoll(); root.innerHTML = top('Online', '#/online') + '<p class="muted center">This game has gone. Unanswered invites are cleared after two weeks.</p>'; return; }
       const seat = seatOf(r);
       if (!seat) { root.innerHTML = top('Online', '#/online') + `<p class="muted center">This game is between ${esc(r.host)} and ${esc(r.guest || '…')}.</p>`; stopPoll(); return; }
-      const sig = JSON.stringify([r.guest, r.moves.length, r.race, r.status, r.turn, r.bids_in, r.kind === 'duel' ? Math.floor(r.now - ((r.seen || {})[other(seat)] || 0)) > 10 : 0]);
+      const sig = JSON.stringify([r.guest, r.moves.length, r.race, r.status, r.turn, r.bids_in, r.reacts, r.kind === 'duel' ? Math.floor(r.now - ((r.seen || {})[other(seat)] || 0)) > 10 : 0]);
       if (sig === last) return;
       last = sig;
       if (r.kind === 'race') race(root, r, seat, q);
@@ -519,6 +525,11 @@
       ${reels ? `<div class="watch-reels"><small>Their options</small><div>${reels}</div></div>` : ''}</div>`;
   }
 
+  // 😂 a reaction to the result, for your opponent to see (one each, change it any time)
+  const REACTS = ['😂', '🔥', '👏', '😤', '😭', '🤝'];
+  const reactRow = (r, seat, opp) => { const rx = r.reacts || {}, theirs = rx[other(seat)];
+    return `<div class="o-react" id="oreact">${theirs ? `<p class="o-their"><b>${esc(opp)}</b> reacted <span>${esc(theirs)}</span></p>` : ''}
+      <div class="o-rx"><small>Your reaction</small>${REACTS.map(e => `<button data-rx="${e}" class="${rx[seat] === e ? 'on' : ''}">${e}</button>`).join('')}</div></div>`; };
   const watchButton = (r, opp) => `<a class="btn big watch-go" href="#/online?room=${r.code}&watch=1">👀 Watch ${esc(opp)} build their XI</a>`;
   // their draft, live: the pitch filling up, the three players they're choosing between, their total and the CHAOS bar,
   // drawn with the draft's own look. The room refreshes on its own, so it moves as they play; the result takes over
@@ -591,6 +602,7 @@
         <div class="h2h-team p2">${r[them] ? GM.userPic(opp, 'board') : ''}<b>${esc(opp)}</b><strong>${pts ? fmt(pts[1]) : fmt(isChaos(r.variant) ? B.c : B.t)}</strong><small>${pts ? 'points' : single && r.result ? (isChaos(r.variant) ? 'CHAOS points' : r.variant === 'target' ? off(B) : st.label) : `${B.n}/11${B.done ? ' ✓' : ''}`}</small></div></div>
       ${r.result ? resultHero(r, seat)
         : `<div class="banner">⏳ ${r.guest ? `${esc(opp)} is still building their XI (${B.n}/11). You can watch it fill up here.` : 'Nobody has joined yet.'}</div>`}
+      ${r.result && r[them] ? reactRow(r, seat, opp) : ''}
       ${inviteBar(r)}
       ${r.kind === 'race' && A.done && !r.result && r.race[them] ? watchButton(r, opp) + watchPanel(r, r.race[them], opp) : ''}
       <table class="cmp-points"><tr><th></th><th>You</th><th>${esc(opp)}</th></tr>
@@ -613,6 +625,12 @@
       `⚽ Goal Machine ${KIND[gk(r)].name} v ${opp}`);
     if (r.result && root.dataset.played !== r.code) { root.dataset.played = r.code; resultFx(r, seat); if (GM.checkOnline) GM.checkOnline(r, seat); }
     if (r.result && GM.inboxSeen) GM.inboxSeen('r:' + r.code);  // you've seen the result: the 🔔 lets it go
+    const rx = GM.$('#oreact', root);
+    if (rx) GM.$$('[data-rx]', rx).forEach(bt => bt.onclick = async () => {
+      GM.buzz('click'); GM.sound.play('tap');
+      try { const out = await rpc('online_react', { ...auth(), p_code: r.code, p_emoji: bt.dataset.rx }); if (out === 'ok') { r.reacts = { ...(r.reacts || {}), [seat]: bt.dataset.rx }; GM.$$('[data-rx]', rx).forEach(x => x.classList.toggle('on', x === bt)); } }
+      catch (e) { GM.toast('Couldn’t reach the server – try again'); }
+    });
     if (r.guest) rpc('online_friends', auth()).then(fr => {
       const f = (fr || []).find(x => x.name === opp), el = GM.$('#orec', root);
       if (el && f) el.innerHTML = `Record W${f.w} D${f.d} L${f.l}`;

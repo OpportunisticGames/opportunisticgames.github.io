@@ -18,7 +18,7 @@ module.exports = function makeServer() {
     else { w = pick(h.t || 0, g.t || 0); if (w === 'draw') w = pick(h.r || 0, g.r || 0); if (w === 'draw' && r.kind === 'race') w = pick(h.ms ?? 1e12, g.ms ?? 1e12, true); }
     r.status = 'done'; r.turn = null; r.result = { host: w === 'host' ? 100 : w === 'draw' ? 50 : 0, guest: w === 'guest' ? 100 : w === 'draw' ? 50 : 0, winner: w, ...(by ? { by } : {}) };
   };
-  const view = (r, me) => ({ level: r.level || null, quick: !!r.quick, created: r.created, bids_in: Object.keys(r.secret || {}).filter(k => k === 'host' || k === 'guest'), code: r.code, kind: r.kind, variant: r.variant, stat: r.stat, seed: r.seed, host: r.host, guest: r.guest, moves: r.moves, race: hideXI(r, me), turn: r.turn, status: r.status, result: r.result, seen: r.seen, now: now(), updated: r.updated });
+  const view = (r, me) => ({ reacts: r.reacts || {}, level: r.level || null, quick: !!r.quick, created: r.created, bids_in: Object.keys(r.secret || {}).filter(k => k === 'host' || k === 'guest'), code: r.code, kind: r.kind, variant: r.variant, stat: r.stat, seed: r.seed, host: r.host, guest: r.guest, moves: r.moves, race: hideXI(r, me), turn: r.turn, status: r.status, result: r.result, seen: r.seen, now: now(), updated: r.updated });
   const hideXI = (r, me) => { const s = r.host === me ? 'host' : r.guest === me ? 'guest' : null, o = s === 'host' ? 'guest' : 'host'; if (!s || r.kind !== 'race' || r.status === 'done' || (r.race[s] || {}).done || !r.race[o]) return r.race; const { x, ...rest } = r.race[o]; return { ...r.race, [o]: rest }; };
   // friend challenges (challenge_* in SQL)
   const chs = {}, plays = [], invites = [], flairs = {}; let pid = 0;
@@ -111,6 +111,11 @@ module.exports = function makeServer() {
       const u = auth(a.p_user, a.p_key); if (!u) return { error: 'auth' }; const r = rooms[a.p_code]; if (!r) return { error: 'no_room' };
       if (r.host === u) return { code: r.code, seat: 'host' }; if (r.guest === u) return { code: r.code, seat: 'guest' };
       if (r.guest) return { error: 'full' }; r.guest = u; r.status = 'playing'; befriend(u, r.host); return { code: r.code, seat: 'guest' };
+    },
+    online_react(a) {
+      const u = auth(a.p_user, a.p_key); if (!u) return 'auth'; const r = rooms[a.p_code]; if (!r) return 'no_room';
+      const st = r.host === u ? 'host' : r.guest === u ? 'guest' : null; if (!st) return 'not_yours'; if (r.status !== 'done') return 'not_done';
+      r.reacts = { ...(r.reacts || {}), [st]: a.p_emoji }; return 'ok';
     },
     online_get(a) { const r = rooms[a.p_code]; if (!r) return null; const s = r.host === a.p_user ? 'host' : r.guest === a.p_user ? 'guest' : null; if (s) r.seen[s] = now(); return view(r, a.p_user); },
     online_move(a) {
