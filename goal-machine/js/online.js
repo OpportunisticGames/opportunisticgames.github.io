@@ -283,7 +283,8 @@
   async function create(kind, stat, opp, level) {
     try {
       const lv = isRaceKind(kind) && level && level !== 'normal' ? { p_level: level } : {};  // (older servers: no level, a normal game)
-      const r = await rpc('online_create', { ...auth(), p_kind: serverKind(kind), p_stat: stat, p_opp: opp || null, p_variant: serverKind(kind) === kind ? null : kind, ...lv });
+      const args = { ...auth(), p_kind: serverKind(kind), p_stat: stat, p_opp: opp || null, p_variant: serverKind(kind) === kind ? null : kind };
+      const r = await rpc('online_create', { ...args, ...lv }).catch(e => { if (lv.p_level) return rpc('online_create', args); throw e; });
       if (r && r.code) { if (opp) GM.toast(`⚔️ Challenge sent to ${esc(opp)}`); return r.code; }
       GM.toast(r && r.error === 'no_user' ? `Nobody's called “${esc(opp)}” yet` : r && r.error === 'self' ? 'You can’t play yourself!' : r && r.error === 'auth' ? 'Your name isn’t set up on this phone' : 'Couldn’t start the game');
     } catch (e) { GM.toast('Couldn’t reach the server – try again'); }
