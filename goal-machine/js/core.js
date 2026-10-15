@@ -411,7 +411,7 @@ GM.askName = async function () {
   if (acc || !GM.lb.enabled) return GM.getName() || (await GM.accountModal());
   const legacy = GM.store.get('name', '');
   if (legacy && (await GM.claimName(legacy)) === 'ok') return legacy;  // keep the name they already use, if it's free
-  return GM.accountModal(legacy ? `Someone already has the name “${legacy}” on the leaderboard. Pick another – it'll be yours alone.` : '');
+  return GM.accountModal(legacy ? `Someone already has the name “${legacy}” on the leaderboard. Pick another – it'll be yours alone.` : GM.NAME_WHY);
 };
 /** Changes this account's name, keeping its scores, friends, games and backup. Same results as GM.claimName. */
 GM.renameAccount = async function (name) {
@@ -426,6 +426,8 @@ GM.renameAccount = async function (name) {
 };
 GM.nameMsg = (r, v) => r === 'taken' ? `✗ “${v}” is taken – try another` : r === 'rude_name' ? '✗ That name isn’t allowed – try another'
   : r === 'offline' ? 'Couldn’t reach the leaderboard – try again in a bit' : '3–20 letters, numbers, spaces, dots, dashes or underscores';
+// why claim a name (the first score, the tour)
+GM.NAME_WHY = 'Your name puts your scores on the leaderboards, lets your mates find and challenge you, and backs up your cards and progress. Only you can use it.';
 GM.accountModal = function (note = '', rename = false) {
   return new Promise(res => {
     const m = GM.modal(`<h3>${rename ? '✏️ Change your name' : '🔒 Claim your leaderboard name'}</h3>

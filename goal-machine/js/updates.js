@@ -12,6 +12,7 @@
       v: 96, label: '5.36', date: '2026-10-15', title: '🧭 A tour of the app, and Goal Machine on Google Play',
       items: [
         '🧭 New here? After your first XI we’ll show you round in 30 seconds: your level and season, what’s waiting to open, the difficulty levels, and what lives in Today, Online, Ranks and the Locker. Been here a while? You’ll be offered it once, and it’s always in Settings → Take the tour',
+        '🔒 The tour (and your first score) now say why it’s worth claiming a name: the leaderboards, your mates finding and challenging you, and your game backed up. Still no name at the end of the tour? It asks once more',
         '💡 The first time you open CHAOS, the Targets, Hat-Trick or Dodgy Owner, a few quick tips on how it works (bring them back in Settings)',
         '📲 The Android app is on Google Play: on an Android phone the website now always shows a Get the app on Google Play button',
         '🎵 Music is on from the start (turn it off any time in Settings)',

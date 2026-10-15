@@ -34,7 +34,8 @@ or the four levels. Proposal in the chat: keep the first XI, then a 30-second to
 go on, skip any time), first-time explainers for the deeper games (CHAOS, Hat-Trick, Dodgy Owner, Targets), a website
 version ending on the Play Store, and offering it once to existing players.
 **Owner:** "tour after first xi … get them to play a game and then show them round"; first-time tips "but nothing time
-consuming"; existing players once, "and also have like maybe a tutorial button in the settings". ✅ Built in 5.36 (`js/tour.js`).
+consuming"; existing players once, "and also have like maybe a tutorial button in the settings". ✅ Built in 5.36 (`js/tour.js`). Owner: "they should obviously be encouraged to create a name": the first score's name
+box says why (`GM.NAME_WHY`), the tour starts on "That's you" without a name and ends asking you to claim one.
 
 ### Making money from the game 💬 *(owner, 15 Oct 2026)*
 > "Is is there anyway i could feasibly make money off this game legally"

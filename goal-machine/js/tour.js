@@ -8,6 +8,7 @@
 
 (function () {
   const STEPS = [
+    ['.gs-me', '👤 That’s you', 'Claim a name and you’re on the leaderboards, your mates can find and challenge you, and your game is backed up.', () => !GM.account()],
     ['.lvl-chip', '⭐ Your level', 'Every game you play earns XP. Each level brings a reward: packs, prize spins and new kit.'],
     ['.season-chip', '🗓️ This month’s season', 'A new season every month, with its own look and a 30-tier track of rewards. Tap it to see what’s coming.'],
     ['.gs-open', '🎁 Things to open', 'Packs, prize spins and picks you’ve earned wait here. Tap to open them.'],
@@ -30,7 +31,7 @@
     if (location.hash.replace(/^#\/?/, '')) { location.hash = '#/'; setTimeout(GM.tour, 700); return; }
     GM.$$('.modal-wrap').forEach(m => m.remove());
     window.scrollTo(0, 0);
-    const steps = STEPS.filter(([sel]) => { const e = document.querySelector(sel); return e && e.offsetParent !== null; });
+    const steps = STEPS.filter(([sel, , , when]) => { const e = document.querySelector(sel); return e && e.offsetParent !== null && (!when || when()); });
     let i = 0;
     layer = document.createElement('div');
     layer.className = 'tour';
@@ -61,6 +62,13 @@
   // the end: what to do next (and, on an Android phone's browser, the app)
   function done() {
     const web = !window.AndroidApp && /Android/i.test(navigator.userAgent);
+    if (!GM.account() && GM.lb.enabled) {  // no name yet: that's the one thing left to do
+      const m = GM.modal(`<div class="welcome"><div class="wl-icon">🔒</div><h3>One last thing: your name</h3>
+        <p>${GM.esc(GM.NAME_WHY)}</p>
+        <div class="row"><button class="btn ghost" data-close>Later</button><button class="btn big" id="tourname">🔒 Claim my name</button></div></div>`);
+      GM.$('#tourname', m.el).onclick = async () => { m.close(); await GM.accountModal(GM.NAME_WHY); GM.statusBar(); };
+      return;
+    }
     const m = GM.modal(`<div class="welcome"><div class="wl-icon">🧭</div><h3>That’s the tour</h3>
       <p>Try <b>🌪️ CHAOS</b> next: managers, storms and bonus points. The tour’s in <b>Settings</b> if you want it again.</p>
       ${web ? `<p class="muted small">Your scores and cards come with you into the app.</p>` : ''}

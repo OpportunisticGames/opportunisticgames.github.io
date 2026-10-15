@@ -11,8 +11,8 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     const ctx = await b.newContext({ viewport: { width: w, height: h } }); await server.attach(ctx);
     await ctx.route(/transfermarkt|premierleague\.com|wikimedia|wikipedia/, r => r.abort());
     const pg = await ctx.newPage(); pg.on('pageerror', e => errs.push(e.message));
-    await pg.goto(U); await pg.evaluate(() => { const s = (k, v) => localStorage.setItem('gm:' + k, JSON.stringify(v));
-      s('seenVersion', 999); s('welcomed', 1); s('played', 3); s('calm', true); s('tourTest', 1); s('account', { name: 'Alice', key: 'a'.repeat(28) }); });
+    await pg.goto(U + (w === 360 ? '?noname' : '')); await pg.evaluate(() => { const s = (k, v) => localStorage.setItem('gm:' + k, JSON.stringify(v));
+      s('seenVersion', 999); s('welcomed', 1); s('played', 3); s('calm', true); s('tourTest', 1); if (location.search !== '?noname') s('account', { name: 'Alice', key: 'a'.repeat(28) }); });
     await pg.reload(); await pg.waitForTimeout(3600);
     const offer = await pg.evaluate(() => (document.querySelector('.modal-wrap') || {}).innerText || '');
     ok(/30-second tour/.test(offer), `${w}px: an existing player is offered the tour on Home ("${offer.replace(/\s+/g, ' ').slice(0, 60)}")`);
@@ -28,7 +28,8 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     }
     ok(titles.length >= 8 && titles.every(t => t.inside && t.ring), `${w}px: ${titles.length} tour steps, each bubble on screen with its spotlight (${titles.map(t => t.t).join(' · ')})`);
     const end = await pg.evaluate(() => ({ modal: (document.querySelector('.modal-wrap') || {}).innerText || '', seen: localStorage.getItem('gm:tourSeen') }));
-    ok(/That’s the tour/.test(end.modal) && end.seen, `${w}px: it ends on what to try next, and is remembered`);
+    if (w === 390) ok(/That’s the tour/.test(end.modal) && end.seen, `${w}px: it ends on what to try next, and is remembered`);
+    else ok(/your name/i.test(end.modal) && !!(await pg.$('#tourname')) && /That’s you/.test(titles[0].t) && end.seen, `${w}px, no name yet: the tour starts on “That’s you” and ends asking you to claim a name (${titles[0].t})`);
     await pg.evaluate(() => document.querySelectorAll('.modal-wrap').forEach(m => m.remove()));
     await pg.evaluate(() => { location.hash = '#/settings'; }); await pg.waitForTimeout(900);
     await pg.evaluate(() => { location.hash = '#/'; }); await pg.waitForTimeout(3200);
