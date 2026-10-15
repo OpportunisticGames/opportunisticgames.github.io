@@ -9,6 +9,24 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 98, label: '5.38', date: '2026-10-16', title: '🌐 Online, sorted: fairer races, Hard by default, and Seasonal CHAOS head to head',
+      items: [
+        '🏆 The bigger total wins a race. Squad rating, then time, only decide it when the totals are level (no more draws where one of you scored more and the other was quicker)',
+        '🙈 No peeking: your opponent’s XI stays secret until you’ve finished yours (you still see how far they’ve got and their score). Then you can watch theirs',
+        '🎉 The result stays on screen: no more flashing up and jumping back to your own team',
+        '🥵 Online games are Hard by default (names and positions only), and Quick match is always Hard. Pick Easy or Normal when you start a game',
+        '🌪️ New game puts the main ones first: CHAOS, this month’s Seasonal CHAOS (new online!), the Target and the Live Race',
+        '⚔️ A card on Home when a friend’s waiting on you: tap to play your move',
+        '😂 React to a result (😂 🔥 👏 😤 😭 🤝) and see your opponent’s reaction',
+        '📅 Your record with each friend this month, next to the all-time one',
+        '🎲 Seasonal CHAOS joins the Quick match rotation',
+        '🔕 No notification for a result you’ve just watched happen',
+        '🔔 The bell shows a number when there’s something new, results you’ve seen drop off, and Lately has a Clear button (and only the last week)',
+        '🔭 Scout’s Tip shows its three cards properly',
+        '💡 Online CHAOS games get the same first-time tips as playing on your own',
+      ],
+    },
+    {
       v: 97, label: '5.37', date: '2026-10-15', title: '🔎 Find any card, your club’s cards, and Icons that glisten',
       items: [
         '🔎 Locker → Cards has a search box: find any player’s card, finished or not. And filters: Started, Finished, your club’s players and All cards',

@@ -6,18 +6,20 @@ module.exports = function makeServer() {
   const now = () => Date.now() / 1000;
   const auth = (u, k) => { const p = players[(u || '').toLowerCase()]; return p && p.key === k ? p.username : null; };
   const befriend = (a, b) => { friends.add(a + '|' + b); friends.add(b + '|' + a); };
-  const finalise = r => {
+  // (as the server's gm_finalise, 5.38: the bigger total wins; rating then time break a tie; `by` = who finished it)
+  const finalise = (r, by) => {
     const h = r.race.host, g = r.race.guest;
     if (r.status === 'done' || !(h && h.done) || !(g && g.done)) return;
-    const [wt, wr, ws] = r.kind === 'race' ? [50, 30, 20] : [60, 40, 0]; let hp = 0, gp = 0;
-    const cmp = (a, b, w, low) => { if (low ? a < b : a > b) hp += w; else if (low ? b < a : b > a) gp += w; else { hp += w / 2; gp += w / 2; } };
-    if (r.variant === 'hattrick') cmp(h.t || 0, g.t || 0, 100);
-    else if (r.kind === 'race' && r.variant === 'target') cmp(h.d ?? 1e9, g.d ?? 1e9, 100, true);
-    else if (r.kind === 'race' && r.variant === 'chaos') cmp(h.c || 0, g.c || 0, 100);
-    else { cmp(h.t || 0, g.t || 0, wt); cmp(h.r || 0, g.r || 0, wr); if (ws) cmp(h.ms ?? 1e12, g.ms ?? 1e12, ws, true); }
-    r.status = 'done'; r.turn = null; r.result = { host: hp, guest: gp, winner: hp > gp ? 'host' : gp > hp ? 'guest' : 'draw' };
+    const pick = (a, b, low) => (low ? a < b : a > b) ? 'host' : (low ? b < a : b > a) ? 'guest' : 'draw';
+    let w;
+    if (r.variant === 'hattrick') w = pick(h.t || 0, g.t || 0);
+    else if (r.kind === 'race' && r.variant === 'target') w = pick(h.d ?? 1e9, g.d ?? 1e9, true);
+    else if (r.kind === 'race' && (r.variant === 'chaos' || r.variant === 'szchaos')) w = pick(h.c || 0, g.c || 0);
+    else { w = pick(h.t || 0, g.t || 0); if (w === 'draw') w = pick(h.r || 0, g.r || 0); if (w === 'draw' && r.kind === 'race') w = pick(h.ms ?? 1e12, g.ms ?? 1e12, true); }
+    r.status = 'done'; r.turn = null; r.result = { host: w === 'host' ? 100 : w === 'draw' ? 50 : 0, guest: w === 'guest' ? 100 : w === 'draw' ? 50 : 0, winner: w, ...(by ? { by } : {}) };
   };
-  const view = r => ({ quick: !!r.quick, created: r.created, bids_in: Object.keys(r.secret || {}).filter(k => k === 'host' || k === 'guest'), code: r.code, kind: r.kind, variant: r.variant, stat: r.stat, seed: r.seed, host: r.host, guest: r.guest, moves: r.moves, race: r.race, turn: r.turn, status: r.status, result: r.result, seen: r.seen, now: now(), updated: r.updated });
+  const view = (r, me) => ({ reacts: r.reacts || {}, level: r.level || null, quick: !!r.quick, created: r.created, bids_in: Object.keys(r.secret || {}).filter(k => k === 'host' || k === 'guest'), code: r.code, kind: r.kind, variant: r.variant, stat: r.stat, seed: r.seed, host: r.host, guest: r.guest, moves: r.moves, race: hideXI(r, me), turn: r.turn, status: r.status, result: r.result, seen: r.seen, now: now(), updated: r.updated });
+  const hideXI = (r, me) => { const s = r.host === me ? 'host' : r.guest === me ? 'guest' : null, o = s === 'host' ? 'guest' : 'host'; if (!s || r.kind !== 'race' || r.status === 'done' || (r.race[s] || {}).done || !r.race[o]) return r.race; const { x, ...rest } = r.race[o]; return { ...r.race, [o]: rest }; };
   // friend challenges (challenge_* in SQL)
   const chs = {}, plays = [], invites = [], flairs = {}; let pid = 0;
   const chName = (a) => auth(a.p_user, a.p_key) || (a.p_name && a.p_name.trim()) || 'A friend';
@@ -96,13 +98,13 @@ module.exports = function makeServer() {
       if (open) { open.guest = u; open.status = 'playing'; return { code: open.code, seat: 'guest', matched: true, opp: open.host }; }
       const mine = Object.values(rooms).find(r => r.quick && r.status === 'open' && r.host === u && r.kind === a.p_kind && (r.variant || null) === v);
       if (mine) return { code: mine.code, seat: 'host', waiting: true };
-      const c = fns.online_create({ ...a, p_opp: null }); rooms[c.code].quick = true; rooms[c.code].created = new Date().toISOString(); return { code: c.code, seat: 'host', waiting: true };
+      const c = fns.online_create({ ...a, p_opp: null }); rooms[c.code].quick = true; rooms[c.code].level = 'hard'; rooms[c.code].created = new Date().toISOString(); return { code: c.code, seat: 'host', waiting: true };
     },
     online_create(a) {
       const u = auth(a.p_user, a.p_key); if (!u) return { error: 'auth' };
       let o = null; if (a.p_opp) { o = (players[a.p_opp.toLowerCase()] || {}).username; if (!o) return { error: 'no_user' }; if (o === u) return { error: 'self' }; }
       const code = 'R' + String(++n).padStart(4, '0');
-      rooms[code] = { code, kind: a.p_kind, secret: {}, variant: a.p_variant || null, stat: a.p_stat, seed: 'online:' + code + ':t', host: u, guest: o, moves: [], race: {}, turn: a.p_kind === 'duel' ? 'guest' : a.p_kind === 'auction' ? 'both' : 'host', status: o ? 'playing' : 'open', result: null, seen: {}, updated: new Date().toISOString() };
+      rooms[code] = { code, kind: a.p_kind, secret: {}, variant: a.p_variant || null, stat: a.p_stat, seed: 'online:' + code + ':t', host: u, guest: o, moves: [], race: {}, turn: a.p_kind === 'duel' ? 'guest' : a.p_kind === 'auction' ? 'both' : 'host', status: o ? 'playing' : 'open', result: null, seen: {}, level: a.p_level && a.p_level !== 'normal' ? a.p_level : null, updated: new Date().toISOString() };
       if (o) befriend(u, o); return { code, seat: 'host' };
     },
     online_join(a) {
@@ -110,14 +112,19 @@ module.exports = function makeServer() {
       if (r.host === u) return { code: r.code, seat: 'host' }; if (r.guest === u) return { code: r.code, seat: 'guest' };
       if (r.guest) return { error: 'full' }; r.guest = u; r.status = 'playing'; befriend(u, r.host); return { code: r.code, seat: 'guest' };
     },
-    online_get(a) { const r = rooms[a.p_code]; if (!r) return null; const s = r.host === a.p_user ? 'host' : r.guest === a.p_user ? 'guest' : null; if (s) r.seen[s] = now(); return view(r); },
+    online_react(a) {
+      const u = auth(a.p_user, a.p_key); if (!u) return 'auth'; const r = rooms[a.p_code]; if (!r) return 'no_room';
+      const st = r.host === u ? 'host' : r.guest === u ? 'guest' : null; if (!st) return 'not_yours'; if (r.status !== 'done') return 'not_done';
+      r.reacts = { ...(r.reacts || {}), [st]: a.p_emoji }; return 'ok';
+    },
+    online_get(a) { const r = rooms[a.p_code]; if (!r) return null; const s = r.host === a.p_user ? 'host' : r.guest === a.p_user ? 'guest' : null; if (s) r.seen[s] = now(); return view(r, a.p_user); },
     online_move(a) {
       const u = auth(a.p_user, a.p_key); if (!u) return 'auth'; const r = rooms[a.p_code]; if (!r) return 'no_room';
       const s = r.host === u ? 'host' : r.guest === u ? 'guest' : null; if (!s) return 'not_yours'; if (['done', 'declined'].includes(r.status)) return 'over';
       if (a.p_move) { if (r.moves.length !== a.p_seq) return 'conflict'; r.moves.push({ ...a.p_move, s }); }
       if (a.p_all && ['duel', 'auction'].includes(r.kind)) Object.assign(r.race, a.p_all); else if (a.p_sum) r.race[s] = a.p_sum;
       if (a.p_turn === 'none') r.turn = null; else if (['host', 'guest', 'both'].includes(a.p_turn)) r.turn = a.p_turn;
-      r.updated = new Date().toISOString(); finalise(r); return 'ok';
+      r.updated = new Date().toISOString(); finalise(r, s); return 'ok';
     },
     online_bid(a) {
       const u = auth(a.p_user, a.p_key); const r = rooms[a.p_code]; const s = r.host === u ? 'host' : r.guest === u ? 'guest' : null;
@@ -171,7 +178,14 @@ module.exports = function makeServer() {
     },
     app_inbox(a) {
       const u = (players[(a.p_user || '').toLowerCase()] || {}).username;
-      return activity.filter(x => x.username === u && x.kind === 'beaten' && (!a.p_prefs || a.p_prefs.beaten !== false)).map(x => ({ id: 'b:' + x.id, title: x.title, body: x.body, link: x.link }));
+      const pr = a.p_prefs || {};
+      const seatOf = r => (r.host === u ? 'host' : r.guest === u ? 'guest' : null);
+      // (as the server: games waiting on you, and results, except for whoever finished the game: they watched it happen)
+      const games = Object.values(rooms).filter(r => seatOf(r)).flatMap(r => { const st = seatOf(r);
+        if (r.status === 'done' && r.result && r.result.by !== st && pr.results !== false) return [{ id: 'r:' + r.code, title: r.result.winner === st ? '🏆 You won' : r.result.winner === 'draw' ? '🤝 A draw' : '😬 You lost', body: '', link: '#/online?room=' + r.code }];
+        if (r.status === 'playing' && r.kind === 'race' && !(r.race[st] || {}).done && pr.move !== false) return [{ id: 'g:' + r.code + '@1', title: '⚔️ Your move', body: '', link: '#/online?room=' + r.code }];
+        return []; });
+      return games.concat(activity.filter(x => x.username === u && x.kind === 'beaten' && pr.beaten !== false).map(x => ({ id: 'b:' + x.id, title: x.title, body: x.body, link: x.link })));
     },
     // 5.33: profiles and invites (simplified)
     player_profile(a) {

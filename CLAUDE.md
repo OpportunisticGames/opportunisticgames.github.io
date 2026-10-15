@@ -142,16 +142,20 @@ game mode for players; this file is about how to work on it.
 ## Backend (Supabase project `tberlvceqqspgwlfzisy`)
 Everything goes through security-definer RPCs that check the account with `gm_auth(p_user, p_key)`.
 - Accounts and scores: `claim_name`, `submit_score`; the public `best_scores` view feeds the leaderboards.
-- Online: `online_create` (kind `race` / `duel` / `auction`, optional `p_variant`: `scout`, `target`, `chaos`),
+- Online: `online_create` (kind `race` / `duel` / `auction`, optional `p_variant`: `scout`, `target`, `chaos`, `szchaos`; `p_level`),
   `online_join`, `online_get`, `online_move`, `online_bid`, `online_resign`, `online_games`, `online_waiting`,
   friends (`online_friends`, `online_add_friend`, `online_remove_friend`), `friends_week` (league).
 - Quick match: `quick_match(p_user, p_key, p_kind, p_stat, p_variant)` joins the oldest open `quick` room of that game
   from the last 30 minutes, reuses your own waiting one, or opens one (max 3); no auto-befriend. Turn-by-turn games
   offer the computer (Hat-Trick) or a solo draft after a minute (`QM_WAIT` in online.js); races wait for an opponent too.
   The app plays one game a day for everyone (`QM_DAYS` in online.js, by UTC day, always goals) so nobody's queue is split;
-  the server accepts race (plain/chaos/target) and duel (plain/hattrick/scout).
-- `gm_finalise` decides results once both players are done: races 50/30/20 (total / rating / speed), duels and
-  auction 60/40, Target Race = closest (`d`) wins 100–0, CHAOS Race = most CHAOS points (`c`) wins 100–0.
+  the server accepts race (plain/chaos/target/szchaos) and duel (plain/hattrick/scout); quick rooms are Hard.
+- `gm_finalise(code, by)` decides results once both players are done (5.38): the bigger total wins 100–0, squad rating then
+  time only on a level total (duels/auction: rating); Target Race = closest (`d`), CHAOS and Seasonal CHAOS (`szchaos`) Races =
+  most CHAOS points (`c`). `result.by` = who finished it (no result notification for them). `rooms.level` (easy/hard, null =
+  normal; online_create `p_level`; Quick match Hard) is the race's level (`levelOf` in online.js). `online_get` leaves the
+  opponent's `x` (XI) out until you've finished yours. Reactions: `online_react` → `rooms.reacts` {seat: emoji}. SQL for all of
+  it: `notes/sql/538_online.sql`.
 - Names: `gm_name_ok` (offensive-word filter, used by `claim_name`, `rename_account` and `name_available`, which returns
   null for a banned name), `report_name` (3 reports hide a name from `best_scores` / `daily_board` via `players.name_hidden`),
   `name_status`, `rename_account` (moves scores, friends, rooms and backup to the new name).
@@ -208,6 +212,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    may be mid-action without a short `{ timeout }`: Playwright waits 30 s for it to become tappable (that made the CHAOS tests
    take minutes). Or run one script on its own with `node <script>.js`. Each uses `mockserver.js`, which fakes the
    Supabase RPCs in memory (test accounts Alice/Bob/Cara), so nothing touches the real database.
+   - `online538.js` – 5.38: New game's main four and Hard default, the room's level, the opponent's XI hidden while you play, the bigger total wins, the result stays up, no notification for the finisher, the 🔔 count, Scout's Tip, a Seasonal CHAOS Race.
    - `tour536.js` – 5.36: the tour offered once on Home, every step's bubble and spotlight on screen (390 and 360 px), Settings → Take the tour, Skip, and the first-time tips (once each, back from Settings).
    - `new534.js` – 5.34: Easy deals more big names, its own board key, travels in the seed, the four-level switch, Classic gone from the menus.
    - `new533.js` – 5.33: profiles, invites, the podium, nation sets and No. 1s, Visa trouble!, the Hat-Trick fusion, Streak Freeze, Double XP and the bonus tiers.

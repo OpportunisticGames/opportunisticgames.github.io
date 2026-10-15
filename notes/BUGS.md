@@ -3,6 +3,20 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.38 *(owner, 16 Oct 2026, the online update)*
+- "You can see the opposition's entire team if they have finished, that's too much information": `online_get` leaves the
+  other seat's `x` out while you're still playing, and the XI button only shows their count and score.
+- "It flashes up with the correct end screen but then instantly goes back to the your-team one": the draft re-rendered its
+  own full time over the result (board news arriving after). The summary sets `S.online.away`; `onThisGame` stops drawing.
+- "Time and squad rating matter too much … I've drawn twice because one won on goals and the other on the other two":
+  `gm_finalise` now gives the win to the bigger total; rating, then time, only on a level total (duels: rating only).
+- "You get a notification after you played the match even though you've seen the result": the result keeps `by` (who
+  finished it) and `app_inbox` skips it for them.
+- "The bell … so many updates that don't seem clearable or auto go away, no number when there's new stuff": the count now
+  covers everything new (and your moves), seen results drop off (`GM.inboxSeen`), Lately has Clear and shows a week.
+- "Scout's Tip is also not working properly": its card row sat in a flex box that shrank it to 16px; it's full width now.
+- Seasonal CHAOS Race started as plain CHAOS while building (a rename caught `raceMode`), fixed before release.
+
 ### Fixed in 5.37 *(owner, 15 Oct 2026)*
 - "The tick and the icon cover each other on Icon cards (and the number 1 a bit too)": the 💎 and Nº1 sat in the top-right
   corner with the ✓. Both are at the top centre now.

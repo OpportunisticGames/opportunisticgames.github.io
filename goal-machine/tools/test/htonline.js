@@ -17,7 +17,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   };
   const A = await phone('Alice', 'a'.repeat(28)), B = await phone('Bob', 'b'.repeat(28));
   await A.goto(U + '#/online'); await A.waitForTimeout(700);
-  await A.click('#onew'); await A.waitForTimeout(300); await A.fill('#nname', 'Bob'); await A.click('.ng-game[data-k="hattrick"]');
+  await A.click('#onew'); await A.waitForTimeout(300); await A.fill('#nname', 'Bob'); await A.evaluate(() => { const d = document.querySelector('.ng-more'); if (d) d.open = true; }); await A.click('.ng-game[data-k="hattrick"]');
   ok((await A.textContent('#ngo')).includes('Hat-Trick'), 'Hat-Trick is in New game');
   await A.click('#ngo'); await A.waitForTimeout(1500);
   const code = await A.evaluate(() => location.hash.split('room=')[1]);

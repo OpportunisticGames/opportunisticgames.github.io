@@ -3643,8 +3643,9 @@ body.calm .fuse .fz { animation: none; }
 @keyframes fz-pop { from { transform: scale(1.9); } to { transform: scale(1); } }
 
 /* 🔭 Scout's Tip: pick a card */
-.scout-pick { display: flex; gap: 6px; justify-content: center; margin: 10px 0; }
-.scout-pick button { background: none; border: 0; padding: 0; cursor: pointer; flex: 1; max-width: 110px; }
+.scout-pick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0; width: 100%; align-self: stretch; }
+.scout-pick button { background: none; border: 0; padding: 0; cursor: pointer; width: 100%; min-width: 0; }
+.scout-pick button .pcard { width: 100%; font-size: 9px; }
 .st-bonus { display: block; margin-top: 4px; }
 
 /* ♻️ the duplicate pile */
@@ -3731,3 +3732,23 @@ body.calm .tour-ring { transition: none; }
 .card-filters button { flex: none; white-space: nowrap; }
 .cards-head { margin: 4px 0 8px; font-weight: 700; font-size: .9rem; }
 button.nat-row { font: inherit; color: inherit; border: 0; text-align: left; width: 100%; cursor: pointer; }
+
+/* the comparison: what wins it, and the tie-breakers (5.38) */
+.cmp-points td small { display: block; font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+.cmp-points tr.tiebreak td { opacity: .75; font-size: .92em; }
+.opp-dots { display: flex; justify-content: center; gap: 5px; margin: 10px 0; }
+.opp-dots i { width: 16px; height: 16px; border-radius: 50%; background: var(--inset); border: 2px solid var(--line); }
+.opp-dots i.on { background: var(--accent); border-color: var(--accent); }
+.feed-h { display: flex; align-items: center; justify-content: space-between; }
+
+/* online: this month's record, reactions to a result, and Home's your-move card (5.38) */
+.f-month { display: block; font-size: .72rem; color: var(--muted); } .f-month b.w { color: var(--good); } .f-month b.l { color: var(--bad); }
+.o-react { margin: 6px 0 12px; text-align: center; }
+.o-their { margin: 0 0 6px; font-size: .95rem; } .o-their span { font-size: 1.6rem; vertical-align: middle; margin-left: 4px; display: inline-block; animation: pop .4s; }
+.o-rx { display: flex; align-items: center; justify-content: center; gap: 4px; flex-wrap: wrap; }
+.o-rx small { width: 100%; color: var(--muted); font-weight: 700; font-size: .72rem; text-transform: uppercase; letter-spacing: 1px; }
+.o-rx button { font-size: 1.5rem; width: 46px; height: 46px; border-radius: 14px; border: 2px solid var(--line); background: var(--panel); cursor: pointer; }
+.o-rx button.on { border-color: var(--accent); background: var(--inset); transform: scale(1.08); }
+.your-move { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin: 0 0 12px; border-radius: 18px; background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff; text-decoration: none; box-shadow: 0 4px 0 rgba(0,0,0,.25); animation: pop .4s; }
+.your-move > span:first-child { font-size: 1.8rem; } .your-move b { display: block; font: 700 1.05rem Oswald, sans-serif; } .your-move small { opacity: .85; }
+.your-move .ym-go { margin-left: auto; font-weight: 800; background: rgba(255,255,255,.2); padding: 6px 12px; border-radius: 12px; }

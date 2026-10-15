@@ -20,17 +20,24 @@
   // modes in the weekly friends league
   const LEAGUE = [['ultimate', '👑 Ultimate'], ['chaos', '🌪️ CHAOS'], ['dchaos', '📅 Daily CHAOS'], ['daily', '📅 Daily Ultimate'], ['dmoney', '💰 Daily Moneyball'], ['money', '💰 Moneyball']];
   const KIND = { duel: { icon: '🤝', name: 'Draft Duel' }, scout: { icon: '🕵️', name: 'Scout Duel' }, race: { icon: '🏁', name: 'Live Race' },
-    target: { icon: '🎯', name: 'Target Race' }, chaos: { icon: '🌪️', name: 'CHAOS Race' }, auction: { icon: '🔨', name: 'Auction' }, hattrick: { icon: '🃏', name: 'Hat-Trick' } };
+    target: { icon: '🎯', name: 'Target Race' }, chaos: { icon: '🌪️', name: 'CHAOS Race' }, auction: { icon: '🔨', name: 'Auction' }, hattrick: { icon: '🃏', name: 'Hat-Trick' },
+    // this month's Seasonal CHAOS, raced (5.38): its name and icon follow the season
+    get szchaos() { const i = GM.seasonInfo ? GM.seasonInfo() : null; return { icon: i ? i.icon : '✨', name: `${i && i.name ? i.name.replace(/^The /, '') + ' ' : 'Seasonal '}CHAOS Race` }; } };
+  // the level a race is played at (5.38): stored on the room, Hard unless you pick another; Quick match is always Hard
+  const ONLINE_LEVELS = [['easy', '🙂 Easy'], ['normal', '⚽ Normal'], ['hard', '🥵 Hard']];
+  const levelOf = r => (r.level === 'easy' || r.level === 'hard' ? r.level : r.quick ? 'hard' : 'normal');
   // a Scout Duel is a Draft Duel with hidden names; Target and CHAOS Races are Live Races played in those modes
   // Hat-Trick online is a duel room too (turn by turn), with variant 'hattrick'
-  const gk = g => (['scout', 'target', 'chaos', 'hattrick'].includes(g.variant) ? g.variant : g.kind);
-  const serverKind = k => (k === 'scout' || k === 'hattrick' ? 'duel' : k === 'target' || k === 'chaos' ? 'race' : k);
+  const gk = g => (['scout', 'target', 'chaos', 'szchaos', 'hattrick'].includes(g.variant) ? g.variant : g.kind);
+  const serverKind = k => (k === 'scout' || k === 'hattrick' ? 'duel' : k === 'target' || k === 'chaos' || k === 'szchaos' ? 'race' : k);
   // Quick match's game of the day (UTC, so everyone everywhere is on the same one); plus = days ahead
-  const QM_DAYS = ['race', 'hattrick', 'chaos', 'duel', 'target', 'scout'];
+  const QM_DAYS = ['race', 'hattrick', 'chaos', 'duel', 'target', 'scout', 'szchaos'];
   const qmToday = (plus = 0) => QM_DAYS[(Math.floor(Date.now() / 864e5) + plus) % QM_DAYS.length];
   const QM_BANNER = { race: 'Same spins, fastest to the biggest XI', hattrick: 'Football Spades with a computer partner each', chaos: 'Storms, events and bonus points on shared spins',
-    duel: 'Take turns and nick the player they wanted', target: 'One target number. Closest wins', scout: 'No names, just scouting clues' };
-  const raceMode = r => (r.variant === 'target' ? 'target' : r.variant === 'chaos' ? 'chaos' : 'ultimate');
+    duel: 'Take turns and nick the player they wanted', target: 'One target number. Closest wins', scout: 'No names, just scouting clues', szchaos: 'This month’s Seasonal CHAOS, head to head' };
+  const raceMode = r => (r.variant === 'target' ? 'target' : r.variant === 'chaos' ? 'chaos' : r.variant === 'szchaos' ? 'szchaos' : 'ultimate');
+  const isRaceKind = k => serverKind(k) === 'race';
+  const isChaos = v => v === 'chaos' || v === 'szchaos';  // CHAOS and Seasonal CHAOS Races: most CHAOS points wins
   const rpc = (f, a) => GM.lb.rpc(f, a);
   const auth = () => { const a = GM.account(); return a ? { p_user: a.name, p_key: a.key } : null; };
   const me = () => (GM.account() || {}).name || '';
@@ -49,8 +56,12 @@
     // CHAOS and Target Races have no match-points split: more CHAOS points wins, or the closest to the target
     const sm = g.sums || g.race || {}, a = sm[seat] || {}, b = sm[other(seat)] || {};
     let score = `${fmt(mine)}–${fmt(theirs)}`, unit = 'match points';
-    if (g.variant === 'chaos' && a.c != null && b.c != null) { score = `${fmt(a.c)}–${fmt(b.c)}`; unit = 'CHAOS points'; }
+    if (isChaos(g.variant) && a.c != null && b.c != null) { score = `${fmt(a.c)}–${fmt(b.c)}`; unit = 'CHAOS points'; }
     else if (g.variant === 'target' && a.d != null && b.d != null) { score = `${a.d === 0 ? 'bullseye' : fmt(a.d) + ' off'} v ${b.d === 0 ? 'bullseye' : fmt(b.d) + ' off'}`; unit = ''; }
+    else if (g.variant !== 'hattrick' && a.t != null && b.t != null) {
+      // (5.38: the bigger total wins; squad rating, then time, only when the totals are level)
+      score = `${fmt(a.t)}–${fmt(b.t)}`; unit = (GM.STATS[g.stat] || GM.STATS.goals).label + (a.t === b.t && w !== 'draw' ? (a.r !== b.r ? ', on squad rating' : ', on time') : '');
+    }
     return { icon: w === 'draw' ? '🤝' : w === seat ? '🏆' : '😬', text: w === 'draw' ? 'Drew' : w === seat ? 'Won' : 'Lost', score, unit, resigned: g.result.resigned };
   };
   const myMove = (g, seat) => g.status !== 'done' && (g.kind === 'duel' ? g.turn === seat
@@ -171,8 +182,14 @@
       const j2 = GM.$('#ojoin2'); if (j2) j2.onclick = () => { const c = GM.$('#ocode2').value.trim().toUpperCase(); if (c.length === 5) location.hash = '#/online?join=' + c; else GM.toast('Codes are 5 letters'); };
       // the Games tab shows how many are waiting on you; the list itself marks your moves loudly
       const n = GM.$('[data-n="games"]'); if (n) { n.textContent = yours.length || ''; n.classList.toggle('hot', !!yours.length); }
+      // 📅 this month against each friend (from your recent games), next to the all-time record
+      const month = new Date().toISOString().slice(0, 7);
+      const monthRec = name => { const t = { w: 0, d: 0, l: 0 };
+        (games || []).filter(g => g.status === 'done' && g.result && (g.updated || '').slice(0, 7) === month && (g.host === name || g.guest === name)).forEach(g => {
+          const st = g.host === me() ? 'host' : 'guest', w = g.result.winner; t[w === 'draw' ? 'd' : w === st ? 'w' : 'l']++; });
+        return t.w + t.d + t.l ? `<small class="f-month">📅 This month: <b class="w">W${t.w}</b> <b class="d">D${t.d}</b> <b class="l">L${t.l}</b></small>` : ''; };
       GM.$('#ofriends').innerHTML = friends.length ? friends.map(f => `<div class="friend"><button class="f-av" data-fmenu="${esc(f.name)}" title="Options">${GM.userPic(f.name)}</button>
-          <span class="f-main"><b>${esc(f.name)}</b>${GM.titleHtml ? GM.titleHtml(f.name) : ''}${f.w + f.d + f.l ? record(f) : '<small class="muted">No games yet</small>'}</span>
+          <span class="f-main"><b>${esc(f.name)}</b>${GM.titleHtml ? GM.titleHtml(f.name) : ''}${f.w + f.d + f.l ? record(f) : '<small class="muted">No games yet</small>'}${monthRec(f.name)}</span>
           <button class="btn small" data-challenge="${esc(f.name)}">⚔️ Play</button></div>`).join('')
         : '<p class="muted center">Add friends by their Goal Machine name, or send an invite code. Anyone you play is added automatically.</p>';
       GM.$$('[data-challenge]').forEach(b => b.onclick = () => newGame(b.dataset.challenge));
@@ -199,15 +216,18 @@
       GM.online.setWaiting(yours.length);
     };
     // New game in two steps: pick a game (the two easiest first, the rest a tap away), then who against
+    // the main event first: CHAOS, this month's Seasonal CHAOS, the Target and the Live Race; the rest a tap away
     const GAMES = [
-      ['race', 'Same spins, you both build an XI whenever suits. The easiest to start with.'],
-      ['duel', 'Take turns picking from the same players. Nick the one they wanted.'],
-      ['hattrick', 'Football Spades: you and a computer partner against your mate and theirs.'],
-      ['scout', 'A Draft Duel with no names: just scouting clues on each player.'],
+      ['chaos', 'CHAOS on the same spins: managers, moments and storms. Most points wins.'],
+      ['szchaos', 'This month’s Seasonal CHAOS, head to head: its own characters and wild moments.'],
       ['target', 'Same spins, one target number. Whoever finishes closest wins.'],
-      ['chaos', 'CHAOS on the same spins, events and storms. Most points wins.'],
+      ['race', 'Same spins, you both build an XI whenever suits. Biggest total wins.'],
+      ['hattrick', 'Football Spades: you and a computer partner against your mate and theirs.'],
+      ['duel', 'Take turns picking from the same players. Nick the one they wanted.'],
+      ['scout', 'A Draft Duel with no names: just scouting clues on each player.'],
       ['auction', '£200m each and secret bids on every player.'],
     ];
+    const MAIN = 4;
     // 🎲 Quick match: one game a day for everyone, so everybody looking is in the same queue
     async function quickMatch() {
       const kind = qmToday();
@@ -220,7 +240,8 @@
     function newGame(opp) {
       if (opp == null) opp = friends.length ? friends[0].name : '';  // most people play the same mates: the latest is picked
       const lastWith = GM.store.get('onlineLastKind', {});           // the game you last played with each friend
-      let kind = (opp && lastWith[opp]) || GM.store.get('onlineKind', 'race'), stat = GM.store.get('onlineStat', 'goals');
+      let kind = (opp && lastWith[opp]) || GM.store.get('onlineKind', 'chaos'), stat = GM.store.get('onlineStat', 'goals'), level = GM.store.get('onlineLevel', 'hard');
+      if (!KIND[kind]) kind = 'chaos';
       const card = ([k, d]) => `<button class="ng-game ${k === kind ? 'on' : ''}" data-k="${k}"><span>${KIND[k].icon}</span><b>${KIND[k].name}</b><small>${d}</small></button>`;
       const m = GM.modal(`<h3>⚔️ Play a mate</h3>
         <p class="ng-step">1 · Who against?</p>
@@ -228,11 +249,12 @@
           <button data-v="" class="ng-invite ${!opp ? 'on' : ''}"><i>🔗</i><span>${friends.length ? 'Invite' : 'Send an invite link'}</span></button></div>
         <input class="input ng-name" id="nname" maxlength="20" placeholder="…or type a player’s name" value="" autocomplete="off">
         <p class="ng-step">2 · Pick a game</p>
-        <div class="ng-games">${GAMES.slice(0, 3).map(card).join('')}</div>
-        <details class="ng-more" ${GAMES.slice(3).some(g => g[0] === kind) ? 'open' : ''}><summary>More games</summary><div class="ng-games">${GAMES.slice(3).map(card).join('')}</div></details>
+        <div class="ng-games">${GAMES.slice(0, MAIN).map(card).join('')}</div>
+        <details class="ng-more" ${GAMES.slice(MAIN).some(g => g[0] === kind) ? 'open' : ''}><summary>More games</summary><div class="ng-games">${GAMES.slice(MAIN).map(card).join('')}</div></details>
+        <div class="ng-stat" id="nlevelrow"><small>Level</small><div class="seg" id="nlevel">${ONLINE_LEVELS.map(([k, l]) => `<button data-v="${k}" class="${k === level ? 'on' : ''}">${l}</button>`).join('')}</div></div>
         <div class="ng-stat"><small>Counting</small><div class="seg stat-seg" id="nstat">${Object.entries(GM.STATS).map(([k, s]) => `<button data-v="${k}" class="${k === stat ? 'on' : ''}"><i class="sb-ico">${s.icon}</i>${s.name}</button>`).join('')}</div></div>
         <div class="row"><button class="btn ghost" data-close>Cancel</button><button class="btn" id="ngo"></button></div>`);
-      const label = () => { GM.$('#ngo', m.el).textContent = `Start ${KIND[kind].name} ⚽`; };
+      const label = () => { GM.$('#ngo', m.el).textContent = `Start ${KIND[kind].name} ⚽`; GM.$('#nlevelrow', m.el).hidden = !isRaceKind(kind); };
       label();
       GM.$$('.ng-game', m.el).forEach(b => b.onclick = () => { kind = b.dataset.k; GM.store.set('onlineKind', kind); GM.$$('.ng-game', m.el).forEach(x => x.classList.toggle('on', x === b)); GM.sound.play('tick'); label(); });
       const seg = (id, set) => GM.$$(`#${id} button`, m.el).forEach(b => b.onclick = () => { set(b.dataset.v); GM.$$(`#${id} button`, m.el).forEach(x => x.classList.toggle('on', x === b)); });
@@ -246,9 +268,10 @@
         }
       });
       seg('nstat', v => { stat = v; GM.store.set('onlineStat', v); });
+      seg('nlevel', v => { level = v; GM.store.set('onlineLevel', v); });
       GM.$('#ngo', m.el).onclick = async () => {
         const typed = GM.$('#nname', m.el).value.trim(), who = typed || opp;
-        const code = await create(kind, stat, who);
+        const code = await create(kind, stat, who, level);
         if (code && who) GM.store.set('onlineLastKind', { ...GM.store.get('onlineLastKind', {}), [who]: kind });
         if (code) { m.close(); location.hash = '#/online?room=' + code; }
       };
@@ -257,9 +280,11 @@
     poll = setInterval(load, 20000);
   };
 
-  async function create(kind, stat, opp) {
+  async function create(kind, stat, opp, level) {
     try {
-      const r = await rpc('online_create', { ...auth(), p_kind: serverKind(kind), p_stat: stat, p_opp: opp || null, p_variant: serverKind(kind) === kind ? null : kind });
+      const lv = isRaceKind(kind) && level && level !== 'normal' ? { p_level: level } : {};  // (older servers: no level, a normal game)
+      const args = { ...auth(), p_kind: serverKind(kind), p_stat: stat, p_opp: opp || null, p_variant: serverKind(kind) === kind ? null : kind };
+      const r = await rpc('online_create', { ...args, ...lv }).catch(e => { if (lv.p_level) return rpc('online_create', args); throw e; });
       if (r && r.code) { if (opp) GM.toast(`⚔️ Challenge sent to ${esc(opp)}`); return r.code; }
       GM.toast(r && r.error === 'no_user' ? `Nobody's called “${esc(opp)}” yet` : r && r.error === 'self' ? 'You can’t play yourself!' : r && r.error === 'auth' ? 'Your name isn’t set up on this phone' : 'Couldn’t start the game');
     } catch (e) { GM.toast('Couldn’t reach the server – try again'); }
@@ -285,7 +310,7 @@
       if (!r) { stopPoll(); root.innerHTML = top('Online', '#/online') + '<p class="muted center">This game has gone. Unanswered invites are cleared after two weeks.</p>'; return; }
       const seat = seatOf(r);
       if (!seat) { root.innerHTML = top('Online', '#/online') + `<p class="muted center">This game is between ${esc(r.host)} and ${esc(r.guest || '…')}.</p>`; stopPoll(); return; }
-      const sig = JSON.stringify([r.guest, r.moves.length, r.race, r.status, r.turn, r.bids_in, r.kind === 'duel' ? Math.floor(r.now - ((r.seen || {})[other(seat)] || 0)) > 10 : 0]);
+      const sig = JSON.stringify([r.guest, r.moves.length, r.race, r.status, r.turn, r.bids_in, r.reacts, r.kind === 'duel' ? Math.floor(r.now - ((r.seen || {})[other(seat)] || 0)) > 10 : 0]);
       if (sig === last) return;
       last = sig;
       if (r.kind === 'race') race(root, r, seat, q);
@@ -356,11 +381,14 @@
       return;
     }
     if (!mine.done && r.status !== 'done') {
-      if (!inDraft) GM.draft.start(root, raceMode(r), { seed: r.seed, stat: r.stat, online: { code: r.code, seat, opp: opp || 'someone' } });
-      GM.chaosLook(r.variant === 'chaos');
-      if (r.variant === 'chaos') GM.sound.scene('chaos');
+      if (!inDraft) {
+        GM.draft.start(root, raceMode(r), { seed: r.seed, stat: r.stat, online: { code: r.code, seat, opp: opp || 'someone' }, hard: levelOf(r) === 'hard', easy: levelOf(r) === 'easy' });
+        if (GM.firstTimeTips) GM.firstTimeTips('draft', { m: raceMode(r) });  // the same first-time tips as playing it on your own
+      }
+      GM.chaosLook(isChaos(r.variant));
+      if (isChaos(r.variant)) GM.sound.scene(r.variant);
       const bar = GM.$('#oppbar', root);
-      const theirScore = r.variant === 'chaos' ? `${fmt(theirs.c || 0)} pts` : r.variant === 'target' ? `${theirs.n ? `${fmt(theirs.d || 0)} off` : '–'}` : `${fmt(theirs.t || 0)} ${GM.STATS[r.stat].label}`;
+      const theirScore = isChaos(r.variant) ? `${fmt(theirs.c || 0)} pts` : r.variant === 'target' ? `${theirs.n ? `${fmt(theirs.d || 0)} off` : '–'}` : `${fmt(theirs.t || 0)} ${GM.STATS[r.stat].label}`;
       if (opp) GM.online.setOppBar(r, opp, theirs, `${KIND[gk(r)].icon} <b>${esc(opp)}</b> ${theirScore} · ${theirs.n || 0}/11${theirs.done ? ' ✓' : ''}`);
       else feed[r.code] = { html: `<span>🔗 Waiting for someone to join (code <b>${r.code}</b>) – play your XI now</span> <button class="btn small" id="oshare">📤</button>` };
       if (bar) bar.innerHTML = GM.online.oppBar(r.code);
@@ -406,15 +434,16 @@
     GM.chaosLook(false);
     location.hash = '#/online';
   });
+  // while you're still building yours, their XI stays secret (5.38): just how far they've got and their score
   function showOppXi(code) {
     const f = feed[code]; if (!f) return;
-    const st = GM.STATS[f.stat] || GM.STATS.goals, x = f.theirs.x || FORMATION.map(pos => [pos]), lp = f.theirs.lp;
-    const cell = ([pos, pk, v]) => { const p = pk && GM.byPk.get(pk);
-      return `<div class="ox ${p ? 'on' : ''} ${lp && pk === lp[1] ? 'latest' : ''}"${p ? ` data-psheet="${esc(p.pk)}"` : ''}><span class="pos pos-${GM.GROUP[pos]}">${pos}</span>${p ? `${GM.avatar(p)}<b>${esc(p.name.split(' ').slice(-1)[0])}</b><i>${fmt(v)}</i>` : '<b class="muted">–</b>'}</div>`; };
-    const rows = ['F', 'M', 'D', 'G'].map(g => x.filter(c => GM.GROUP[c[0]] === g)).filter(r => r.length);
-    GM.modal(`<h3>${esc(f.opp)}’s XI</h3><p class="muted center small">${f.theirs.n || 0}/11 signed · ${fmt(f.theirs.t || 0)} ${st.label}${f.variant === 'chaos' ? ` · ${fmt(f.theirs.c || 0)} CHAOS pts` : ''}${f.variant === 'target' && f.theirs.n ? ` · ${fmt(f.theirs.d || 0)} off the target` : ''}</p>
-      <div class="opp-pitch">${rows.map(r => `<div class="op-row">${r.map(cell).join('')}</div>`).join('')}</div>
-      <div class="row"><button class="btn" data-close>Back to my XI</button></div>`);
+    const st = GM.STATS[f.stat] || GM.STATS.goals, n = f.theirs.n || 0;
+    const score = isChaos(f.variant) ? `${fmt(f.theirs.c || 0)} CHAOS pts` : f.variant === 'target' && n ? `${fmt(f.theirs.d || 0)} off the target` : `${fmt(f.theirs.t || 0)} ${st.label}`;
+    GM.modal(`<div class="center"><h3>${esc(f.opp)}’s XI</h3>
+      <div class="opp-dots">${Array.from({ length: 11 }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('')}</div>
+      <p><b>${n}/11 signed</b> · ${score}${f.theirs.done ? ' · finished ✓' : ''}</p>
+      <p class="muted small">Who they’ve signed stays secret until you’ve finished your XI. Then you can watch theirs.</p>
+      <div class="row"><button class="btn" data-close>Back to my XI</button></div></div>`);
   }
   document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-oppxi]'); if (b) showOppXi(b.dataset.oppxi); });
 
@@ -432,7 +461,7 @@
       const xi = S.xi.filter(s => s.p != null).map(s => ({ pos: s.pos, player: GM.players[s.p] }));
       const sc = GM.draft.score(S);
       const sum = { t: sc.t, n: xi.length, done: S.phase === 'done', r: xi.length ? GM.teamRating(xi).score : 0, ms: o.ms,
-        ...(S.mode === 'target' ? { tg: S.target, d: Math.abs(S.target - sc.t) } : S.mode === 'chaos' ? { c: sc.total } : {}),
+        ...(S.mode === 'target' ? { tg: S.target, d: Math.abs(S.target - sc.t) } : /^(sz)?chaos$/.test(S.mode) ? { c: sc.total } : {}),
         x: S.xi.map(s => (s.p != null ? [s.pos, GM.players[s.p].pk, s.g] : [s.pos])) };
       const ls = S.last != null && S.xi.find(s => s.p === S.last);
       if (ls) sum.lp = [ls.pos, GM.players[ls.p].pk, ls.g];  // your latest signing, for your opponent's live feed
@@ -441,7 +470,7 @@
         sum.sp = S.spin + 1;
         sum.rl = (S.reels || []).slice(0, 3).map(r => (r.wild ? ['w', r.wild] : [GM.players[r.id] ? GM.players[r.id].pk : '']));
       }
-      if (S.mode === 'chaos') {
+      if (/^(sz)?chaos$/.test(S.mode)) {
         sum.mt = [S.meter || 0, S.chaosDue ? 1 : 0];
         const mo = (S.moments || [])[(S.moments || []).length - 1];
         if (mo) sum.ev = [mo.icon, mo.name, (S.moments || []).length];
@@ -497,6 +526,11 @@
       ${reels ? `<div class="watch-reels"><small>Their options</small><div>${reels}</div></div>` : ''}</div>`;
   }
 
+  // 😂 a reaction to the result, for your opponent to see (one each, change it any time)
+  const REACTS = ['😂', '🔥', '👏', '😤', '😭', '🤝'];
+  const reactRow = (r, seat, opp) => { const rx = r.reacts || {}, theirs = rx[other(seat)];
+    return `<div class="o-react" id="oreact">${theirs ? `<p class="o-their"><b>${esc(opp)}</b> reacted <span>${esc(theirs)}</span></p>` : ''}
+      <div class="o-rx"><small>Your reaction</small>${REACTS.map(e => `<button data-rx="${e}" class="${rx[seat] === e ? 'on' : ''}">${e}</button>`).join('')}</div></div>`; };
   const watchButton = (r, opp) => `<a class="btn big watch-go" href="#/online?room=${r.code}&watch=1">👀 Watch ${esc(opp)} build their XI</a>`;
   // their draft, live: the pitch filling up, the three players they're choosing between, their total and the CHAOS bar,
   // drawn with the draft's own look. The room refreshes on its own, so it moves as they play; the result takes over
@@ -517,7 +551,7 @@
       return p ? `<div class="reel" data-psheet="${esc(p.pk)}">${GM.avatar(p, 'lg')}<div class="reel-name">${esc(p.name)}</div><div class="reel-meta">${p.poss.map(q => `<span class="pos pos-${GM.GROUP[q]}">${q}</span>`).join('')} ${GM.flag(p.nat)}</div><div class="reel-goals"><b>?</b> ${st.label}</div></div>` : '<div class="reel idle"><div class="reel-q">?</div></div>';
     };
     const reels = (t.rl || []).length ? t.rl.map(reel).join('') : Array.from({ length: 3 }, () => '<div class="reel spinning"><div class="reel-spin">…</div></div>').join('');
-    const total = r.variant === 'chaos' ? `${fmt(t.c || 0)} <small>CHAOS pts</small>` : `${fmt(t.t || 0)} <small>${st.label}</small>`;
+    const total = isChaos(r.variant) ? `${fmt(t.c || 0)} <small>CHAOS pts</small>` : `${fmt(t.t || 0)} <small>${st.label}</small>`;
     const meter = t.mt ? `<div class="chaos-meter watch-meter ${t.mt[1] ? 'due' : ''}"><span>${t.mt[1] ? 'NEXT SPIN!' : 'CHAOS'}</span>${Array.from({ length: GM.draft.METER }, (_, i) => `<i class="${t.mt[1] || i < t.mt[0] ? 'on' : ''}"></i>`).join('')}</div>` : '';
     root.className = 'page-draft page-online page-watch';
     root.innerHTML = `<div class="topbar"><a href="#/online?room=${r.code}" class="back">‹</a><h2><span class="t-name">👀 ${esc(opp)}’s XI</span><small class="hard-pill live-pill">LIVE</small></h2><span></span></div>
@@ -545,33 +579,35 @@
     };
     const A = sums(seat), B = sums(them);
     if (root.classList.contains('page-watch')) root.className = 'page-online';  // the result takes over from watching
-    const weights = r.kind === 'race' ? [50, 30, 20] : [60, 40, 0];
+    { const D = GM.draft.state(); if (D && D.online && D.online.code === r.code) D.online.away = true; }  // the draft can't draw over this now
+    if (root.classList.contains('page-draft')) root.className = 'page-online';
     const mmss = ms => (ms == null ? '–' : `${Math.floor(ms / 60000)}m ${String(Math.round(ms / 1000) % 60).padStart(2, '0')}s`);
     // Target and CHAOS Races are all-or-nothing: closest to the target, or most CHAOS points
     const tg = A.tg || B.tg, off = x => (x.d == null ? '–' : x.d === 0 ? '🎯 bullseye' : `${fmt(x.d)} off`);
-    const rows = r.variant === 'target' ? [[`🎯 Closest to ${tg ? fmt(tg) : 'the target'}`, 100, `${fmt(A.t)} · ${off(A)}`, `${fmt(B.t)} · ${off(B)}`, Math.sign((B.d ?? 1e9) - (A.d ?? 1e9))]]
-      : r.variant === 'chaos' ? [['🌪️ Most CHAOS points', 100, fmt(A.c), fmt(B.c), Math.sign(A.c - B.c)]]
+    // what decides it: the bigger total (a Target Race: the closest; CHAOS: the most points); squad rating, then time, break a tie
+    const rows = r.variant === 'target' ? [[`🎯 Closest to ${tg ? fmt(tg) : 'the target'}`, 'wins', `${fmt(A.t)} · ${off(A)}`, `${fmt(B.t)} · ${off(B)}`, Math.sign((B.d ?? 1e9) - (A.d ?? 1e9))]]
+      : isChaos(r.variant) ? [['🌪️ Most CHAOS points', 'wins', fmt(A.c), fmt(B.c), Math.sign(A.c - B.c)]]
       : [
-      [`${st.icon} Bigger total`, weights[0], fmt(A.t), fmt(B.t), Math.sign(A.t - B.t)],
-      ['⭐ Better squad rating', weights[1], A.r, B.r, Math.sign(A.r - B.r)],
+      [`${st.icon} Bigger total`, 'wins', fmt(A.t), fmt(B.t), Math.sign(A.t - B.t)],
+      ['⭐ Better squad rating', 'if level', A.r, B.r, A.t === B.t ? Math.sign(A.r - B.r) : 0],
     ];
-    if (weights[2] && !r.variant) rows.push(['⚡ Quicker XI', weights[2], mmss(A.ms), mmss(B.ms), Math.sign((B.ms || 1e12) - (A.ms || 1e12))]);
+    if (r.kind === 'race' && !r.variant) rows.push(['⚡ Quicker XI', 'if still level', mmss(A.ms), mmss(B.ms), A.t === B.t && A.r === B.r ? Math.sign((B.ms || 1e12) - (A.ms || 1e12)) : 0]);
     const bothDone = A.done && B.done;
-    const single = r.variant === 'chaos' || r.variant === 'target';   // one thing decides it: no points out of 100
-    const pts = r.result && !single ? [r.result[seat], r.result[them]] : null;
+    const single = true, pts = null;  // (5.38: one thing decides every game, so the score is the totals, never points out of 100)
     const side = (t, cls) => `<div class="cmp-xi ${cls}">${t.map(x => `<div class="cx ${x.p ? '' : 'empty'}"${x.p ? ` data-psheet="${esc(x.p.pk)}"` : ''}><span class="pos pos-${GM.GROUP[x.pos]}">${x.pos}</span>
         <b>${x.p ? esc(x.p.name.split(' ').slice(-1)[0]) : '–'}</b><i>${x.p ? fmt(x.v) : ''}</i></div>`).join('')}</div>`;
     root.innerHTML = `${top(KIND[gk(r)].name, '#/online')}
       <div class="h2h-board duel-board">
-        <div class="h2h-team p1">${GM.userPic(me(), 'board')}<b>You</b><strong>${pts ? fmt(pts[0]) : fmt(r.variant === 'chaos' ? A.c : A.t)}</strong><small>${pts ? 'points' : single && r.result ? (r.variant === 'chaos' ? 'CHAOS points' : off(A)) : `${A.n}/11`}</small></div>
+        <div class="h2h-team p1">${GM.userPic(me(), 'board')}<b>You</b><strong>${pts ? fmt(pts[0]) : fmt(isChaos(r.variant) ? A.c : A.t)}</strong><small>${pts ? 'points' : single && r.result ? (isChaos(r.variant) ? 'CHAOS points' : r.variant === 'target' ? off(A) : st.label) : `${A.n}/11`}</small></div>
         <div class="h2h-mid"><small>${r.variant === 'target' && tg ? `🎯 ${fmt(tg)} ${st.label}` : `${st.icon} ${st.name}`}</small><span>VS</span><small id="orec"></small></div>
-        <div class="h2h-team p2">${r[them] ? GM.userPic(opp, 'board') : ''}<b>${esc(opp)}</b><strong>${pts ? fmt(pts[1]) : fmt(r.variant === 'chaos' ? B.c : B.t)}</strong><small>${pts ? 'points' : single && r.result ? (r.variant === 'chaos' ? 'CHAOS points' : off(B)) : `${B.n}/11${B.done ? ' ✓' : ''}`}</small></div></div>
+        <div class="h2h-team p2">${r[them] ? GM.userPic(opp, 'board') : ''}<b>${esc(opp)}</b><strong>${pts ? fmt(pts[1]) : fmt(isChaos(r.variant) ? B.c : B.t)}</strong><small>${pts ? 'points' : single && r.result ? (isChaos(r.variant) ? 'CHAOS points' : r.variant === 'target' ? off(B) : st.label) : `${B.n}/11${B.done ? ' ✓' : ''}`}</small></div></div>
       ${r.result ? resultHero(r, seat)
         : `<div class="banner">⏳ ${r.guest ? `${esc(opp)} is still building their XI (${B.n}/11). You can watch it fill up here.` : 'Nobody has joined yet.'}</div>`}
+      ${r.result && r[them] ? reactRow(r, seat, opp) : ''}
       ${inviteBar(r)}
       ${r.kind === 'race' && A.done && !r.result && r.race[them] ? watchButton(r, opp) + watchPanel(r, r.race[them], opp) : ''}
-      <table class="cmp-points"><tr><th></th><th>You</th><th>${esc(opp)}</th>${single ? '' : '<th>Pts</th>'}</tr>
-        ${rows.map(([label, w, a, b, s]) => `<tr><td>${label}</td><td class="${bothDone && s > 0 ? 'won' : ''}">${a}</td><td class="${bothDone && s < 0 ? 'won' : ''}">${b}</td>${single ? '' : `<td>${w}</td>`}</tr>`).join('')}</table>
+      <table class="cmp-points"><tr><th></th><th>You</th><th>${esc(opp)}</th></tr>
+        ${rows.map(([label, w, a, b, s]) => `<tr class="${w === 'wins' ? 'decides' : 'tiebreak'}"><td>${label}<small>${w === 'wins' ? 'wins it' : w}</small></td><td class="${bothDone && s > 0 ? 'won' : ''}">${a}</td><td class="${bothDone && s < 0 ? 'won' : ''}">${b}</td></tr>`).join('')}</table>
       <div class="cmp"><div><h4>You</h4>${side(team(seat), 'p1')}</div><div><h4>${esc(opp)}</h4>${side(team(them), 'p2')}</div></div>
       <div class="actions col">
         ${r.result && r.guest ? `<button class="btn big" id="orematch">🔁 Rematch ${esc(opp)}</button><button class="btn ghost" id="oshareres">📤 Share the result</button>` : ''}
@@ -589,6 +625,13 @@
       title: `${KIND[gk(r)].name} v ${opp}`, sub: r.result ? resultLine(r, seat).replace(/<[^>]+>/g, '') : `${st.icon} ${st.name}`, total: A.t, totalLabel: st.label }),
       `⚽ Goal Machine ${KIND[gk(r)].name} v ${opp}`);
     if (r.result && root.dataset.played !== r.code) { root.dataset.played = r.code; resultFx(r, seat); if (GM.checkOnline) GM.checkOnline(r, seat); }
+    if (r.result && GM.inboxSeen) GM.inboxSeen('r:' + r.code);  // you've seen the result: the 🔔 lets it go
+    const rx = GM.$('#oreact', root);
+    if (rx) GM.$$('[data-rx]', rx).forEach(bt => bt.onclick = async () => {
+      GM.buzz('click'); GM.sound.play('tap');
+      try { const out = await rpc('online_react', { ...auth(), p_code: r.code, p_emoji: bt.dataset.rx }); if (out === 'ok') { r.reacts = { ...(r.reacts || {}), [seat]: bt.dataset.rx }; GM.$$('[data-rx]', rx).forEach(x => x.classList.toggle('on', x === bt)); } }
+      catch (e) { GM.toast('Couldn’t reach the server – try again'); }
+    });
     if (r.guest) rpc('online_friends', auth()).then(fr => {
       const f = (fr || []).find(x => x.name === opp), el = GM.$('#orec', root);
       if (el && f) el.innerHTML = `Record W${f.w} D${f.d} L${f.l}`;

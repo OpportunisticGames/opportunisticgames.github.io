@@ -16,7 +16,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     return pg;
   };
   // Quick match plays one game a day: set the phone's date to a day when it's this game
-  const DAYS = ['race', 'hattrick', 'chaos', 'duel', 'target', 'scout'];
+  const DAYS = ['race', 'hattrick', 'chaos', 'duel', 'target', 'scout', 'szchaos'];
   const dayFor = kind => { let d = Math.floor(Date.now() / 864e5); while (d % DAYS.length !== DAYS.indexOf(kind)) d++; return d * 864e5 + 43200e3; };
   const quick = async (P, kind) => {
     await P.clock.setSystemTime(dayFor(kind));

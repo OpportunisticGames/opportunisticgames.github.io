@@ -26,6 +26,16 @@ formations, and badges round 2.
 > from your club."
 Built straight away (we were on the cards): a search box and Started / Finished / your club / All filters in Locker → Cards.
 
+### The online update ✅ 5.38 *(owner, 16 Oct 2026)*
+> "This next update is basically all about improving online functionality and player experience … make sure the main
+> game modes are chaos, target and live … default to hard mode for online … chaos and live race the same as the updated
+> normal games … Seasonal chaos should have an online version too"
+Built: New game leads with CHAOS, Seasonal CHAOS (new as a race, variant `szchaos`), Target and Live; a level per room
+(`rooms.level`, Hard by default, Quick match Hard); online CHAOS gets the first-time tips; Easy's rough numbers and
+Hard's hidden clues work online through the room's level. Server changes in `notes/sql/538_online.sql`.
+Owner liked our three ideas, built too: a your-move card on Home (`GM.yourMoveHtml`, from the 🔔's inbox), reactions to
+a result (`online_react`, `rooms.reacts`), this month's record per friend; and Seasonal CHAOS in the Quick match rotation.
+
 ## 💬 To discuss
 
 ### A better tutorial: introduce the app and the website ✅ 5.36 *(owner, 15 Oct 2026)*
