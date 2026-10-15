@@ -3,7 +3,16 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
-### Fixed in 5.36.1 *(owner, 15 Oct 2026)*
+### Fixed in 5.37 *(owner, 15 Oct 2026)*
+- "The tick and the icon cover each other on Icon cards (and the number 1 a bit too)": the 💎 and Nº1 sat in the top-right
+  corner with the ✓. Both are at the top centre now.
+- "It shows Legends I've unlocked that are now Icons as ticked even though they're incomplete – I shouldn't have those
+  cards anymore": the owner's call reverses 5.35's "finished stays finished": `done` no longer reads `cards.fin`, so an
+  upgraded card shows its pieces (5/7); downgraded ones still have enough pieces and stay finished.
+- "The country set thing right above the cards is a little confusing": moved under the cards, says what it's for in the
+  summary ("a free Nations pack each"), and a country opens its five cards in the grid.
+- "Not a huge fan of how the Icon cards shine … more like a quick slice than a glistening shine": a slow 7s shimmer with
+  two sets of twinkles out of step (`icon-glisten`, `icon-twinkle`), Calm turns it off.
 - "Now the Play app is showing Get the app": 5.36's permanent Play button only checked whether the phone was Android,
   not whether you were already in the app (`window.AndroidApp`). It's hidden inside the app again.
 
