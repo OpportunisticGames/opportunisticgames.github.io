@@ -9,6 +9,14 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 96, label: '5.35.1', date: '2026-10-15', title: '📲 Goal Machine on Google Play',
+      items: [
+        '📲 The Android app is on Google Play: on an Android phone the website now always shows a Get the app on Google Play button',
+        '🎵 Music is on from the start (turn it off any time in Settings)',
+        '🏷️ NEW and UPDATED tags on the games now last three weeks from the update, instead of hanging around',
+      ],
+    },
+    {
       v: 95, label: '5.35', date: '2026-10-14', title: '💎 Icon cards, watching races live, and a clearer Updates page',
       items: [
         '💎 New top tier: 30 Icon cards (the Hall of Fame and the very best), seven pieces each and rare in packs. Every card’s tier is now worked out from how good he really was for his position (titles, awards, goals or clean sheets per game, top-four seasons), not just how famous, so there are keeper and defender Legends too. Cards you’d finished stay finished',
@@ -921,7 +929,7 @@
         <div><small>Game version</small><b>v${GM.versionLabel}</b></div>
         <div><small>${build != null ? 'Android app' : 'Player data'}</small><b>${build != null ? 'Build ' + build : GM.dataDate}</b></div>
       </div>
-      ${GM.appOutdated() ? `<a class="btn big" href="${GM.APK_URL}">📲 Get the newest Android app</a>` : ''}
+      ${GM.appOutdated() ? `<a class="btn big" href="${GM.PLAY_URL}">📲 Get the newest Android app</a>` : ''}
       <h3 class="section-title">🆕 Latest</h3>
       <div class="releases">${releaseCard(latest, true)}</div>
       <h3 class="section-title era">⭐ The big updates</h3>

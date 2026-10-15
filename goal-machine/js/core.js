@@ -836,7 +836,8 @@ GM.share = async function (text, url) {
 // Invite a friend to the game itself (the home screen and Settings have a button for it)
 GM.SITE_URL = 'https://opportunisticgames.github.io/goal-machine/';
 GM.shareGame = () => GM.share('⚽ Goal Machine: spin the reels and build the biggest-scoring Premier League XI from 5,000+ real players. Daily games, online duels and more. Come and play me!', GM.SITE_URL);
-GM.APK_URL = 'https://github.com/OpportunisticGames/opportunisticgames.github.io/releases/latest/download/goal-machine.apk';
+GM.APK_URL = 'https://github.com/OpportunisticGames/opportunisticgames.github.io/releases/latest/download/goal-machine.apk';  // (the sideload build, for anyone without Play)
+GM.PLAY_URL = 'https://play.google.com/store/apps/details?id=goal.machine';  // the app, live on Google Play
 // Oldest Android app build that doesn't need replacing. Raise it after an app change players should pick up; older
 // apps then show an update link. Builds before AndroidApp.version() existed always count as out of date.
 GM.APP_MIN_BUILD = 26;  // build 26: instant push notifications (Firebase), and the 15-minute check really schedules

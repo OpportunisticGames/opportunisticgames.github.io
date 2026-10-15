@@ -15,7 +15,8 @@
   // { game: { tag, v } } from the releases that carry tags; the newest release wins
   function tags() {
     const out = {};
-    (GM.UPDATES || []).slice().reverse().forEach(u => Object.entries(u.tags || {}).forEach(([k, tag]) => { out[k] = { tag, v: u.v }; }));
+    // (a tag lasts three weeks from its release: after that it isn't news)
+    (GM.UPDATES || []).slice().reverse().filter(u => recent(u.date, FEATURE_DAYS)).forEach(u => Object.entries(u.tags || {}).forEach(([k, tag]) => { out[k] = { tag, v: u.v }; }));
     (GM.NEW_MODES || []).forEach(k => { if (!out[k]) out[k] = { tag: 'NEW', v: 1 }; });  // the older NEW games
     return out;
   }

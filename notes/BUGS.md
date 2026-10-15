@@ -3,6 +3,15 @@
 Bugs reported by the owner (or found along the way). **Bugs get fixed straight away**, then move to *Fixed* with the
 version they shipped in. Newest at the top.
 
+### Fixed in 5.35.1 *(owner, 15 Oct 2026)*
+- "The download the Android app button has an X next to it … it should stay permanently, but take you to the Play
+  Store link and not download the APK": on Android browsers the bar is now a permanent "Get the app on Google Play"
+  (`GM.PLAY_URL`), and Settings, About and the update prompts point to Play too (About keeps the APK for anyone without Play).
+- "It highlights NEW on just Auction and Dodgy Owner, while saying Moneyball is updated": the tags lasted until you
+  opened the game, however old (and Auction/CHAOS had a permanent NEW). Tags now last three weeks from their release.
+- (owner) "Better if music is on by default": menu and game music now default to on everywhere (it starts on the
+  first tap, as browsers ask).
+
 ### Fixed in 5.35 *(owner, 14 Oct 2026)*
 - "The problem little line that doesn't do anything is still here" (build 58, only in the Play app, not in Chrome; it
   only moves if you grab it, and grows when touched): a phone maker's draggable quick-scroll bar on the WebView (build 58

@@ -183,7 +183,7 @@
     GM.confirm('Leave this game? Your signings so far will be lost.', 'Leave', 'Keep playing').then(ok => { if (ok) { GM.leaveGuard = null; location.hash = a.getAttribute('href'); } });
   }, true);
 
-  GM.NEW_MODES = ['chaos', 'auction'];
+  GM.NEW_MODES = [];
   function route() {
     document.body.classList.remove('ch-mode');  // (a challenge game puts it back)
     const { path, q } = parseHash();
@@ -346,10 +346,10 @@
         <a class="icon-btn" href="#/updates" aria-label="Updates">📰${GM.hasUnseenUpdate() ? '<i class="new-dot"></i>' : ''}</a></div>
       <header class="hero">
         <p>${club ? `<span class="fan-chip">${GM.clubChip(club, true)}</span> <span class="banter">${GM.esc(GM.clubBanter(club))}</span>` : `${GM.allPlayers ? GM.allPlayers.length.toLocaleString() : '5,000+'} Premier League players · 1992 to today`}</p>
-        ${installHidden() || hasNativeApp ? '' : `<div class="install-bar">
-          ${isAndroid ? `<a class="btn small" id="getapk" href="${GM.APK_URL}">🤖 Get the Android app</a>` : `<button class="btn small" id="install" hidden>📲 Install app</button>`}
+        ${hasNativeApp ? '' : isAndroid ? `<div class="install-bar"><a class="btn small" id="getapk" href="${GM.PLAY_URL}" target="_blank" rel="noopener">🤖 Get the app on Google Play</a></div>`
+          : installHidden() ? '' : `<div class="install-bar"><button class="btn small" id="install" hidden>📲 Install app</button>
           <button class="install-x" id="install-x" title="I already have it" aria-label="Hide">✕</button></div>`}
-        ${GM.appOutdated() ? `<div class="install-bar"><a class="btn small" href="${GM.APK_URL}">📲 New version of the app – tap to update</a></div>` : ''}
+        ${GM.appOutdated() ? `<div class="install-bar"><a class="btn small" href="${GM.PLAY_URL}">📲 New version of the app – tap to update</a></div>` : ''}
       </header>
       ${GM.firstXICard()}${GM.promoHtml()}
       <div class="hard-toggle four" role="group" aria-label="Difficulty">${Object.entries(GM.LEVELS).map(([k, [i, n, sub]]) => `<button class="${k === level ? 'on' : ''}" data-level="${k}">${i} ${n}<small>${sub}</small></button>`).join('')}</div>
@@ -431,8 +431,6 @@
         if (outcome === 'accepted') { GM.store.set('installed', true); GM.$$('.install-bar').forEach(b => b.remove()); }
       };
     }
-    // downloading the APK counts as installing – don't nag again on this browser
-    const ga = GM.$('#getapk'); if (ga) ga.addEventListener('click', () => GM.store.set('installed', true));
     const ix = GM.$('#install-x'); if (ix) ix.onclick = () => { GM.store.set('installed', true); GM.$$('.install-bar').forEach(b => b.remove()); };
     // hide the bar entirely on desktop until Chrome actually offers an install
     const bar = GM.$('.install-bar'); if (bar && ib && !installEvt) bar.hidden = true;
@@ -498,7 +496,7 @@
         <a href="#" id="s-howto">❓ How Goal Machine works<span>›</span></a>
         <a href="#/updates">📰 Updates & version history ${GM.hasUnseenUpdate() ? '<i class="new-dot inline"></i>' : ''}<span>›</span></a>
         <a href="#/about">ℹ️ About the data<span>›</span></a>
-        ${build == null ? `<a href="${GM.APK_URL}">🤖 Android app (APK)<span>›</span></a>` : ''}
+        ${build == null ? `<a href="${GM.PLAY_URL}" target="_blank" rel="noopener">🤖 The Android app on Google Play<span>›</span></a>` : ''}
         ${GM.appHas('links') ? `<a href="#" id="s-links">🔗 Open friends’ links in the app <small class="${GM.app('linksStatus') === 'off' ? 'warn' : ''}">${({ verified: '✅ On', off: '⚠️ Off – tap to fix', unknown: 'Check' })[GM.app('linksStatus')] || ''}</small><span>›</span></a>` : ''}
         <a href="privacy.html">🔐 Privacy policy<span>›</span></a>
       </section>
@@ -809,7 +807,7 @@
       <p>Stats are stitched together from public datasets: the official premierleague.com player pages (1992–2020), Fantasy Premier League gameweek data (2016–today) and Understat season stats (2014–2016). Which club a player was at in each season (for chemistry and title badges) comes from Transfermarkt transfer records. Assists after 2020 are FPL assists, which run slightly higher than the official count. A handful of players’ early seasons are estimated from minutes played, so the odd tally might be off by a game or a goal.</p>
       <p>Only Premier League appearances and goals count – no cups, Europe or Championship seasons.</p>
       <p>📸 Player photos come from ${GM.playSafe ? '' : 'the Premier League, Transfermarkt and '}Wikimedia Commons (<a href="#/credits">photo credits</a>). Players without a photo show their initials in their club colours.</p>
-      ${GM.playSafe ? '' : `<p>📲 Android app: <a href="${GM.APK_URL}">download the latest APK</a>. Game updates arrive automatically in the app.</p>`}
+      ${GM.playSafe ? '' : `<p>📲 Android app: <a href="${GM.PLAY_URL}" target="_blank" rel="noopener">Goal Machine on Google Play</a> (no Play? <a href="${GM.APK_URL}">the APK</a>). Game updates arrive automatically in the app.</p>`}
       ${GM.playSafe ? '' : `<p>🎧 Soundtrack music from <a href="https://www.epidemicsound.com/">Epidemic Sound</a>: <span id="tune-credits">the songs in the playlist</span>.</p>`}
       <p>🔐 <a href="privacy.html">Privacy policy</a></p>
       <p>This is a fan-made game inspired by FourFourTwo’s 442GOALS and is not affiliated with the Premier League or FourFourTwo.</p>

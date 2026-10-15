@@ -50,7 +50,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   ok(/UPDATED/.test(await pg.textContent('a.tile[href="#/moneyball"]')) && !!(await pg.$('#htabs [data-t="market"] .new-dot')), 'an updated game gets an UPDATED tag, and its tab a dot');
   await pg.click('a.tile[href="#/moneyball"]'); await pg.waitForTimeout(400); await pg.goto(U + '#/'); await pg.waitForTimeout(500);
   ok(!/UPDATED/.test(await pg.textContent('a.tile[href="#/moneyball"]')), '…until you open it');
-  ok(/NEW/.test(await pg.textContent('a.tile[href="#/auction"]')), 'NEW still marks games you’ve never tried');
+  ok(!/NEW/.test(await pg.textContent('a.tile[href="#/auction"]')), 'an old game’s NEW has gone (tags last three weeks from their release)');
 
   // matchday joins the banner
   await pg.evaluate(() => { const d = new Date(); d.setHours(23, 0, 0, 0); GM.store.set('club', 'Everton'); GM.setFixtures([[d.toISOString().slice(0, 19) + 'Z', 'Everton', 'Liverpool']]); });
