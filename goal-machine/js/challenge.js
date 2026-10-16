@@ -295,6 +295,12 @@
     el.innerHTML = `<div class="ch-verdict"><b>${verdict}</b><div class="ch-scores"><span class="a">${esc(an)} <b>${fmt(A.score)}</b></span><i>v</i><span class="b"><b>${fmt(B.score)}</b> ${esc(bn)}</span></div><small>${esc(modeName(ch))} · ${esc(unit)}</small></div>
       <div id="ch-bo3"></div>
       ${reactIn ? `<div class="ch-bubble">💬 <b>${esc(bn)}</b>: ${esc(reactIn)}</div>` : ''}
+      ${sd.token ? `<div class="ch-reacts">${REACTS.concat(GM.extraReactions ? GM.extraReactions() : []).map(r => `<button class="btn small ghost" data-react="${esc(r)}">${esc(r)}</button>`).join('')}</div>` : ''}
+      <div class="actions col">
+        ${sd.you ? `<button class="btn big" id="ch-rematch">🔁 Rematch (new spins)</button>` : `<a class="btn big" href="#/c?id=${ch.code}">⚔️ Take it on yourself</a>`}
+        <button class="btn ghost" id="ch-pic">🖼️ Share the head-to-head</button>
+        ${me() && sd.you ? `<a class="btn ghost" href="#/rival?name=${enc(bn)}">📜 Your record v ${esc(bn)}</a>` : ''}
+      </div>
       <h3 class="section-title">📈 How it went</h3>${chartSvg(ga.prog, gb.prog, an, bn)}<p class="muted small center">${story(ga.prog, gb.prog, an, bn)}</p>
       ${pointsFrom(A, B, an, bn)}
       ${diffs(ga.picks, gb.picks, an, bn, ga.mgr !== gb.mgr && (ga.mgr || gb.mgr) ? [ga.mgr, gb.mgr] : null)}
@@ -303,12 +309,7 @@
       ${(ga.wild || []).length || (gb.wild || []).length ? `<p class="ch-wild"><span>${esc(an)}: ${(ga.wild || []).join(' ') || 'no wildcards'}</span><span>${esc(bn)}: ${(gb.wild || []).join(' ') || 'no wildcards'}</span></p>` : ''}
       ${ga.mgr && ga.mgr === gb.mgr ? `<p class="ch-wild"><span>👔 Both went with ${esc(ga.mgr)}</span></p>` : ''}
       ${groupTable(ch)}
-      ${sd.token ? `<h3 class="section-title">💬 Say something</h3><div class="ch-reacts">${REACTS.concat(GM.extraReactions ? GM.extraReactions() : []).map(r => `<button class="btn small ghost" data-react="${esc(r)}">${esc(r)}</button>`).join('')}</div>` : ''}
-      <div class="actions col">
-        ${sd.you ? `<button class="btn big" id="ch-rematch">🔁 Rematch (new spins)</button>` : `<a class="btn big" href="#/c?id=${ch.code}">⚔️ Take it on yourself</a>`}
-        <button class="btn ghost" id="ch-pic">🖼️ Share the head-to-head</button>
-        ${me() && sd.you ? `<a class="btn ghost" href="#/rival?name=${enc(bn)}">📜 Your record v ${esc(bn)}</a>` : ''}
-      </div>`;
+`;
     GM.$$('[data-react]', el).forEach(b => b.onclick = async () => {
       b.disabled = true;
       try { await rpc('challenge_react', { p_play: sd.target, p_token: sd.token, p_reaction: b.dataset.react }); GM.toast(`Sent: ${esc(b.dataset.react)}`); GM.sound.play('good'); }

@@ -596,6 +596,12 @@
     const single = true, pts = null;  // (5.38: one thing decides every game, so the score is the totals, never points out of 100)
     const side = (t, cls) => `<div class="cmp-xi ${cls}">${t.map(x => `<div class="cx ${x.p ? '' : 'empty'}"${x.p ? ` data-psheet="${esc(x.p.pk)}"` : ''}><span class="pos pos-${GM.GROUP[x.pos]}">${x.pos}</span>
         <b>${x.p ? esc(x.p.name.split(' ').slice(-1)[0]) : '–'}</b><i>${x.p ? fmt(x.v) : ''}</i></div>`).join('')}</div>`;
+    // (once there's a result, what to do about it, the rematch above all, comes straight after it, before the XIs)
+    const acts = `<div class="actions col">
+        ${r.result && r.guest ? `<button class="btn big" id="orematch">🔁 Rematch ${esc(opp)}</button><button class="btn ghost" id="oshareres">📤 Share the result</button>` : ''}
+        ${A.n ? '<button class="btn ghost" id="osharepic">🖼️ Share a picture of your XI</button>' : ''}
+        ${!r.result && r.status !== 'declined' ? `<button class="btn ghost small" id="oresign">🏳️ ${r.guest ? 'Resign' : r.quick ? 'Stop searching' : 'Cancel invite'}</button>` : ''}
+        <a class="btn ghost" href="#/online">🌐 All your games</a></div>`;
     root.innerHTML = `${top(KIND[gk(r)].name, '#/online')}
       <div class="h2h-board duel-board">
         <div class="h2h-team p1">${GM.userPic(me(), 'board')}<b>You</b><strong>${pts ? fmt(pts[0]) : fmt(isChaos(r.variant) ? A.c : A.t)}</strong><small>${pts ? 'points' : single && r.result ? (isChaos(r.variant) ? 'CHAOS points' : r.variant === 'target' ? off(A) : st.label) : `${A.n}/11`}</small></div>
@@ -604,16 +610,13 @@
       ${r.result ? resultHero(r, seat)
         : `<div class="banner">⏳ ${r.guest ? `${esc(opp)} is still building their XI (${B.n}/11). You can watch it fill up here.` : 'Nobody has joined yet.'}</div>`}
       ${r.result && r[them] ? reactRow(r, seat, opp) : ''}
+      ${r.result ? acts : ''}
       ${inviteBar(r)}
       ${r.kind === 'race' && A.done && !r.result && r.race[them] ? watchButton(r, opp) + watchPanel(r, r.race[them], opp) : ''}
       <table class="cmp-points"><tr><th></th><th>You</th><th>${esc(opp)}</th></tr>
         ${rows.map(([label, w, a, b, s]) => `<tr class="${w === 'wins' ? 'decides' : 'tiebreak'}"><td>${label}<small>${w === 'wins' ? 'wins it' : w}</small></td><td class="${bothDone && s > 0 ? 'won' : ''}">${a}</td><td class="${bothDone && s < 0 ? 'won' : ''}">${b}</td></tr>`).join('')}</table>
       <div class="cmp"><div><h4>You</h4>${side(team(seat), 'p1')}</div><div><h4>${esc(opp)}</h4>${side(team(them), 'p2')}</div></div>
-      <div class="actions col">
-        ${r.result && r.guest ? `<button class="btn big" id="orematch">🔁 Rematch ${esc(opp)}</button><button class="btn ghost" id="oshareres">📤 Share the result</button>` : ''}
-        ${A.n ? '<button class="btn ghost" id="osharepic">🖼️ Share a picture of your XI</button>' : ''}
-        ${!r.result && r.status !== 'declined' ? `<button class="btn ghost small" id="oresign">🏳️ ${r.guest ? 'Resign' : r.quick ? 'Stop searching' : 'Cancel invite'}</button>` : ''}
-        <a class="btn ghost" href="#/online">🌐 All your games</a></div>`;
+      ${r.result ? '' : acts}`;
     wireInvite(root, r);
     resignButton(root, r, seat);
     const rm = GM.$('#orematch', root);
@@ -777,6 +780,12 @@
     const handHtml = `<div class="scout-hand ${mineNow && held ? 'live' : ''}"><div class="sh-title">🃏 Your cards <span>${!held ? 'all played – grab bonus cards from the reels' : mineNow ? 'tap one to play it (it doesn’t use your pick)' : 'use them on your turn'}</span></div>
       <div class="sh-cards">${Object.entries(SCOUT_CARDS).map(([w, c]) => `<button class="sh-card" data-wild="${w}" ${mineNow && hand[w] > 0 ? '' : 'disabled'}>
         <span class="sh-icon">${c.icon}</span><b>${c.name}</b><small>${c.desc}</small>${hand[w] > 0 ? `<i class="sh-n">×${hand[w]}</i>` : ''}</button>`).join('')}</div></div>`;
+    // (once there's a result, what to do about it, the rematch above all, comes straight after it, before the XIs)
+    const acts = `<div class="actions col">
+        ${r.result && r.guest ? `<button class="btn big" id="orematch">🔁 Rematch ${esc(opp)}</button><button class="btn ghost" id="oshareres">📤 Share the result</button>` : ''}
+        ${A.n ? '<button class="btn ghost" id="osharepic">🖼️ Share a picture of your XI</button>' : ''}
+        ${!r.result && r.status !== 'declined' ? `<button class="btn ghost small" id="oresign">🏳️ ${r.guest ? 'Resign' : r.quick ? 'Stop searching' : 'Cancel invite'}</button>` : ''}
+        <a class="btn ghost" href="#/online">🌐 All your games</a></div>`;
     root.innerHTML = `${top(KIND[gk(r)].name, '#/online')}
       <div class="h2h-board duel-board">
         <div class="h2h-team p1">${GM.userPic(me(), 'board')}<b>You</b><strong>${scoutGame ? '?' : tMe}</strong><small>${11 - myOpen.length}/11</small></div>

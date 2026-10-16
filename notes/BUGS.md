@@ -233,6 +233,7 @@ Found in the 5.39 sweep (server review), not fixed yet: each needs a decision or
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 16 Oct 2026 (owner) | After a challenge rematch, full time showed your own team and score first; the comparison was a scroll away. | 5.39: competitive games open on the result against them (reactions, rematch at the top), your game on a second tab |
 | 16 Oct 2026 (owner) | Watch along only showed the team sheet: no wildcards, no moments. | 5.39: their real game drawn live (`GM.draft.spectate`) plus the move-by-move feed |
 | 16 Oct 2026 (owner) | Best Players had 2 names when the boards had 3: the third had only played Easy, which didn't count. | 5.39: Easy counts half |
 | 16 Oct 2026 (owner) | The card tiers: four in a row and Icon alone underneath. | 5.39: one row of five with bars |

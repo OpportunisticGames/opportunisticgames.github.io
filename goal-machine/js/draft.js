@@ -3033,8 +3033,10 @@
     const best = GM.best(S.mode === 'daily' ? 'daily' : modeKey());
     const icon = S.nat ? GM.flag(S.nat) : S.mode === 'club' ? '🏟️' : GM.MODES[S.mode === 'daily' ? 'daily' : S.mode].icon;
     const xi = S.xi.filter(s => s.p != null).map(s => ({ ...s, player: byId(s.p) }));
-    root.innerHTML = `
-      <div class="topbar"><a href="#/" class="back">‹</a><h2>${icon} Full time</h2><span></span></div>
+    // a challenge, a rematch or an online game is about the other player: the result against them comes first, your own
+    // game is on its own tab
+    const vs = !!(S.ch || S.rematch || S.online), tab = vs ? (S.doneTab || 'vs') : 'me';
+    const mine = `
       <div class="result">
         ${S.rules.mystery ? `<div class="mystery-reveal">🎲 The mystery target was <b>${fmt(S.target)}</b> ${S.st.label}</div>` : ''}
         ${S.rules.treble ? `<div class="result-total ${sc.diff === 0 ? 'bull' : ''}">${sc.hits.length === 3 ? '🏆' : sc.hits.length === 2 ? '🥈' : ''}${fmt(sc.t)}<small>goals · ${fmt(tot('assists'))} assists · ${fmt(tot('apps'))} apps</small></div>`
@@ -3053,17 +3055,27 @@
       </div>
       ${S.rules.max ? (S.rules.chaos ? GM.distHtml(distKey(), S.stat, sc.total, 'CHAOS points') : GM.distHtml(distKey(), S.stat, sc.t)) : ''}
       ${S.collected ? `<a class="collected" href="#/album${S.collected.book === 'purist' ? '?b=purist' : ''}">📒 ${S.collected.n ? `<b>+${S.collected.n}</b> new player${S.collected.n === 1 ? '' : 's'} for your album` : 'No new players this time'} · ${S.collected.total.toLocaleString()} collected${S.collected.badges.length ? `<br>🏅 ${S.collected.badges.join(' · ')}` : ''} ›</a>` : ''}
-      ${S.ch || S.rematch ? '<div id="ch-h2h" class="ch-h2h"></div>' : ''}
       ${GM.report ? GM.report(xi, S.st, S.rules.treble) : ''}
-      ${pitchHtml()}
+      ${pitchHtml()}`;
+    root.innerHTML = `
+      <div class="topbar"><a href="#/" class="back">‹</a><h2>${vs ? '⚔️' : icon} Full time</h2><span></span></div>
+      ${vs ? `<div class="seg done-tabs"><button data-dt="vs" class="${tab === 'vs' ? 'on' : ''}">🆚 ${S.online ? 'The result' : 'Head to head'}</button><button data-dt="me" class="${tab === 'me' ? 'on' : ''}">⚽ Your game · ${fmt(S.rules.chaos || !S.rules.max ? sc.total : sc.t)}</button></div>
+        <div class="done-vs" ${tab === 'vs' ? '' : 'hidden'}>${S.online ? `<div id="race-result"></div><div class="actions col"><a class="btn big" href="#/online?room=${S.online.code}&v=1">🆚 See who won</a></div>` : '<div id="ch-h2h" class="ch-h2h"></div>'}</div>` : ''}
+      <div class="done-me" ${tab === 'me' ? '' : 'hidden'}>${mine}</div>
       <div class="actions col">
-        ${S.online ? `<div id="race-result"></div><a class="btn big" href="#/online?room=${S.online.code}&v=1">🆚 See who won</a>` : S.fx ? `<a class="btn big" href="#/matchday">🏟️ Back to matchday</a>` : S.mode !== 'daily' && !S.dailyChaos ? `<button class="btn big" id="again">🔁 Play again</button>` : `<div class="muted">New Daily ${S.dailyChaos ? 'CHAOS' : 'Ultimate'} tomorrow</div>`}
+        ${S.online ? '' : S.fx ? `<a class="btn big" href="#/matchday">🏟️ Back to matchday</a>` : S.mode !== 'daily' && !S.dailyChaos ? `<button class="btn big" id="again">🔁 Play again</button>` : `<div class="muted">New Daily ${S.dailyChaos ? 'CHAOS' : 'Ultimate'} tomorrow</div>`}
         ${S.fx ? '' : '<button class="btn" id="challenge">⚔️ Challenge a friend (same spins)</button>'}
         <button class="btn ghost" id="share">📤 Share result</button>
         <button class="btn ghost" id="sharepic">🖼️ Share a picture of your ${S.rules.chaos ? 'CHAOS pitch' : 'XI'}</button>
         <a class="btn ghost" href="#/leaderboard?m=${encodeURIComponent(modeKey())}">🏆 Leaderboard</a>
       </div>`;
     wireChart();
+    GM.$$('[data-dt]', root).forEach(b => b.onclick = () => {
+      S.doneTab = b.dataset.dt; GM.sound.play('tap');
+      GM.$$('[data-dt]', root).forEach(x => x.classList.toggle('on', x === b));
+      GM.$('.done-vs', root).hidden = S.doneTab !== 'vs'; GM.$('.done-me', root).hidden = S.doneTab !== 'me';
+      if (S.doneTab === 'me') requestAnimationFrame(wireChart);
+    });
     // a friend's challenge: the head-to-head; a rematch you've just played: sent back to them
     const chEl = GM.$('#ch-h2h', root);
     if (chEl && GM.challenge) { if (S.rematch) GM.challenge.sendRematch(S, sc, chEl); else if (S.ch) GM.challenge.fill(chEl, S.ch.code, S.ch.play); }

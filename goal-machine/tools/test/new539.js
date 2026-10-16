@@ -83,8 +83,20 @@ async function playDraft(pg, each, last) {
   // Bob's score: on the challenge table, not the public board
   await B.waitForTimeout(1500);
   const bOn = server.scores.filter(x => x.name === 'Bob' && /chaos/.test(x.mode)).length, bp = server.plays.find(p => p.code === code && !p.owner);
-  const line = await B.evaluate(() => (document.getElementById('board-news') || {}).textContent || '');
   ok(bOn === 0 && bp.status === 'done', `the challenger's score goes on the challenge table, not the public boards (${bOn} on the boards)`);
+  // his full-time screen: the result against Alice first, his own game on its own tab
+  await B.waitForSelector('#ch-h2h .ch-verdict', { timeout: 8000 }).catch(() => {});
+  const order = await B.evaluate(() => {
+    const v = document.querySelector('#ch-h2h .ch-verdict'), me = document.querySelector('.done-me'), rm = document.getElementById('ch-rematch'), xis = document.querySelector('#ch-h2h .ch-xis');
+    const top = e => e ? e.getBoundingClientRect().top : 1e9;
+    return { tabs: document.querySelectorAll('.done-tabs [data-dt]').length, vTop: top(v), meHidden: !!(me && me.hidden), rmAbove: !!rm && !!xis && top(rm) < top(xis), reactAbove: !!document.querySelector('#ch-h2h .ch-reacts') && top(document.querySelector('#ch-h2h .ch-reacts')) < top(xis) };
+  });
+  ok(order.tabs === 2 && order.vTop < 400 && order.meHidden, `his full time opens on the head-to-head, at the top, with his own game on the other tab (${JSON.stringify(order)})`);
+  ok(order.rmAbove && order.reactAbove, '…the reactions and the rematch come before the detail (the XIs)');
+  await B.screenshot({ path: 'lay/w539_done.png' });
+  await B.click('[data-dt="me"]'); await B.waitForTimeout(300);
+  const line = await B.evaluate(() => (document.getElementById('board-news') || {}).textContent || '');
+  ok(await B.evaluate(() => !document.querySelector('.done-me').hidden && document.querySelector('.done-vs').hidden && !!document.querySelector('.done-me .result-total')), '“Your game” shows his own score and XI');
   ok(/challenge table/.test(line), `…and his full-time screen says so ("${line.replace(/\s+/g, ' ').trim().slice(0, 60)}")`);
   ok(bp.game.feed && bp.game.feed.length >= 11 && !bp.game.live, `his finished game keeps the move-by-move (${bp.game.feed && bp.game.feed.length}) and drops the live copy`);
   ok(JSON.stringify(bp.game).length < 30000, `what his phone sends fits the server's limit (${JSON.stringify(bp.game).length} characters)`);

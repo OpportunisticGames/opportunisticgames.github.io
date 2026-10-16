@@ -3782,3 +3782,6 @@ button.nat-row { font: inherit; color: inherit; border: 0; text-align: left; wid
 .fd-t small { font-size: .74rem; color: var(--muted); line-height: 1.25; }
 .fd-list em { font-style: normal; font-weight: 800; font-size: .86rem; }
 .fd-list em.pos { color: #3ccf7a; } .fd-list em.neg { color: #ff6b6b; }
+/* 5.39: a challenge / online full time: the result against them first, your own game on its own tab */
+.done-tabs { margin: 4px 0 12px; position: sticky; top: 0; z-index: 5; }
+.done-vs .ch-verdict { margin-top: 0; }
