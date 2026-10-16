@@ -9,6 +9,21 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 99, label: '5.39', date: '2026-10-16', title: '👀 Watch your mate’s game live, fairer challenges, and a podium on every board',
+      items: [
+        '👀 Watch along shows your friend’s real game as they play it: their pitch, the wildcards in their hand, the reels they’ve spun, the manager, and every signing, wildcard, coin toss and CHAOS moment as it happens, with what it did to their score',
+        '📣 The head-to-head now has both games move by move',
+        '⚔️ Challenges are same spins and same luck, so the better picks win. Because you can see their game as you play, challenge scores go on the challenge’s own table, not the public leaderboards (the score you set when you made it still counts)',
+        '🏆 The podium on every leaderboard, even with one or two names on it: the empty steps are up for grabs',
+        '🏅 Easy boards now count half in Best Players, so everyone can get on it',
+        '🧩 The card tiers sit in one tidy row, each with its own progress bar',
+        '🔔 Result notifications say the real score (“912 v 1,828”) instead of 100–0',
+        '🐛 Scores over 10,000 weren’t saved (a CHAOS Hard game of 10,639 went missing): fixed, and the lost score is back',
+        '🐛 And a sweep of smaller fixes: the Scout’s Tip can’t land on a finished card, the tour no longer restarts when the screen changes size, a first-time tip you left too quickly shows next time, Hat-Trick results drop off the 🔔, the ▲▼ on boards compare like with like, emoji no longer clipped in game titles, and fewer needless backups',
+      ],
+      promo: [{ href: '#/online?tab=challenges', icon: '👀', cls: 't-navy', kick: '👀 New: watch along', title: 'Watch your mate play, live', sub: 'Challenge a friend, then watch their pitch, wildcards and every coin toss as it happens' }],
+    },
+    {
       v: 98, label: '5.38', date: '2026-10-16', title: '🌐 Online, sorted: fairer races, Hard by default, and Seasonal CHAOS head to head',
       items: [
         '🏆 The bigger total wins a race. Squad rating, then time, only decide it when the totals are level (no more draws where one of you scored more and the other was quicker)',

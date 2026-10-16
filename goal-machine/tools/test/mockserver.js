@@ -161,11 +161,14 @@ module.exports = function makeServer() {
     },
     best_players(a) {
       const boards = {}, pts = [10, 7, 5, 4, 3, 2, 2, 1, 1, 1];
-      scores.filter(x => /^(ultimatepure|ultimate|classicwild|classic|extreme|purist|chaosx|chaos|szchaos|target|treble|mystery)x?(ast|apps)?h?$/.test(x.mode)).forEach(x => {
+      // (5.39: Easy boards count half)
+      const easy = m => /^(ultimatepure|ultimate|purist|chaos|szchaos|target|treble|mystery)(ast|apps)?e$/.test(m);
+      scores.filter(x => /^(ultimatepure|ultimate|classicwild|classic|extreme|purist|chaosx|chaos|szchaos|target|treble|mystery)x?(ast|apps)?h?$/.test(x.mode) || easy(x.mode)).forEach(x => {
         const b = boards[x.mode] = boards[x.mode] || {}; if (!b[x.name] || b[x.name] < x.score) b[x.name] = x.score; });
       const per = {};
-      Object.values(boards).forEach(b => Object.entries(b).sort((x, y) => y[1] - x[1]).slice(0, 10).forEach(([n], i) => { (per[n] = per[n] || []).push(i); }));
-      const rows = Object.entries(per).map(([name, rk]) => ({ name, points: rk.map(i => pts[i]).sort((x, y) => y - x).slice(0, 8).reduce((t, x) => t + x, 0), crowns: rk.filter(i => i === 0).length, boards: rk.length, level: null }))
+      Object.entries(boards).forEach(([m, b]) => Object.entries(b).sort((x, y) => y[1] - x[1]).slice(0, 10).forEach(([n], i) => { (per[n] = per[n] || []).push(easy(m) ? -1 - i : i); }));
+      const val = i => i < 0 ? Math.ceil(pts[-1 - i] / 2) : pts[i];
+      const rows = Object.entries(per).map(([name, rk]) => ({ name, points: rk.map(val).sort((x, y) => y - x).slice(0, 8).reduce((t, x) => t + x, 0), crowns: rk.filter(i => i === 0 || i === -1).length, boards: rk.length, level: null }))
         .sort((x, y) => y.points - x.points || y.crowns - x.crowns);
       rows.forEach((r, i) => { r.rank = i && rows[i - 1].points === r.points && rows[i - 1].crowns === r.crowns ? rows[i - 1].rank : i + 1; });
       return rows.slice(0, a.p_limit || 50);
@@ -247,7 +250,7 @@ module.exports = function makeServer() {
     },
   };
   return {
-    rooms, fns, hiddenNames, chs, plays,
+    rooms, fns, hiddenNames, chs, plays, scores,
     async attach(ctx) {
       await ctx.route('**/rest/v1/rpc/*', async route => {
         const fn = route.request().url().split('/rpc/')[1].split('?')[0], args = JSON.parse(route.request().postData() || '{}');

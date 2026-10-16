@@ -497,7 +497,10 @@
     const turnFor = w => (w === 0 ? 'host' : w === 1 ? 'guest' : 'none');
     const finalAll = () => ({ host: { done: true, t: G.scores[0] }, guest: { done: true, t: G.scores[1] } });
     const res = r.result, iWon = res && res.winner === seat;
-    if (done && res && api.resultFx && !GM.store.get('htfx:' + r.code)) { GM.store.set('htfx:' + r.code, 1); setTimeout(() => api.resultFx(r, seat), 300); }
+    // the result's big moment, once a game (the games it's played for kept in one short list); and it's seen, for the 🔔
+    const fxd = GM.store.get('htfxd', []) || [];
+    if (done && res && api.resultFx && !fxd.includes(r.code) && !GM.store.get('htfx:' + r.code)) { GM.store.set('htfxd', fxd.concat(r.code).slice(-30)); setTimeout(() => api.resultFx(r, seat), 300); }
+    if (done && GM.inboxSeen) GM.inboxSeen('r:' + r.code);
     G.online = {
       human: s => s < 2,
       bar: (api.inviteBar(r) || '') + (bad ? '<div class="banner">⚠️ This game got out of step. Tap ‹ and open it again.</div>' : '')

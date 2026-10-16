@@ -215,9 +215,16 @@ version they shipped in. Newest at the top.
 - Rain was lines across the pitch: now drops, ripples and clouds. Too many screen flashes and throbbing backdrops: cut right down.
 
 ## Open
-- **The scroll line on the right is still there after reinstalling** *(owner, 11 Oct 2026)*. The phone is on app build 54,
-  and the fix (`setVerticalScrollBarEnabled(false)`) arrived in build 56. Play still serves 54 while build 58 is in
-  review. Check again once 58 is live; if the line is still there on 58, hide Chromium's own overlay scrollbar too.
+Found in the 5.39 sweep (server review), not fixed yet: each needs a decision or a new Android build.
+- **`app_inbox` and `online_waiting` take a name with no key**, so anyone can read another player's inbox (room codes,
+  watch links, results). The Android app calls `app_inbox` without a key, so the fix is: an optional `p_key` now, send it
+  from app.js, online.js and `GameCheckService`/`PushService` (a new build), then make it compulsory once old builds are gone.
+- **`online_move` trusts the `p_all` totals a duel/auction/Hat-Trick player sends**, so a player could post a win for
+  themselves. Fix: only accept `p_all` on the final move (`p_turn = 'none'`, `r.turn = seat`), or work the totals out on
+  the server from the stored moves.
+- **Three throwaway accounts can hide any name** (`report_name`, `report_avatar`). Fix: count only reporters with scores or
+  an account a few days old.
+- **`player_profile` doesn't check `p_me`** (anyone can see the record between any two players): low.
 
 | Reported | Bug | Status |
 |---|---|---|
@@ -226,6 +233,20 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 16 Oct 2026 (owner) | Watch along only showed the team sheet: no wildcards, no moments. | 5.39: their real game drawn live (`GM.draft.spectate`) plus the move-by-move feed |
+| 16 Oct 2026 (owner) | Best Players had 2 names when the boards had 3: the third had only played Easy, which didn't count. | 5.39: Easy counts half |
+| 16 Oct 2026 (owner) | The card tiers: four in a row and Icon alone underneath. | 5.39: one row of five with bars |
+| 16 Oct 2026 (sweep) | The Scout's Tip could offer a finished card (wasted), its no-cards fallback never ran. | 5.39 |
+| 16 Oct 2026 (sweep) | Background writes (friend names, ▲▼ memory) kept putting the timed backup off, and unchanged writes backed up. | 5.39 |
+| 16 Oct 2026 (sweep) | The ▲▼ on boards compared this month's places with all time's; the memory grew for ever. | 5.39 |
+| 16 Oct 2026 (sweep) | Online result notifications said "Final score 100–0". | Server 16 Oct: the real totals |
+| 16 Oct 2026 (sweep) | Hat-Trick online results stayed on the 🔔 count. | 5.39 |
+| 16 Oct 2026 (sweep) | A first-time tip was marked seen if you left within half a second; the tour restarted on any resize. | 5.39 |
+| 16 Oct 2026 (sweep) | Emoji clipped at the top of draft titles (line height too tight). | 5.39 |
+| 16 Oct 2026 (sweep) | `online_get` without a key showed a race opponent's XI mid-race. | 5.39 client sends the key; server change in `notes/sql/539_sweep.sql` (run at merge) |
+| 16 Oct 2026 (sweep) | Renaming lost your challenges, 🔔 feed and invites; deleting left them for the next owner of the name. | `notes/sql/539_sweep.sql` (run at merge) |
+| 16 Oct 2026 (sweep) | Anyone could call `gm_push`; negative scores and big score meta were refused; the push function failed an insert for every repeat (4,000 log errors a day). | Server 16 Oct |
+| 11 Oct 2026 (owner) | The scroll line on the right of the app. | Not ours: it's Google Play Games' Sidekick tab |
 | 16 Oct 2026 (owner) | A 10,639 on CHAOS Hard (challenge WAKJRE) wasn't on the board, but the friend's 7,586 was. The `scores` table only took scores up to 10,000 (`scores_score_check`), so submit_score was refused. | Server, 16 Oct: the limit is now 1,000,000 and the lost score was put back |
 | 2026-10-12 | After Play again, Halloween CHAOS started with a small pitch, empty space below and a little scroll | 5.30.2: the decorations are clipped to the screen (they had been placed from the scrolled full-time page and stretched it), a new game resets the slots and scroll, and the pitch grows back into empty space |
 | 2026-10-12 | CHAOS drafts (Halloween CHAOS especially) scroll on the phone, and the fog and pumpkins move with it | 5.30.1: `fitPitch` shrinks the slots whenever the page overflows (not just at kick-off), scales the game down as a last resort, and the decorations sit in page coordinates |

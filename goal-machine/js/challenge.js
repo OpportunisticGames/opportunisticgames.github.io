@@ -35,7 +35,7 @@
       el.className = 'ch-intro';
       el.innerHTML = `<div class="chi-card"><div class="chi-tag">⚔️ CHALLENGE MODE</div>
         <div class="chi-vs"><span>${GM.userPic ? GM.userPic(GM.getName() || 'You', 'xl') : ''}<b>You</b></span><i>V</i><span>${GM.userPic ? GM.userPic(c.name, 'xl') : ''}<b>${esc(c.name)}</b></span></div>
-        <div class="chi-goal">Beat <b>${fmt(c.score)}</b> ${esc(c.unit || '')}</div><div class="chi-count">3</div><small>Same spins they had · tap to skip</small></div>`;
+        <div class="chi-goal">Beat <b>${fmt(c.score)}</b> ${esc(c.unit || '')}</div><div class="chi-count">3</div><small>Same spins, same luck: the better picks win · tap to skip</small></div>`;
       document.body.appendChild(el);
       GM.sound.play('drumroll'); GM.buzz(40);
       const n = el.querySelector('.chi-count'), timers = [];
@@ -104,10 +104,17 @@
     // after each signing (and at full time): your progress, for the challenger watching along and for the result
     progress(S, sc, done) {
       const c = S.ch; if (!c || !c.play || !GM.lb.enabled) return;
-      clearTimeout(this._pt);
+      clearTimeout(this._pt); this._pt = null;
       const send = () => rpc('challenge_progress', { p_play: c.play, p_token: c.token, p_score: Math.round(sc.total), p_total: Math.round(sc.t), p_game: GM.draft.game(S), p_done: !!done })
         .then(() => { if (done) { const l = local(c.code) || {}; GM.store.set('ch:' + c.code, { ...l, done: true }); } }).catch(() => {});
-      if (done) this._done = send(); else this._pt = setTimeout(send, 500);
+      if (done) this._done = send(); else this._pt = setTimeout(() => { this._pt = null; send(); }, 500);
+    },
+
+    // between signings (a spin, a wildcard, a moment): the game as it stands, a moment later, for watch along
+    live(S) {
+      const c = S.ch; if (!c || !c.play || !GM.lb.enabled || S.phase === 'done') return;
+      if (this._pt) return;  // (one already on its way: the screen redraws all the time, so it mustn't keep putting it off)
+      this._pt = setTimeout(() => { this._pt = null; if (S.phase !== 'done') this.progress(S, GM.draft.score(S), false); }, 1200);
     },
 
     // the ghost bar while you play: where you stand against them after the same number of signings
@@ -226,7 +233,7 @@
     }
     if (mine && mine.status === 'done') return result(app, ch, mine.id);
     app.innerHTML = top('⚔️ Challenge') + `<div class="ch-hero">${GM.userPic ? GM.userPic(owner.name, 'xl') : ''}<b>${esc(owner.name)} challenges you</b>${owner.username && GM.titleHtml ? GM.titleHtml(owner.username) : ''}
-        <span>${esc(modeName(ch))}: beat <b>${fmt(owner.score)}</b> ${esc(unitOf(owner))}</span><small>Same spins as they had. Their line shows as you go.</small></div>
+        <span>${esc(modeName(ch))}: beat <b>${fmt(owner.score)}</b> ${esc(unitOf(owner))}</span><small>Same spins and same luck as they had. Their line shows as you go. Challenge scores go on this table, not the public leaderboards.</small></div>
       <div class="actions col"><button class="btn big" id="ch-go">${mine ? '▶ Carry on' : '⚔️ Take it on'}</button></div>
       ${done.length > 1 || live.length ? `<h3 class="section-title">The table</h3>${table}` : ''}`;
     GM.$('#ch-go').onclick = () => start(ch, owner);
@@ -292,6 +299,7 @@
       ${pointsFrom(A, B, an, bn)}
       ${diffs(ga.picks, gb.picks, an, bn, ga.mgr !== gb.mgr && (ga.mgr || gb.mgr) ? [ga.mgr, gb.mgr] : null)}
       <h3 class="section-title">🆚 The XIs</h3>${xis(ga, gb, an, bn)}
+      ${feedHtml(ga.feed, an === 'You' ? 'Your' : an, false).replace('Your’s', 'Your')}${feedHtml(gb.feed, bn, false)}
       ${(ga.wild || []).length || (gb.wild || []).length ? `<p class="ch-wild"><span>${esc(an)}: ${(ga.wild || []).join(' ') || 'no wildcards'}</span><span>${esc(bn)}: ${(gb.wild || []).join(' ') || 'no wildcards'}</span></p>` : ''}
       ${ga.mgr && ga.mgr === gb.mgr ? `<p class="ch-wild"><span>👔 Both went with ${esc(ga.mgr)}</span></p>` : ''}
       ${groupTable(ch)}
@@ -432,18 +440,28 @@
   window.addEventListener('hashchange', () => { if (!/[?&]watch=/.test(location.hash)) { clearInterval(wtimer); wtimer = null; } });
   function watch(app, ch, playId) {
     clearInterval(wtimer);
+    let need = null;  // (Extreme and Purist games need every PL player loaded to draw their pitch)
     const draw = c => {
       const owner = c.plays.find(p => p.owner), p = c.plays.find(x => x.id === playId);
       if (!p) { app.innerHTML = top('👀 Watch along', '#/c?id=' + c.code) + '<p class="center muted">Can’t find that player.</p>'; return; }
-      const g = p.game || {}, n = (g.xi || []).filter(s => s[1]).length, last = (g.picks || []).slice(-1)[0], d = at(g.prog, n) - at(owner.game.prog, n);
-      app.innerHTML = top('👀 Watch along', '#/c?id=' + c.code) + `<div class="ch-verdict"><b>${p.status === 'done' ? '⏱️ Full time' : `<i class="live-dot"></i> ${esc(p.name)} is playing`}</b>
+      const g = p.game || {}, n = (g.xi || []).filter(s => s[1]).length, d = at(g.prog, n) - at(owner.game.prog, n), done = p.status === 'done';
+      const keep = window.scrollY;
+      app.innerHTML = top('👀 Watch along', '#/c?id=' + c.code) + `<div class="ch-verdict watch-head"><b>${done ? '⏱️ Full time' : `<i class="live-dot"></i> ${esc(p.name)} is playing`}</b>
           <div class="ch-scores"><span class="a">${esc(p.name)} <b>${fmt(p.score)}</b></span><i>v</i><span class="b"><b>${fmt(owner.score)}</b> ${esc(owner.name)}</span></div>
-          <small>${n}/11 signed${n ? ` · ${d >= 0 ? `${fmt(d)} ahead of` : `${fmt(-d)} behind`} ${esc(owner.name)} at the same point` : ''}</small></div>
-        ${last ? `<div class="ch-bubble">✍️ Just signed <b>${esc(last[2])}</b> (${esc(last[3])}) · ${fmt(last[4])}</div>` : ''}
+          <small>${n}/11 signed${n ? ` · ${d >= 0 ? `${fmt(d)} ahead of` : `${fmt(-d)} behind`} ${esc(owner.name)} at the same point` : ''}${g.mgr ? ` · 👔 ${esc(g.mgr)}` : ''}</small></div>
+        ${!done && g.live ? '<div class="watch-game" id="watch-game"></div>' : ''}
+        ${feedHtml(g.feed, p.name)}
+        ${done ? `<div class="actions col"><a class="btn big" href="#/c?id=${c.code}&p=${p.id}">🆚 See the head-to-head</a></div>` : '<p class="muted small center">Live: it moves as they spin, sign and play their wildcards</p>'}
         ${chartSvg(g.prog, owner.game.prog, p.name, owner.name)}
-        <h3 class="section-title">🆚 The XIs so far</h3>${xis(g, owner.game || {}, p.name, owner.name)}
-        ${p.status === 'done' ? `<div class="actions col"><a class="btn big" href="#/c?id=${c.code}&p=${p.id}">See the head-to-head</a></div>` : '<p class="muted small center">Updates as they sign each player</p>'}`;
-      if (p.status === 'done') { clearInterval(wtimer); wtimer = null; }
+        <h3 class="section-title">🆚 The XIs so far</h3>${xis(g, owner.game || {}, p.name, owner.name)}`;
+      const box = GM.$('#watch-game', app);
+      if (box) {
+        const all = !!(g.live.extreme || (GM.draft.RULES[g.live.mode] || {}).all);
+        if (all && !GM.allPlayers) { box.innerHTML = '<p class="muted small center">Loading their game…</p>'; if (!need) need = GM.loadAll().then(() => draw(c), () => {}); }
+        else if (!GM.draft.spectate(box, g.live, g.xi)) box.remove();  // (a different version of the game on their phone: the team sheet below still works)
+      }
+      window.scrollTo(0, keep);
+      if (done) { clearInterval(wtimer); wtimer = null; }
     };
     draw(ch);
     let lastAt = '';
@@ -451,8 +469,14 @@
       if (!location.hash.includes('watch=')) { clearInterval(wtimer); return; }
       let c = null; try { c = await rpc('challenge_get', { p_code: ch.code }); } catch (e) { return; }
       const p = c && c.plays.find(x => x.id === playId);
-      if (p && p.updated !== lastAt) { lastAt = p.updated; draw(c); GM.sound.play('tap'); }
-    }, 3500);
+      if (p && p.updated !== lastAt) { const fresh = lastAt !== ''; lastAt = p.updated; draw(c); if (fresh) GM.sound.play('tap'); }
+    }, 3000);
+  }
+  // 📣 what's happened in their game, newest first: each signing, wildcard and moment and what it did to the score
+  function feedHtml(feed, name, open = true) {
+    if (!feed || !feed.length) return '';
+    const rows = feed.slice().reverse().map(f => `<li><span class="fd-i">${esc(f.i)}</span><span class="fd-t"><b>${esc(f.n)}</b>${f.x ? `<small>${esc(f.x)}</small>` : ''}</span>${f.d ? `<em class="${f.d < 0 ? 'neg' : 'pos'}">${f.d > 0 ? '+' : '−'}${fmt(Math.abs(f.d))}</em>` : '<em></em>'}</li>`).join('');
+    return `<details class="set ch-feed" ${open ? 'open' : ''}><summary><span>📣 ${esc(name)}’s game, move by move</span><small>${feed.length}</small></summary><ol class="fd-list">${rows}</ol></details>`;
   }
 
   /* ---------------------------------------------------------------- your record against a friend */

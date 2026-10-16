@@ -306,7 +306,7 @@
     let last = '';
     const tick = async () => {
       let r;
-      try { r = await rpc('online_get', { p_code: code, p_user: me() }); } catch (e) { return; }
+      try { r = await rpc('online_get', { p_code: code, p_user: me(), ...(GM.account() ? { p_key: GM.account().key } : {}) }); } catch (e) { return; }
       if (!r) { stopPoll(); root.innerHTML = top('Online', '#/online') + '<p class="muted center">This game has gone. Unanswered invites are cleared after two weeks.</p>'; return; }
       const seat = seatOf(r);
       if (!seat) { root.innerHTML = top('Online', '#/online') + `<p class="muted center">This game is between ${esc(r.host)} and ${esc(r.guest || '…')}.</p>`; stopPoll(); return; }

@@ -57,6 +57,7 @@
       GM.$('[data-skip]', bub).onclick = e => { e.stopPropagation(); end(); };
     };
     layer.onclick = () => { GM.sound.play('tap'); i++; show(); };  // a tap anywhere (or Next) goes on
+    layer.again = show;  // (the screen changed size: the same step, moved to where its part is now)
     show();
   };
   // the end: what to do next (and, on an Android phone's browser, the app)
@@ -75,7 +76,7 @@
       <div class="row">${web ? `<a class="btn ghost" href="${GM.PLAY_URL}" target="_blank" rel="noopener">🤖 Get the app</a>` : '<button class="btn ghost" data-close>Look around</button>'}<a class="btn big" href="#/draft?m=chaos&s=goals" data-close>🌪️ Try CHAOS</a></div></div>`);
     GM.$$('a[data-close]', m.el).forEach(a => a.addEventListener('click', () => m.close()));
   }
-  addEventListener('resize', () => { if (layer) { layer.remove(); layer = null; GM.tour(); } });
+  addEventListener('resize', () => { if (layer && layer.again) layer.again(); });
   addEventListener('hashchange', () => { if (layer) end(); });
 
   // players who were here before the tour: offered once, on Home, when nothing else is showing
@@ -118,13 +119,13 @@
   GM.firstTimeTips = function (path, q) {
     const k = tipKey(path, q || {});
     if (!k || !auto() || (q && q.tut) || GM.store.get('tip:' + k) || layer) return;
-    GM.store.set('tip:' + k, 1);
     const [name, cards] = TIPS[k];
     const hash = location.hash;
     // (after whatever's showing first, like CHAOS's kick-off and manager cards; gone if you leave)
     const go = (n = 0) => {
-      if (location.hash !== hash) return;
-      if (document.querySelector('.modal-wrap, .cm') && n < 240) return setTimeout(() => go(n + 1), 500);
+      if (location.hash !== hash || GM.store.get('tip:' + k)) return;  // (left before it showed: it shows next time instead)
+      if (document.querySelector('.modal-wrap, .cm')) return n < 240 ? setTimeout(() => go(n + 1), 500) : null;
+      GM.store.set('tip:' + k, 1);
       GM.modal(`<div class="welcome tips"><div class="wl-kicker">First time in ${name}</div>
         ${cards.map(([i, t, x]) => `<div class="tip-row"><span>${i}</span><p><b>${t}</b>${x}</p></div>`).join('')}
         <div class="row"><button class="btn big" data-close>Got it ⚽</button></div></div>`);

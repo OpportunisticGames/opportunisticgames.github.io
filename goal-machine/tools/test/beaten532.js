@@ -43,7 +43,7 @@ async function phone(b, name, key, errs, w = 390) {
   ok(bobFeed.items.some(x => x.kind === 'crown'), 'Bob gets a 👑 in his drawer');
   // 🏅 Best Players on Ranks
   await A.goto(U + '#/leaderboard?m=bestplayers'); await A.waitForTimeout(1500);
-  const bp = await A.evaluate(() => [...document.querySelectorAll('#global .lb-row')].map(r => r.textContent.replace(/\s+/g, ' ').trim()));
+  const bp = await A.evaluate(() => [...document.querySelectorAll('#global .pod:not(.empty), #global .lb-row')].sort((x, y) => (x.querySelector('.pod-step') || {}).textContent - (y.querySelector('.pod-step') || {}).textContent).map(r => r.textContent.replace(/\s+/g, ' ').trim()));
   ok(bp.length === 2 && /Alice/.test(bp[0]) && /👑 2 ?27 pts/.test(bp[0]) && /Bob/.test(bp[1]) && /👑 1 ?17 pts/.test(bp[1]), `Best Players adds up the boards: ${bp.join(' | ')}`);
   ok(await A.evaluate(() => /Best Players/.test(document.querySelector('.lbx-games a.on').textContent)), 'its tab is on');
   await A.screenshot({ path: 'lay/bestplayers.png' });
