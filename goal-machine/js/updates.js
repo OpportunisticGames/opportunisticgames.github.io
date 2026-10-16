@@ -15,6 +15,8 @@
         '🆚 After a challenge, a rematch or an online game, full time opens on the result against them: who won, the scores, your reactions and the rematch button come first. Your own game (score, breakdown, pitch) is on its own tab',
         '📣 The head-to-head now has both games move by move',
         '⚔️ Challenges are same spins and same luck, so the better picks win. Because you can see their game as you play, challenge scores go on the challenge’s own table, not the public leaderboards (the score you set when you made it still counts)',
+        '👀 No more peeking ahead in a challenge: the 👀 button shows who they signed at the point you’ve just reached, not who they signed next',
+        '🔁 A rematch could be sent twice (and turn up twice for your mate): now it’s always the one',
         '🏆 The podium on every leaderboard, even with one or two names on it: the empty steps are up for grabs',
         '🏅 Easy boards now count half in Best Players, so everyone can get on it',
         '🧩 The card tiers sit in one tidy row, each with its own progress bar',

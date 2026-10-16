@@ -78,7 +78,7 @@
     // ⚔️ Challenge a friend: pick friends from the app (they get a notification) and/or send the link anywhere.
     // Returns false when the challenge couldn't be saved (the draft then falls back to a plain link).
     async send(S, sc, txt) {
-      const code = S.chCode || (S.chCode = await this.create(S, sc));
+      const code = S.chCode || (S.chCode = await (S.chCodeP || (S.chCodeP = this.create(S, sc))));  // (two quick taps: one challenge)
       if (!code) return false;
       let fr = [];
       if (GM.account() && GM.lb.enabled) { try { fr = (await rpc('online_friends', auth())) || []; } catch (e) { fr = []; } }
@@ -120,12 +120,13 @@
     // the ghost bar while you play: where you stand against them after the same number of signings
     ghostHtml(S) {
       const c = S.ch, n = S.xi.filter(x => x.p != null).length, mine = at(S.prog, n), theirs = at(c.prog, n), d = mine - theirs;
-      const spoil = GM.store.get('chspoil', false), next = (c.picks || [])[n];
+      // (what they signed at the point you've just reached, never what's coming: that would tell you who to take)
+      const spoil = GM.store.get('chspoil', false), then = n ? (c.picks || [])[n - 1] : null;
       const left = S.xi.filter(x => x.p == null).length, need = c.score - mine;
       const last = left === 1 && S.phase !== 'done' && (S.rules.max || S.rules.chaos) ? `<span class="chg-last">${need > 0 ? `🎯 Last signing: you need <b>${fmt(need + 1)}</b> to win` : '🛡️ Last signing: you’re ahead – hold on!'}</span>` : '';
       return `<div class="banner ch-ghost ${S.chFlash && Date.now() - S.chFlash < 1500 ? 'flash' : ''} ${d < 0 ? 'behind' : ''}">⚔️ <b>${esc(c.name)}</b> scored <b>${fmt(c.score)}</b>${last}
         ${n ? `<span class="chg-line">After ${n} signing${n > 1 ? 's' : ''}: you <b>${fmt(mine)}</b> · ${esc(c.name)} <b>${fmt(theirs)}</b> <i class="${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '+' : '−'}${fmt(Math.abs(d))}</i></span>` : ''}
-        ${next ? `<button class="chg-spoil" onclick="GM.challenge.toggleSpoil()">${spoil ? `👀 They signed <b>${esc(next[2])}</b> next (${esc(next[3])}, ${fmt(next[4])})` : '👀 What did they sign next?'}</button>` : ''}</div>`;
+        ${then ? `<button class="chg-spoil" onclick="GM.challenge.toggleSpoil()">${spoil ? `👀 Their signing ${n}: <b>${esc(then[2])}</b> (${esc(then[3])}, ${fmt(then[4])})` : `👀 Who did they sign ${n === 1 ? 'first' : 'at this point'}?`}</button>` : ''}</div>`;
     },
     toggleSpoil() { GM.store.set('chspoil', !GM.store.get('chspoil', false)); GM.draft.render(); },
 
@@ -197,7 +198,11 @@
     async sendRematch(S, sc, el) {
       if (S.rematchSent) return show(S.rematchSent);
       el.innerHTML = '<p class="muted center">🔁 Sending your rematch…</p>';
-      const code = await this.create(S, sc, S.rematch);
+      // (the full-time screen can draw again while it's on its way: the same request, never a second rematch)
+      if (!S.rematchP) S.rematchP = this.create(S, sc, S.rematch);
+      const code = await S.rematchP;
+      if (!code) S.rematchP = null;
+      el = (el.isConnected ? el : document.getElementById('ch-h2h')) || el;
       if (!code) { el.innerHTML = '<p class="muted center">Couldn’t send the rematch (are you online?). You can still challenge a friend below.</p>'; return; }
       S.rematchSent = code; show(code);
       function show(c) {

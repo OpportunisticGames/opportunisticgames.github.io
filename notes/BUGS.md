@@ -225,6 +225,11 @@ Found in the 5.39 sweep (server review), not fixed yet: each needs a decision or
 - **Three throwaway accounts can hide any name** (`report_name`, `report_avatar`). Fix: count only reporters with scores or
   an account a few days old.
 - **`player_profile` doesn't check `p_me`** (anyone can see the record between any two players): low.
+- **The level buttons on Home are easy to change by accident** (new-player walkthrough, 16 Oct): a stray tap on Easy/Hard
+  while reaching for the sub-tabs below changes your level everywhere, quietly. Idea: a toast saying what changed, or a
+  little more space between the level row and the tabs.
+- **Maybe: the pack count off by one after opening a pack** (walkthrough: 🎁 said 2, after opening one "Open another (2
+  left)"; a name was claimed in between, which may have added one). Not confirmed: check.
 
 | Reported | Bug | Status |
 |---|---|---|
@@ -233,6 +238,8 @@ Found in the 5.39 sweep (server review), not fixed yet: each needs a decision or
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 16 Oct 2026 (owner) | In a challenge, 👀 "What did they sign next?" showed their next signing and his number before you picked: knowing the future. | 5.39: it shows their signing at the point you've reached |
+| 16 Oct 2026 (owner) | A rematch came twice (TE9NPP and N2SY9W, 9 ms apart): the full-time screen drew twice while the first was being sent, and each sent one. | 5.39: one request per game (`S.rematchP`, `S.chCodeP`); server: the same player's same game within 10 minutes is the same challenge |
 | 16 Oct 2026 (sweep, new-player walkthrough) | Pop-ups (z-index 50) sat under the game's effects, bonus notes, moment cards and Home's visitors (90+): bonus chips over the name box, the ghost over What's New. | 5.39: `.modal-wrap` 98, toasts 99 |
 | 16 Oct 2026 (sweep) | Notices piled up: over the tour, over the reels mid-game, the login reward over the first XI's title; two toasts drawn on top of each other. | 5.39: notices queue (one at a time, wait for a game/tour/pop-up to finish, 90 s at most); toasts stack in `#toasts` |
 | 16 Oct 2026 (sweep) | The prize wheel didn't say what you'd won, "0 spin left", ⬆️ upside down, and the spinning wheel made the page scroll sideways at 360 px. | 5.39 |
