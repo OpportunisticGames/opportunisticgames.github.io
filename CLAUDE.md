@@ -55,6 +55,10 @@ game mode for players; this file is about how to work on it.
 - `core.js` – shared helpers: storage (`GM.store`, keys prefixed `gm:`), seeded RNG (`GM.rng`), avatars and photo
   caching (`GM.avatar`, `GM._ph`), modals and notices, the leaderboard client (`GM.lb`: `top`, `mine`, `submit`),
   the in-game 🏆 pop-up (`GM.lbButton`, `GM.lbModal`, `GM.lbYou`), `GM.APP_MIN_BUILD`, accounts, backups.
+  Layers (5.39): `.modal-wrap` z 98 sits above the game's effects (fx canvas/Lottie 94–97, bonus notes 96, moment cards 95);
+  pack opening (120+) and the challenge intro (220) above it. `GM.notice` queues: one at a time, held while a game is in
+  progress, the tour, a moment card or a pop-up is up (`now: true` skips the queue). `GM.toast`s stack in `#toasts`.
+  `GM.store.set` skips writes that change nothing (so they don't mark the backup dirty). `GM.askName` backs off after "Not now" (`gm:nameSkip`).
 - Offline and backups (core.js): `GM.net` (`online`, `ping`, `msg(what, fallback)` = the go-online card for a page's "couldn't load" spot, the 📶 strip `#net-bar`); every server call goes through `GM.lb._f` so a failure marks the phone offline; scores made offline wait in `gm:lbQueue` (`GM.lb.flush`). `GM.backup`: `GM.store.set` marks data changed, backs up 2 min later and when the app is hidden; `GM.backup.check()` (once a launch, on the tabs) offers a newer cloud backup (Android's own auto-backup can restore an old copy of the WebView data on a reinstall).
 - `app.js` – the router (`#/path?query`), the tab bar (Play · Today · Online · Ranks · 🎒 Locker), the top bar on the tabs'
   pages (`GM.statusBar`: picture, level, season tier, 🎁 `GM.toOpen()` sheet of packs/spins/picks/new kit), Home (with
