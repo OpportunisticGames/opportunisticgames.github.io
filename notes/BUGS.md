@@ -233,6 +233,12 @@ Found in the 5.39 sweep (server review), not fixed yet: each needs a decision or
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 16 Oct 2026 (sweep, new-player walkthrough) | Pop-ups (z-index 50) sat under the game's effects, bonus notes, moment cards and Home's visitors (90+): bonus chips over the name box, the ghost over What's New. | 5.39: `.modal-wrap` 98, toasts 99 |
+| 16 Oct 2026 (sweep) | Notices piled up: over the tour, over the reels mid-game, the login reward over the first XI's title; two toasts drawn on top of each other. | 5.39: notices queue (one at a time, wait for a game/tour/pop-up to finish, 90 s at most); toasts stack in `#toasts` |
+| 16 Oct 2026 (sweep) | The prize wheel didn't say what you'd won, "0 spin left", ⬆️ upside down, and the spinning wheel made the page scroll sideways at 360 px. | 5.39 |
+| 16 Oct 2026 (sweep) | The name box at every full time after "Not now". | 5.39: back-off (3 games, then weekly) |
+| 16 Oct 2026 (sweep) | CHAOS's background animated a hue-rotate filter on a layer bigger than the screen (frames dropped even standing still). | 5.39: transform only |
+| 16 Oct 2026 (sweep) | Home at 360 px: a long "New in 5.38" slide filled the first screen; "1 badges"; 📅 drawn as "July 17". | 5.39: slides clamp to two lines and skip release news in your first games; plurals; 🗓️ |
 | 16 Oct 2026 (owner) | After a challenge rematch, full time showed your own team and score first; the comparison was a scroll away. | 5.39: competitive games open on the result against them (reactions, rematch at the top), your game on a second tab |
 | 16 Oct 2026 (owner) | Watch along only showed the team sheet: no wildcards, no moments. | 5.39: their real game drawn live (`GM.draft.spectate`) plus the move-by-move feed |
 | 16 Oct 2026 (owner) | Best Players had 2 names when the boards had 3: the third had only played Easy, which didn't count. | 5.39: Easy counts half |
