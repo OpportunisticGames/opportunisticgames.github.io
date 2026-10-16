@@ -50,3 +50,6 @@ do $$ declare d text; n text; begin
   if n = d then raise exception 'delete_account: end not found'; end if;
   execute n;
 end $$;
+
+-- 5.39.1 (applied 16 Oct 2026 with apply_migration best_players_weighted): Best Players = for every board you're on,
+-- 1 point + 1 per player below you, × gm_board_weight (Easy 1, Normal 2, Hard/Extreme 3); crowns break ties

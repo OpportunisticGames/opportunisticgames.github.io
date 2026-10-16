@@ -9,6 +9,12 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 100, label: '5.39.1', date: '2026-10-16', title: '🏅 Best Players, added up better',
+      items: [
+        '🏅 Best Players has a new sum: every board you’re on is worth 1 point, plus 1 for each player below you. Normal boards count double, Hard and Extreme triple (they take more skill). No more 80-point ceiling with everyone tied on it, and the more people you beat, the more it’s worth',
+      ],
+    },
+    {
       v: 99, label: '5.39', date: '2026-10-16', title: '👀 Watch your mate’s game live, fairer challenges, and a podium on every board',
       items: [
         '👀 Watch along shows your friend’s real game as they play it: their pitch, the wildcards in their hand, the reels they’ve spun, the manager, and every signing, wildcard, coin toss and CHAOS moment as it happens, with what it did to their score',

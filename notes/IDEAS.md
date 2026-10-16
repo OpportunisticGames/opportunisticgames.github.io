@@ -38,7 +38,7 @@ a result (`online_react`, `rooms.reacts`), this month's record per friend; and S
 
 ## 💬 To discuss
 
-### 🏅 Best Players: a better sum (owner, 16 Oct 2026)
+### 🏅 Best Players: a better sum (owner, 16 Oct 2026) ✅ shipped in 5.39.1 (weighted ×1/×2/×3, owner said go)
 > "the best players leaderboard is silly for as long as multiple players are top of 8 leaderboards - can we do some other
 > calculation - one that would make ties less common and doesnt feel as strange as 80 points being the max (yet it's not
 > clear that it's the max)"

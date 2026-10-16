@@ -112,7 +112,11 @@ async function playDraft(pg, each, last) {
   const bpRows = server.fns.best_players({ p_limit: 50 });
   server.fns.submit_score({ p_username: 'Bob', p_key: 'b'.repeat(28), p_mode: 'chaose', p_score: 50 });
   const bob = server.fns.best_players({ p_limit: 50 }).find(r => r.name === 'Bob');
-  ok(bob && bob.points === 5 && bpRows.every(r => r.name !== 'Bob'), `an Easy board counts half in Best Players (Bob top of Easy CHAOS: ${bob && bob.points} pts)`);
+  ok(bob && bob.points === 1 && bpRows.every(r => r.name !== 'Bob'), `Best Players: on his own on an Easy board, Bob gets 1 point (${bob && bob.points})`);
+  server.fns.submit_score({ p_username: 'Bob', p_key: 'b'.repeat(28), p_mode: 'chaosh', p_score: 80 });
+  server.fns.submit_score({ p_username: 'Alice', p_key: 'a'.repeat(28), p_mode: 'chaosh', p_score: 60 });
+  const bob2 = server.fns.best_players({ p_limit: 50 }).find(r => r.name === 'Bob');
+  ok(bob2 && bob2.points === 1 + 2 * 3, `…and top of a two-player Hard board adds 2 points ×3 (${bob2 && bob2.points})`);
   // the five card tiers in one row, at 360 px
   const C = await phone(b, null, null, errs, { width: 360, height: 740 });
   await C.goto(U + '#/album?v=cards'); await C.waitForTimeout(1500);
