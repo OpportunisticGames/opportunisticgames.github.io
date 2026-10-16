@@ -6,7 +6,7 @@
 --   gm_push(text[]) no longer callable by anon (the triggers still run it); index on challenges(parent)
 --   Edge Function push v5: skips what a phone has had already (notes/edge/push.ts) instead of failing inserts
 --
--- STILL TO RUN (paste all of this into the Supabase SQL editor once 5.39 is merged and live):
+-- Run 16 Oct 2026, after 5.39 went live (kept for the record):
 
 -- 1) online_get needs your key to know your seat. Without it nobody's XI shows until a race is over (and "seen"
 --    isn't written as you), so nobody can read their opponent's XI mid-race by calling it without a name.

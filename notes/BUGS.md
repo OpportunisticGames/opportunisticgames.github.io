@@ -257,8 +257,8 @@ Found in the 5.39 sweep (server review), not fixed yet: each needs a decision or
 | 16 Oct 2026 (sweep) | Hat-Trick online results stayed on the 🔔 count. | 5.39 |
 | 16 Oct 2026 (sweep) | A first-time tip was marked seen if you left within half a second; the tour restarted on any resize. | 5.39 |
 | 16 Oct 2026 (sweep) | Emoji clipped at the top of draft titles (line height too tight). | 5.39 |
-| 16 Oct 2026 (sweep) | `online_get` without a key showed a race opponent's XI mid-race. | 5.39 client sends the key; server change in `notes/sql/539_sweep.sql` (run at merge) |
-| 16 Oct 2026 (sweep) | Renaming lost your challenges, 🔔 feed and invites; deleting left them for the next owner of the name. | `notes/sql/539_sweep.sql` (run at merge) |
+| 16 Oct 2026 (sweep) | `online_get` without a key showed a race opponent's XI mid-race. | 5.39 (client sends the key; server 16 Oct) |
+| 16 Oct 2026 (sweep) | Renaming lost your challenges, 🔔 feed and invites; deleting left them for the next owner of the name. | Server 16 Oct |
 | 16 Oct 2026 (sweep) | Anyone could call `gm_push`; negative scores and big score meta were refused; the push function failed an insert for every repeat (4,000 log errors a day). | Server 16 Oct |
 | 11 Oct 2026 (owner) | The scroll line on the right of the app. | Not ours: it's Google Play Games' Sidekick tab |
 | 16 Oct 2026 (owner) | A 10,639 on CHAOS Hard (challenge WAKJRE) wasn't on the board, but the friend's 7,586 was. The `scores` table only took scores up to 10,000 (`scores_score_check`), so submit_score was refused. | Server, 16 Oct: the limit is now 1,000,000 and the lost score was put back |
