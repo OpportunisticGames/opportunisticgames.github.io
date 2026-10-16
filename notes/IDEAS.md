@@ -49,6 +49,9 @@ First proposal (1 point per player you're ahead of, +1 for top) left Amiroz.zh7 
 Proposal now: **each board you're on is worth 1 point for you plus 1 for every player below you** (last place 1, top of
 a 3-player board 3). Every board counts the same, Easy too (everyone on an Easy board played Easy, so it's a fair win;
 halving gave him 0.5). No cap, no hidden maximum, crowns break ties. This month: Jamie 55, Joel 33, Amiroz.zh7 1.
+Owner asked about weighting the harder levels (more skill, less luck). Option: the board's points ×1 Easy, ×2 Normal,
+×3 Hard and Extreme (whole numbers). This month: Jamie 123, Joel 89, Amiroz.zh7 1 (the gap closes: Joel plays more Hard
+boards, 23 to Jamie's 16). Our view: yes, weight it: a Hard/Extreme crown is the more skilful one, Easy still counts.
 
 ### A better tutorial: introduce the app and the website ✅ 5.36 *(owner, 15 Oct 2026)*
 > "I also think we need to improve the tutorial - i would like something that introduces people to the app & website
