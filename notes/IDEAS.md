@@ -45,10 +45,10 @@ a result (`online_react`, `rooms.reacts`), this month's record per friend; and S
 
 Now: 10/7/5/4/3/2/2/1/1/1 for top-ten places, best 8 boards count, so anyone top of 8 boards has 80 and ties on it
 (Jamie and Joel both on 80 this month; crowns decide).
-Proposal: **on every board, 1 point for each player you're ahead of, +1 for being top** (Easy boards half). No cap
-and no hidden maximum: it grows as more people play, a crown on a busy board is worth far more than on an empty one,
-and ties are rare. This month it would read Jamie 52, Joel 17, Amiroz.zh7 0.
-Questions: keep Easy at half? Show it as "points" or as "rivals beaten"?
+First proposal (1 point per player you're ahead of, +1 for top) left Amiroz.zh7 on 0 though he's played: owner: "silly".
+Proposal now: **each board you're on is worth 1 point for you plus 1 for every player below you** (last place 1, top of
+a 3-player board 3). Every board counts the same, Easy too (everyone on an Easy board played Easy, so it's a fair win;
+halving gave him 0.5). No cap, no hidden maximum, crowns break ties. This month: Jamie 55, Joel 33, Amiroz.zh7 1.
 
 ### A better tutorial: introduce the app and the website ✅ 5.36 *(owner, 15 Oct 2026)*
 > "I also think we need to improve the tutorial - i would like something that introduces people to the app & website
