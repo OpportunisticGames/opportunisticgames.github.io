@@ -39,31 +39,14 @@ grant execute on function public.online_get(text, text, text) to anon, authentic
 
 -- 2) renaming your account brings your challenges, 🔔 feed, invites and referrals with you; deleting it clears them,
 --    so whoever takes the name later doesn't inherit them (friends keep their side of old challenges)
-do $$ declare d text; begin
+--    (written so line breaks and spaces don't matter when it's pasted)
+do $$ declare d text; n text; begin
   d := pg_get_functiondef('public.rename_account'::regproc);
-  if position($q$  update public.name_reports set reporter = nn where reporter = u;
-  return 'ok';$q$ in d) = 0 then raise exception 'rename_account end not found'; end if;
-  d := replace(d, $q$  update public.name_reports set reporter = nn where reporter = u;
-  return 'ok';$q$, $q$  update public.name_reports set reporter = nn where reporter = u;
-  update public.challenges set owner = nn where owner_user = u;
-  update public.challenges set owner_user = nn where owner_user = u;
-  update public.challenges set to_user = nn where to_user = u;
-  update public.challenge_plays set name = nn where username = u;
-  update public.challenge_plays set username = nn where username = u;
-  update public.challenge_invites set to_user = nn where to_user = u;
-  update public.activity set username = nn where username = u;
-  update public.referrals set inviter = nn where inviter = u;
-  update public.referrals set invitee = nn where invitee = u;
-  return 'ok';$q$);
-  execute d;
+  n := regexp_replace(d, 'update public\.name_reports set reporter = nn where reporter = u;\s*return ''ok'';', 'update public.name_reports set reporter = nn where reporter = u; update public.challenges set owner = nn where owner_user = u; update public.challenges set owner_user = nn where owner_user = u; update public.challenges set to_user = nn where to_user = u; update public.challenge_plays set name = nn where username = u; update public.challenge_plays set username = nn where username = u; update public.challenge_invites set to_user = nn where to_user = u; update public.activity set username = nn where username = u; update public.referrals set inviter = nn where inviter = u; update public.referrals set invitee = nn where invitee = u; return ''ok'';');
+  if n = d then raise exception 'rename_account: end not found'; end if;
+  execute n;
   d := pg_get_functiondef('public.delete_account'::regproc);
-  if position('  delete from public.players where username = u;' in d) = 0 then raise exception 'delete_account end not found'; end if;
-  d := replace(d, '  delete from public.players where username = u;', $q$  delete from public.activity where username = u;
-  delete from public.challenge_invites where to_user = u;
-  delete from public.referrals where inviter = u or invitee = u;
-  update public.challenge_plays set username = null where username = u;
-  update public.challenges set owner_user = null where owner_user = u;
-  update public.challenges set to_user = null where to_user = u;
-  delete from public.players where username = u;$q$);
-  execute d;
+  n := regexp_replace(d, 'delete from public\.players where username = u;', 'delete from public.activity where username = u; delete from public.challenge_invites where to_user = u; delete from public.referrals where inviter = u or invitee = u; update public.challenge_plays set username = null where username = u; update public.challenges set owner_user = null where owner_user = u; update public.challenges set to_user = null where to_user = u; delete from public.players where username = u;');
+  if n = d then raise exception 'delete_account: end not found'; end if;
+  execute n;
 end $$;
