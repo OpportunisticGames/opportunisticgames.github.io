@@ -64,7 +64,8 @@
     // from the release itself, so the banner always shows what's new
     const strip = t => String(t || '').replace(/^[^\p{L}\p{N}]+/u, '').trim();
     const firstIcon = t => (String(t || '').match(/^\p{Extended_Pictographic}️?/u) || ['✨'])[0];
-    (GM.UPDATES || []).filter(u => /^\d+\.\d+$/.test(u.label) && recent(u.date, FEATURE_DAYS)).slice(0, 3).forEach((u, k) => {
+    // (not for someone in their first few games: to them it's all new, and the games matter more than the version)
+    (GM.store.get('played', 0) < 3 ? [] : GM.UPDATES || []).filter(u => /^\d+\.\d+$/.test(u.label) && recent(u.date, FEATURE_DAYS)).slice(0, 3).forEach((u, k) => {
       const list = u.promo ? u.promo.slice(0, 2) : [{ href: '#/updates', icon: firstIcon(u.title), cls: ['t-green', 't-navy', 't-purple'][k % 3], title: strip(u.title), sub: strip((u.items || [])[0]).slice(0, 120) }];
       list.forEach(p => out.push(card(p, `✨ New in ${u.label}`)));
     });

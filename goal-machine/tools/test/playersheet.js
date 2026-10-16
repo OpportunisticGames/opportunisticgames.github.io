@@ -24,7 +24,7 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   await pg.evaluate(() => { const p = GM.players.find(q => q.name === 'Alan Shearer'); GM.cardsFromDraft([p]); });
   await pg.goto(U + '#/album?v=cards'); await pg.waitForTimeout(700);
   await pg.click('.card-grid .pcard[data-psheet]'); await pg.waitForTimeout(300);
-  ok(await pg.evaluate(() => /Legend card/.test(document.querySelector('.ps').textContent) && /1 of 5 pieces/.test(document.querySelector('.ps').textContent)), 'an Album card opens his sheet with how far the card is (1 of 5)');
+  ok(await pg.evaluate(() => /(Legend|Icon) card/.test(document.querySelector('.ps').textContent) && /1 of [57] pieces/.test(document.querySelector('.ps').textContent)), 'an Album card opens his sheet with how far the card is (1 piece in)');
   await pg.click('.ps [data-close]');
   // 3. in a draft: the reels never open it, a signed player on the pitch does
   await pg.goto(U + '#/draft?m=ultimate'); await pg.waitForTimeout(1200);

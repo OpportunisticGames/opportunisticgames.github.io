@@ -780,12 +780,6 @@
     const handHtml = `<div class="scout-hand ${mineNow && held ? 'live' : ''}"><div class="sh-title">🃏 Your cards <span>${!held ? 'all played – grab bonus cards from the reels' : mineNow ? 'tap one to play it (it doesn’t use your pick)' : 'use them on your turn'}</span></div>
       <div class="sh-cards">${Object.entries(SCOUT_CARDS).map(([w, c]) => `<button class="sh-card" data-wild="${w}" ${mineNow && hand[w] > 0 ? '' : 'disabled'}>
         <span class="sh-icon">${c.icon}</span><b>${c.name}</b><small>${c.desc}</small>${hand[w] > 0 ? `<i class="sh-n">×${hand[w]}</i>` : ''}</button>`).join('')}</div></div>`;
-    // (once there's a result, what to do about it, the rematch above all, comes straight after it, before the XIs)
-    const acts = `<div class="actions col">
-        ${r.result && r.guest ? `<button class="btn big" id="orematch">🔁 Rematch ${esc(opp)}</button><button class="btn ghost" id="oshareres">📤 Share the result</button>` : ''}
-        ${A.n ? '<button class="btn ghost" id="osharepic">🖼️ Share a picture of your XI</button>' : ''}
-        ${!r.result && r.status !== 'declined' ? `<button class="btn ghost small" id="oresign">🏳️ ${r.guest ? 'Resign' : r.quick ? 'Stop searching' : 'Cancel invite'}</button>` : ''}
-        <a class="btn ghost" href="#/online">🌐 All your games</a></div>`;
     root.innerHTML = `${top(KIND[gk(r)].name, '#/online')}
       <div class="h2h-board duel-board">
         <div class="h2h-team p1">${GM.userPic(me(), 'board')}<b>You</b><strong>${scoutGame ? '?' : tMe}</strong><small>${11 - myOpen.length}/11</small></div>

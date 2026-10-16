@@ -134,7 +134,7 @@
     legends: { name: 'Promotion Pack', sub: () => 'Choose a Legend, plus four Silver or better', pool: () => null },
     // one for each way of earning a pack, so you can see what it was for: how it looks (badge) and what's in it
     // (n pieces; the last `up` of them at least tier `min`; wild = always a wildcard)
-    daily: { name: 'Daily Pack', badge: '📅', sub: () => 'Your free pack for today', pool: () => null },
+    daily: { name: 'Daily Pack', badge: '🗓️', sub: () => 'Your free pack for today', pool: () => null },
     level: { name: 'Level Up Pack', badge: '⬆️', sub: () => 'Five pieces: two Silver or better', pool: () => null, min: 's', up: 2 },
     badge: { name: 'Badge Pack', badge: '🏅', sub: () => 'Five pieces and a wildcard', pool: () => null, wild: 'pick' },
     dailies: { name: 'Daily Hat-Trick Pack', badge: '🎩', sub: () => 'Three dailies in a day: one Gold or better', pool: () => null, min: 'g', up: 1 },

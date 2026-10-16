@@ -3049,7 +3049,7 @@
         ${S.rules.chaos ? chartHtml() : ''}
         ${S.rules.chaos ? `<button class="btn ghost small" id="all-mgrs">👔 All managers (${mgrUnlocked().length}/${realMgrs().length})</button>` : ''}
         <table class="breakdown">${sc.parts.map(([k, v]) => `<tr><td>${k}</td><td class="${v < 0 ? 'neg' : ''}">${v < 0 ? '−' + fmt(-v) : '+' + fmt(v)}</td></tr>`).join('')}</table>`}
-        ${S.boardOn ? (S.board && S.board.none ? '' : GM.boardNewsHtml(S.board, modeKey())) : S.ch && !S.readonly ? '<div class="board-news" id="board-news"><span>⚔️</span><span><b>This one’s on the challenge table</b><small>Challenges stay off the public leaderboards: you could see their game as you played</small></span></div>' : ''}
+        ${S.boardOn ? GM.boardNewsHtml(S.board && S.board.none ? null : S.board, modeKey()) : S.ch && !S.readonly ? '<div class="board-news" id="board-news"><span>⚔️</span><span><b>This one’s on the challenge table</b><small>Challenges stay off the public leaderboards: you could see their game as you played</small></span></div>' : ''}
         ${S.vs && !S.ch ? `<div class="banner">${sc.total > S.vss ? '🎉 You beat' : sc.total == S.vss ? '🤝 You drew with' : '😬 You lost to'} <b>${GM.esc(S.vs)}</b> (${GM.esc(S.vss)})</div>` : ''}
         <div class="muted">Personal best: ${fmt(Math.max(best, sc.total))}</div>
       </div>

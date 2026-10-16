@@ -414,7 +414,13 @@ GM.askName = async function () {
   if (acc || !GM.lb.enabled) return GM.getName() || (await GM.accountModal());
   const legacy = GM.store.get('name', '');
   if (legacy && (await GM.claimName(legacy)) === 'ok') return legacy;  // keep the name they already use, if it's free
-  return GM.accountModal(legacy ? `Someone already has the name “${legacy}” on the leaderboard. Pick another – it'll be yours alone.` : GM.NAME_WHY);
+  // (5.39: "Not now" means not now: the next three games don't ask, and after a second no, once a week at most; the
+  // full-time line still offers it)
+  const sk = GM.store.get('nameSkip', null) || { no: 0, games: 0, at: 0 };
+  if (sk.no && !(sk.no === 1 ? sk.games >= 3 : Date.now() - sk.at > 7 * 864e5)) { GM.store.set('nameSkip', { ...sk, games: sk.games + 1 }); return null; }
+  const got = await GM.accountModal(legacy ? `Someone already has the name “${legacy}” on the leaderboard. Pick another – it'll be yours alone.` : GM.NAME_WHY);
+  GM.store.set('nameSkip', got ? null : { no: sk.no + 1, games: 0, at: Date.now() });
+  return got;
 };
 /** Changes this account's name, keeping its scores, friends, games and backup. Same results as GM.claimName. */
 GM.renameAccount = async function (name) {
@@ -636,9 +642,13 @@ document.addEventListener('click', e => {
 
 /* ------------------------------------------------------------------ modal / toast */
 GM.toast = function (msg, ms = 2200) {
+  // (in a column at the bottom, so two at once stack rather than land on top of each other; three at most)
+  let box = document.getElementById('toasts');
+  if (!box) { box = document.createElement('div'); box.id = 'toasts'; box.setAttribute('aria-live', 'polite'); document.body.appendChild(box); }
+  [...box.children].slice(0, Math.max(0, box.children.length - 2)).forEach(x => x.remove());
   const t = document.createElement('div');
   t.className = 'toast'; t.innerHTML = msg;
-  document.body.appendChild(t);
+  box.appendChild(t);
   requestAnimationFrame(() => t.classList.add('show'));
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, ms);
 };
@@ -694,7 +704,7 @@ GM.lbList = function (rows, o = {}) {
     const pod = [[rows[1], 1], [rows[0], 0], [rows[2], 2]];
     html += `<div class="podium">${pod.map(([r, i]) => !r ? `<div class="pod pod${i + 1} empty"><span class="pod-medal">${['🥇', '🥈', '🥉'][i]}</span><span class="pod-free">?</span><b>Up for grabs</b><span class="pod-step">${i + 1}</span></div>` : `<button class="pod pod${rankOf(r, i)} ${r.name === me ? 'me' : ''}" data-profile="${GM.esc(r.name)}">
       <span class="pod-medal">${['🥇', '🥈', '🥉'][Math.min(2, rankOf(r, i) - 1)]}</span>${pic(r.name, rankOf(r, i) === 1 ? 'xl' : 'lg')}
-      <b>${GM.esc(r.name)}</b>${move(r, i)}<em>${sc(r)}</em>${r.level ? `<i class="lv-tag">Lv ${r.level}</i>` : ''}<span class="pod-step">${rankOf(r, i)}</span></button>`).join('')}</div>`;
+      <b>${GM.esc(r.name)}</b>${move(r, i)}<em>${sc(r)}</em>${o.extra ? `<span class="pod-x">${o.extra(r)}</span>` : ''}${r.level ? `<i class="lv-tag">Lv ${r.level}</i>` : ''}<span class="pod-step">${rankOf(r, i)}</span></button>`).join('')}</div>`;
   }
   html += rows.slice(3).map((r, j) => { const i = j + 3, rk = rankOf(r, i);
     return `<div ${GM.lbRow(r.name, me).replace('lb-row', 'lb-row lbx')}><span class="lb-rk">${rk <= 3 ? ['🥇', '🥈', '🥉'][rk - 1] : rk}</span>${pic(r.name, 'sm')}<span class="lb-nm">${GM.esc(r.name)}${GM.lbLevel(r)}${extra(r)}</span>${move(r, i)}<b>${sc(r)}</b></div>`; }).join('');
@@ -766,8 +776,23 @@ GM.hiddenNameBanner = el => GM.nameHidden().then(h => {
   GM.$('#hn-change', el).onclick = async () => { if (await GM.accountModal('Your scores, friends and backup come with you.', true)) el.innerHTML = ''; };
 });
 // An in-app notification: a card that drops in from the top, and opens href when tapped (swipe it up or wait to dismiss)
-GM.notice = function ({ pic = '', title, sub = '', href, ms = 6000 }) {
-  GM.$$('.notice').forEach(n => n.remove());
+// the cards at the top of the screen: one at a time, and never over a game you're playing, the tour or a pop-up
+// (they wait their turn, for up to a minute and a half)
+const noticeQ = []; let noticeT = null;
+const noticeBusy = () => {
+  if (document.querySelector('.notice, .tour, .ch-intro, .cm:not(.out), .modal-wrap')) return true;
+  const S = GM.draft && GM.draft.state && GM.draft.state();
+  return !!(S && S.phase && S.phase !== 'done' && !S.spectate && (/^#\/(draft|daily)\b/.test(location.hash) || (S.online && location.hash.includes(S.online.code))));
+};
+const noticePump = () => {
+  clearTimeout(noticeT); noticeT = null;
+  while (noticeQ.length && Date.now() - noticeQ[0].at > 90e3) noticeQ.shift();
+  if (!noticeQ.length) return;
+  if (noticeBusy()) { noticeT = setTimeout(noticePump, 900); return; }
+  noticeQ.shift().show();
+  if (noticeQ.length) noticeT = setTimeout(noticePump, 900);
+};
+GM.notice = function ({ pic = '', title, sub = '', href, ms = 6000, now = false }) {
   const n = document.createElement(href ? 'a' : 'div');
   n.className = 'notice';
   if (href) n.href = href;
@@ -777,10 +802,14 @@ GM.notice = function ({ pic = '', title, sub = '', href, ms = 6000 }) {
   let y0 = null;
   n.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; }, { passive: true });
   n.addEventListener('touchmove', e => { if (y0 != null && e.touches[0].clientY - y0 < -25) { y0 = null; close(); } }, { passive: true });
-  document.body.appendChild(n);
-  requestAnimationFrame(() => n.classList.add('show'));
-  GM.sound.play('sting'); GM.buzz(40);
-  setTimeout(close, ms);
+  const show = () => {
+    GM.$$('.notice').forEach(x => x.remove());
+    document.body.appendChild(n);
+    requestAnimationFrame(() => n.classList.add('show'));
+    GM.sound.play('sting'); GM.buzz(40);
+    setTimeout(close, ms);
+  };
+  if (now) show(); else { noticeQ.push({ show, at: Date.now() }); if (noticeQ.length > 4) noticeQ.shift(); noticePump(); }
   return n;
 };
 GM.modal = function (html, { onClose } = {}) {
