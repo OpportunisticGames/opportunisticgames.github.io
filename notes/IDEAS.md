@@ -38,6 +38,18 @@ a result (`online_react`, `rooms.reacts`), this month's record per friend; and S
 
 ## 💬 To discuss
 
+### 🏅 Best Players: a better sum (owner, 16 Oct 2026)
+> "the best players leaderboard is silly for as long as multiple players are top of 8 leaderboards - can we do some other
+> calculation - one that would make ties less common and doesnt feel as strange as 80 points being the max (yet it's not
+> clear that it's the max)"
+
+Now: 10/7/5/4/3/2/2/1/1/1 for top-ten places, best 8 boards count, so anyone top of 8 boards has 80 and ties on it
+(Jamie and Joel both on 80 this month; crowns decide).
+Proposal: **on every board, 1 point for each player you're ahead of, +1 for being top** (Easy boards half). No cap
+and no hidden maximum: it grows as more people play, a crown on a busy board is worth far more than on an empty one,
+and ties are rare. This month it would read Jamie 52, Joel 17, Amiroz.zh7 0.
+Questions: keep Easy at half? Show it as "points" or as "rivals beaten"?
+
 ### A better tutorial: introduce the app and the website ✅ 5.36 *(owner, 15 Oct 2026)*
 > "I also think we need to improve the tutorial - i would like something that introduces people to the app & website
 > just a little bit better, so they understand how it works. This is important after all the updates we've made.
