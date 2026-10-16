@@ -14,12 +14,12 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
   let auth = null;
   await pg.route(/supabase/, r => { if (!/announcements/.test(r.request().url())) return r.abort(); asked++; auth = r.request().headers().authorization || ''; r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(NEWS) }); });
   await pg.goto(U);
-  await pg.evaluate(() => { localStorage.clear(); const set = (k, v) => localStorage.setItem('gm:' + k, JSON.stringify(v)); set('seenVersion', 999); set('welcomed', 1); set('firstXI', 1); set('sfx', false); set('homeTab', 'market');
+  await pg.evaluate(() => { localStorage.clear(); const set = (k, v) => localStorage.setItem('gm:' + k, JSON.stringify(v)); set('seenVersion', 999); set('welcomed', 1); set('firstXI', 1); set('played', 5); set('sfx', false); set('homeTab', 'market');
     GM.setFixtures([['2099-01-01T15:00:00Z', 'Everton', 'Chelsea']], []); });
   await pg.reload(); await pg.waitForTimeout(1200);
   const a0 = asked;
   const s1 = await pg.evaluate(() => ({ slides: [...document.querySelectorAll('.promo-slide')].map(s => s.textContent.replace(/\s+/g, ' ').trim()), hrefs: [...document.querySelectorAll('.promo-slide a')].map(a => a.getAttribute('href')), dots: document.querySelectorAll('.promo-dots button').length }));
-  ok(s1.slides.some(t => /New Moneyball/i.test(t)) && s1.slides.some(t => /Cup final weekend/.test(t)), `the banner has the new release’s games and the news (${s1.slides.length} slides)`);
+  ok(s1.slides.some(t => /New Moneyball|Try today\s*Moneyball/i.test(t)) && s1.slides.some(t => /Cup final weekend/.test(t)), `the banner has the new release’s games and the news (${s1.slides.length} slides: ${s1.slides.map(t => t.slice(0, 30)).join(' | ')})`);
   ok(s1.hrefs.filter(h => h === '#/moneyball').length === 1 && !s1.slides.some(t => /Old news/.test(t)), 'news about a game that’s already featured isn’t doubled up, and old news drops off');
   ok(s1.hrefs.includes('#/draft?m=chaos') && s1.dots === s1.slides.length, 'news links open in the app (not the website), with a dot per slide');
   const w = await pg.evaluate(() => { const t = document.querySelector('.promo-track'); return [...t.children].every(c => Math.abs(c.getBoundingClientRect().width - t.clientWidth) < 1); });

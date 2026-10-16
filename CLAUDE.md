@@ -55,6 +55,10 @@ game mode for players; this file is about how to work on it.
 - `core.js` – shared helpers: storage (`GM.store`, keys prefixed `gm:`), seeded RNG (`GM.rng`), avatars and photo
   caching (`GM.avatar`, `GM._ph`), modals and notices, the leaderboard client (`GM.lb`: `top`, `mine`, `submit`),
   the in-game 🏆 pop-up (`GM.lbButton`, `GM.lbModal`, `GM.lbYou`), `GM.APP_MIN_BUILD`, accounts, backups.
+  Layers (5.39): `.modal-wrap` z 98 sits above the game's effects (fx canvas/Lottie 94–97, bonus notes 96, moment cards 95);
+  pack opening (120+) and the challenge intro (220) above it. `GM.notice` queues: one at a time, held while a game is in
+  progress, the tour, a moment card or a pop-up is up (`now: true` skips the queue). `GM.toast`s stack in `#toasts`.
+  `GM.store.set` skips writes that change nothing (so they don't mark the backup dirty). `GM.askName` backs off after "Not now" (`gm:nameSkip`).
 - Offline and backups (core.js): `GM.net` (`online`, `ping`, `msg(what, fallback)` = the go-online card for a page's "couldn't load" spot, the 📶 strip `#net-bar`); every server call goes through `GM.lb._f` so a failure marks the phone offline; scores made offline wait in `gm:lbQueue` (`GM.lb.flush`). `GM.backup`: `GM.store.set` marks data changed, backs up 2 min later and when the app is hidden; `GM.backup.check()` (once a launch, on the tabs) offers a newer cloud backup (Android's own auto-backup can restore an old copy of the WebView data on a reinstall).
 - `app.js` – the router (`#/path?query`), the tab bar (Play · Today · Online · Ranks · 🎒 Locker), the top bar on the tabs'
   pages (`GM.statusBar`: picture, level, season tier, 🎁 `GM.toOpen()` sheet of packs/spins/picks/new kit), Home (with
@@ -69,7 +73,12 @@ game mode for players; this file is about how to work on it.
   full time calls rewards.js `GM.szChaosDone` (season XP, the `szchaos` mission that's always one of the three, Locker titles `src.szc`)), reel generation (`makeReels`, seeded, so the same seed = the same
   game), scoring (`scoreFor`), rendering. The pitch is sized at kick-off by `fitPitch()` (shrunk mid-game if the page would scroll, grown back into empty space, reset on a new game; last resort `zoom` on `#app`: a game is always one screen; `.cz-deco` is fixed and clipped so it can never add scroll); everything under it sits in a
   fixed-height `.dock` so the layout never jumps. `render()` only draws while its own game is on screen.
-- `challenge.js` – friend challenges (`GM.challenge`): `#/c?id=CODE` (landing, `&p=` head-to-head, `&watch=` watch along), `#/rival?name=`; the draft keeps `S.ch` (the challenge you're playing), `S.prog` ([signed, total] after each signing), `S.picks`; tables `challenges` / `challenge_plays`, RPCs `challenge_create/_get/_start/_progress/_react/_history/_mine/_send` (`_send` sends yours to app friends: `challenge_invites`, pushed as `cm:`) (`_mine` feeds the Online tab's ⚔️ Challenges sub-tab (`#/challenges` redirects there) and the in-app card), inbox items and push on new plays, results, reactions and rematches.
+- `challenge.js` – friend challenges (`GM.challenge`): `#/c?id=CODE` (landing, `&p=` head-to-head, `&watch=` watch along), `#/rival?name=`; the draft keeps `S.ch` (the challenge you're playing), `S.prog` ([signed, total] after each signing), `S.picks`; tables `challenges` / `challenge_plays`, RPCs `challenge_create/_get/_start/_progress/_react/_history/_mine/_send` (`_send` sends yours to app friends: `challenge_invites`, pushed as `cm:`) (`_mine` feeds the Online tab's ⚔️ Challenges sub-tab (`#/challenges` redirects there) and the in-app card), inbox items and push on new plays, results, reactions and rematches. **Watch along (5.39):** the challenger's phone sends its
+  whole game (`game.live`, chGame in draft.js, a moment after every move via `GM.challenge.live`, throttled not debounced) and
+  `game.feed` (each signing, wildcard and moment with its points); the watch page draws it with `GM.draft.spectate(el, live, xi)`
+  (`S.spectate`, `renderWatch`: their counter, pitch, hand and reels, nothing to tap; it refuses if the player lists differ) and
+  `feedHtml`. Same seed = same luck (coin tosses are seeded by spin), so a **challenger's score stays off the public boards**
+  (`recordScore(…, { offBoard })`, the full-time line says so); the creator's game counts.
 - `online.js` – online games with friends: the hub (sub-tabs Games / Finished / League / Friends), Draft Duel,
   Scout Duel (card hand + bonus cards), Live Race and its variants Target Race and CHAOS Race (race = both play the
   same seed; the variant picks the draft mode), the opponent live feed in races, the weekly league, notifications.
@@ -106,7 +115,7 @@ game mode for players; this file is about how to work on it.
   top-four seasons, CL/WC/Golden Boots, PFA/FWA awards); 💎 Icon (`i`, 7 pieces) = Hall of Fame + the six best-rated others,
   then per position 45 Legend / 190 Gold / 500 Silver overall. Cards finished under the old fame tiers stay finished
   (`cards.fin`, save v3). `tools/card_rating.js` + `card_tiers_draft.js` print the lists for checking.
-- 5.33 bits: `GM.lbList(rows, o)` (core.js) draws every board (podium, pictures via `GM.isFriend`, ▲▼ from `gm:lbSeen`);
+- 5.33 bits: `GM.lbList(rows, o)` (core.js) draws every board (podium, even for one or two names, pictures via `GM.isFriend`, ▲▼ from `gm:lbSeen`);
   nation cards in packs.js (`GM.isNo1`, `GM.NATION_SETS`, `checkSets` pays a Nations pack, Packed XI `bonus`); CHAOS
   moment `visa` sets `S.passNat` + `S.forceSpecial = 'passport'` (a `deal: false` wildcard); Hat-Trick fusion
   (`fusedName`, `fusedFace`, `fuseFx` in draft.js); renewables in prizes.js (`GM.CONSUM`: freeze/boost/scout,
@@ -162,7 +171,7 @@ Everything goes through security-definer RPCs that check the account with `gm_au
 - **Instant push (Firebase Cloud Messaging, project `opportunistic-games`):** phones register with `set_push_token`
   (token + their notification choices, `push_tokens`). Triggers on `rooms` and `friends` call `gm_push`, which posts
   (pg_net, shared secret in `private_config`) to the Edge Function `push`: for each phone it asks `app_inbox` and
-  pushes new game/result/friend/challenge items once (the `push` function's id filter must list every kind) (`push_sent`). Needs the `FCM_SERVICE_ACCOUNT` Edge Function secret. The
+  pushes new game/result/friend/challenge items once (the `push` function's id filter must list every kind) (`push_sent`; its source is kept in `notes/edge/push.ts`, deploy with `deploy_edge_function`). Needs the `FCM_SERVICE_ACCOUNT` Edge Function secret. The
   app's `PushService` shows them (same ids as the 15-minute check, so never twice). Reminders stay with the check.
 - Notifications: `app_inbox(p_user, p_prefs, p_state, p_tz)` returns what the Android app should notify about. The app
   sends the player's choices from Settings (`GM.notify`: move, friends, results, modes, streak, comeback, daily time),
@@ -173,7 +182,7 @@ Everything goes through security-definer RPCs that check the account with `gm_au
   one an hour per board, pushed via `gm_push`, shown by `app_inbox` as `b:<id>`, pref `beaten`) and a `crown` row for you.
   `activity_feed(p_user, p_key)` feeds the 🔔 drawer (`GM.feed`, `GM.feedSheet` in app.js: items, `crowns`/`mcrowns`,
   `best`/`mbest`). `best_players(p_month, p_limit)` = points 10/7/5/4/3/2/2/1/1/1 for top-ten places on the main draft
-  boards (`gm_main_board`), best 8 count; Ranks tab `bestplayers`. Board names for alerts: `gm_board_name`.
+  boards (`gm_main_board`; Easy boards `gm_easy_board` count half, 5.39), best 8 count; Ranks tab `bestplayers`. Board names for alerts: `gm_board_name`.
   At full time `GM.boardNews` (core.js, after the submit; `GM.lb.mine(mode, name, month)`) works out your place: a 👑 record, a
   "Top N" (`GM.BOARD_TIERS`, only if the board has 2N+ players) or just the place; it fires `gm:board` and draft.js shows it in
   the result card (`#board-news`, `GM.boardNewsHtml`); screens without that slot get a `GM.notice` card.
@@ -212,6 +221,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    may be mid-action without a short `{ timeout }`: Playwright waits 30 s for it to become tappable (that made the CHAOS tests
    take minutes). Or run one script on its own with `node <script>.js`. Each uses `mockserver.js`, which fakes the
    Supabase RPCs in memory (test accounts Alice/Bob/Cara), so nothing touches the real database.
+   - `new539.js` – 5.39: watch along draws the challenger's live game and the move-by-move, challenger scores off the boards, the podium with one name, the card tiers in one row, Easy half in Best Players.
    - `online538.js` – 5.38: New game's main four and Hard default, the room's level, the opponent's XI hidden while you play, the bigger total wins, the result stays up, no notification for the finisher, the 🔔 count, Scout's Tip, a Seasonal CHAOS Race.
    - `tour536.js` – 5.36: the tour offered once on Home, every step's bubble and spotlight on screen (390 and 360 px), Settings → Take the tour, Skip, and the first-time tips (once each, back from Settings).
    - `new534.js` – 5.34: Easy deals more big names, its own board key, travels in the seed, the four-level switch, Classic gone from the menus.

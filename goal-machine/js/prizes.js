@@ -106,13 +106,15 @@
     christmas: { cols: ['#b91c1c', '#166534', '#dc2626', '#f8fafc', '#15803d', '#991b1b', '#ca8a04', '#14532d'], hub: 'gift', rim: '#ca8a04' },
     easter: { cols: ['#f9a8d4', '#a7f3d0', '#c4b5fd', '#fde68a', '#fbcfe8', '#bbf7d0', '#ddd6fe', '#fef3c7'], hub: 'eggs', rim: '#fff' },
   };
+  const spinsLeft = n => n ? `<b id="wh-n">${n}</b> spin${n === 1 ? '' : 's'} left` : '<b id="wh-n" hidden>0</b>No spins left: more come from levels, the season and missions';
   GM.spinPage = function (root) {
     const n = +GM.store.get('spins', 0), seg = 360 / WHEEL.length;
     const look = (GM.store.get('seasonLook', true) !== false && GM.gmSeason && WHEEL_LOOK[GM.gmSeason().theme]) || null, col = k => (look ? look.cols[k % look.cols.length] : WHEEL[k].c);
     root.innerHTML = `<div class="topbar"><a href="#/season" class="back">‹</a><h2>🎡 Prize wheel</h2><span></span></div>
-      <div class="wh-wrap"><div class="wh-pointer">▼</div><div class="wh" id="wh" style="background:conic-gradient(${WHEEL.map((s, k) => `${col(k)} ${k * seg}deg ${(k + 1) * seg}deg`).join(',')})${look ? `;border-color:${look.rim}` : ''}">
-        ${WHEEL.map((s, k) => `<span style="transform:rotate(${k * seg + seg / 2}deg)"><i>${label(s.r).split(' ')[0]}</i></span>`).join('')}</div>${look ? '<div class="wh-hub" id="wh-hub"></div>' : ''}</div>
-      <p class="center"><b id="wh-n">${n}</b> spin${n === 1 ? '' : 's'} left</p>
+      <div class="wh-wrap"><div class="wh-pointer">▼</div><div class="wh-clip"><div class="wh" id="wh" style="background:conic-gradient(${WHEEL.map((s, k) => `${col(k)} ${k * seg}deg ${(k + 1) * seg}deg`).join(',')})${look ? `;border-color:${look.rim}` : ''}">
+        ${WHEEL.map((s, k) => `<span style="transform:rotate(${k * seg + seg / 2}deg)"><i>${label(s.r).split(' ')[0].replace('⬆️', '📦')}</i></span>`).join('')}</div></div>${look ? '<div class="wh-hub" id="wh-hub"></div>' : ''}</div>
+      <div class="wh-won" id="wh-won" hidden></div>
+      <p class="center" id="wh-left">${spinsLeft(n)}</p>
       <div class="actions col"><button class="btn big" id="wh-go" ${n ? '' : 'disabled'}>🎡 Spin!</button></div>
       <p class="muted center small">Spins come from the level road, the season track, login rewards and missions.</p>
       <div class="wh-key">${WHEEL.map((s, k) => `<span><i style="background:${col(k)}"></i>${GM.esc(label(s.r))}</span>`).join('')}</div>`;
@@ -129,7 +131,11 @@
       setTimeout(() => {
         const prize = WHEEL[k].r; GM.sound.play(prize.vault || prize.pack === 'legendary' ? 'jackpot' : 'good'); GM.buzz(prize.vault || prize.pack === 'legendary' ? 'win' : 'confirm');
         GM.grant(prize, 'the prize wheel');
-        const now = +GM.store.get('spins', 0), el = GM.$('#wh-n', root); if (el) el.textContent = now;
+        // what you won, big and under the wheel (not just a note at the bottom)
+        const won = GM.$('#wh-won', root);
+        if (won) { won.hidden = false; won.innerHTML = `<small>🎉 You won</small><b>${GM.esc(label(prize))}</b>`; won.classList.remove('pop'); void won.offsetWidth; won.classList.add('pop'); }
+        if (GM.FX && GM.FX.on && won) { const r = won.getBoundingClientRect(); GM.FX.confetti(r.left + r.width / 2, r.top, 70); }
+        const now = +GM.store.get('spins', 0), el = GM.$('#wh-left', root); if (el) el.innerHTML = spinsLeft(now);
         const go = GM.$('#wh-go', root); if (go) go.disabled = !now;
         GM.rewardDots();
       }, GM.store.get('calm', false) ? 300 : 3600);

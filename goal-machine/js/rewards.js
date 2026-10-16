@@ -205,7 +205,7 @@
   };
   GM.loginHtml = function () {
     const l = GM.store.get('login', { last: '', n: 0 });
-    return `<h3 class="section-title">📅 Login rewards</h3>
+    return `<h3 class="section-title">🗓️ Login rewards</h3>
       <div class="st-login">${DAYS.map((d, k) => { const cur = l.n % 7, claimedToday = l.last === GM.today();
         const today = claimedToday ? k === (cur + 6) % 7 : k === cur;
         return `<div class="${k < cur ? 'got' : ''} ${today ? 'today' : ''}"><small>Day ${k + 1}</small><span>${d.icon}</span><b>${d.text}</b></div>`; }).join('')}</div>`;

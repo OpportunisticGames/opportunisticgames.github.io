@@ -215,9 +215,21 @@ version they shipped in. Newest at the top.
 - Rain was lines across the pitch: now drops, ripples and clouds. Too many screen flashes and throbbing backdrops: cut right down.
 
 ## Open
-- **The scroll line on the right is still there after reinstalling** *(owner, 11 Oct 2026)*. The phone is on app build 54,
-  and the fix (`setVerticalScrollBarEnabled(false)`) arrived in build 56. Play still serves 54 while build 58 is in
-  review. Check again once 58 is live; if the line is still there on 58, hide Chromium's own overlay scrollbar too.
+Found in the 5.39 sweep (server review), not fixed yet: each needs a decision or a new Android build.
+- **`app_inbox` and `online_waiting` take a name with no key**, so anyone can read another player's inbox (room codes,
+  watch links, results). The Android app calls `app_inbox` without a key, so the fix is: an optional `p_key` now, send it
+  from app.js, online.js and `GameCheckService`/`PushService` (a new build), then make it compulsory once old builds are gone.
+- **`online_move` trusts the `p_all` totals a duel/auction/Hat-Trick player sends**, so a player could post a win for
+  themselves. Fix: only accept `p_all` on the final move (`p_turn = 'none'`, `r.turn = seat`), or work the totals out on
+  the server from the stored moves.
+- **Three throwaway accounts can hide any name** (`report_name`, `report_avatar`). Fix: count only reporters with scores or
+  an account a few days old.
+- **`player_profile` doesn't check `p_me`** (anyone can see the record between any two players): low.
+- **The level buttons on Home are easy to change by accident** (new-player walkthrough, 16 Oct): a stray tap on Easy/Hard
+  while reaching for the sub-tabs below changes your level everywhere, quietly. Idea: a toast saying what changed, or a
+  little more space between the level row and the tabs.
+- **Maybe: the pack count off by one after opening a pack** (walkthrough: 🎁 said 2, after opening one "Open another (2
+  left)"; a name was claimed in between, which may have added one). Not confirmed: check.
 
 | Reported | Bug | Status |
 |---|---|---|
@@ -226,6 +238,30 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 16 Oct 2026 (owner) | In a challenge, 👀 "What did they sign next?" showed their next signing and his number before you picked: knowing the future. | 5.39: it shows their signing at the point you've reached |
+| 16 Oct 2026 (owner) | A rematch came twice (TE9NPP and N2SY9W, 9 ms apart): the full-time screen drew twice while the first was being sent, and each sent one. | 5.39: one request per game (`S.rematchP`, `S.chCodeP`); server: the same player's same game within 10 minutes is the same challenge |
+| 16 Oct 2026 (sweep, new-player walkthrough) | Pop-ups (z-index 50) sat under the game's effects, bonus notes, moment cards and Home's visitors (90+): bonus chips over the name box, the ghost over What's New. | 5.39: `.modal-wrap` 98, toasts 99 |
+| 16 Oct 2026 (sweep) | Notices piled up: over the tour, over the reels mid-game, the login reward over the first XI's title; two toasts drawn on top of each other. | 5.39: notices queue (one at a time, wait for a game/tour/pop-up to finish, 90 s at most); toasts stack in `#toasts` |
+| 16 Oct 2026 (sweep) | The prize wheel didn't say what you'd won, "0 spin left", ⬆️ upside down, and the spinning wheel made the page scroll sideways at 360 px. | 5.39 |
+| 16 Oct 2026 (sweep) | The name box at every full time after "Not now". | 5.39: back-off (3 games, then weekly) |
+| 16 Oct 2026 (sweep) | CHAOS's background animated a hue-rotate filter on a layer bigger than the screen (frames dropped even standing still). | 5.39: transform only |
+| 16 Oct 2026 (sweep) | Home at 360 px: a long "New in 5.38" slide filled the first screen; "1 badges"; 📅 drawn as "July 17". | 5.39: slides clamp to two lines and skip release news in your first games; plurals; 🗓️ |
+| 16 Oct 2026 (owner) | After a challenge rematch, full time showed your own team and score first; the comparison was a scroll away. | 5.39: competitive games open on the result against them (reactions, rematch at the top), your game on a second tab |
+| 16 Oct 2026 (owner) | Watch along only showed the team sheet: no wildcards, no moments. | 5.39: their real game drawn live (`GM.draft.spectate`) plus the move-by-move feed |
+| 16 Oct 2026 (owner) | Best Players had 2 names when the boards had 3: the third had only played Easy, which didn't count. | 5.39: Easy counts half |
+| 16 Oct 2026 (owner) | The card tiers: four in a row and Icon alone underneath. | 5.39: one row of five with bars |
+| 16 Oct 2026 (sweep) | The Scout's Tip could offer a finished card (wasted), its no-cards fallback never ran. | 5.39 |
+| 16 Oct 2026 (sweep) | Background writes (friend names, ▲▼ memory) kept putting the timed backup off, and unchanged writes backed up. | 5.39 |
+| 16 Oct 2026 (sweep) | The ▲▼ on boards compared this month's places with all time's; the memory grew for ever. | 5.39 |
+| 16 Oct 2026 (sweep) | Online result notifications said "Final score 100–0". | Server 16 Oct: the real totals |
+| 16 Oct 2026 (sweep) | Hat-Trick online results stayed on the 🔔 count. | 5.39 |
+| 16 Oct 2026 (sweep) | A first-time tip was marked seen if you left within half a second; the tour restarted on any resize. | 5.39 |
+| 16 Oct 2026 (sweep) | Emoji clipped at the top of draft titles (line height too tight). | 5.39 |
+| 16 Oct 2026 (sweep) | `online_get` without a key showed a race opponent's XI mid-race. | 5.39 client sends the key; server change in `notes/sql/539_sweep.sql` (run at merge) |
+| 16 Oct 2026 (sweep) | Renaming lost your challenges, 🔔 feed and invites; deleting left them for the next owner of the name. | `notes/sql/539_sweep.sql` (run at merge) |
+| 16 Oct 2026 (sweep) | Anyone could call `gm_push`; negative scores and big score meta were refused; the push function failed an insert for every repeat (4,000 log errors a day). | Server 16 Oct |
+| 11 Oct 2026 (owner) | The scroll line on the right of the app. | Not ours: it's Google Play Games' Sidekick tab |
+| 16 Oct 2026 (owner) | A 10,639 on CHAOS Hard (challenge WAKJRE) wasn't on the board, but the friend's 7,586 was. The `scores` table only took scores up to 10,000 (`scores_score_check`), so submit_score was refused. | Server, 16 Oct: the limit is now 1,000,000 and the lost score was put back |
 | 2026-10-12 | After Play again, Halloween CHAOS started with a small pitch, empty space below and a little scroll | 5.30.2: the decorations are clipped to the screen (they had been placed from the scrolled full-time page and stretched it), a new game resets the slots and scroll, and the pitch grows back into empty space |
 | 2026-10-12 | CHAOS drafts (Halloween CHAOS especially) scroll on the phone, and the fog and pumpkins move with it | 5.30.1: `fitPitch` shrinks the slots whenever the page overflows (not just at kick-off), scales the game down as a last resort, and the decorations sit in page coordinates |
 | 2026-10-12 | Seasonal CHAOS on Hard played like Normal: clubs and numbers showed | 5.30: Hard works in Seasonal CHAOS, with its own Hard board |

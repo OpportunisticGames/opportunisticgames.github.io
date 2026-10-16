@@ -35,7 +35,7 @@
       el.className = 'ch-intro';
       el.innerHTML = `<div class="chi-card"><div class="chi-tag">⚔️ CHALLENGE MODE</div>
         <div class="chi-vs"><span>${GM.userPic ? GM.userPic(GM.getName() || 'You', 'xl') : ''}<b>You</b></span><i>V</i><span>${GM.userPic ? GM.userPic(c.name, 'xl') : ''}<b>${esc(c.name)}</b></span></div>
-        <div class="chi-goal">Beat <b>${fmt(c.score)}</b> ${esc(c.unit || '')}</div><div class="chi-count">3</div><small>Same spins they had · tap to skip</small></div>`;
+        <div class="chi-goal">Beat <b>${fmt(c.score)}</b> ${esc(c.unit || '')}</div><div class="chi-count">3</div><small>Same spins, same luck: the better picks win · tap to skip</small></div>`;
       document.body.appendChild(el);
       GM.sound.play('drumroll'); GM.buzz(40);
       const n = el.querySelector('.chi-count'), timers = [];
@@ -78,7 +78,7 @@
     // ⚔️ Challenge a friend: pick friends from the app (they get a notification) and/or send the link anywhere.
     // Returns false when the challenge couldn't be saved (the draft then falls back to a plain link).
     async send(S, sc, txt) {
-      const code = S.chCode || (S.chCode = await this.create(S, sc));
+      const code = S.chCode || (S.chCode = await (S.chCodeP || (S.chCodeP = this.create(S, sc))));  // (two quick taps: one challenge)
       if (!code) return false;
       let fr = [];
       if (GM.account() && GM.lb.enabled) { try { fr = (await rpc('online_friends', auth())) || []; } catch (e) { fr = []; } }
@@ -104,21 +104,29 @@
     // after each signing (and at full time): your progress, for the challenger watching along and for the result
     progress(S, sc, done) {
       const c = S.ch; if (!c || !c.play || !GM.lb.enabled) return;
-      clearTimeout(this._pt);
+      clearTimeout(this._pt); this._pt = null;
       const send = () => rpc('challenge_progress', { p_play: c.play, p_token: c.token, p_score: Math.round(sc.total), p_total: Math.round(sc.t), p_game: GM.draft.game(S), p_done: !!done })
         .then(() => { if (done) { const l = local(c.code) || {}; GM.store.set('ch:' + c.code, { ...l, done: true }); } }).catch(() => {});
-      if (done) this._done = send(); else this._pt = setTimeout(send, 500);
+      if (done) this._done = send(); else this._pt = setTimeout(() => { this._pt = null; send(); }, 500);
+    },
+
+    // between signings (a spin, a wildcard, a moment): the game as it stands, a moment later, for watch along
+    live(S) {
+      const c = S.ch; if (!c || !c.play || !GM.lb.enabled || S.phase === 'done') return;
+      if (this._pt) return;  // (one already on its way: the screen redraws all the time, so it mustn't keep putting it off)
+      this._pt = setTimeout(() => { this._pt = null; if (S.phase !== 'done') this.progress(S, GM.draft.score(S), false); }, 1200);
     },
 
     // the ghost bar while you play: where you stand against them after the same number of signings
     ghostHtml(S) {
       const c = S.ch, n = S.xi.filter(x => x.p != null).length, mine = at(S.prog, n), theirs = at(c.prog, n), d = mine - theirs;
-      const spoil = GM.store.get('chspoil', false), next = (c.picks || [])[n];
+      // (what they signed at the point you've just reached, never what's coming: that would tell you who to take)
+      const spoil = GM.store.get('chspoil', false), then = n ? (c.picks || [])[n - 1] : null;
       const left = S.xi.filter(x => x.p == null).length, need = c.score - mine;
       const last = left === 1 && S.phase !== 'done' && (S.rules.max || S.rules.chaos) ? `<span class="chg-last">${need > 0 ? `🎯 Last signing: you need <b>${fmt(need + 1)}</b> to win` : '🛡️ Last signing: you’re ahead – hold on!'}</span>` : '';
       return `<div class="banner ch-ghost ${S.chFlash && Date.now() - S.chFlash < 1500 ? 'flash' : ''} ${d < 0 ? 'behind' : ''}">⚔️ <b>${esc(c.name)}</b> scored <b>${fmt(c.score)}</b>${last}
         ${n ? `<span class="chg-line">After ${n} signing${n > 1 ? 's' : ''}: you <b>${fmt(mine)}</b> · ${esc(c.name)} <b>${fmt(theirs)}</b> <i class="${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '+' : '−'}${fmt(Math.abs(d))}</i></span>` : ''}
-        ${next ? `<button class="chg-spoil" onclick="GM.challenge.toggleSpoil()">${spoil ? `👀 They signed <b>${esc(next[2])}</b> next (${esc(next[3])}, ${fmt(next[4])})` : '👀 What did they sign next?'}</button>` : ''}</div>`;
+        ${then ? `<button class="chg-spoil" onclick="GM.challenge.toggleSpoil()">${spoil ? `👀 Their signing ${n}: <b>${esc(then[2])}</b> (${esc(then[3])}, ${fmt(then[4])})` : `👀 Who did they sign ${n === 1 ? 'first' : 'at this point'}?`}</button>` : ''}</div>`;
     },
     toggleSpoil() { GM.store.set('chspoil', !GM.store.get('chspoil', false)); GM.draft.render(); },
 
@@ -190,7 +198,11 @@
     async sendRematch(S, sc, el) {
       if (S.rematchSent) return show(S.rematchSent);
       el.innerHTML = '<p class="muted center">🔁 Sending your rematch…</p>';
-      const code = await this.create(S, sc, S.rematch);
+      // (the full-time screen can draw again while it's on its way: the same request, never a second rematch)
+      if (!S.rematchP) S.rematchP = this.create(S, sc, S.rematch);
+      const code = await S.rematchP;
+      if (!code) S.rematchP = null;
+      el = (el.isConnected ? el : document.getElementById('ch-h2h')) || el;
       if (!code) { el.innerHTML = '<p class="muted center">Couldn’t send the rematch (are you online?). You can still challenge a friend below.</p>'; return; }
       S.rematchSent = code; show(code);
       function show(c) {
@@ -226,7 +238,7 @@
     }
     if (mine && mine.status === 'done') return result(app, ch, mine.id);
     app.innerHTML = top('⚔️ Challenge') + `<div class="ch-hero">${GM.userPic ? GM.userPic(owner.name, 'xl') : ''}<b>${esc(owner.name)} challenges you</b>${owner.username && GM.titleHtml ? GM.titleHtml(owner.username) : ''}
-        <span>${esc(modeName(ch))}: beat <b>${fmt(owner.score)}</b> ${esc(unitOf(owner))}</span><small>Same spins as they had. Their line shows as you go.</small></div>
+        <span>${esc(modeName(ch))}: beat <b>${fmt(owner.score)}</b> ${esc(unitOf(owner))}</span><small>Same spins and same luck as they had. Their line shows as you go. Challenge scores go on this table, not the public leaderboards.</small></div>
       <div class="actions col"><button class="btn big" id="ch-go">${mine ? '▶ Carry on' : '⚔️ Take it on'}</button></div>
       ${done.length > 1 || live.length ? `<h3 class="section-title">The table</h3>${table}` : ''}`;
     GM.$('#ch-go').onclick = () => start(ch, owner);
@@ -288,19 +300,21 @@
     el.innerHTML = `<div class="ch-verdict"><b>${verdict}</b><div class="ch-scores"><span class="a">${esc(an)} <b>${fmt(A.score)}</b></span><i>v</i><span class="b"><b>${fmt(B.score)}</b> ${esc(bn)}</span></div><small>${esc(modeName(ch))} · ${esc(unit)}</small></div>
       <div id="ch-bo3"></div>
       ${reactIn ? `<div class="ch-bubble">💬 <b>${esc(bn)}</b>: ${esc(reactIn)}</div>` : ''}
-      <h3 class="section-title">📈 How it went</h3>${chartSvg(ga.prog, gb.prog, an, bn)}<p class="muted small center">${story(ga.prog, gb.prog, an, bn)}</p>
-      ${pointsFrom(A, B, an, bn)}
-      ${diffs(ga.picks, gb.picks, an, bn, ga.mgr !== gb.mgr && (ga.mgr || gb.mgr) ? [ga.mgr, gb.mgr] : null)}
-      <h3 class="section-title">🆚 The XIs</h3>${xis(ga, gb, an, bn)}
-      ${(ga.wild || []).length || (gb.wild || []).length ? `<p class="ch-wild"><span>${esc(an)}: ${(ga.wild || []).join(' ') || 'no wildcards'}</span><span>${esc(bn)}: ${(gb.wild || []).join(' ') || 'no wildcards'}</span></p>` : ''}
-      ${ga.mgr && ga.mgr === gb.mgr ? `<p class="ch-wild"><span>👔 Both went with ${esc(ga.mgr)}</span></p>` : ''}
-      ${groupTable(ch)}
-      ${sd.token ? `<h3 class="section-title">💬 Say something</h3><div class="ch-reacts">${REACTS.concat(GM.extraReactions ? GM.extraReactions() : []).map(r => `<button class="btn small ghost" data-react="${esc(r)}">${esc(r)}</button>`).join('')}</div>` : ''}
+      ${sd.token ? `<div class="ch-reacts">${REACTS.concat(GM.extraReactions ? GM.extraReactions() : []).map(r => `<button class="btn small ghost" data-react="${esc(r)}">${esc(r)}</button>`).join('')}</div>` : ''}
       <div class="actions col">
         ${sd.you ? `<button class="btn big" id="ch-rematch">🔁 Rematch (new spins)</button>` : `<a class="btn big" href="#/c?id=${ch.code}">⚔️ Take it on yourself</a>`}
         <button class="btn ghost" id="ch-pic">🖼️ Share the head-to-head</button>
         ${me() && sd.you ? `<a class="btn ghost" href="#/rival?name=${enc(bn)}">📜 Your record v ${esc(bn)}</a>` : ''}
-      </div>`;
+      </div>
+      <h3 class="section-title">📈 How it went</h3>${chartSvg(ga.prog, gb.prog, an, bn)}<p class="muted small center">${story(ga.prog, gb.prog, an, bn)}</p>
+      ${pointsFrom(A, B, an, bn)}
+      ${diffs(ga.picks, gb.picks, an, bn, ga.mgr !== gb.mgr && (ga.mgr || gb.mgr) ? [ga.mgr, gb.mgr] : null)}
+      <h3 class="section-title">🆚 The XIs</h3>${xis(ga, gb, an, bn)}
+      ${feedHtml(ga.feed, an === 'You' ? 'Your' : an, false).replace('Your’s', 'Your')}${feedHtml(gb.feed, bn, false)}
+      ${(ga.wild || []).length || (gb.wild || []).length ? `<p class="ch-wild"><span>${esc(an)}: ${(ga.wild || []).join(' ') || 'no wildcards'}</span><span>${esc(bn)}: ${(gb.wild || []).join(' ') || 'no wildcards'}</span></p>` : ''}
+      ${ga.mgr && ga.mgr === gb.mgr ? `<p class="ch-wild"><span>👔 Both went with ${esc(ga.mgr)}</span></p>` : ''}
+      ${groupTable(ch)}
+`;
     GM.$$('[data-react]', el).forEach(b => b.onclick = async () => {
       b.disabled = true;
       try { await rpc('challenge_react', { p_play: sd.target, p_token: sd.token, p_reaction: b.dataset.react }); GM.toast(`Sent: ${esc(b.dataset.react)}`); GM.sound.play('good'); }
@@ -432,18 +446,28 @@
   window.addEventListener('hashchange', () => { if (!/[?&]watch=/.test(location.hash)) { clearInterval(wtimer); wtimer = null; } });
   function watch(app, ch, playId) {
     clearInterval(wtimer);
+    let need = null;  // (Extreme and Purist games need every PL player loaded to draw their pitch)
     const draw = c => {
       const owner = c.plays.find(p => p.owner), p = c.plays.find(x => x.id === playId);
       if (!p) { app.innerHTML = top('👀 Watch along', '#/c?id=' + c.code) + '<p class="center muted">Can’t find that player.</p>'; return; }
-      const g = p.game || {}, n = (g.xi || []).filter(s => s[1]).length, last = (g.picks || []).slice(-1)[0], d = at(g.prog, n) - at(owner.game.prog, n);
-      app.innerHTML = top('👀 Watch along', '#/c?id=' + c.code) + `<div class="ch-verdict"><b>${p.status === 'done' ? '⏱️ Full time' : `<i class="live-dot"></i> ${esc(p.name)} is playing`}</b>
+      const g = p.game || {}, n = (g.xi || []).filter(s => s[1]).length, d = at(g.prog, n) - at(owner.game.prog, n), done = p.status === 'done';
+      const keep = window.scrollY;
+      app.innerHTML = top('👀 Watch along', '#/c?id=' + c.code) + `<div class="ch-verdict watch-head"><b>${done ? '⏱️ Full time' : `<i class="live-dot"></i> ${esc(p.name)} is playing`}</b>
           <div class="ch-scores"><span class="a">${esc(p.name)} <b>${fmt(p.score)}</b></span><i>v</i><span class="b"><b>${fmt(owner.score)}</b> ${esc(owner.name)}</span></div>
-          <small>${n}/11 signed${n ? ` · ${d >= 0 ? `${fmt(d)} ahead of` : `${fmt(-d)} behind`} ${esc(owner.name)} at the same point` : ''}</small></div>
-        ${last ? `<div class="ch-bubble">✍️ Just signed <b>${esc(last[2])}</b> (${esc(last[3])}) · ${fmt(last[4])}</div>` : ''}
+          <small>${n}/11 signed${n ? ` · ${d >= 0 ? `${fmt(d)} ahead of` : `${fmt(-d)} behind`} ${esc(owner.name)} at the same point` : ''}${g.mgr ? ` · 👔 ${esc(g.mgr)}` : ''}</small></div>
+        ${!done && g.live ? '<div class="watch-game" id="watch-game"></div>' : ''}
+        ${feedHtml(g.feed, p.name)}
+        ${done ? `<div class="actions col"><a class="btn big" href="#/c?id=${c.code}&p=${p.id}">🆚 See the head-to-head</a></div>` : '<p class="muted small center">Live: it moves as they spin, sign and play their wildcards</p>'}
         ${chartSvg(g.prog, owner.game.prog, p.name, owner.name)}
-        <h3 class="section-title">🆚 The XIs so far</h3>${xis(g, owner.game || {}, p.name, owner.name)}
-        ${p.status === 'done' ? `<div class="actions col"><a class="btn big" href="#/c?id=${c.code}&p=${p.id}">See the head-to-head</a></div>` : '<p class="muted small center">Updates as they sign each player</p>'}`;
-      if (p.status === 'done') { clearInterval(wtimer); wtimer = null; }
+        <h3 class="section-title">🆚 The XIs so far</h3>${xis(g, owner.game || {}, p.name, owner.name)}`;
+      const box = GM.$('#watch-game', app);
+      if (box) {
+        const all = !!(g.live.extreme || (GM.draft.RULES[g.live.mode] || {}).all);
+        if (all && !GM.allPlayers) { box.innerHTML = '<p class="muted small center">Loading their game…</p>'; if (!need) need = GM.loadAll().then(() => draw(c), () => {}); }
+        else if (!GM.draft.spectate(box, g.live, g.xi)) box.remove();  // (a different version of the game on their phone: the team sheet below still works)
+      }
+      window.scrollTo(0, keep);
+      if (done) { clearInterval(wtimer); wtimer = null; }
     };
     draw(ch);
     let lastAt = '';
@@ -451,8 +475,14 @@
       if (!location.hash.includes('watch=')) { clearInterval(wtimer); return; }
       let c = null; try { c = await rpc('challenge_get', { p_code: ch.code }); } catch (e) { return; }
       const p = c && c.plays.find(x => x.id === playId);
-      if (p && p.updated !== lastAt) { lastAt = p.updated; draw(c); GM.sound.play('tap'); }
-    }, 3500);
+      if (p && p.updated !== lastAt) { const fresh = lastAt !== ''; lastAt = p.updated; draw(c); if (fresh) GM.sound.play('tap'); }
+    }, 3000);
+  }
+  // 📣 what's happened in their game, newest first: each signing, wildcard and moment and what it did to the score
+  function feedHtml(feed, name, open = true) {
+    if (!feed || !feed.length) return '';
+    const rows = feed.slice().reverse().map(f => `<li><span class="fd-i">${esc(f.i)}</span><span class="fd-t"><b>${esc(f.n)}</b>${f.x ? `<small>${esc(f.x)}</small>` : ''}</span>${f.d ? `<em class="${f.d < 0 ? 'neg' : 'pos'}">${f.d > 0 ? '+' : '−'}${fmt(Math.abs(f.d))}</em>` : '<em></em>'}</li>`).join('');
+    return `<details class="set ch-feed" ${open ? 'open' : ''}><summary><span>📣 ${esc(name)}’s game, move by move</span><small>${feed.length}</small></summary><ol class="fd-list">${rows}</ol></details>`;
   }
 
   /* ---------------------------------------------------------------- your record against a friend */

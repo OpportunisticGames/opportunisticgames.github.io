@@ -134,7 +134,7 @@
     legends: { name: 'Promotion Pack', sub: () => 'Choose a Legend, plus four Silver or better', pool: () => null },
     // one for each way of earning a pack, so you can see what it was for: how it looks (badge) and what's in it
     // (n pieces; the last `up` of them at least tier `min`; wild = always a wildcard)
-    daily: { name: 'Daily Pack', badge: '📅', sub: () => 'Your free pack for today', pool: () => null },
+    daily: { name: 'Daily Pack', badge: '🗓️', sub: () => 'Your free pack for today', pool: () => null },
     level: { name: 'Level Up Pack', badge: '⬆️', sub: () => 'Five pieces: two Silver or better', pool: () => null, min: 's', up: 2 },
     badge: { name: 'Badge Pack', badge: '🏅', sub: () => 'Five pieces and a wildcard', pool: () => null, wild: 'pick' },
     dailies: { name: 'Daily Hat-Trick Pack', badge: '🎩', sub: () => 'Three dailies in a day: one Gold or better', pool: () => null, min: 'g', up: 1 },
@@ -248,7 +248,8 @@
     legend: { icon: '🟣', name: 'Legend’s choice', text: 'Choose one of these three Legends', w: 10 },
   };
   GM.PACK_WILDS = WILDS;
-  GM.scoutOptions = () => wildOptions(load(), GM.rng('scout|' + Date.now()), 'scout', null, new Set()).options;  // (a 🔭 Scout's Tip, prizes.js)
+  // (a 🔭 Scout's Tip, prizes.js: only cards you've started; none yet and it's a standard pack instead, never a wasted piece)
+  GM.scoutOptions = () => { const w = wildOptions(load(), GM.rng('scout|' + Date.now()), 'scout', null, new Set()); return w.kind === 'scout' ? w.options : []; };
   // the three options for a wildcard: { kind, options } (a Scout's tip with nothing started becomes a Pick one)
   function wildOptions(c, r, kind, theme, taken) {
     const out = [], seen = new Set(taken);
@@ -553,7 +554,7 @@
     const c = load();
     CF.tier = tier;
     const counts = ORDER.map(t => [t, POOL[t].filter(p => done(c, p)).length, POOL[t].length]);
-    return `<div class="tier-row">${counts.map(([t, have, all]) => `<a class="${tier === t ? 'on' : ''}" href="#/album?v=cards${tier === t ? '' : '&t=' + t}"><span>${TIERS[t].icon}</span><b>${have}/${all}</b><small>${TIERS[t].name} · ${TIERS[t].need} piece${TIERS[t].need > 1 ? 's' : ''}</small></a>`).join('')}</div>
+    return `<div class="tier-row">${counts.map(([t, have, all]) => `<a class="${tier === t ? 'on' : ''}" href="#/album?v=cards${tier === t ? '' : '&t=' + t}"><span>${TIERS[t].icon}</span><b>${have}<i>/${all}</i></b><em class="tr-bar"><i style="width:${all ? Math.round(have / all * 100) : 0}%"></i></em><small>${TIERS[t].name}</small><small class="tr-need">${TIERS[t].need} piece${TIERS[t].need > 1 ? 's' : ''}</small></a>`).join('')}</div>
       <details class="set how-cards"><summary><span>❓ How cards work</span></summary><ul class="how-list">
         <li>Every player with 50+ PL apps is a card: 🟫 Bronze needs 1 piece, ⚪ Silver 2, 🟡 Gold 3, 🟣 Legend 5 and 💎 Icon 7. Finished cards go into your 🃏 XI.</li>
         <li>🎁 A free pack every day: a 🌍 Nations pack in an international break, a 🏟️ Matchday pack when your club plays. A bonus pack for three daily games in a day, for every new badge and every level, and a 🟣 Legends pack when you go up a rank.</li>

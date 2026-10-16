@@ -336,7 +336,10 @@ GM.newSeed = () => Math.random().toString(36).slice(2, 10);
 /* ------------------------------------------------------------------ storage */
 GM.store = {
   get(k, d) { try { const v = localStorage.getItem('gm:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem('gm:' + k, JSON.stringify(v)); } catch (e) { /* private mode */ } if (GM.backup) GM.backup.changed(k); },
+  set(k, v) {
+    try { const j = JSON.stringify(v); if (localStorage.getItem('gm:' + k) === j) return; localStorage.setItem('gm:' + k, j); } catch (e) { /* private mode */ }  // (nothing new: not a change to back up)
+    if (GM.backup) GM.backup.changed(k);
+  },
 };
 
 // Moving house: the old address (joelthornton.github.io/goal-machine/) forwards players here with their saved scores,
@@ -411,7 +414,13 @@ GM.askName = async function () {
   if (acc || !GM.lb.enabled) return GM.getName() || (await GM.accountModal());
   const legacy = GM.store.get('name', '');
   if (legacy && (await GM.claimName(legacy)) === 'ok') return legacy;  // keep the name they already use, if it's free
-  return GM.accountModal(legacy ? `Someone already has the name “${legacy}” on the leaderboard. Pick another – it'll be yours alone.` : GM.NAME_WHY);
+  // (5.39: "Not now" means not now: the next three games don't ask, and after a second no, once a week at most; the
+  // full-time line still offers it)
+  const sk = GM.store.get('nameSkip', null) || { no: 0, games: 0, at: 0 };
+  if (sk.no && !(sk.no === 1 ? sk.games >= 3 : Date.now() - sk.at > 7 * 864e5)) { GM.store.set('nameSkip', { ...sk, games: sk.games + 1 }); return null; }
+  const got = await GM.accountModal(legacy ? `Someone already has the name “${legacy}” on the leaderboard. Pick another – it'll be yours alone.` : GM.NAME_WHY);
+  GM.store.set('nameSkip', got ? null : { no: sk.no + 1, games: 0, at: Date.now() });
+  return got;
 };
 /** Changes this account's name, keeping its scores, friends, games and backup. Same results as GM.claimName. */
 GM.renameAccount = async function (name) {
@@ -533,9 +542,11 @@ GM.backup = {
   // anything saved since the last backup marks the phone as changed; a few minutes later (or when the app goes to the
   // background) it's backed up, so a new phone or a reinstall finds your latest game, not last week's
   changed(k) {
-    if (/^(account|backupAt|backupAsked|backupDirty|lbQueue|updChecked|linksNag)$/.test(k)) return;
+    // (what's only about this phone's screens doesn't need backing up)
+    if (/^(account|backupAt|backupAsked|backupDirty|lbQueue|updChecked|linksNag|friendNames|lbSeen|inboxSeen|feedSeen|chSeen|chInvited|onlineSeen)$/.test(k)) return;
     if (!this._dirty) { this._dirty = true; try { localStorage.setItem('gm:backupDirty', '1'); } catch (e) { /* private mode */ } }
-    clearTimeout(this._t); this._t = setTimeout(() => GM.backup.save(true), 120e3);
+    // (two minutes after the first change, not the last: a page that saves every few seconds mustn't put it off for ever)
+    if (!this._t) this._t = setTimeout(() => { this._t = null; GM.backup.save(true); }, 120e3);
   },
   dirty: () => { try { return !!localStorage.getItem('gm:backupDirty'); } catch (e) { return false; } },
   // auto: true = at most every 10 minutes; a number = at most every that many ms; false (Back up now) = always
@@ -631,9 +642,13 @@ document.addEventListener('click', e => {
 
 /* ------------------------------------------------------------------ modal / toast */
 GM.toast = function (msg, ms = 2200) {
+  // (in a column at the bottom, so two at once stack rather than land on top of each other; three at most)
+  let box = document.getElementById('toasts');
+  if (!box) { box = document.createElement('div'); box.id = 'toasts'; box.setAttribute('aria-live', 'polite'); document.body.appendChild(box); }
+  [...box.children].slice(0, Math.max(0, box.children.length - 2)).forEach(x => x.remove());
   const t = document.createElement('div');
   t.className = 'toast'; t.innerHTML = msg;
-  document.body.appendChild(t);
+  box.appendChild(t);
   requestAnimationFrame(() => t.classList.add('show'));
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, ms);
 };
@@ -669,11 +684,13 @@ GM.lbModal = async function (key) {
 // at this board. rows: [{name, score, level, meta, crowns?}]; o: { key, unit (' pts'), score: r => text, extra: r => html }
 GM.isFriend = name => (GM.store.get('friendNames', []) || []).some(x => x.toLowerCase() === String(name).toLowerCase());
 GM.lbList = function (rows, o = {}) {
-  const me = GM.getName(), key = o.key || '', unit = o.unit ? `<small>${o.unit}</small>` : '';
+  const me = GM.getName(), unit = o.unit ? `<small>${o.unit}</small>` : '';
+  // (the ▲▼ memory is per board and per period: this month's places aren't compared with all time's)
+  const key = o.key || '', sk = key ? key + (/:/.test(key) || !GM.lbMonth ? '' : GM.lbMonth() ? ':m' : ':a') : '';
   const sc = r => (o.score ? o.score(r) : GM.scoreText(key, r.score)) + unit;
   const pic = (n, cls) => GM.userPic(n, cls, n === me || GM.isFriend(n));
   // movement since you last looked (kept on this phone, per board)
-  const seenAll = GM.store.get('lbSeen', {}) || {}, seen = seenAll[key] || null, now = {};
+  const seenAll = GM.store.get('lbSeen', {}) || {}, seen = seenAll[sk] || null, now = {};
   const rankOf = (r, i) => (r.rank != null ? +r.rank : i + 1);
   const move = (r, i) => {
     const k = r.name.toLowerCase(), was = seen && seen[k], is = rankOf(r, i); now[k] = is;
@@ -683,15 +700,15 @@ GM.lbList = function (rows, o = {}) {
   };
   const extra = r => (o.extra ? o.extra(r) : GM.pctTag(key, r.meta));
   let html = '';
-  if (rows.length >= 3) {
+  if (rows.length) {  // (the podium on every board: a step nobody's on yet waits to be taken)
     const pod = [[rows[1], 1], [rows[0], 0], [rows[2], 2]];
-    html += `<div class="podium">${pod.map(([r, i]) => `<button class="pod pod${rankOf(r, i)} ${r.name === me ? 'me' : ''}" data-profile="${GM.esc(r.name)}">
+    html += `<div class="podium">${pod.map(([r, i]) => !r ? `<div class="pod pod${i + 1} empty"><span class="pod-medal">${['🥇', '🥈', '🥉'][i]}</span><span class="pod-free">?</span><b>Up for grabs</b><span class="pod-step">${i + 1}</span></div>` : `<button class="pod pod${rankOf(r, i)} ${r.name === me ? 'me' : ''}" data-profile="${GM.esc(r.name)}">
       <span class="pod-medal">${['🥇', '🥈', '🥉'][Math.min(2, rankOf(r, i) - 1)]}</span>${pic(r.name, rankOf(r, i) === 1 ? 'xl' : 'lg')}
-      <b>${GM.esc(r.name)}</b>${move(r, i)}<em>${sc(r)}</em>${r.level ? `<i class="lv-tag">Lv ${r.level}</i>` : ''}<span class="pod-step">${rankOf(r, i)}</span></button>`).join('')}</div>`;
+      <b>${GM.esc(r.name)}</b>${move(r, i)}<em>${sc(r)}</em>${o.extra ? `<span class="pod-x">${o.extra(r)}</span>` : ''}${r.level ? `<i class="lv-tag">Lv ${r.level}</i>` : ''}<span class="pod-step">${rankOf(r, i)}</span></button>`).join('')}</div>`;
   }
-  html += rows.slice(rows.length >= 3 ? 3 : 0).map((r, j) => { const i = j + (rows.length >= 3 ? 3 : 0), rk = rankOf(r, i);
+  html += rows.slice(3).map((r, j) => { const i = j + 3, rk = rankOf(r, i);
     return `<div ${GM.lbRow(r.name, me).replace('lb-row', 'lb-row lbx')}><span class="lb-rk">${rk <= 3 ? ['🥇', '🥈', '🥉'][rk - 1] : rk}</span>${pic(r.name, 'sm')}<span class="lb-nm">${GM.esc(r.name)}${GM.lbLevel(r)}${extra(r)}</span>${move(r, i)}<b>${sc(r)}</b></div>`; }).join('');
-  if (key) { seenAll[key] = now; GM.store.set('lbSeen', seenAll); }
+  if (sk) { delete seenAll[sk]; seenAll[sk] = now; const ks = Object.keys(seenAll); ks.slice(0, Math.max(0, ks.length - 40)).forEach(k => delete seenAll[k]); GM.store.set('lbSeen', seenAll); }  // (the 40 boards you looked at last)
   return html;
 };
 // How close a Target score came, as a share of the target ("97.6%"): meta.t is your total, meta.g the target.
@@ -759,8 +776,23 @@ GM.hiddenNameBanner = el => GM.nameHidden().then(h => {
   GM.$('#hn-change', el).onclick = async () => { if (await GM.accountModal('Your scores, friends and backup come with you.', true)) el.innerHTML = ''; };
 });
 // An in-app notification: a card that drops in from the top, and opens href when tapped (swipe it up or wait to dismiss)
-GM.notice = function ({ pic = '', title, sub = '', href, ms = 6000 }) {
-  GM.$$('.notice').forEach(n => n.remove());
+// the cards at the top of the screen: one at a time, and never over a game you're playing, the tour or a pop-up
+// (they wait their turn, for up to a minute and a half)
+const noticeQ = []; let noticeT = null;
+const noticeBusy = () => {
+  if (document.querySelector('.notice, .tour, .ch-intro, .cm:not(.out), .modal-wrap')) return true;
+  const S = GM.draft && GM.draft.state && GM.draft.state();
+  return !!(S && S.phase && S.phase !== 'done' && !S.spectate && (/^#\/(draft|daily)\b/.test(location.hash) || (S.online && location.hash.includes(S.online.code))));
+};
+const noticePump = () => {
+  clearTimeout(noticeT); noticeT = null;
+  while (noticeQ.length && Date.now() - noticeQ[0].at > 90e3) noticeQ.shift();
+  if (!noticeQ.length) return;
+  if (noticeBusy()) { noticeT = setTimeout(noticePump, 900); return; }
+  noticeQ.shift().show();
+  if (noticeQ.length) noticeT = setTimeout(noticePump, 900);
+};
+GM.notice = function ({ pic = '', title, sub = '', href, ms = 6000, now = false }) {
   const n = document.createElement(href ? 'a' : 'div');
   n.className = 'notice';
   if (href) n.href = href;
@@ -770,10 +802,14 @@ GM.notice = function ({ pic = '', title, sub = '', href, ms = 6000 }) {
   let y0 = null;
   n.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; }, { passive: true });
   n.addEventListener('touchmove', e => { if (y0 != null && e.touches[0].clientY - y0 < -25) { y0 = null; close(); } }, { passive: true });
-  document.body.appendChild(n);
-  requestAnimationFrame(() => n.classList.add('show'));
-  GM.sound.play('sting'); GM.buzz(40);
-  setTimeout(close, ms);
+  const show = () => {
+    GM.$$('.notice').forEach(x => x.remove());
+    document.body.appendChild(n);
+    requestAnimationFrame(() => n.classList.add('show'));
+    GM.sound.play('sting'); GM.buzz(40);
+    setTimeout(close, ms);
+  };
+  if (now) show(); else { noticeQ.push({ show, at: Date.now() }); if (noticeQ.length > 4) noticeQ.shift(); noticePump(); }
   return n;
 };
 GM.modal = function (html, { onClose } = {}) {
@@ -1150,11 +1186,12 @@ GM.recordScore = async function (mode, score, meta = {}, opts = {}) {
   const isBest = score > GM.best(mode);
   if (isBest) GM.store.set('best:' + mode, score);
   GM.store.set('played', GM.store.get('played', 0) + 1);
-  if (GM.pgsRecord && !opts.quiet) GM.pgsRecord(mode, score);  // Play Games leaderboards and stats (the Play app)
+  if (GM.pgsRecord && !opts.quiet && !opts.offBoard) GM.pgsRecord(mode, score);  // Play Games leaderboards and stats (the Play app)
   GM.store.set('lastPlayed', GM.today());
   if (GM.notify) GM.notify.sync();  // the app's reminders know you've played (streak, come back)
   GM.backup.save(true);
-  if (GM.lb.enabled && score > 0 && !(opts.quiet && !GM.account())) {  // quiet: only if you've a name already (no box)
+  // offBoard: a friend's challenge (you could see their game as you played it), so not on the public boards
+  if (GM.lb.enabled && score > 0 && !opts.offBoard && !(opts.quiet && !GM.account())) {  // quiet: only if you've a name already (no box)
     const name = await GM.askName();
     const told = d => document.dispatchEvent(new CustomEvent('gm:board', { detail: { mode, ...d } }));
     if (name) GM.lb.submit(mode, score, name, meta).then(() => GM.boardNews(mode, score)).then(nw => { if (!nw) told({ failed: true }); })

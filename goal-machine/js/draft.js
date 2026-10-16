@@ -995,7 +995,7 @@
   GM.SZ_CHAOS = SZ_CHAOS;
   GM.szInSeason = k => inSz(k);  // (tests)
 
-  GM.draft = { game: st => chGame(st || S), modeName: () => modeName(), METER, MANAGERS: () => MANAGERS, events: () => Object.keys(EVENTS).concat(Object.keys(XEV), Object.keys(MOMENTS)).filter(k => inSz(k)) /* (only this season's seasonal ones) */, start, RULES, WILDCARDS, TARGETS, state: () => S, total: st => scoreFor(st).t, score: st => scoreFor(st), render: () => render(), modeKey: (m, s, h, c, x, e) => keyFor(m, s, h, c, x, e) };
+  GM.draft = { game: st => chGame(st || S), spectate: (el, live, xi) => spectate(el, live, xi), modeName: () => modeName(), METER, MANAGERS: () => MANAGERS, events: () => Object.keys(EVENTS).concat(Object.keys(XEV), Object.keys(MOMENTS)).filter(k => inSz(k)) /* (only this season's seasonal ones) */, start, RULES, WILDCARDS, TARGETS, state: () => S, total: st => scoreFor(st).t, score: st => scoreFor(st), render: () => render(), modeKey: (m, s, h, c, x, e) => keyFor(m, s, h, c, x, e) };
 
   const statSuffix = s => ({ goals: '', assists: 'ast', apps: 'apps' }[s] || '');
   function keyFor(mode, stat, hard, club, extreme, easy) {
@@ -1139,7 +1139,13 @@
     mgr: st.manager ? MANAGERS[st.manager].name : null, mgrOffer: st.mgrOffer || null, sz: st.sz || null, form: (st.form || []).join(','), spin: st.spin,
     unit: st.rules && (st.rules.chaos || !st.rules.max) ? 'pts' : st.st.label,
     pts: chPoints(st),
+    feed: (st.feed || []).slice(-30),
+    // while they play: the game as it stands, for watch along (challenge.js draws it with GM.draft.spectate)
+    live: st.phase !== 'done' ? liveOf(st) : undefined,
   });
+  const liveOf = st => { const o = { ...st }; ['rules', 'ch', 'online', 'hist', 'final', 'collected', 'board', 'boardOn', 'newMgrs', 'feed'].forEach(k => delete o[k]); return o; };
+  // what's happened, in order, for watch along: each signing, wildcard and moment and what it did to the score
+  const feed = (i, n, x, d) => { if (S && !S.readonly) S.feed = (S.feed || []).concat([{ i, n: String(n || '').replace(/<[^>]+>/g, ''), x: String(x || '').replace(/<[^>]+>/g, '').slice(0, 140), d: Math.round(d || 0), k: S.xi.filter(s => s.p != null).length }]).slice(-40); };
   // where a CHAOS score came from, for the head-to-head: the players' own PL numbers, what wildcards and moments did to
   // them, team bonuses, moments and bonus spins, the manager; plus the biggest things that happened to players and bonuses
   function chPoints(st) {
@@ -1937,6 +1943,7 @@
       const release = () => {
         if (released) return; released = true; busy = false;
         if (!o.pick) track(o.icon, o.name);
+        if (!o.pick && (o.text || o.after || o.reveal)) feed(o.icon, o.name, o.story || (o.coin != null || o.slot ? o.after : '') || (o.reveal && o.reveal.text) || o.text, snap().t - b.t);
         if (S.rules.chaos && (o.text || o.reveal) && !(o.name === 'Kick-off' && (S.moments || []).some(m => m.name === 'Kick-off'))) S.moments = (S.moments || []).concat([{ icon: o.icon, name: o.name, text: (o.story || o.after || (o.reveal && o.reveal.text) || o.text).replace(/<[^>]+>/g, ''), rar: o.rarity || '' }]);
         if (S.rules.chaos && S.online && GM.online) GM.online.pushRace(S);
         done();
@@ -2185,6 +2192,7 @@
     S.modifier = null; S.capMult = null;
     S.last = p.id;
     S.picks = (S.picks || []).concat([[S.spin, p.pk, p.name, pos, g]]);  // (friend challenges compare signing by signing)
+    feed('✍️', p.name, `Signed at ${pos}`, g);
     S.used.push(p.id);
     if (!S.readonly && GM.trackPick) GM.trackPick(p, S.reels.filter(x => !x.wild).map(x => byId(x.id)));
     S.log.push(pos);
@@ -2294,7 +2302,7 @@
     const w = S.inv[k];
     const wc = WILDCARDS[w];
     if (busy || S.phase === 'spinning' || S.phase === 'reveal' || S.phase === 'done') return;
-    const consume = () => { S.inv.splice(k, 1); S.log.push(wc.icon); S.wildPlayed = (S.wildPlayed || []).concat(wc.icon); S.wildUsed++; GM.sound.play('wild'); charge(); wildFx(w); tinker(); };
+    const consume = () => { feed(wc.icon, wc.name, 'Wildcard played'); S.inv.splice(k, 1); S.log.push(wc.icon); S.wildPlayed = (S.wildPlayed || []).concat(wc.icon); S.wildUsed++; GM.sound.play('wild'); charge(); wildFx(w); tinker(); };
     switch (wc.kind) {
       case 'reveal':
         if (S.phase === 'pick') S.revealed = true; else S.revealNext = true;
@@ -2492,11 +2500,11 @@
       if (S.mode === 'daily' && sc.total > GM.best('daily')) GM.store.set('best:daily', sc.total);
       if (S.rules.chaos && S.sz && GM.szChaosDone) GM.szChaosDone(S.sz);  // this season's CHAOS feeds the season (rewards.js)
       // the leaderboard line on this screen (filled in when the score reaches the board: GM.boardNews in core.js)
-      S.boardOn = !!(GM.lb.enabled && sc.total > 0); S.board = null;
+      S.boardOn = !!(GM.lb.enabled && sc.total > 0 && !S.ch); S.board = null;
       if (S.boardOn) render();
       const meta = { ...(S.target && !S.rules.max && !S.rules.treble ? { t: sc.t, g: S.target } : { t: sc.t }),
         xi: S.xi.filter(x => x.p != null).map(x => byId(x.p).name), ...(S.manager && MANAGERS[S.manager] ? { mgr: MANAGERS[S.manager].name } : {}) };  // (their profile shows their best XI and favourite manager)
-      const { isBest } = await GM.recordScore(modeKey(), sc.total, meta);
+      const { isBest } = await GM.recordScore(modeKey(), sc.total, meta, { offBoard: !!S.ch });
       if (isBest && sc.total > 0 && S.mode !== 'daily') GM.toast('🏆 New personal best!');
       if (isBest && sc.total > 0 && S.mode !== 'daily' && GM.track) { GM.track('pb'); if (GM.celebrate) setTimeout(() => GM.celebrate(true), 1700); }  // your celebration (Locker)
       if (GM.native) { GM.native.gameDone(); if (isBest && sc.total > 0) { GM.buzz('win'); GM.native.happy('pb'); } }  // the Play review card, at a happy moment
@@ -2909,8 +2917,32 @@
 
   // only draw while you're still on this game: a delayed animation or sound cue must never paint a draft over the page you went to
   // (online: once the result has taken over the screen, `away`, the game never draws over it again)
-  const onThisGame = () => { const h = location.hash; return S.online ? h.includes(S.online.code) && !S.online.away : /^#\/(draft|daily)\b/.test(h); };
+  const onThisGame = () => { const h = location.hash; return S.spectate ? /[?&]watch=/.test(h) && root && root.isConnected : S.online ? h.includes(S.online.code) && !S.online.away : /^#\/(draft|daily)\b/.test(h); };
+  // 👀 watch along (challenge.js): a friend's game as it stands, from the state their phone sends after every move,
+  // drawn by this same code (their counter, pitch, wildcards in hand and reels) with nothing to tap
+  function spectate(el, live, xi) {
+    if (!live || !live.xi || !RULES[live.mode]) return false;
+    const rules = rulesFor(live.mode, live.extreme), list = rules.all ? GM.allPlayers : GM.players;
+    if (!list) return false;
+    // (their phone and this one must have the same player list, or the numbers would point at different players)
+    if ((xi || []).some((x, i) => x[1] && (!live.xi[i] || live.xi[i].p == null || !list[live.xi[i].p] || list[live.xi[i].p].pk !== x[1]))) return false;
+    if (S && !S.spectate && S.phase !== 'done' && saveKey() && !S.readonly) GM.store.set(saveKey(), { ...S, rules: undefined });  // your own game stays saved
+    root = el; busy = false;
+    S = { ...live, rules, readonly: true, spectate: true, ch: null, online: null, chIntro: true, pending: null, subbing: false, revealStage: null };
+    render(); return true;
+  }
+  function renderWatch() {
+    if (!onThisGame()) return;
+    const nReels = Math.max(3, (S.reels || []).length), live = S.phase === 'pick' || S.phase === 'reveal';
+    root.innerHTML = `${counterHtml()}${pitchHtml()}
+      <div class="dock">${S.rules.wild === false ? '' : `<div class="inv ${S.inv.length ? 'has' : ''}"><span class="inv-label">${S.inv.length ? `🃏 ${S.inv.length}/3` : 'Wildcards 0/3'}</span>${S.inv.length ? S.inv.map(w => WILDCARDS[w] ? `<span class="wild-btn">${WILDCARDS[w].icon}<small>${WILDCARDS[w].name}</small></span>` : '').join('') : '<span class="muted">none in hand</span>'}</div>`}
+      <div class="stage ${blind() ? 'hard' : ''}">${live && S.reels.length ? `<div class="reels ${nReels > 3 ? 'n5' : ''}">${S.reels.map((x, i) => `<div class="reel ${x.wild ? 'is-wild' : ''} ${S.selected === i ? 'selected' : ''} ${blind() ? 'hard' : ''}">${reelInner(x)}</div>`).join('')}</div>` : `<div class="spin-zone"><span class="watch-wait">${S.phase === 'spinning' ? '🎰 Spinning…' : '🎰 About to spin'}</span></div>`}</div></div>`;
+    // (their players: tap one for his sheet and what's happened to him)
+    GM.$$('[data-slot]', root).forEach(b => b.onclick = () => { const sl = S.xi[+b.dataset.slot]; if (sl && sl.p != null) GM.playerSheet(byId(sl.p), storyHtml(sl)); });
+    requestAnimationFrame(() => { try { fitReels(); } catch (e) { /* only the look */ } });
+  }
   function render() {
+    if (S && S.spectate) return renderWatch();
     if (S && S.rules && S.rules.chaos && S.sz && document.body.dataset.cz !== S.sz && onThisGame()) szLook();
     if (!S || !onThisGame()) return;
     // the weather lasts the game: it stops at full time (and before the next game's kick-off)
@@ -2922,6 +2954,7 @@
     if (S.phase === 'done') return renderDone();
     requestAnimationFrame(() => { fitPitch(); fitReels(); roamLayer(); });
     if (!S.readonly && saveKey()) GM.store.set(saveKey(), { ...S, rules: undefined });  // saved on every move
+    if (S.ch && GM.challenge && !S.readonly) GM.challenge.live(S);  // the friend watching along sees it too
     if (S.revealStage === 'intro') return mysteryIntro();
     if (GM.sound.heat) GM.sound.heat(S.rules.chaos ? (S.chaosDue ? 1 : (S.meter || 0) / METER) : 0);  // Mayhem builds with the meter
     const icon = S.nat ? GM.flag(S.nat) : S.mode === 'club' ? '🏟️' : GM.MODES[S.mode === 'daily' ? 'daily' : S.mode].icon;
@@ -3000,8 +3033,10 @@
     const best = GM.best(S.mode === 'daily' ? 'daily' : modeKey());
     const icon = S.nat ? GM.flag(S.nat) : S.mode === 'club' ? '🏟️' : GM.MODES[S.mode === 'daily' ? 'daily' : S.mode].icon;
     const xi = S.xi.filter(s => s.p != null).map(s => ({ ...s, player: byId(s.p) }));
-    root.innerHTML = `
-      <div class="topbar"><a href="#/" class="back">‹</a><h2>${icon} Full time</h2><span></span></div>
+    // a challenge, a rematch or an online game is about the other player: the result against them comes first, your own
+    // game is on its own tab
+    const vs = !!(S.ch || S.rematch || S.online), tab = vs ? (S.doneTab || 'vs') : 'me';
+    const mine = `
       <div class="result">
         ${S.rules.mystery ? `<div class="mystery-reveal">🎲 The mystery target was <b>${fmt(S.target)}</b> ${S.st.label}</div>` : ''}
         ${S.rules.treble ? `<div class="result-total ${sc.diff === 0 ? 'bull' : ''}">${sc.hits.length === 3 ? '🏆' : sc.hits.length === 2 ? '🥈' : ''}${fmt(sc.t)}<small>goals · ${fmt(tot('assists'))} assists · ${fmt(tot('apps'))} apps</small></div>`
@@ -3014,23 +3049,33 @@
         ${S.rules.chaos ? chartHtml() : ''}
         ${S.rules.chaos ? `<button class="btn ghost small" id="all-mgrs">👔 All managers (${mgrUnlocked().length}/${realMgrs().length})</button>` : ''}
         <table class="breakdown">${sc.parts.map(([k, v]) => `<tr><td>${k}</td><td class="${v < 0 ? 'neg' : ''}">${v < 0 ? '−' + fmt(-v) : '+' + fmt(v)}</td></tr>`).join('')}</table>`}
-        ${S.boardOn ? (S.board && S.board.none ? '' : GM.boardNewsHtml(S.board, modeKey())) : ''}
+        ${S.boardOn ? GM.boardNewsHtml(S.board && S.board.none ? null : S.board, modeKey()) : S.ch && !S.readonly ? '<div class="board-news" id="board-news"><span>⚔️</span><span><b>This one’s on the challenge table</b><small>Challenges stay off the public leaderboards: you could see their game as you played</small></span></div>' : ''}
         ${S.vs && !S.ch ? `<div class="banner">${sc.total > S.vss ? '🎉 You beat' : sc.total == S.vss ? '🤝 You drew with' : '😬 You lost to'} <b>${GM.esc(S.vs)}</b> (${GM.esc(S.vss)})</div>` : ''}
         <div class="muted">Personal best: ${fmt(Math.max(best, sc.total))}</div>
       </div>
       ${S.rules.max ? (S.rules.chaos ? GM.distHtml(distKey(), S.stat, sc.total, 'CHAOS points') : GM.distHtml(distKey(), S.stat, sc.t)) : ''}
       ${S.collected ? `<a class="collected" href="#/album${S.collected.book === 'purist' ? '?b=purist' : ''}">📒 ${S.collected.n ? `<b>+${S.collected.n}</b> new player${S.collected.n === 1 ? '' : 's'} for your album` : 'No new players this time'} · ${S.collected.total.toLocaleString()} collected${S.collected.badges.length ? `<br>🏅 ${S.collected.badges.join(' · ')}` : ''} ›</a>` : ''}
-      ${S.ch || S.rematch ? '<div id="ch-h2h" class="ch-h2h"></div>' : ''}
       ${GM.report ? GM.report(xi, S.st, S.rules.treble) : ''}
-      ${pitchHtml()}
+      ${pitchHtml()}`;
+    root.innerHTML = `
+      <div class="topbar"><a href="#/" class="back">‹</a><h2>${vs ? '⚔️' : icon} Full time</h2><span></span></div>
+      ${vs ? `<div class="seg done-tabs"><button data-dt="vs" class="${tab === 'vs' ? 'on' : ''}">🆚 ${S.online ? 'The result' : 'Head to head'}</button><button data-dt="me" class="${tab === 'me' ? 'on' : ''}">⚽ Your game · ${fmt(S.rules.chaos || !S.rules.max ? sc.total : sc.t)}</button></div>
+        <div class="done-vs" ${tab === 'vs' ? '' : 'hidden'}>${S.online ? `<div id="race-result"></div><div class="actions col"><a class="btn big" href="#/online?room=${S.online.code}&v=1">🆚 See who won</a></div>` : '<div id="ch-h2h" class="ch-h2h"></div>'}</div>` : ''}
+      <div class="done-me" ${tab === 'me' ? '' : 'hidden'}>${mine}</div>
       <div class="actions col">
-        ${S.online ? `<div id="race-result"></div><a class="btn big" href="#/online?room=${S.online.code}&v=1">🆚 See who won</a>` : S.fx ? `<a class="btn big" href="#/matchday">🏟️ Back to matchday</a>` : S.mode !== 'daily' && !S.dailyChaos ? `<button class="btn big" id="again">🔁 Play again</button>` : `<div class="muted">New Daily ${S.dailyChaos ? 'CHAOS' : 'Ultimate'} tomorrow</div>`}
+        ${S.online ? '' : S.fx ? `<a class="btn big" href="#/matchday">🏟️ Back to matchday</a>` : S.mode !== 'daily' && !S.dailyChaos ? `<button class="btn big" id="again">🔁 Play again</button>` : `<div class="muted">New Daily ${S.dailyChaos ? 'CHAOS' : 'Ultimate'} tomorrow</div>`}
         ${S.fx ? '' : '<button class="btn" id="challenge">⚔️ Challenge a friend (same spins)</button>'}
         <button class="btn ghost" id="share">📤 Share result</button>
         <button class="btn ghost" id="sharepic">🖼️ Share a picture of your ${S.rules.chaos ? 'CHAOS pitch' : 'XI'}</button>
         <a class="btn ghost" href="#/leaderboard?m=${encodeURIComponent(modeKey())}">🏆 Leaderboard</a>
       </div>`;
     wireChart();
+    GM.$$('[data-dt]', root).forEach(b => b.onclick = () => {
+      S.doneTab = b.dataset.dt; GM.sound.play('tap');
+      GM.$$('[data-dt]', root).forEach(x => x.classList.toggle('on', x === b));
+      GM.$('.done-vs', root).hidden = S.doneTab !== 'vs'; GM.$('.done-me', root).hidden = S.doneTab !== 'me';
+      if (S.doneTab === 'me') requestAnimationFrame(wireChart);
+    });
     // a friend's challenge: the head-to-head; a rematch you've just played: sent back to them
     const chEl = GM.$('#ch-h2h', root);
     if (chEl && GM.challenge) { if (S.rematch) GM.challenge.sendRematch(S, sc, chEl); else if (S.ch) GM.challenge.fill(chEl, S.ch.code, S.ch.play); }
