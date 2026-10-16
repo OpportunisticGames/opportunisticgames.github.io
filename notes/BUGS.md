@@ -226,6 +226,7 @@ version they shipped in. Newest at the top.
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 16 Oct 2026 (owner) | A 10,639 on CHAOS Hard (challenge WAKJRE) wasn't on the board, but the friend's 7,586 was. The `scores` table only took scores up to 10,000 (`scores_score_check`), so submit_score was refused. | Server, 16 Oct: the limit is now 1,000,000 and the lost score was put back |
 | 2026-10-12 | After Play again, Halloween CHAOS started with a small pitch, empty space below and a little scroll | 5.30.2: the decorations are clipped to the screen (they had been placed from the scrolled full-time page and stretched it), a new game resets the slots and scroll, and the pitch grows back into empty space |
 | 2026-10-12 | CHAOS drafts (Halloween CHAOS especially) scroll on the phone, and the fog and pumpkins move with it | 5.30.1: `fitPitch` shrinks the slots whenever the page overflows (not just at kick-off), scales the game down as a last resort, and the decorations sit in page coordinates |
 | 2026-10-12 | Seasonal CHAOS on Hard played like Normal: clubs and numbers showed | 5.30: Hard works in Seasonal CHAOS, with its own Hard board |
