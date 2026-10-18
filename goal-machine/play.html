@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Play Goal Machine</title>
+  <meta property="og:title" content="Goal Machine">
+  <meta property="og:description" content="Build the biggest-scoring XI from 5,000+ real players.">
+  <meta property="og:image" content="https://opportunisticgames.github.io/goal-machine/icons/icon-512.png">
+  
+  <script>
+    window.onload = function() {
+      // Check if the user is on an Android device
+      var isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
+      
+      if (isAndroid) {
+        // Send Android users directly to the Play Store
+        window.location.replace("https://play.google.com/store/apps/details?id=goal.machine");
+      } else {
+        // Send iOS, Mac, and Windows users to the web game
+        window.location.replace("https://opportunisticgames.github.io/goal-machine/");
+      }
+    };
+  </script>
+</head>
+<body style="background: #f4f7f5; color: #0b2a20; font-family: system-ui, sans-serif; text-align: center; padding-top: 40px;">
+  <p>Loading Goal Machine...</p>
+</body>
+</html>
