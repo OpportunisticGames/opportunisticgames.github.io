@@ -3794,3 +3794,23 @@ button.nat-row { font: inherit; color: inherit; border: 0; text-align: left; wid
 /* 5.39: a challenge / online full time: the result against them first, your own game on its own tab */
 .done-tabs { margin: 4px 0 12px; position: sticky; top: 0; z-index: 5; }
 .done-vs .ch-verdict { margin-top: 0; }
+
+/* 5.39.2: your cards in your card back's colours. A Gold, Legend or Icon you've finished has your card back's pattern
+   faintly behind him on the pitch (never on the reels: that would give away how good he is) and his tier's gem; Icons and Legends shine */
+body { --cb-bg: repeating-linear-gradient(45deg, #0b3d2e 0 .7em, #0f4b39 .7em 1.4em); --cb-edge: #d4af37; }
+body.cbk-carbon { --cb-bg: repeating-linear-gradient(45deg, #1c1f24 0 .35em, #262a31 .35em .7em); --cb-edge: #9ca3af; }
+body.cbk-retro { --cb-bg: repeating-linear-gradient(0deg, #f4e9d0 0 .5em, #efe1c1 .5em 1em); --cb-edge: #c2410c; }
+body.cbk-chaos { --cb-bg: conic-gradient(from 0deg, #0e1428, #22d3ee, #0e1428, #a855f7, #0e1428); --cb-edge: #22d3ee; }
+body.cbk-night { --cb-bg: radial-gradient(circle at 20% 30%, #fff 0 1px, transparent 2px), radial-gradient(circle at 70% 60%, #fff 0 1px, transparent 2px), linear-gradient(#0b1638, #1e3a8a); --cb-edge: #93c5fd; }
+body.cbk-holo { --cb-bg: linear-gradient(120deg, #f0abfc, #93c5fd, #6ee7b7, #fde68a, #f0abfc); --cb-edge: #f0abfc; }
+body.cbk-gold { --cb-bg: linear-gradient(135deg, #fde68a, #b45309 45%, #fde68a 70%, #92400e); --cb-edge: #fbbf24; }
+body.cbk-club { --cb-bg: repeating-linear-gradient(90deg, var(--club1, #16803c) 0 .8em, var(--club2, #fff) .8em 1.1em); --cb-edge: var(--club2, #fff); }
+.slot.filled.own { box-shadow: inset 0 0 0 2px var(--cb-edge); isolation: isolate; }  /* (isolate: the pattern sits over the slot's own background, under everything in it) */
+.slot.filled.own::before { content: ''; position: absolute; inset: 0; border-radius: inherit; background: var(--cb-bg); opacity: .32; pointer-events: none; z-index: -1; }
+.own-gem { position: absolute; right: 3px; bottom: 3px; z-index: 2; font-style: normal; font-size: 9px; line-height: 1; pointer-events: none; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .5)); }
+/* Legends and Icons: a slow glint across the slot (never in Calm) */
+.slot.filled.own-l::after, .slot.filled.own-i::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 1;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, .45) 50%, transparent 65%) -150% 0 / 250% 100% no-repeat; animation: own-glint 4.5s ease-in-out infinite; }
+.slot.filled.own-i::after { animation-duration: 3.2s; background-image: linear-gradient(115deg, transparent 35%, rgba(199, 243, 255, .6) 50%, transparent 65%); }
+@keyframes own-glint { 0%, 55% { background-position: -150% 0; } 100% { background-position: 150% 0; } }
+body.calm .slot.filled.own::after { animation: none; display: none; }

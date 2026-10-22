@@ -111,6 +111,15 @@
   // (5.36.2: a card that went up a tier in 5.35, a Legend that's now an Icon, needs its extra pieces like any other: the owner's
   // call. Cards that went down still have the pieces, so they stay finished by themselves.)
   const done = (c, p) => (c.p[p.pk] || 0) >= need(p) && (GM.cardTier(p) === 'b' || packed(c, p) >= 1);
+  // 5.39.2: a Gold, Legend or Icon card you've finished shows in your card back's colours on the pitch (draft.js): its tier, or ''
+  // (the save is read at most once a second: the draft asks for every slot and reel on every redraw)
+  let ownC = null, ownT = 0;
+  GM.cardOwned = p => {
+    if (!p || !p.pk || !TIER.has(p.pk)) return '';
+    if (!ownC || Date.now() - ownT > 1000) { ownC = load(); ownT = Date.now(); }
+    const t = GM.cardTier(p);
+    return (t === 'g' || t === 'l' || t === 'i') && done(ownC, p) ? t : '';  // (Gold up: the cards worth showing off)
+  };
   // the most signings can add: one short of full until a pack piece is in
   const gameCap = (c, p) => (GM.cardTier(p) === 'b' || packed(c, p) >= 1 ? need(p) : need(p) - 1);
   GM.cardPieces = p => load().p[p.pk] || 0;

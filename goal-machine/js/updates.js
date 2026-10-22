@@ -9,10 +9,11 @@
 (function () {
   GM.UPDATES = [
     {
-      v: 101, label: '5.39.2', date: '2026-10-22', title: '📐 The game fills your screen, every game',
+      v: 101, label: '5.39.2', date: '2026-10-22', title: '📐 The game fills your screen, and your best cards show on the pitch',
       items: [
         '📐 Fixed: now and then a game came up smaller, with a gap at the bottom. It always fits your screen now, and on Hard and Extreme the reels use any spare room',
         '🃏 The three cards on a spin match: if one needs a smaller photo or smaller club badges, they all get them',
+        '🎴 Your cards on the pitch: sign a player whose Gold, Legend or Icon card you’ve finished and his spot takes on your card back (choose it in 🎒 Locker → Kit), with his tier’s gem. Legends and Icons catch the light. Never on the reels, so it can’t give anyone away',
       ],
     },
     {

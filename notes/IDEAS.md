@@ -38,7 +38,7 @@ a result (`online_react`, `rooms.reacts`), this month's record per friend; and S
 
 ## 💬 To discuss
 
-### 🎴 Your card back on the pitch (owner, 22 Oct 2026)
+### 🎴 Your card back on the pitch (owner, 22 Oct 2026) ✅ built in 5.39.2: pitch only, Gold/Legend/Icon (owner: not on the reels, "that would giveaway how good a player is")
 > "it would be cool if the card backs you unlocked in the kit changed the look of maybe the player background on the
 > pitch, or maybe their card in the reels? Maybe it could be just for cards you have completed … once you put them in the
 > team or something … Something along those lines but doesnt look stupid or out of place"
