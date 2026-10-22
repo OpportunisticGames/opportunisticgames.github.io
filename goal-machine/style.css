@@ -3795,8 +3795,7 @@ button.nat-row { font: inherit; color: inherit; border: 0; text-align: left; wid
 .done-tabs { margin: 4px 0 12px; position: sticky; top: 0; z-index: 5; }
 .done-vs .ch-verdict { margin-top: 0; }
 
-/* 5.39.2: your card back dresses every player card on the reels (all alike, so it gives nothing away): a band of its
-   pattern along the top and, outside CHAOS (which keeps its neon), its colour round the edge */
+/* each card back's pattern and colour, for anything that wants to wear it (5.39.2; the reels went back to their own look in 5.39.4) */
 body { --cb-bg: repeating-linear-gradient(45deg, #0b3d2e 0 .7em, #0f4b39 .7em 1.4em); --cb-edge: #d4af37; }
 body.cbk-carbon { --cb-bg: repeating-linear-gradient(45deg, #1c1f24 0 .35em, #262a31 .35em .7em); --cb-edge: #9ca3af; }
 body.cbk-retro { --cb-bg: repeating-linear-gradient(90deg, #c2410c 0 .5em, #f4e9d0 .5em 1em); --cb-edge: #c2410c; }
@@ -3805,8 +3804,6 @@ body.cbk-night { --cb-bg: radial-gradient(circle at 20% 40%, #fff 0 1px, transpa
 body.cbk-holo { --cb-bg: linear-gradient(90deg, #f0abfc, #93c5fd, #6ee7b7, #fde68a, #f0abfc); --cb-edge: #c4b5fd; }
 body.cbk-gold { --cb-bg: linear-gradient(90deg, #fde68a, #b45309 45%, #fde68a 70%, #92400e); --cb-edge: #f59e0b; }
 body.cbk-club { --cb-bg: repeating-linear-gradient(90deg, var(--club1, #16803c) 0 .8em, var(--club2, #fff) .8em 1.1em); --cb-edge: var(--club1, #16803c); }
-.stage .reel:not(.is-wild)::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 7px; background: var(--cb-bg); pointer-events: none; }
-body:not(.chaos-mode) .stage .reel:not(.is-wild) { border-color: var(--cb-edge); }
 
 /* …and your best cards dress the pitch: a Gold, Legend or Icon card you've finished, or a country's Nº1, shows in its
    tier's colours once he's signed (a Nº1 with his flag across the corner, like the card); Legends and Icons catch the light */
