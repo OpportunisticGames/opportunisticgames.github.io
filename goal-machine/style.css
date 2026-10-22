@@ -1027,7 +1027,7 @@ body.chaos-mode .icon-btn.lb-btn { border-color: rgba(255, 43, 214, .5); }
 .page-draft .inv .muted { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .page-draft .inv .wild-btn { flex-direction: row; gap: 4px; padding: 5px 8px; font-size: .95rem; white-space: nowrap; }
 .page-draft .inv .wild-btn small { font-size: .62rem; }
-.stage { height: var(--stage-h, 206px); }
+.stage { height: calc(var(--stage-h, 206px) + var(--stage-x, 0px)); }  /* (--stage-x: room the pitch couldn't use, fitPitch) */
 .stage.hard { --stage-h: 164px; }
 .stage > .reels { height: 100%; margin-top: 0; }
 .page-draft .stage .reel { min-height: 0; height: 100%; }
@@ -3794,3 +3794,32 @@ button.nat-row { font: inherit; color: inherit; border: 0; text-align: left; wid
 /* 5.39: a challenge / online full time: the result against them first, your own game on its own tab */
 .done-tabs { margin: 4px 0 12px; position: sticky; top: 0; z-index: 5; }
 .done-vs .ch-verdict { margin-top: 0; }
+
+/* 5.39.2: your card back dresses every player card on the reels (all alike, so it gives nothing away): a band of its
+   pattern along the top and, outside CHAOS (which keeps its neon), its colour round the edge */
+body { --cb-bg: repeating-linear-gradient(45deg, #0b3d2e 0 .7em, #0f4b39 .7em 1.4em); --cb-edge: #d4af37; }
+body.cbk-carbon { --cb-bg: repeating-linear-gradient(45deg, #1c1f24 0 .35em, #262a31 .35em .7em); --cb-edge: #9ca3af; }
+body.cbk-retro { --cb-bg: repeating-linear-gradient(90deg, #c2410c 0 .5em, #f4e9d0 .5em 1em); --cb-edge: #c2410c; }
+body.cbk-chaos { --cb-bg: conic-gradient(from 0deg, #0e1428, #22d3ee, #0e1428, #a855f7, #0e1428); --cb-edge: #22d3ee; }
+body.cbk-night { --cb-bg: radial-gradient(circle at 20% 40%, #fff 0 1px, transparent 2px), radial-gradient(circle at 70% 60%, #fff 0 1px, transparent 2px), linear-gradient(90deg, #0b1638, #1e3a8a); --cb-edge: #93c5fd; }
+body.cbk-holo { --cb-bg: linear-gradient(90deg, #f0abfc, #93c5fd, #6ee7b7, #fde68a, #f0abfc); --cb-edge: #c4b5fd; }
+body.cbk-gold { --cb-bg: linear-gradient(90deg, #fde68a, #b45309 45%, #fde68a 70%, #92400e); --cb-edge: #f59e0b; }
+body.cbk-club { --cb-bg: repeating-linear-gradient(90deg, var(--club1, #16803c) 0 .8em, var(--club2, #fff) .8em 1.1em); --cb-edge: var(--club1, #16803c); }
+.stage .reel:not(.is-wild)::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 7px; background: var(--cb-bg); pointer-events: none; }
+body:not(.chaos-mode) .stage .reel:not(.is-wild) { border-color: var(--cb-edge); }
+
+/* …and your best cards dress the pitch: a Gold, Legend or Icon card you've finished, or a country's Nº1, shows in its
+   tier's colours once he's signed (a Nº1 with his flag across the corner, like the card); Legends and Icons catch the light */
+.slot.filled.own { isolation: isolate; --own: #f2c230; --own-bg: linear-gradient(160deg, rgba(253, 230, 138, .5), rgba(180, 83, 9, .25)); box-shadow: inset 0 0 0 2px var(--own); }
+.slot.filled.own-l { --own: #b57cf2; --own-bg: linear-gradient(160deg, rgba(196, 140, 255, .5), rgba(91, 33, 182, .3)); }
+.slot.filled.own-i { --own: #9be7ff; --own-bg: linear-gradient(160deg, rgba(199, 243, 255, .55), rgba(56, 120, 200, .3)); }
+.slot.filled.own-no1 { --own: #f6e27a; }
+.slot.filled.own::before { content: ''; position: absolute; inset: 0; border-radius: inherit; background: var(--own-bg); pointer-events: none; z-index: -1; }
+.own-gem { position: absolute; right: 3px; bottom: 3px; z-index: 2; font: 700 8px/1 Oswald, sans-serif; font-style: normal; color: #fff6c2; pointer-events: none; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .6)); }
+.slot.own:not(.own-no1) .own-gem { font-size: 9px; }
+.own-flag { position: absolute; z-index: -1; top: -6px; right: -10px; font-size: 34px; line-height: 1; font-style: normal; transform: rotate(16deg); opacity: .4; pointer-events: none; }
+.slot.filled.own-l::after, .slot.filled.own-i::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 1;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, .45) 50%, transparent 65%) -150% 0 / 250% 100% no-repeat; animation: own-glint 4.5s ease-in-out infinite; }
+.slot.filled.own-i::after { animation-duration: 3.2s; background-image: linear-gradient(115deg, transparent 35%, rgba(199, 243, 255, .65) 50%, transparent 65%); }
+@keyframes own-glint { 0%, 55% { background-position: -150% 0; } 100% { background-position: 150% 0; } }
+body.calm .slot.filled.own::after { animation: none; display: none; }

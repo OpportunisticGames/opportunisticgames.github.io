@@ -70,7 +70,14 @@ GM.loadAll = function () {
   GM._loadingAll = new Promise((res, rej) => {
     const sc = document.createElement('script');
     sc.src = 'data/players_all.js?v=' + v;
-    sc.onload = () => { GM.allPlayers = GM.parseData(window.PL_ALL); res(GM.allPlayers); };
+    sc.onload = () => {
+      GM.allPlayers = GM.parseData(window.PL_ALL);
+      // (a few players are in the data twice, once with no club: that copy is marked and never dealt; kept in the list so
+      // every other player keeps his place, which saved games and challenges refer to)
+      const withClub = new Set(GM.allPlayers.filter(p => p.clubs.length).map(p => p.pk));
+      GM.allPlayers.forEach(p => { if (!p.clubs.length && withClub.has(p.pk)) p.dupe = true; });
+      res(GM.allPlayers);
+    };
     sc.onerror = () => { GM._loadingAll = null; rej(new Error('Could not load every-player data')); };
     document.head.appendChild(sc);
   });

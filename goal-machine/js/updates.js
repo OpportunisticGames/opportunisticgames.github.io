@@ -9,6 +9,22 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 101, label: '5.39.2', date: '2026-10-22', title: '📐 The game fills your screen, and your best cards show on the pitch',
+      items: [
+        '📐 Fixed: now and then a game came up smaller, with a gap at the bottom. It always fits your screen now, and on Hard and Extreme the reels use any spare room',
+        '🃏 The three cards on a spin match: if one needs a smaller photo or smaller club badges, they all get them',
+        '🐛 Fixed: on Extreme the same player could turn up twice on one spin (a few players were in the full list twice)',
+        '🎴 Your card back (🎒 Locker → Kit) now dresses the cards on the reels: a band of its pattern along the top and its colour round the edge, the same on every card',
+        '✨ Your best cards show on the pitch: sign a player whose Gold, Legend or Icon card you’ve finished, or a country’s Nº1, and his spot takes on that card’s colours (a Nº1 with his flag). Legends and Icons catch the light. Only once he’s signed, so it never gives anyone away',
+      ],
+    },
+    {
+      v: 100, label: '5.39.1', date: '2026-10-16', title: '🏅 Best Players, added up better',
+      items: [
+        '🏅 Best Players has a new sum: every board you’re on is worth 1 point, plus 1 for each player below you. Normal boards count double, Hard and Extreme triple (they take more skill). No more 80-point ceiling with everyone tied on it, and the more people you beat, the more it’s worth',
+      ],
+    },
+    {
       v: 99, label: '5.39', date: '2026-10-16', title: '👀 Watch your mate’s game live, fairer challenges, and a podium on every board',
       items: [
         '👀 Watch along shows your friend’s real game as they play it: their pitch, the wildcards in their hand, the reels they’ve spun, the manager, and every signing, wildcard, coin toss and CHAOS moment as it happens, with what it did to their score',

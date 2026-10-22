@@ -38,6 +38,34 @@ a result (`online_react`, `rooms.reacts`), this month's record per friend; and S
 
 ## 💬 To discuss
 
+### 🎴 Your card back on the pitch (owner, 22 Oct 2026) ✅ built in 5.39.2. Owner: not a player's tier on the reels ("that would giveaway how good a player is"), then "& all nationality cards" and "Your card backs choice could affect the reel - and the gold/legends/icon thing could affect the pitch": so the card back dresses every reel card alike (a band + edge), and finished Gold/Legend/Icon/Nº1 cards show in their own colours on the pitch
+> "it would be cool if the card backs you unlocked in the kit changed the look of maybe the player background on the
+> pitch, or maybe their card in the reels? Maybe it could be just for cards you have completed … once you put them in the
+> team or something … Something along those lines but doesnt look stupid or out of place"
+
+Our proposal: only for **players whose card you've finished** (so it means something: "that's one of mine"):
+- On the reels: a thin foil edge in your card back's colours around his card, plus a small tier gem (🟫⚪🟡🟣💎) in the
+  corner, so you spot your own cards as they come up.
+- On the pitch: when you sign him, his slot's background takes your card back's pattern, faint (about 25%), with the
+  same gem, so your XI shows which of them are your cards. The name and number stay exactly as they are.
+- CHAOS keeps its neon look, with the edge in the card back's colours. Calm and Hard work the same.
+Questions: both places, or just the pitch? Should a finished Icon or Legend shine a little (the Icon glisten)?
+
+### 🏅 Best Players: a better sum (owner, 16 Oct 2026) ✅ shipped in 5.39.1 (weighted ×1/×2/×3, owner said go)
+> "the best players leaderboard is silly for as long as multiple players are top of 8 leaderboards - can we do some other
+> calculation - one that would make ties less common and doesnt feel as strange as 80 points being the max (yet it's not
+> clear that it's the max)"
+
+Now: 10/7/5/4/3/2/2/1/1/1 for top-ten places, best 8 boards count, so anyone top of 8 boards has 80 and ties on it
+(Jamie and Joel both on 80 this month; crowns decide).
+First proposal (1 point per player you're ahead of, +1 for top) left Amiroz.zh7 on 0 though he's played: owner: "silly".
+Proposal now: **each board you're on is worth 1 point for you plus 1 for every player below you** (last place 1, top of
+a 3-player board 3). Every board counts the same, Easy too (everyone on an Easy board played Easy, so it's a fair win;
+halving gave him 0.5). No cap, no hidden maximum, crowns break ties. This month: Jamie 55, Joel 33, Amiroz.zh7 1.
+Owner asked about weighting the harder levels (more skill, less luck). Option: the board's points ×1 Easy, ×2 Normal,
+×3 Hard and Extreme (whole numbers). This month: Jamie 123, Joel 89, Amiroz.zh7 1 (the gap closes: Joel plays more Hard
+boards, 23 to Jamie's 16). Our view: yes, weight it: a Hard/Extreme crown is the more skilful one, Easy still counts.
+
 ### A better tutorial: introduce the app and the website ✅ 5.36 *(owner, 15 Oct 2026)*
 > "I also think we need to improve the tutorial - i would like something that introduces people to the app & website
 > just a little bit better, so they understand how it works. This is important after all the updates we've made.

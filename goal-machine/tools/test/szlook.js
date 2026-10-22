@@ -70,10 +70,11 @@ const ok = (c, msg) => { console.log((c ? '✓ ' : '✗ ') + msg); if (!c) proce
     await p3.waitForSelector('.cm-pick [data-mgr]'); await p3.click('.cm-pick [data-mgr]'); await idle(p3);
     const slot = () => p3.evaluate(() => parseFloat(getComputedStyle(document.getElementById('app')).getPropertyValue('--slot-h')));
     const s0 = await slot();
-    await p3.evaluate(() => { const x = document.createElement('div'); x.id = 'tall'; x.style.cssText = 'position:absolute;left:0;top:0;width:10px;height:' + (innerHeight + 300) + 'px'; document.body.appendChild(x); });
+    // (something in the game itself grows too tall: since 5.39.2 things outside the game don't shrink it)
+    await p3.evaluate(() => { const x = document.createElement('style'); x.id = 'tall'; x.textContent = '#app .counter { margin-bottom: 160px; }'; document.head.appendChild(x); window.dispatchEvent(new Event('resize')); });
     await p3.click('#spin', { timeout: 3000 }).catch(() => {}); await idle(p3);
     const s1 = await slot();
-    await p3.evaluate(() => document.getElementById('tall').remove());
+    await p3.evaluate(() => { document.getElementById('tall').remove(); window.dispatchEvent(new Event('resize')); });
     await p3.evaluate(() => { const r = document.querySelector('.stage .reel[data-reel]:not(.is-wild)'); r && r.click(); }); await p3.waitForTimeout(200);
     await p3.evaluate(() => { const t = document.querySelector('.slot.target'); t && t.click(); }); await idle(p3); await p3.waitForTimeout(300);
     const s2 = await slot(), over = await p3.evaluate(() => document.scrollingElement.scrollHeight - innerHeight);

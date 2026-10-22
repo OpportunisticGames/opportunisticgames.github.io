@@ -224,6 +224,10 @@ Found in the 5.39 sweep (server review), not fixed yet: each needs a decision or
   the server from the stored moves.
 - **Three throwaway accounts can hide any name** (`report_name`, `report_avatar`). Fix: count only reporters with scores or
   an account a few days old.
+- **The full player list has 28 stray second records with no club** (mostly 2015/16 season rows; see the 5.39.2 fix). The game
+  now ignores them, but `tools/build_players.py` should merge or drop them when it builds `players_all.js`. Also four real
+  name clashes share a key (David Lee 1992, Paul Williams 1992, David Smith 1992, Matt Grimes 2014): two different players,
+  one key, so cards and challenges can't tell them apart.
 - **`player_profile` doesn't check `p_me`** (anyone can see the record between any two players): low.
 - **The level buttons on Home are easy to change by accident** (new-player walkthrough, 16 Oct): a stray tap on Easy/Hard
   while reaching for the sub-tabs below changes your level everywhere, quietly. Idea: a toast saying what changed, or a
@@ -238,6 +242,9 @@ Found in the 5.39 sweep (server review), not fixed yet: each needs a decision or
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 22 Oct 2026 (owner) | Steven Berghuis twice on one spin (Ultimate · Pure, Extreme). The full list (players_all) has 28 players twice: a second record with no club, mostly 2015/16 (Schweinsteiger, Gomis, Cuadrado…), and the reels only kept apart the same *record*, not the same player. | 5.39.2: the no-club copies are marked `dupe` and never dealt (kept in the list so saved games keep their places), a spin never has the same player twice, and a player you've signed doesn't come back under his other record. The data builder should stop making them: open below |
+| 22 Oct 2026 (owner) | Now and then a game came up smaller (slots and reels about 80%, a gap at the bottom). The fitting measured the whole page: something outside the game made it briefly too tall, the game shrank to fit (zoom 0.8), and it never grew back. On Hard/Extreme (shorter cards) a tall phone also left a gap. | 5.39.2: fitPitch measures the game only, a shrink undoes itself when there's room, and the reels take room the pitch can't use (`--stage-x`) |
+| 22 Oct 2026 (owner) | The cards in one spin didn't match: one with a smaller photo or smaller club badges, the others not. | 5.39.2: if one needs it, they all get it |
 | 16 Oct 2026 (owner) | In a challenge, 👀 "What did they sign next?" showed their next signing and his number before you picked: knowing the future. | 5.39: it shows their signing at the point you've reached |
 | 16 Oct 2026 (owner) | A rematch came twice (TE9NPP and N2SY9W, 9 ms apart): the full-time screen drew twice while the first was being sent, and each sent one. | 5.39: one request per game (`S.rematchP`, `S.chCodeP`); server: the same player's same game within 10 minutes is the same challenge |
 | 16 Oct 2026 (sweep, new-player walkthrough) | Pop-ups (z-index 50) sat under the game's effects, bonus notes, moment cards and Home's visitors (90+): bonus chips over the name box, the ghost over What's New. | 5.39: `.modal-wrap` 98, toasts 99 |
@@ -257,8 +264,8 @@ Found in the 5.39 sweep (server review), not fixed yet: each needs a decision or
 | 16 Oct 2026 (sweep) | Hat-Trick online results stayed on the 🔔 count. | 5.39 |
 | 16 Oct 2026 (sweep) | A first-time tip was marked seen if you left within half a second; the tour restarted on any resize. | 5.39 |
 | 16 Oct 2026 (sweep) | Emoji clipped at the top of draft titles (line height too tight). | 5.39 |
-| 16 Oct 2026 (sweep) | `online_get` without a key showed a race opponent's XI mid-race. | 5.39 client sends the key; server change in `notes/sql/539_sweep.sql` (run at merge) |
-| 16 Oct 2026 (sweep) | Renaming lost your challenges, 🔔 feed and invites; deleting left them for the next owner of the name. | `notes/sql/539_sweep.sql` (run at merge) |
+| 16 Oct 2026 (sweep) | `online_get` without a key showed a race opponent's XI mid-race. | 5.39 (client sends the key; server 16 Oct) |
+| 16 Oct 2026 (sweep) | Renaming lost your challenges, 🔔 feed and invites; deleting left them for the next owner of the name. | Server 16 Oct |
 | 16 Oct 2026 (sweep) | Anyone could call `gm_push`; negative scores and big score meta were refused; the push function failed an insert for every repeat (4,000 log errors a day). | Server 16 Oct |
 | 11 Oct 2026 (owner) | The scroll line on the right of the app. | Not ours: it's Google Play Games' Sidekick tab |
 | 16 Oct 2026 (owner) | A 10,639 on CHAOS Hard (challenge WAKJRE) wasn't on the board, but the friend's 7,586 was. The `scores` table only took scores up to 10,000 (`scores_score_check`), so submit_score was refused. | Server, 16 Oct: the limit is now 1,000,000 and the lost score was put back |

@@ -160,16 +160,15 @@ module.exports = function makeServer() {
       return 'ok';
     },
     best_players(a) {
-      const boards = {}, pts = [10, 7, 5, 4, 3, 2, 2, 1, 1, 1];
-      // (5.39: Easy boards count half)
+      // (5.39.1, the same sum as the SQL: every board you're on, 1 point + 1 per player below you, ×1 Easy, ×2 Normal, ×3 Hard/Extreme)
       const easy = m => /^(ultimatepure|ultimate|purist|chaos|szchaos|target|treble|mystery)(ast|apps)?e$/.test(m);
-      scores.filter(x => /^(ultimatepure|ultimate|classicwild|classic|extreme|purist|chaosx|chaos|szchaos|target|treble|mystery)x?(ast|apps)?h?$/.test(x.mode) || easy(x.mode)).forEach(x => {
-        const b = boards[x.mode] = boards[x.mode] || {}; if (!b[x.name] || b[x.name] < x.score) b[x.name] = x.score; });
+      const main = m => /^(ultimatepure|ultimate|extreme|purist|chaosx|chaos|szchaos|target|treble|mystery)x?(ast|apps)?h?$/.test(m);
+      const w = m => easy(m) ? 1 : /h$/.test(m) || /^(extreme|purist|chaosx)/.test(m) || /^(ultimatepure|ultimate|szchaos|target|treble|mystery)x/.test(m) ? 3 : 2;
+      const boards = {};
+      scores.filter(x => main(x.mode) || easy(x.mode)).forEach(x => { const b = boards[x.mode] = boards[x.mode] || {}; if (!b[x.name] || b[x.name] < x.score) b[x.name] = x.score; });
       const per = {};
-      Object.entries(boards).forEach(([m, b]) => Object.entries(b).sort((x, y) => y[1] - x[1]).slice(0, 10).forEach(([n], i) => { (per[n] = per[n] || []).push(easy(m) ? -1 - i : i); }));
-      const val = i => i < 0 ? Math.ceil(pts[-1 - i] / 2) : pts[i];
-      const rows = Object.entries(per).map(([name, rk]) => ({ name, points: rk.map(val).sort((x, y) => y - x).slice(0, 8).reduce((t, x) => t + x, 0), crowns: rk.filter(i => i === 0 || i === -1).length, boards: rk.length, level: null }))
-        .sort((x, y) => y.points - x.points || y.crowns - x.crowns);
+      Object.entries(boards).forEach(([m, b]) => { const l = Object.entries(b).sort((x, y) => y[1] - x[1]); l.forEach(([n, sc], i) => { const rk = l.findIndex(z => z[1] === sc); const p = per[n] = per[n] || { points: 0, crowns: 0, boards: 0 }; p.points += (l.length - rk) * w(m); p.boards++; if (rk === 0) p.crowns++; }); });
+      const rows = Object.entries(per).map(([name, p]) => ({ name, ...p, level: null })).sort((x, y) => y.points - x.points || y.crowns - x.crowns);
       rows.forEach((r, i) => { r.rank = i && rows[i - 1].points === r.points && rows[i - 1].crowns === r.crowns ? rows[i - 1].rank : i + 1; });
       return rows.slice(0, a.p_limit || 50);
     },

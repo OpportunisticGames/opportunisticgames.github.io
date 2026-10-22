@@ -1261,7 +1261,10 @@
     // a Hat-Trick spin: three players for one open position (seeded)
     const open = wc && wc.trio ? (o => [o[GM.rng(tag + '|trio').int(o.length)]])(openPos()) : openPos();
     const used = new Set(S.used.concat(S.xi.filter(s => s.p != null).map(s => s.p)));
-    const ok = p => fits(p, open) && !used.has(p.id);
+    // (5.39.2: by player, not by place in the list: the full list has a few players twice, so the same man could come up on
+    // two reels at once, or again after you'd signed him; a stray second record (no club) is never dealt at all)
+    const usedPk = new Set([...used].map(id => (byId(id) || {}).pk).filter(Boolean));
+    const ok = p => fits(p, open) && !used.has(p.id) && !usedPk.has(p.pk) && !p.dupe;
     const n = (wc && wc.reels) || 3;
     const wildTypes = () => Object.keys(WILDCARDS).filter(t => (!S.rules.noWild.includes(t) || (tw().allow || []).includes(t)) && (!WILDCARDS[t].chaos || S.rules.chaos) && t !== 'storm' && WILDCARDS[t].deal !== false && inSz(t));
     // a wildcard storm: every reel is a wildcard (the Storm card, or 1 spin in 10 in CHAOS)
@@ -1303,17 +1306,17 @@
       if (rw() < wp) wildAt = 0; else if (rw() < wp) wildAt = 1;
       wild = rw.weighted(wildTypes(), t => WILDCARDS[t].w * ((tw().wild || {})[t] || 1));
     }
-    const reels = [], taken = new Set();
+    const reels = [], taken = new Set();  // (player keys)
     for (let i = 0; i < n; i++) {
       if (i === wildAt) { reels.push({ wild }); continue; }
       let p = null;
-      for (let tries = 0; tries < 800 && !p; tries++) { const c = draw(r()); if (ok(c) && !taken.has(c.id)) p = c; }
+      for (let tries = 0; tries < 800 && !p; tries++) { const c = draw(r()); if (ok(c) && !taken.has(c.pk)) p = c; }
       if (!p) {  // very few players left who fit: pick from them directly
-        const rest = field.filter(c => ok(c) && !taken.has(c.id));
+        const rest = field.filter(c => ok(c) && !taken.has(c.pk));
         if (!rest.length) break;
         p = r.weighted(rest, reelWeight());
       }
-      taken.add(p.id);
+      taken.add(p.pk);
       const x = { id: p.id };
       // chemistry hint (a label only, so it doesn't change who you're offered): played with your last signing
       const lp = S.last != null ? byId(S.last) : null;
@@ -2580,7 +2583,12 @@
         if (S.phase === 'done') pct = `<span class="slot-pct">${r > 1 ? '+' : '−'}${base > 0 ? Math.round(Math.abs(r - 1) * 100) + '%' : fmt(s.g)}</span>`;
       }
     }
-    return `<div class="slot filled ${s.fresh ? 'fresh' : ''} ${away[i] ? 'away' : ''} ${tone}" data-slot="${i}" title="${GM.esc(fused ? s.trio.map(id => byId(id).name).join(' + ') : p.name)}"${S.wonky && S.wonky[i] ? ` data-wonky style="--wk:${S.wonky[i]}deg"` : ''}>${pk}${pct}${marksHtml(i)}
+    // (a Gold, Legend or Icon card you've finished, or a country's Nº1: dressed in its tier's colours (a Nº1 with his flag)
+    // once he's signed, never on the reels (that would give away how good he is); not on a friend's game)
+    const own = !fused && !S.spectate && GM.cardOwned ? GM.cardOwned(p) : null;
+    const ownCls = own ? `own own-${own.t}${own.no1 ? ' own-no1' : ''}` : '';
+    const ownMark = own ? (own.no1 ? `<i class="own-flag" aria-hidden="true">${GM.flag(p.nat)}</i><i class="own-gem" title="Your ${GM.esc(p.nat)} Nº1 card">Nº1</i>` : `<i class="own-gem" title="Your ${GM.TIERS[own.t].name} card">${GM.TIERS[own.t].icon}</i>`) : '';
+    return `<div class="slot filled ${s.fresh ? 'fresh' : ''} ${away[i] ? 'away' : ''} ${ownCls} ${tone}" data-slot="${i}" title="${GM.esc(fused ? s.trio.map(id => byId(id).name).join(' + ') : p.name)}"${S.wonky && S.wonky[i] ? ` data-wonky style="--wk:${S.wonky[i]}deg"` : ''}>${pk}${pct}${marksHtml(i)}${ownMark}
       ${fused ? fusedFace(s.trio) : GM.avatar(p)}<span class="slot-name">${GM.esc(surname)}</span>
       <span class="slot-goals ${splatted(i) ? 'splatted' : ''}"><span class="sg">${S.rules.treble && s.v ? `${s.v.goals}·${s.v.assists}·${s.v.apps}` : fmt(s.g)}</span>${MOD_TAG[s.mod] || ''}</span><span class="slot-pos" title="${GM.POS_NAME[s.pos]}">${s.pos}</span></div>`;
   }
@@ -2833,14 +2841,20 @@
     const key = [innerWidth, innerHeight, S.mode, S.hard, S.rules.wild !== false, !!S.vs, !!S.online, rows].join('|');
     // (the game is one screen, never a scroll: if something grew since kick-off (bigger text, a longer line in the
     // counter), the slots shrink to fit, even though the key hasn't changed; they never grow mid-game)
-    const over = () => document.scrollingElement.scrollHeight - innerHeight;
+    // (measured by the game itself, not the whole page: something else on the page, a banner or an animation's leftovers,
+    // made the game shrink to 80% and stay that way)
+    const over = () => Math.ceil(root.getBoundingClientRect().bottom + window.scrollY - window.innerHeight);
     const room = () => window.innerHeight - (root.getBoundingClientRect().bottom + window.scrollY);
     // (and if it shrank for something that has gone again, it grows back into the empty space)
-    const slack = over() <= 0 && room() >= rows * 6 && (parseFloat(root.style.getPropertyValue('--slot-h')) || 86) < 86;
+    const slack = over() <= 0 && room() >= rows * 6 && ((parseFloat(root.style.getPropertyValue('--slot-h')) || 86) < 86 || !!root.style.zoom);
     if (key === fitKey && over() <= 0 && !slack) return;
     const fresh = key !== fitKey || slack, newKey = key !== fitKey;
     fitKey = key;
-    if (newKey) { root.style.zoom = ''; root.style.removeProperty('--slot-h'); scrollTo(0, 0); }  // (a new game starts from the top, full size)
+    if (newKey) { root.style.zoom = ''; root.style.removeProperty('--slot-h'); root.style.removeProperty('--stage-x'); scrollTo(0, 0); }  // (a new game starts from the top, full size)
+    else if (slack && root.style.zoom) root.style.zoom = '';  // (shrunk to fit once and there's room again: back to full size, then fit)
+    // (too tall now: the reels give back any room they were given before the slots shrink)
+    const stageX = () => parseFloat(root.style.getPropertyValue('--stage-x')) || 0;
+    if (over() > 0 && stageX() > 0) root.style.setProperty('--stage-x', Math.max(0, Math.floor(stageX() - over())) + 'px');
     for (let k = 0; k < 4; k++) {
       const cur = parseFloat(getComputedStyle(root).getPropertyValue('--slot-h')) || 52;
       // the game's own content (the page itself always stretches to the screen, so measure #app, padding included)
@@ -2851,8 +2865,15 @@
       root.classList.toggle('slots-compact', next < 62); root.classList.toggle('slots-tiny', next < 50);
       if (over() <= 0 || next === 46) break;
     }
+    // the slots are as big as they go and the screen still has room (a tall phone, or Hard/Extreme's shorter cards):
+    // the reels take it, so the game always fills the screen rather than leaving a gap at the bottom
+    if (fresh && over() <= 0) {
+      const left = Math.floor(window.innerHeight - (root.getBoundingClientRect().bottom + window.scrollY)) - 2;
+      if (left > 6) root.style.setProperty('--stage-x', Math.min(90, stageX() + left) + 'px');
+      if (over() > 0) root.style.setProperty('--stage-x', Math.max(0, Math.floor(stageX() - over())) + 'px');
+    }
     // still too tall at the smallest slots (a small phone with big text): scale the whole game down to fit
-    if (over() > 0) { const z = (parseFloat(root.style.zoom) || 1) * innerHeight / document.scrollingElement.scrollHeight; root.style.zoom = Math.max(0.8, Math.floor(z * 1000) / 1000); }
+    if (over() > 0) { const z = (parseFloat(root.style.zoom) || 1) * innerHeight / (innerHeight + over()); root.style.zoom = Math.max(0.8, Math.floor(z * 1000) / 1000); }
     if (over() > 0) scrollTo(0, 0);
     const deco = document.querySelector('.cz-deco'); if (deco) czPlace(deco);
   }
@@ -2869,6 +2890,11 @@
       fitChips(r, over);
       for (const c of ['fitc', 'fit1', 'fit2', 'fit3']) { if (!over()) break; r.classList.add(c); }  // a smaller photo before the clubs go
     });
+    // (5.39.2: the player cards in a spin match: if one needed the smaller photo or the smaller club badges, they all get
+    // them, so the three look like a set; only shrinking, so nothing that fitted stops fitting)
+    const players = GM.$$('.stage .reel', root).filter(r => !r.classList.contains('is-wild') && GM.$('.reel-name', r));
+    if (players.some(r => r.matches('.fitc, .fit2, .fit3'))) players.forEach(r => { if (!r.matches('.fitc, .fit2, .fit3')) r.classList.add('fitc'); });
+    if (players.some(r => GM.$('.chips.tight', r))) players.forEach(r => { const ch = GM.$('.chips', r); if (ch) ch.classList.add('tight'); });
   }
 
   // a well-travelled player's clubs: smaller badges first, then a second row if the card has room, else "+N" for the rest

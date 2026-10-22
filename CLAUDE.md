@@ -106,8 +106,8 @@ game mode for players; this file is about how to work on it.
 - Manager portraits: `fx/mgr/<key>.jpg` (free-licence Wikipedia photos, 320px) with face positions in `fx/mgr/credits.json`, fetched by
   `managers.yml` / `tools/fetch_managers.py` (add the article to `ARTICLES` for a new manager); shown by `GM.CFX.faceImg`.
 - **Levels (5.34):** `GM.LEVELS` easy/normal/hard/extreme. Easy (draft games in `GM.EASY_MODES` only): reels weighted by
-  √fame (big names about ×4; Target games fame^1.2), clues shown, boards `<key>e`, not in Best Players (`gm_main_board`)
-  or the Ultimate/CHAOS badges; it travels in the seed (`e~…`, `GM.seedEasy`), so challenges/races/share links match.
+  √fame (big names about ×4; Target games fame^1.2), clues shown, boards `<key>e`, ×1 in Best Players (`gm_easy_board`), not in
+  the Ultimate/CHAOS badges; it travels in the seed (`e~…`, `GM.seedEasy`), so challenges/races/share links match.
   `GM.levelKey(k)` = the board at your level. Classic (`classic`, `classicwild`) is retired from the menus (old links work).
   Duplicates (5.34, packs.js): packs deal at random (`fresh` packs still dodge finished cards); a duplicate adds `DUPE` points
   (1/2/3/5) to `cards.dupes`; `GM.tradeDupes()` swaps 100 for a 🆕 `fresh` pack (button in Locker → Cards).
@@ -125,7 +125,7 @@ game mode for players; this file is about how to work on it.
   The kit (`GM.LOCKER`, 64 items): pitch styles (`body.pk-*`), card backs (`body.cbk-*`), celebrations + horns
   (`GM.celebrate()` on a new best / challenge win), frames (`.fr-*` on pictures) and titles (`GM.titleHtml(name)`) that others
   see (server `players.flair`: `set_flair`, `get_flair`, fetched with the pictures), challenge reactions, Dodgy Owner owners
-  (`OWNERS.celeb/trust` have `locked`). Each item's `src` says how you get it (lvl, season tier, missions, badges, club
+  (`OWNERS.celeb/trust` have `locked`). Card backs also dress every reel card alike (5.39.2: `--cb-bg`/`--cb-edge` per `body.cbk-*`, a band + edge), and finished Gold/Legend/Icon or Nº1 cards show in their tier's colours on the pitch once signed (`GM.cardOwned(p)` → {t, no1}, `.slot.own-*`; never on the reels, which would give a player's tier away). Each item's `src` says how you get it (lvl, season tier, missions, badges, club
   dailies, login); `GM.lockerCheck()` hands out what you've earned. A new item = one line in `L` (+ CSS for its look).
 - `prizes.js` – 🎁 one way to give any reward (`GM.grant({pack|item|xp|spin|vault|choice})`), the level road
   (`GM.levelReward(n)`), the prize wheel (`#/spin`, `WHEEL`), pick-one-of-three (`GM.pickReward`), a pack's bonus slot
@@ -181,8 +181,8 @@ Everything goes through security-definer RPCs that check the account with `gm_au
   top spot (all time, else this month; boards without a `:`); if so it writes an `activity` row for them (`beaten`, at most
   one an hour per board, pushed via `gm_push`, shown by `app_inbox` as `b:<id>`, pref `beaten`) and a `crown` row for you.
   `activity_feed(p_user, p_key)` feeds the 🔔 drawer (`GM.feed`, `GM.feedSheet` in app.js: items, `crowns`/`mcrowns`,
-  `best`/`mbest`). `best_players(p_month, p_limit)` = points 10/7/5/4/3/2/2/1/1/1 for top-ten places on the main draft
-  boards (`gm_main_board`; Easy boards `gm_easy_board` count half, 5.39), best 8 count; Ranks tab `bestplayers`. Board names for alerts: `gm_board_name`.
+  `best`/`mbest`). `best_players(p_month, p_limit)` (5.39.1) = for every main draft board you're on (`gm_main_board`, Easy ones
+  `gm_easy_board`), 1 point + 1 per player below you, × `gm_board_weight` (Easy 1, Normal 2, Hard/Extreme 3), no cap; crowns break ties; Ranks tab `bestplayers`. Board names for alerts: `gm_board_name`.
   At full time `GM.boardNews` (core.js, after the submit; `GM.lb.mine(mode, name, month)`) works out your place: a 👑 record, a
   "Top N" (`GM.BOARD_TIERS`, only if the board has 2N+ players) or just the place; it fires `gm:board` and draft.js shows it in
   the result card (`#board-news`, `GM.boardNewsHtml`); screens without that slot get a `GM.notice` card.
@@ -221,7 +221,8 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    may be mid-action without a short `{ timeout }`: Playwright waits 30 s for it to become tappable (that made the CHAOS tests
    take minutes). Or run one script on its own with `node <script>.js`. Each uses `mockserver.js`, which fakes the
    Supabase RPCs in memory (test accounts Alice/Bob/Cara), so nothing touches the real database.
-   - `new539.js` – 5.39: watch along draws the challenger's live game and the move-by-move, challenger scores off the boards, the podium with one name, the card tiers in one row, Easy half in Best Players.
+   - `reels5392.js` – 5.39.2: thousands of Extreme/Purist/CHAOS spins with the real dealing code: never the same player twice on a spin, never a stray no-club copy (`p.dupe`, marked in `GM.loadAll`), never a signed player again under his other record.
+   - `new539.js` – 5.39: watch along draws the challenger's live game and the move-by-move, challenger scores off the boards, the podium with one name, the card tiers in one row, the Best Players sum (5.39.1).
    - `online538.js` – 5.38: New game's main four and Hard default, the room's level, the opponent's XI hidden while you play, the bigger total wins, the result stays up, no notification for the finisher, the 🔔 count, Scout's Tip, a Seasonal CHAOS Race.
    - `tour536.js` – 5.36: the tour offered once on Home, every step's bubble and spotlight on screen (390 and 360 px), Settings → Take the tour, Skip, and the first-time tips (once each, back from Settings).
    - `new534.js` – 5.34: Easy deals more big names, its own board key, travels in the seed, the four-level switch, Classic gone from the menus.
