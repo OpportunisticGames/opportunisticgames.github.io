@@ -1174,7 +1174,9 @@
   // The Target games (5.39.4): how strongly each level favours the big names, per stat, tuned with tools/test/targetsim.js
   // so about 80% / 60% / 40% / 20% of games land within 5% of the target on Easy / Normal / Hard / Extreme, whatever the stat
   // (fame^e: above 1 the stars come up more, below 1 less)
-  const TARGET_W = { easy: { goals: 1, assists: 1, apps: 1 }, normal: { goals: 1, assists: 1, apps: 1 }, hard: { goals: 0.5, assists: 0.5, apps: 0.5 }, extreme: { goals: 0.5, assists: 0.5, apps: 0.5 } };
+  // (measured, 300 games each: Easy 72/73/79%, the most its dealing can give (goals and assists top out there), Normal 60/61/63%,
+  // Hard 42/~40/42%, Extreme 22/20/20%, for goals/assists/apps)
+  const TARGET_W = { easy: { goals: 1.25, assists: 1.25, apps: 0.95 }, normal: { goals: 1.2, assists: 1.05, apps: 0.95 }, hard: { goals: 1, assists: 0.9, apps: 0.95 }, extreme: { goals: 0.62, assists: 0.57, apps: 0.8 } };
   const tLevel = () => (S.easy ? 'easy' : S.extreme ? 'extreme' : S.hard ? 'hard' : 'normal');
   const tExp = () => { const W = GM._tw || TARGET_W, st = S.rules.treble ? 'goals' : S.stat; return (W[tLevel()] || {})[st] != null ? W[tLevel()][st] : 1; };
   const reelWeight = () => (!S.rules.max ? (e => p => Math.pow(S.rules.weight(p), e))(tExp())
@@ -3045,7 +3047,7 @@
         <p>🐦 CHAOS leaves its mark: what happens stays on the pitch. If the pigeon gets its revenge, two of your numbers stay covered until full time, so keep track!</p>
         <p>Now and then a <b>match-day event</b> strikes too (🟥 red cards, 🚑 injuries, 📺 VAR, 🧾 the taxman, 💰 TV money), ${S.sz ? 'one spin in five' : 'one spin in ten'} is a <b>🌪️ wildcard storm</b>, and there are riskier wildcards like 🎰 All In (a coin toss: your whole XI ×2 or ×½).</p>`
       : r.max ? `<p>👑 <b>${modeName()}:</b> no target – build the XI with the <b>most Premier League ${L}</b> you can. ${poolText()}</p>`
-      : `<p>🎯 <b>${modeName()}:</b> build an XI whose players have <b>${fmt(S.target)}</b> Premier League ${L} between them – as close as you can, exactly for a bullseye. ${S.extreme ? 'Extreme: any of the 5,000+ PL players, and the big names turn up much less often, so getting there is the hard part.' : S.hard ? 'Hard: the big names turn up less often, so getting there is the hard part.' : `The better known a player, the more often he turns up, so the big numbers you need are there${S.easy ? ', and Easy shows you a rough number for each one' : ''}.`}</p>`}
+      : `<p>🎯 <b>${modeName()}:</b> build an XI whose players have <b>${fmt(S.target)}</b> Premier League ${L} between them – as close as you can, exactly for a bullseye. ${S.extreme ? 'Extreme: any of the 5,000+ PL players, names and positions only, and the big names turn up less often: the hardest.' : S.hard ? 'Hard: names and positions only, so you judge each player from what you know.' : `The better known a player, the more often he turns up, so the big numbers you need are there${S.easy ? ', and Easy shows you a rough number for each one' : ', with clubs and years on the reels as clues'}.`}</p>`}
       <p>Each spin shows three players who fit an open position. Their ${L} are hidden until you sign one. You keep spinning until the XI is full.</p>
       <p>Every player has real positions – <b>GK, LB, CB, RB, LM, CM, RM, ST</b>. Tap a player, then tap one of the highlighted slots he can play.</p>
       <p><b>Wildcards</b> appear on the reels from the 2nd spin – grab one instead of a player and use it when you like (hold up to 3):</p>

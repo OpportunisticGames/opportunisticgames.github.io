@@ -9,6 +9,13 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 103, label: '5.39.4', date: '2026-10-22', title: '🎯 The Target games, evened out',
+      items: [
+        '🎯 Each level of the Target games is now the same step harder, whichever number you’re chasing: goals, assists and apps all land within 5% of the target about 3 games in 4 on Easy, 6 in 10 on Normal, 4 in 10 on Hard and 2 in 10 on Extreme (apps used to be far easier on Easy and far harder on Hard)',
+        '🃏 The reel cards are back to their own look (your card back still shows on your finished Gold, Legend, Icon and Nº1 cards on the pitch)',
+      ],
+    },
+    {
       v: 102, label: '5.39.3', date: '2026-10-22', title: '🎯 The Target games get harder level by level',
       items: [
         '🎯 Easy, Normal, Hard, Extreme: each level of the Target games is now harder than the one before. Extreme used to be easier than Hard (the big names still turned up most); now they turn up even less often than on Hard, so getting there is the challenge',
