@@ -2833,14 +2833,20 @@
     const key = [innerWidth, innerHeight, S.mode, S.hard, S.rules.wild !== false, !!S.vs, !!S.online, rows].join('|');
     // (the game is one screen, never a scroll: if something grew since kick-off (bigger text, a longer line in the
     // counter), the slots shrink to fit, even though the key hasn't changed; they never grow mid-game)
-    const over = () => document.scrollingElement.scrollHeight - innerHeight;
+    // (measured by the game itself, not the whole page: something else on the page, a banner or an animation's leftovers,
+    // made the game shrink to 80% and stay that way)
+    const over = () => Math.ceil(root.getBoundingClientRect().bottom + window.scrollY - window.innerHeight);
     const room = () => window.innerHeight - (root.getBoundingClientRect().bottom + window.scrollY);
     // (and if it shrank for something that has gone again, it grows back into the empty space)
-    const slack = over() <= 0 && room() >= rows * 6 && (parseFloat(root.style.getPropertyValue('--slot-h')) || 86) < 86;
+    const slack = over() <= 0 && room() >= rows * 6 && ((parseFloat(root.style.getPropertyValue('--slot-h')) || 86) < 86 || !!root.style.zoom);
     if (key === fitKey && over() <= 0 && !slack) return;
     const fresh = key !== fitKey || slack, newKey = key !== fitKey;
     fitKey = key;
-    if (newKey) { root.style.zoom = ''; root.style.removeProperty('--slot-h'); scrollTo(0, 0); }  // (a new game starts from the top, full size)
+    if (newKey) { root.style.zoom = ''; root.style.removeProperty('--slot-h'); root.style.removeProperty('--stage-x'); scrollTo(0, 0); }  // (a new game starts from the top, full size)
+    else if (slack && root.style.zoom) root.style.zoom = '';  // (shrunk to fit once and there's room again: back to full size, then fit)
+    // (too tall now: the reels give back any room they were given before the slots shrink)
+    const stageX = () => parseFloat(root.style.getPropertyValue('--stage-x')) || 0;
+    if (over() > 0 && stageX() > 0) root.style.setProperty('--stage-x', Math.max(0, Math.floor(stageX() - over())) + 'px');
     for (let k = 0; k < 4; k++) {
       const cur = parseFloat(getComputedStyle(root).getPropertyValue('--slot-h')) || 52;
       // the game's own content (the page itself always stretches to the screen, so measure #app, padding included)
@@ -2851,8 +2857,15 @@
       root.classList.toggle('slots-compact', next < 62); root.classList.toggle('slots-tiny', next < 50);
       if (over() <= 0 || next === 46) break;
     }
+    // the slots are as big as they go and the screen still has room (a tall phone, or Hard/Extreme's shorter cards):
+    // the reels take it, so the game always fills the screen rather than leaving a gap at the bottom
+    if (fresh && over() <= 0) {
+      const left = Math.floor(window.innerHeight - (root.getBoundingClientRect().bottom + window.scrollY)) - 2;
+      if (left > 6) root.style.setProperty('--stage-x', Math.min(90, stageX() + left) + 'px');
+      if (over() > 0) root.style.setProperty('--stage-x', Math.max(0, Math.floor(stageX() - over())) + 'px');
+    }
     // still too tall at the smallest slots (a small phone with big text): scale the whole game down to fit
-    if (over() > 0) { const z = (parseFloat(root.style.zoom) || 1) * innerHeight / document.scrollingElement.scrollHeight; root.style.zoom = Math.max(0.8, Math.floor(z * 1000) / 1000); }
+    if (over() > 0) { const z = (parseFloat(root.style.zoom) || 1) * innerHeight / (innerHeight + over()); root.style.zoom = Math.max(0.8, Math.floor(z * 1000) / 1000); }
     if (over() > 0) scrollTo(0, 0);
     const deco = document.querySelector('.cz-deco'); if (deco) czPlace(deco);
   }
@@ -2869,6 +2882,11 @@
       fitChips(r, over);
       for (const c of ['fitc', 'fit1', 'fit2', 'fit3']) { if (!over()) break; r.classList.add(c); }  // a smaller photo before the clubs go
     });
+    // (5.39.2: the player cards in a spin match: if one needed the smaller photo or the smaller club badges, they all get
+    // them, so the three look like a set; only shrinking, so nothing that fitted stops fitting)
+    const players = GM.$$('.stage .reel', root).filter(r => !r.classList.contains('is-wild') && GM.$('.reel-name', r));
+    if (players.some(r => r.matches('.fitc, .fit2, .fit3'))) players.forEach(r => { if (!r.matches('.fitc, .fit2, .fit3')) r.classList.add('fitc'); });
+    if (players.some(r => GM.$('.chips.tight', r))) players.forEach(r => { const ch = GM.$('.chips', r); if (ch) ch.classList.add('tight'); });
   }
 
   // a well-travelled player's clubs: smaller badges first, then a second row if the card has room, else "+N" for the rest

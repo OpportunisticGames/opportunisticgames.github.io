@@ -238,6 +238,8 @@ Found in the 5.39 sweep (server review), not fixed yet: each needs a decision or
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 22 Oct 2026 (owner) | Now and then a game came up smaller (slots and reels about 80%, a gap at the bottom). The fitting measured the whole page: something outside the game made it briefly too tall, the game shrank to fit (zoom 0.8), and it never grew back. On Hard/Extreme (shorter cards) a tall phone also left a gap. | 5.39.2: fitPitch measures the game only, a shrink undoes itself when there's room, and the reels take room the pitch can't use (`--stage-x`) |
+| 22 Oct 2026 (owner) | The cards in one spin didn't match: one with a smaller photo or smaller club badges, the others not. | 5.39.2: if one needs it, they all get it |
 | 16 Oct 2026 (owner) | In a challenge, 👀 "What did they sign next?" showed their next signing and his number before you picked: knowing the future. | 5.39: it shows their signing at the point you've reached |
 | 16 Oct 2026 (owner) | A rematch came twice (TE9NPP and N2SY9W, 9 ms apart): the full-time screen drew twice while the first was being sent, and each sent one. | 5.39: one request per game (`S.rematchP`, `S.chCodeP`); server: the same player's same game within 10 minutes is the same challenge |
 | 16 Oct 2026 (sweep, new-player walkthrough) | Pop-ups (z-index 50) sat under the game's effects, bonus notes, moment cards and Home's visitors (90+): bonus chips over the name box, the ghost over What's New. | 5.39: `.modal-wrap` 98, toasts 99 |

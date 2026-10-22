@@ -9,6 +9,13 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 101, label: '5.39.2', date: '2026-10-22', title: '📐 The game fills your screen, every game',
+      items: [
+        '📐 Fixed: now and then a game came up smaller, with a gap at the bottom. It always fits your screen now, and on Hard and Extreme the reels use any spare room',
+        '🃏 The three cards on a spin match: if one needs a smaller photo or smaller club badges, they all get them',
+      ],
+    },
+    {
       v: 100, label: '5.39.1', date: '2026-10-16', title: '🏅 Best Players, added up better',
       items: [
         '🏅 Best Players has a new sum: every board you’re on is worth 1 point, plus 1 for each player below you. Normal boards count double, Hard and Extreme triple (they take more skill). No more 80-point ceiling with everyone tied on it, and the more people you beat, the more it’s worth',

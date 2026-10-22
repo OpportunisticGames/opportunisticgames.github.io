@@ -1027,7 +1027,7 @@ body.chaos-mode .icon-btn.lb-btn { border-color: rgba(255, 43, 214, .5); }
 .page-draft .inv .muted { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .page-draft .inv .wild-btn { flex-direction: row; gap: 4px; padding: 5px 8px; font-size: .95rem; white-space: nowrap; }
 .page-draft .inv .wild-btn small { font-size: .62rem; }
-.stage { height: var(--stage-h, 206px); }
+.stage { height: calc(var(--stage-h, 206px) + var(--stage-x, 0px)); }  /* (--stage-x: room the pitch couldn't use, fitPitch) */
 .stage.hard { --stage-h: 164px; }
 .stage > .reels { height: 100%; margin-top: 0; }
 .page-draft .stage .reel { min-height: 0; height: 100%; }

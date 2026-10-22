@@ -38,6 +38,19 @@ a result (`online_react`, `rooms.reacts`), this month's record per friend; and S
 
 ## 💬 To discuss
 
+### 🎴 Your card back on the pitch (owner, 22 Oct 2026)
+> "it would be cool if the card backs you unlocked in the kit changed the look of maybe the player background on the
+> pitch, or maybe their card in the reels? Maybe it could be just for cards you have completed … once you put them in the
+> team or something … Something along those lines but doesnt look stupid or out of place"
+
+Our proposal: only for **players whose card you've finished** (so it means something: "that's one of mine"):
+- On the reels: a thin foil edge in your card back's colours around his card, plus a small tier gem (🟫⚪🟡🟣💎) in the
+  corner, so you spot your own cards as they come up.
+- On the pitch: when you sign him, his slot's background takes your card back's pattern, faint (about 25%), with the
+  same gem, so your XI shows which of them are your cards. The name and number stay exactly as they are.
+- CHAOS keeps its neon look, with the edge in the card back's colours. Calm and Hard work the same.
+Questions: both places, or just the pitch? Should a finished Icon or Legend shine a little (the Icon glisten)?
+
 ### 🏅 Best Players: a better sum (owner, 16 Oct 2026) ✅ shipped in 5.39.1 (weighted ×1/×2/×3, owner said go)
 > "the best players leaderboard is silly for as long as multiple players are top of 8 leaderboards - can we do some other
 > calculation - one that would make ties less common and doesnt feel as strange as 80 points being the max (yet it's not
