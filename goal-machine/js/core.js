@@ -862,6 +862,7 @@ GM.prompt = function (title, value = '', placeholder = '', max = 20) {
 };
 
 /* ------------------------------------------------------------------ share */
+/* ------------------------------------------------------------------ share */
 GM.share = async function (text, url) {
   const full = url ? `${text}\n${url}` : text;
   if (window.AndroidApp && window.AndroidApp.share) { window.AndroidApp.share(full); return; }  // Android app: native share sheet
@@ -872,7 +873,7 @@ GM.share = async function (text, url) {
   catch (e) { GM.modal(`<h3>Copy this</h3><textarea class="input" rows="5">${GM.esc(full)}</textarea><div class="row"><button class="btn" data-close>Done</button></div>`); }
 };
 // Invite a friend to the game itself (the home screen and Settings have a button for it)
-GM.SITE_URL = 'https://opportunisticgames.github.io/goal-machine/';
+GM.SITE_URL = 'https://opportunisticgames.github.io/goal-machine/play.html';
 GM.shareGame = () => GM.share('⚽ Goal Machine: spin the reels and build the biggest-scoring Premier League XI from 5,000+ real players. Daily games, online duels and more. Come and play me!', GM.SITE_URL);
 GM.APK_URL = 'https://github.com/OpportunisticGames/opportunisticgames.github.io/releases/latest/download/goal-machine.apk';  // (the sideload build, for anyone without Play)
 GM.PLAY_URL = 'https://play.google.com/store/apps/details?id=goal.machine';  // the app, live on Google Play
