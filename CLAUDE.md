@@ -221,6 +221,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    may be mid-action without a short `{ timeout }`: Playwright waits 30 s for it to become tappable (that made the CHAOS tests
    take minutes). Or run one script on its own with `node <script>.js`. Each uses `mockserver.js`, which fakes the
    Supabase RPCs in memory (test accounts Alice/Bob/Cara), so nothing touches the real database.
+   - `reels5392.js` – 5.39.2: thousands of Extreme/Purist/CHAOS spins with the real dealing code: never the same player twice on a spin, never a stray no-club copy (`p.dupe`, marked in `GM.loadAll`), never a signed player again under his other record.
    - `new539.js` – 5.39: watch along draws the challenger's live game and the move-by-move, challenger scores off the boards, the podium with one name, the card tiers in one row, the Best Players sum (5.39.1).
    - `online538.js` – 5.38: New game's main four and Hard default, the room's level, the opponent's XI hidden while you play, the bigger total wins, the result stays up, no notification for the finisher, the 🔔 count, Scout's Tip, a Seasonal CHAOS Race.
    - `tour536.js` – 5.36: the tour offered once on Home, every step's bubble and spotlight on screen (390 and 360 px), Settings → Take the tour, Skip, and the first-time tips (once each, back from Settings).

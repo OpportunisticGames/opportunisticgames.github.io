@@ -224,6 +224,10 @@ Found in the 5.39 sweep (server review), not fixed yet: each needs a decision or
   the server from the stored moves.
 - **Three throwaway accounts can hide any name** (`report_name`, `report_avatar`). Fix: count only reporters with scores or
   an account a few days old.
+- **The full player list has 28 stray second records with no club** (mostly 2015/16 season rows; see the 5.39.2 fix). The game
+  now ignores them, but `tools/build_players.py` should merge or drop them when it builds `players_all.js`. Also four real
+  name clashes share a key (David Lee 1992, Paul Williams 1992, David Smith 1992, Matt Grimes 2014): two different players,
+  one key, so cards and challenges can't tell them apart.
 - **`player_profile` doesn't check `p_me`** (anyone can see the record between any two players): low.
 - **The level buttons on Home are easy to change by accident** (new-player walkthrough, 16 Oct): a stray tap on Easy/Hard
   while reaching for the sub-tabs below changes your level everywhere, quietly. Idea: a toast saying what changed, or a
@@ -238,6 +242,7 @@ Found in the 5.39 sweep (server review), not fixed yet: each needs a decision or
 
 | Reported | Bug | Fixed in |
 |---|---|---|
+| 22 Oct 2026 (owner) | Steven Berghuis twice on one spin (Ultimate · Pure, Extreme). The full list (players_all) has 28 players twice: a second record with no club, mostly 2015/16 (Schweinsteiger, Gomis, Cuadrado…), and the reels only kept apart the same *record*, not the same player. | 5.39.2: the no-club copies are marked `dupe` and never dealt (kept in the list so saved games keep their places), a spin never has the same player twice, and a player you've signed doesn't come back under his other record. The data builder should stop making them: open below |
 | 22 Oct 2026 (owner) | Now and then a game came up smaller (slots and reels about 80%, a gap at the bottom). The fitting measured the whole page: something outside the game made it briefly too tall, the game shrank to fit (zoom 0.8), and it never grew back. On Hard/Extreme (shorter cards) a tall phone also left a gap. | 5.39.2: fitPitch measures the game only, a shrink undoes itself when there's room, and the reels take room the pitch can't use (`--stage-x`) |
 | 22 Oct 2026 (owner) | The cards in one spin didn't match: one with a smaller photo or smaller club badges, the others not. | 5.39.2: if one needs it, they all get it |
 | 16 Oct 2026 (owner) | In a challenge, 👀 "What did they sign next?" showed their next signing and his number before you picked: knowing the future. | 5.39: it shows their signing at the point you've reached |

@@ -1261,7 +1261,10 @@
     // a Hat-Trick spin: three players for one open position (seeded)
     const open = wc && wc.trio ? (o => [o[GM.rng(tag + '|trio').int(o.length)]])(openPos()) : openPos();
     const used = new Set(S.used.concat(S.xi.filter(s => s.p != null).map(s => s.p)));
-    const ok = p => fits(p, open) && !used.has(p.id);
+    // (5.39.2: by player, not by place in the list: the full list has a few players twice, so the same man could come up on
+    // two reels at once, or again after you'd signed him; a stray second record (no club) is never dealt at all)
+    const usedPk = new Set([...used].map(id => (byId(id) || {}).pk).filter(Boolean));
+    const ok = p => fits(p, open) && !used.has(p.id) && !usedPk.has(p.pk) && !p.dupe;
     const n = (wc && wc.reels) || 3;
     const wildTypes = () => Object.keys(WILDCARDS).filter(t => (!S.rules.noWild.includes(t) || (tw().allow || []).includes(t)) && (!WILDCARDS[t].chaos || S.rules.chaos) && t !== 'storm' && WILDCARDS[t].deal !== false && inSz(t));
     // a wildcard storm: every reel is a wildcard (the Storm card, or 1 spin in 10 in CHAOS)
@@ -1303,17 +1306,17 @@
       if (rw() < wp) wildAt = 0; else if (rw() < wp) wildAt = 1;
       wild = rw.weighted(wildTypes(), t => WILDCARDS[t].w * ((tw().wild || {})[t] || 1));
     }
-    const reels = [], taken = new Set();
+    const reels = [], taken = new Set();  // (player keys)
     for (let i = 0; i < n; i++) {
       if (i === wildAt) { reels.push({ wild }); continue; }
       let p = null;
-      for (let tries = 0; tries < 800 && !p; tries++) { const c = draw(r()); if (ok(c) && !taken.has(c.id)) p = c; }
+      for (let tries = 0; tries < 800 && !p; tries++) { const c = draw(r()); if (ok(c) && !taken.has(c.pk)) p = c; }
       if (!p) {  // very few players left who fit: pick from them directly
-        const rest = field.filter(c => ok(c) && !taken.has(c.id));
+        const rest = field.filter(c => ok(c) && !taken.has(c.pk));
         if (!rest.length) break;
         p = r.weighted(rest, reelWeight());
       }
-      taken.add(p.id);
+      taken.add(p.pk);
       const x = { id: p.id };
       // chemistry hint (a label only, so it doesn't change who you're offered): played with your last signing
       const lp = S.last != null ? byId(S.last) : null;

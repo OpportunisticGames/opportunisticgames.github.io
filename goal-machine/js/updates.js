@@ -13,6 +13,7 @@
       items: [
         '📐 Fixed: now and then a game came up smaller, with a gap at the bottom. It always fits your screen now, and on Hard and Extreme the reels use any spare room',
         '🃏 The three cards on a spin match: if one needs a smaller photo or smaller club badges, they all get them',
+        '🐛 Fixed: on Extreme the same player could turn up twice on one spin (a few players were in the full list twice)',
         '🎴 Your card back (🎒 Locker → Kit) now dresses the cards on the reels: a band of its pattern along the top and its colour round the edge, the same on every card',
         '✨ Your best cards show on the pitch: sign a player whose Gold, Legend or Icon card you’ve finished, or a country’s Nº1, and his spot takes on that card’s colours (a Nº1 with his flag). Legends and Icons catch the light. Only once he’s signed, so it never gives anyone away',
       ],
