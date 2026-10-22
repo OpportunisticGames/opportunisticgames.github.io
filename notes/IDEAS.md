@@ -38,6 +38,24 @@ a result (`online_react`, `rooms.reacts`), this month's record per friend; and S
 
 ## 💬 To discuss
 
+### 🎯 Target games: is the easier level the easier target? (owner, 22 Oct 2026)
+> "I feel like often normal/easy can be hard because it seems to select players that have really high counts. Can you
+> check that the easier the setting, the easier it is to get the target?"
+
+Measured with `tools/test/targetsim.js` (whole games with the real dealing code; a bot that guesses each number as well
+as you could on that level and plans for the positions left). Share of games within 5% of the target:
+| | Goals | Assists | Apps |
+|---|---|---|---|
+| Easy | 66% | 71% | 87% |
+| Normal | 57% | 55% | 68% |
+| Extreme | 42% | 46% | 44% |
+| Hard | 19% | 23% | 8% |
+So Easy < Normal < Hard holds for every stat. Easy and Normal deal the same players (by fame, so big counts turn up
+often: about 15% of goals cards are over 90, and they're needed, the pace is 45 a player); Easy's rough numbers are what
+make it easier. Hard deals fewer big names, so the trouble there is reaching the target at all (85% finish under).
+The one out of order: **Extreme is easier than Hard** in the Targets (by design, "the well-known still turn up most").
+Option: deal Extreme's Targets like Hard's (√fame) so it's the hardest, or leave it. Owner to decide.
+
 ### 🎴 Your card back on the pitch (owner, 22 Oct 2026) ✅ built in 5.39.2. Owner: not a player's tier on the reels ("that would giveaway how good a player is"), then "& all nationality cards" and "Your card backs choice could affect the reel - and the gold/legends/icon thing could affect the pitch": so the card back dresses every reel card alike (a band + edge), and finished Gold/Legend/Icon/Nº1 cards show in their own colours on the pitch
 > "it would be cool if the card backs you unlocked in the kit changed the look of maybe the player background on the
 > pitch, or maybe their card in the reels? Maybe it could be just for cards you have completed … once you put them in the
