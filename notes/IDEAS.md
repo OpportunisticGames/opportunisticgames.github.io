@@ -55,6 +55,7 @@ often: about 15% of goals cards are over 90, and they're needed, the pace is 45 
 make it easier. Hard deals fewer big names, so the trouble there is reaching the target at all (85% finish under).
 The one out of order: **Extreme is easier than Hard** in the Targets (by design, "the well-known still turn up most").
 Option: deal Extreme's Targets like Hard's (√fame) so it's the hardest, or leave it. Owner to decide.
+✅ Then (5.39.4) owner: "These numbers aren't balanced at all? … Can't you just make it like 80%, 60%,40%,20% for all of them?" → `TARGET_W` per level and stat in draft.js, tuned with `tools/test/targetcal.js` (300 games each): Easy 72/73/79% (goals and assists can't go higher by dealing alone), Normal 60/61/63%, Hard 42/~40/42%, Extreme 22/20/20%. And the reel cards went back to their own look (owner didn't like the card-back band).
 ✅ Owner: "change it so that the scale from easy-extreme works how it should". 5.39.3: Extreme's Targets deal by √fame from every PL player (`X_TARGET` 0.5): within 5% goals Easy 65% · Normal 56% · Hard 19% · Extreme 14% (assists 71/56/23/17, apps 88/70/8/4).
 
 ### 🎴 Your card back on the pitch (owner, 22 Oct 2026) ✅ built in 5.39.2. Owner: not a player's tier on the reels ("that would giveaway how good a player is"), then "& all nationality cards" and "Your card backs choice could affect the reel - and the gold/legends/icon thing could affect the pitch": so the card back dresses every reel card alike (a band + edge), and finished Gold/Legend/Icon/Nº1 cards show in their own colours on the pitch

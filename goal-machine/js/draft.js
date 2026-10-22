@@ -487,7 +487,7 @@
   RULES.match = { ...RULES.club, match: true };
   // International XI (international breaks): Ultimate Wildcard with every PL player from one country
   RULES.nation = { ...RULES.club, club: false, nation: true };
-  // Extreme Target games: every PL player on the reels, the big names much less often (X_TARGET: the hardest level)
+  // Extreme Target games: every PL player on the reels (how often the big names come up: TARGET_W)
   const RULES_X = { target: { ...RULES.target, all: true }, treble: { ...RULES.treble, all: true }, mystery: { ...RULES.mystery, all: true } };
   const rulesFor = (mode, extreme) => (extreme && RULES_X[mode]) || RULES[mode];
 
@@ -1171,12 +1171,17 @@
   const blind = () => !!(S.hard || S.extreme || ['extreme', 'purist', 'chaosx'].includes(S.mode));
   // Easy: in the most-wins games the big names turn up more; in the Target games more big names would only overshoot the
   // target, so the reels are Normal's and Easy gives a rough number for every player instead (easyHint)
-  // Extreme's Target games (5.39.3): every PL player and the big names turning up less, so it's the hardest level there too
-  // (they turned up by fame, which made Extreme easier than Hard; tools/test/targetsim.js measures the four levels)
-  const X_TARGET = 0.5;
-  const reelWeight = () => (S.easy ? (S.rules.max && !S.rules.fame ? p => Math.sqrt(p.fame) : S.rules.weight)
-    : S.extreme && !S.rules.max ? (e => p => Math.pow(S.rules.weight(p), e))(GM._xTarget != null ? GM._xTarget : X_TARGET)
-    : S.hard && (!S.rules.max || S.rules.fame) ? p => Math.sqrt(S.rules.weight(p)) : S.rules.weight);
+  // The Target games (5.39.4): how strongly each level favours the big names, per stat, tuned with tools/test/targetsim.js
+  // so about 80% / 60% / 40% / 20% of games land within 5% of the target on Easy / Normal / Hard / Extreme, whatever the stat
+  // (fame^e: above 1 the stars come up more, below 1 less)
+  // (measured, 300 games each: Easy 72/73/79%, the most its dealing can give (goals and assists top out there), Normal 60/61/63%,
+  // Hard 42/~40/42%, Extreme 22/20/20%, for goals/assists/apps)
+  const TARGET_W = { easy: { goals: 1.25, assists: 1.25, apps: 0.95 }, normal: { goals: 1.2, assists: 1.05, apps: 0.95 }, hard: { goals: 1, assists: 0.9, apps: 0.95 }, extreme: { goals: 0.62, assists: 0.57, apps: 0.8 } };
+  const tLevel = () => (S.easy ? 'easy' : S.extreme ? 'extreme' : S.hard ? 'hard' : 'normal');
+  const tExp = () => { const W = GM._tw || TARGET_W, st = S.rules.treble ? 'goals' : S.stat; return (W[tLevel()] || {})[st] != null ? W[tLevel()][st] : 1; };
+  const reelWeight = () => (!S.rules.max ? (e => p => Math.pow(S.rules.weight(p), e))(tExp())
+    : S.easy ? (!S.rules.fame ? p => Math.sqrt(p.fame) : S.rules.weight)
+    : S.hard && S.rules.fame ? p => Math.sqrt(S.rules.weight(p)) : S.rules.weight);
   // what wildcard descriptions talk about: in the Treble a wildcard affects all three numbers
   const wst = () => S.rules.treble ? { ...S.st, label: 'numbers', bigLabel: 'goals' } : S.st;
   const modeName = () => S.rules && S.rules.sz && SZ_CHAOS[S.sz] ? SZ_CHAOS[S.sz].name.replace(/^\S+ /, '') : S.dailyChaos ? 'Daily CHAOS' : S.fx ? `Matchday XI · ${GM.clubShort(S.club)} v ${GM.clubShort(S.club2)}` : S.online && S.mode === 'target' ? `Target Race · ${fmt(S.target)}` : S.mode === 'club' || S.nat || S.extreme ? GM.MODES[modeKey()].name : GM.MODES[S.mode === 'daily' ? 'daily' : (S.rules.treble || S.rules.mystery) ? S.mode : S.mode + statSuffix(S.stat)].name;
@@ -1302,7 +1307,7 @@
       const themed = field.filter(p => wc.filter(p, wst()));
       if (themed.some(ok)) { field = themed; fkey += '|' + special + (special === 'magnet' ? ':' + S.last : special === 'passport' ? ':' + S.passNat : ''); }
     }
-    const draw = sampler(`${fkey}|${S.mode}|${S.hard ? 'h' : S.easy ? 'e' : ''}${S.extreme && !S.rules.max ? '|x' + (GM._xTarget != null ? GM._xTarget : X_TARGET) : ''}`, field, reelWeight());
+    const draw = sampler(`${fkey}|${S.mode}|${S.hard ? 'h' : S.easy ? 'e' : ''}${!S.rules.max ? '|t' + tLevel() + tExp() : ''}`, field, reelWeight());
     // wildcard: reel 1 on 28% of spins, else reel 2 on 28% of the rest (so about half the spins have one), decided by the spin number only
     let wildAt = -1, wild = null;
     if (!special && S.spin >= 1 && S.rules.wild !== false) {
@@ -3042,7 +3047,7 @@
         <p>🐦 CHAOS leaves its mark: what happens stays on the pitch. If the pigeon gets its revenge, two of your numbers stay covered until full time, so keep track!</p>
         <p>Now and then a <b>match-day event</b> strikes too (🟥 red cards, 🚑 injuries, 📺 VAR, 🧾 the taxman, 💰 TV money), ${S.sz ? 'one spin in five' : 'one spin in ten'} is a <b>🌪️ wildcard storm</b>, and there are riskier wildcards like 🎰 All In (a coin toss: your whole XI ×2 or ×½).</p>`
       : r.max ? `<p>👑 <b>${modeName()}:</b> no target – build the XI with the <b>most Premier League ${L}</b> you can. ${poolText()}</p>`
-      : `<p>🎯 <b>${modeName()}:</b> build an XI whose players have <b>${fmt(S.target)}</b> Premier League ${L} between them – as close as you can, exactly for a bullseye. ${S.extreme ? 'Extreme: any of the 5,000+ PL players, and the big names turn up much less often, so getting there is the hard part.' : S.hard ? 'Hard: the big names turn up less often, so getting there is the hard part.' : `The better known a player, the more often he turns up, so the big numbers you need are there${S.easy ? ', and Easy shows you a rough number for each one' : ''}.`}</p>`}
+      : `<p>🎯 <b>${modeName()}:</b> build an XI whose players have <b>${fmt(S.target)}</b> Premier League ${L} between them – as close as you can, exactly for a bullseye. ${S.extreme ? 'Extreme: any of the 5,000+ PL players, names and positions only, and the big names turn up less often: the hardest.' : S.hard ? 'Hard: names and positions only, so you judge each player from what you know.' : `The better known a player, the more often he turns up, so the big numbers you need are there${S.easy ? ', and Easy shows you a rough number for each one' : ', with clubs and years on the reels as clues'}.`}</p>`}
       <p>Each spin shows three players who fit an open position. Their ${L} are hidden until you sign one. You keep spinning until the XI is full.</p>
       <p>Every player has real positions – <b>GK, LB, CB, RB, LM, CM, RM, ST</b>. Tap a player, then tap one of the highlighted slots he can play.</p>
       <p><b>Wildcards</b> appear on the reels from the 2nd spin – grab one instead of a player and use it when you like (hold up to 3):</p>

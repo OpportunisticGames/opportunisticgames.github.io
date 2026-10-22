@@ -125,7 +125,7 @@ game mode for players; this file is about how to work on it.
   The kit (`GM.LOCKER`, 64 items): pitch styles (`body.pk-*`), card backs (`body.cbk-*`), celebrations + horns
   (`GM.celebrate()` on a new best / challenge win), frames (`.fr-*` on pictures) and titles (`GM.titleHtml(name)`) that others
   see (server `players.flair`: `set_flair`, `get_flair`, fetched with the pictures), challenge reactions, Dodgy Owner owners
-  (`OWNERS.celeb/trust` have `locked`). Card backs also dress every reel card alike (5.39.2: `--cb-bg`/`--cb-edge` per `body.cbk-*`, a band + edge), and finished Gold/Legend/Icon or Nº1 cards show in their tier's colours on the pitch once signed (`GM.cardOwned(p)` → {t, no1}, `.slot.own-*`; never on the reels, which would give a player's tier away). Each item's `src` says how you get it (lvl, season tier, missions, badges, club
+  (`OWNERS.celeb/trust` have `locked`). Card backs (`--cb-bg`/`--cb-edge` per `body.cbk-*`) were tried on the reels in 5.39.2 and taken off again (owner); finished Gold/Legend/Icon or Nº1 cards show in their tier's colours on the pitch once signed (`GM.cardOwned(p)` → {t, no1}, `.slot.own-*`; never on the reels, which would give a player's tier away). Each item's `src` says how you get it (lvl, season tier, missions, badges, club
   dailies, login); `GM.lockerCheck()` hands out what you've earned. A new item = one line in `L` (+ CSS for its look).
 - `prizes.js` – 🎁 one way to give any reward (`GM.grant({pack|item|xp|spin|vault|choice})`), the level road
   (`GM.levelReward(n)`), the prize wheel (`#/spin`, `WHEEL`), pick-one-of-three (`GM.pickReward`), a pack's bonus slot
@@ -221,6 +221,7 @@ There's no unit test suite; test in a real browser with Playwright (Chromium is 
    may be mid-action without a short `{ timeout }`: Playwright waits 30 s for it to become tappable (that made the CHAOS tests
    take minutes). Or run one script on its own with `node <script>.js`. Each uses `mockserver.js`, which fakes the
    Supabase RPCs in memory (test accounts Alice/Bob/Cara), so nothing touches the real database.
+   - `targetcal.js` / `targetsim.js` – the Target games' balance: a bot plays whole games per level and stat with the real dealing; `TARGET_W` in draft.js (fame exponent per level/stat) is tuned with targetcal to about 80/60/40/20% within 5% on Easy/Normal/Hard/Extreme.
    - `reels5392.js` – 5.39.2: thousands of Extreme/Purist/CHAOS spins with the real dealing code: never the same player twice on a spin, never a stray no-club copy (`p.dupe`, marked in `GM.loadAll`), never a signed player again under his other record.
    - `new539.js` – 5.39: watch along draws the challenger's live game and the move-by-move, challenger scores off the boards, the podium with one name, the card tiers in one row, the Best Players sum (5.39.1).
    - `online538.js` – 5.38: New game's main four and Hard default, the room's level, the opponent's XI hidden while you play, the bigger total wins, the result stays up, no notification for the finisher, the 🔔 count, Scout's Tip, a Seasonal CHAOS Race.
