@@ -14,11 +14,12 @@ const N = +process.argv[2] || 300, STAT = process.argv[3] || 'goals';
     const hooked = src.replace('GM.draft = {', 'GM.draft = { makeReels: sp => makeReels(sp), pvOf: p => pv(p), ');
     (0, eval)(hooked); await GM.loadAll();
   });
-  const LEVELS = [['Easy', { easy: true }, 0.08], ['Normal', {}, 0.35], ['Hard', { hard: true }, 0.6], ['Extreme', { extreme: true }, 0.6]];
+  const XS = (process.argv[4] || '').split(',').filter(Boolean).map(Number);
+  const LEVELS = [['Easy', { easy: true }, 0.08], ['Normal', {}, 0.35], ['Hard', { hard: true }, 0.6], ['Extreme', { extreme: true }, 0.6]].concat(XS.map(x => ['Extreme ^' + x, { extreme: true, x }, 0.6]));
   console.log(`Target (${STAT}), ${N} games a level. "guess" = how well you can judge a player's number on that level`);
   for (const [name, opts, noise] of LEVELS) {
     const r = await pg.evaluate(async ([opts, noise, N, STAT]) => {
-      const PA = {}; const root = document.getElementById('app'), out = { over: 0, perfect: [], real: [], dealt: [], big: 0, reels: 0, target: 0 };
+      GM._xTarget = opts.x != null ? opts.x : null; const PA = {}; const root = document.getElementById('app'), out = { over: 0, perfect: [], real: [], dealt: [], big: 0, reels: 0, target: 0 };
       const gauss = rnd => { let u = 0, v = 0; while (!u) u = rnd(); v = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
       for (const bot of ['perfect', 'real']) for (let g = 0; g < N; g++) {
         GM.draft.start(root, 'target', { seed: (opts.easy ? 'e~' : '') + 'ts' + g, stat: STAT, hard: !!opts.hard, extreme: !!opts.extreme, easy: !!opts.easy });
