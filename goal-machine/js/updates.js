@@ -9,6 +9,13 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 102, label: '5.39.3', date: '2026-10-22', title: '🎯 The Target games get harder level by level',
+      items: [
+        '🎯 Easy, Normal, Hard, Extreme: each level of the Target games is now harder than the one before. Extreme used to be easier than Hard (the big names still turned up most); now they turn up even less often than on Hard, so getting there is the challenge',
+        '❓ How to play in the Target games says how each level deals its players',
+      ],
+    },
+    {
       v: 101, label: '5.39.2', date: '2026-10-22', title: '📐 The game fills your screen, and your best cards show on the pitch',
       items: [
         '📐 Fixed: now and then a game came up smaller, with a gap at the bottom. It always fits your screen now, and on Hard and Extreme the reels use any spare room',
