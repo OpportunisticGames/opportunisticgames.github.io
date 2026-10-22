@@ -125,7 +125,7 @@ game mode for players; this file is about how to work on it.
   The kit (`GM.LOCKER`, 64 items): pitch styles (`body.pk-*`), card backs (`body.cbk-*`), celebrations + horns
   (`GM.celebrate()` on a new best / challenge win), frames (`.fr-*` on pictures) and titles (`GM.titleHtml(name)`) that others
   see (server `players.flair`: `set_flair`, `get_flair`, fetched with the pictures), challenge reactions, Dodgy Owner owners
-  (`OWNERS.celeb/trust` have `locked`). Card backs also dress your finished Gold/Legend/Icon cards on the pitch (5.39.2: `GM.cardOwned(p)` in packs.js, `.slot.own` with `--cb-bg`/`--cb-edge` per `body.cbk-*`; never on the reels, which would give a player's tier away). Each item's `src` says how you get it (lvl, season tier, missions, badges, club
+  (`OWNERS.celeb/trust` have `locked`). Card backs also dress every reel card alike (5.39.2: `--cb-bg`/`--cb-edge` per `body.cbk-*`, a band + edge), and finished Gold/Legend/Icon or Nº1 cards show in their tier's colours on the pitch once signed (`GM.cardOwned(p)` → {t, no1}, `.slot.own-*`; never on the reels, which would give a player's tier away). Each item's `src` says how you get it (lvl, season tier, missions, badges, club
   dailies, login); `GM.lockerCheck()` hands out what you've earned. A new item = one line in `L` (+ CSS for its look).
 - `prizes.js` – 🎁 one way to give any reward (`GM.grant({pack|item|xp|spin|vault|choice})`), the level road
   (`GM.levelReward(n)`), the prize wheel (`#/spin`, `WHEEL`), pick-one-of-three (`GM.pickReward`), a pack's bonus slot

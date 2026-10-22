@@ -38,7 +38,7 @@ a result (`online_react`, `rooms.reacts`), this month's record per friend; and S
 
 ## 💬 To discuss
 
-### 🎴 Your card back on the pitch (owner, 22 Oct 2026) ✅ built in 5.39.2: pitch only, Gold/Legend/Icon (owner: not on the reels, "that would giveaway how good a player is")
+### 🎴 Your card back on the pitch (owner, 22 Oct 2026) ✅ built in 5.39.2. Owner: not a player's tier on the reels ("that would giveaway how good a player is"), then "& all nationality cards" and "Your card backs choice could affect the reel - and the gold/legends/icon thing could affect the pitch": so the card back dresses every reel card alike (a band + edge), and finished Gold/Legend/Icon/Nº1 cards show in their own colours on the pitch
 > "it would be cool if the card backs you unlocked in the kit changed the look of maybe the player background on the
 > pitch, or maybe their card in the reels? Maybe it could be just for cards you have completed … once you put them in the
 > team or something … Something along those lines but doesnt look stupid or out of place"

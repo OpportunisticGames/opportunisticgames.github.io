@@ -2580,10 +2580,12 @@
         if (S.phase === 'done') pct = `<span class="slot-pct">${r > 1 ? '+' : '−'}${base > 0 ? Math.round(Math.abs(r - 1) * 100) + '%' : fmt(s.g)}</span>`;
       }
     }
-    // (a Gold, Legend or Icon card you've finished: your card back's pattern behind him once he's signed, never on the
-    // reels (that would give away how good he is), and its gem; not on a friend's game)
-    const own = !fused && !S.spectate && GM.cardOwned ? GM.cardOwned(p) : '';
-    return `<div class="slot filled ${s.fresh ? 'fresh' : ''} ${away[i] ? 'away' : ''} ${own ? 'own own-' + own : ''} ${tone}" data-slot="${i}" title="${GM.esc(fused ? s.trio.map(id => byId(id).name).join(' + ') : p.name)}"${S.wonky && S.wonky[i] ? ` data-wonky style="--wk:${S.wonky[i]}deg"` : ''}>${pk}${pct}${marksHtml(i)}${own ? `<i class="own-gem" title="Your ${GM.TIERS[own].name} card">${GM.TIERS[own].icon}</i>` : ''}
+    // (a Gold, Legend or Icon card you've finished, or a country's Nº1: dressed in its tier's colours (a Nº1 with his flag)
+    // once he's signed, never on the reels (that would give away how good he is); not on a friend's game)
+    const own = !fused && !S.spectate && GM.cardOwned ? GM.cardOwned(p) : null;
+    const ownCls = own ? `own own-${own.t}${own.no1 ? ' own-no1' : ''}` : '';
+    const ownMark = own ? (own.no1 ? `<i class="own-flag" aria-hidden="true">${GM.flag(p.nat)}</i><i class="own-gem" title="Your ${GM.esc(p.nat)} Nº1 card">Nº1</i>` : `<i class="own-gem" title="Your ${GM.TIERS[own.t].name} card">${GM.TIERS[own.t].icon}</i>`) : '';
+    return `<div class="slot filled ${s.fresh ? 'fresh' : ''} ${away[i] ? 'away' : ''} ${ownCls} ${tone}" data-slot="${i}" title="${GM.esc(fused ? s.trio.map(id => byId(id).name).join(' + ') : p.name)}"${S.wonky && S.wonky[i] ? ` data-wonky style="--wk:${S.wonky[i]}deg"` : ''}>${pk}${pct}${marksHtml(i)}${ownMark}
       ${fused ? fusedFace(s.trio) : GM.avatar(p)}<span class="slot-name">${GM.esc(surname)}</span>
       <span class="slot-goals ${splatted(i) ? 'splatted' : ''}"><span class="sg">${S.rules.treble && s.v ? `${s.v.goals}·${s.v.assists}·${s.v.apps}` : fmt(s.g)}</span>${MOD_TAG[s.mod] || ''}</span><span class="slot-pos" title="${GM.POS_NAME[s.pos]}">${s.pos}</span></div>`;
   }
