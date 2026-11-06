@@ -9,6 +9,13 @@
 (function () {
   GM.UPDATES = [
     {
+      v: 109, label: '5.40', date: '2026-11-06', title: '🔮 What could you have scored?',
+      items: [
+        '🔮 At full time in the draft games (Ultimate, Extreme, Pure and the rest that go for the biggest total) you now see your best possible score: the best XI you could have built from the players you were offered, picking right every spin. “You got 175 (47%)”, or “A perfect draft” if you couldn’t have done better',
+      ],
+      promo: [{ href: '#/draft?m=ultimate&s=goals', icon: '🔮', cls: 't-purple', kick: '🔮 New: best possible', title: 'What could you have scored?', sub: 'Full time now shows the best XI from the players you were offered' }],
+    },
+    {
       v: 103, label: '5.39.4', date: '2026-10-22', title: '🎯 The Target games, evened out',
       items: [
         '🎯 Each level of the Target games is now the same step harder, whichever number you’re chasing: goals, assists and apps all land within 5% of the target about 3 games in 4 on Easy, 6 in 10 on Normal, 4 in 10 on Hard and 2 in 10 on Extreme (apps used to be far easier on Easy and far harder on Hard)',

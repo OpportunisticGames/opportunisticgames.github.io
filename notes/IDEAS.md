@@ -38,6 +38,16 @@ a result (`online_react`, `rooms.reacts`), this month's record per friend; and S
 
 ## 💬 To discuss
 
+### 🔮 Best possible score at full time (owner, 6 Nov 2026) ✅ built in 5.40
+> "It would be cool if draft games modes you got to find out at the end the range of scores you could have got.
+> Particularly the highest score you could have got … if you had chosen the best option everytime AND won all the coin
+> flips etc etc … what could your best score have been if you had chosen better and if you had been luckier"
+
+Built: the best XI from the players you were *offered* (each signing's three reels), best way to fill the places, one per
+spin, shown under the score ("You got 175 (47%)…" / "A perfect draft"). Most-wins games only. In CHAOS it only shows when
+all 11 signings came from normal spins, and counts the players' own numbers (not wildcards, moments or coin tosses).
+Not done: "luckier" (winning every coin toss and moment) and the Target games (closest to a number). Later, if wanted.
+
 ### 🎯 Target games: is the easier level the easier target? (owner, 22 Oct 2026)
 > "I feel like often normal/easy can be hard because it seems to select players that have really high counts. Can you
 > check that the easier the setting, the easier it is to get the target?"

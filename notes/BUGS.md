@@ -215,6 +215,9 @@ version they shipped in. Newest at the top.
 - Rain was lines across the pitch: now drops, ripples and clouds. Too many screen flashes and throbbing backdrops: cut right down.
 
 ## Open
+- **Season tests assume October** (6 Nov 2026): since the month changed, `layout527`, `chaosseasons` and `rewards526` fail on
+  Halloween-specific checks (the Halloween season's music/look, "this month's CHAOS", the vault, one-season players). The game
+  is fine; the tests need a fixed pretend date (or the current season's expectations).
 Found in the 5.39 sweep (server review), not fixed yet: each needs a decision or a new Android build.
 - **`app_inbox` and `online_waiting` take a name with no key**, so anyone can read another player's inbox (room codes,
   watch links, results). The Android app calls `app_inbox` without a key, so the fix is: an optional `p_key` now, send it

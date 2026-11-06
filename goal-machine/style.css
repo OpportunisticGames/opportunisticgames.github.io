@@ -3820,3 +3820,9 @@ body.cbk-club { --cb-bg: repeating-linear-gradient(90deg, var(--club1, #16803c) 
 .slot.filled.own-i::after { animation-duration: 3.2s; background-image: linear-gradient(115deg, transparent 35%, rgba(199, 243, 255, .65) 50%, transparent 65%); }
 @keyframes own-glint { 0%, 55% { background-position: -150% 0; } 100% { background-position: 150% 0; } }
 body.calm .slot.filled.own::after { animation: none; display: none; }
+
+/* 5.40: the best XI you could have had from what you were offered, at full time */
+.best-poss { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; text-align: left; margin: 8px 0; padding: 10px 12px; border-radius: 14px; background: var(--inset); border: 1px dashed var(--muted); }
+.best-poss > span:first-child { font-size: 1.5rem; }
+.best-poss b { display: block; font-size: .95rem; }
+.best-poss small { display: block; color: var(--muted); font-size: .76rem; line-height: 1.3; }
