@@ -1146,6 +1146,24 @@
   const liveOf = st => { const o = { ...st }; ['rules', 'ch', 'online', 'hist', 'final', 'collected', 'board', 'boardOn', 'newMgrs', 'feed'].forEach(k => delete o[k]); return o; };
   // what's happened, in order, for watch along: each signing, wildcard and moment and what it did to the score
   const feed = (i, n, x, d) => { if (S && !S.readonly) S.feed = (S.feed || []).concat([{ i, n: String(n || '').replace(/<[^>]+>/g, ''), x: String(x || '').replace(/<[^>]+>/g, '').slice(0, 140), d: Math.round(d || 0), k: S.xi.filter(s => s.p != null).length }]).slice(-40); };
+  // 🔮 the best XI you could have had from the players you were offered (a signing's three reels, in the order you met them):
+  // the best way to fill the XI's places, one player from each spin. Most-wins games only; in CHAOS it's the players' own
+  // numbers, before any wildcard, moment or coin toss
+  function bestPossible(st) {
+    if (!st.rules.max || st.readonly || !st.offers || st.offers.length < st.xi.length) return null;
+    const pool = st.rules.all ? GM.allPlayers : GM.players, n = st.xi.length;
+    const val = id => { const q = pool[id]; return q ? pv(q)[st.stat] : 0; };
+    let dp = new Map([[0, 0]]);  // places filled (bitmask) -> best total
+    for (const offer of st.offers.slice(0, n)) {
+      const nx = new Map();
+      for (const [mask, tot] of dp) for (const id of offer) {
+        const q = pool[id]; if (!q) continue;
+        for (let i = 0; i < n; i++) if (!(mask & (1 << i)) && q.poss.includes(st.xi[i].pos)) { const m = mask | (1 << i), t = tot + val(id); if (!(nx.get(m) >= t)) nx.set(m, t); }
+      }
+      dp = nx;
+    }
+    return dp.size ? Math.max(...dp.values()) : null;
+  }
   // where a CHAOS score came from, for the head-to-head: the players' own PL numbers, what wildcards and moments did to
   // them, team bonuses, moments and bonus spins, the manager; plus the biggest things that happened to players and bonuses
   function chPoints(st) {
@@ -2204,6 +2222,7 @@
     S.modifier = null; S.capMult = null;
     S.last = p.id;
     S.picks = (S.picks || []).concat([[S.spin, p.pk, p.name, pos, g]]);  // (friend challenges compare signing by signing)
+    S.offers = (S.offers || []).concat([(S.reels || []).filter(x => !x.wild).map(x => x.id).concat(trio ? trio.map(q => q.id) : [])]);  // (what he was picked from: the full-time "best possible")
     feed('✍️', p.name, `Signed at ${pos}`, g);
     S.used.push(p.id);
     if (!S.readonly && GM.trackPick) GM.trackPick(p, S.reels.filter(x => !x.wild).map(x => byId(x.id)));
@@ -3079,6 +3098,7 @@
         : `<div class="result-total ${sc.diff === 0 ? 'bull' : ''}">${fmt(sc.t)}<small>PL ${S.st.label}${S.rules.max ? '' : ` · target ${fmt(S.target)} · <b>${Math.round(sc.t / S.target * 1000) / 10}%</b>`}</small></div>`}
         ${S.rules.chaos ? `<div class="chaos-level">${chaosLevel()}</div>${S.manager ? `<div class="muted small">👔 Manager: ${MANAGERS[S.manager].icon} ${MANAGERS[S.manager].name}</div>` : ''}
           ${(S.moments || []).length ? `<details class="chaos-story"><summary>📜 What happened (${S.moments.length})</summary><ol>${S.moments.map(m => `<li><span class="cs-i">${m.icon}</span><span class="cs-t"><b>${GM.esc(m.name)}</b><small>${GM.esc(m.name === 'Kick-off' && m.text.length > 90 ? m.text.replace(/^.*?(Formation [^.]+)\..*$/, '$1') : m.text)}</small></span></li>`).join('')}</ol></details>` : ''}` : ''}
+        ${(() => { const bp = bestPossible(S), got = sc.t; if (bp == null || bp < got) return ''; return `<div class="best-poss" id="best-poss"><span>🔮</span><span>${bp === got ? '<b>A perfect draft</b><small>You picked the best player you could every spin.</small>' : `<b>Best possible: ${fmt(bp)}</b><small>You got ${fmt(got)} (${Math.round(got / bp * 100)}%). Picking best every spin from the players you were offered would have made ${fmt(bp)}${S.rules.chaos ? ', before CHAOS’s wildcards, moments and luck' : ''}.</small>`}</span></div>`; })()}
         ${S.rules.max && !S.rules.chaos ? '' : `${S.rules.chaos ? '' : `<div class="result-score">${fmt(sc.total)}<small>points</small></div>`}
         ${S.rules.chaos && (S.newMgrs || []).length ? `<div class="mgr-new">🔓 New manager${S.newMgrs.length > 1 ? 's' : ''} unlocked: ${S.newMgrs.map(k => `${MANAGERS[k].icon} <b>${MANAGERS[k].name}</b>`).join(', ')}</div>` : ''}
         ${S.rules.chaos ? chartHtml() : ''}
